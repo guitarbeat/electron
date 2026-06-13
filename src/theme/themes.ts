@@ -1,0 +1,362 @@
+/**
+ * Canonical app themes — single source for CSS variables, shell chrome, and moiré accents.
+ * SCSS should consume these via `applyTheme()`; avoid duplicating palette hex in stylesheets.
+ */
+
+export type ThemeName = 'movies' | 'places';
+
+export interface AppThemeDefinition {
+  name: ThemeName;
+  label: string;
+  /** Semantic colors for inline React styles (useThemeColors). */
+  semantic: {
+    accent: string;
+    accentHover: string;
+    accentMuted: string;
+    accentLight: string;
+    secondary: string;
+    secondaryHover: string;
+    secondaryMuted: string;
+    tertiary: string;
+    tertiaryHover: string;
+    background: string;
+    surface: string;
+    surfaceElevated: string;
+    surface0: string;
+    surface1: string;
+    surface2: string;
+    surface3: string;
+    textPrimary: string;
+    textSecondary: string;
+    textTertiary: string;
+    border: string;
+    borderSubtle: string;
+    success: string;
+    warning: string;
+    error: string;
+    overlay: string;
+  };
+  /** Moiré / effects bridge */
+  moire: {
+    color1: string;
+    color2: string;
+    accent: string;
+  };
+  /** Tokens passed to ThemeContext (effects, gradients). */
+  tokens: {
+    accent: string;
+    accentHover: string;
+    accentLight: string;
+    secondary: string;
+    tertiary: string;
+    background: string;
+    surface0: string;
+    surface1: string;
+    surface2: string;
+    surface3: string;
+    gradientCard: string;
+    glow: string;
+    glowStrong: string;
+  };
+  shell: {
+    canvasGap: string;
+    canvasPaddingBlock: string;
+    stackGap: string;
+    stackPaddingTop: string;
+    stackPaddingBottom: string;
+    panelBorderStrong: string;
+    panelBorderSoft: string;
+    panelHighlight: string;
+    panelGlass: string;
+    panelShadow: string;
+    panelShadowSoft: string;
+    headerSurface: string;
+    panelSurface: string;
+  };
+  /** Custom properties applied to :root when this theme is active. */
+  cssVars: Record<string, string>;
+}
+
+const sharedStatus = {
+  success: '#86efac',
+  warning: '#fde68a',
+  error: '#fca5a5',
+  overlay: 'rgba(3, 5, 18, 0.88)',
+} as const;
+
+/** Movies — deep cosmos: Moiré-native fuchsia-pink × sky-blue on near-black navy. */
+const moviesSemantic = {
+  accent: '#f472b6',
+  accentHover: '#f9a8d4',
+  accentMuted: '#f472b640',
+  accentLight: '#fce7f3',
+  secondary: '#7dd3fc',
+  secondaryHover: '#bae6fd',
+  secondaryMuted: '#7dd3fc40',
+  tertiary: '#c4b5fd',
+  tertiaryHover: '#ddd6fe',
+  background: '#07091a',
+  surface: 'rgba(14, 22, 50, 0.76)',
+  surfaceElevated: 'rgba(20, 32, 68, 0.86)',
+  surface0: '#060819',
+  surface1: 'rgba(16, 26, 58, 0.82)',
+  surface2: 'rgba(22, 34, 70, 0.9)',
+  surface3: 'rgba(30, 44, 86, 0.94)',
+  textPrimary: '#eef2ff',
+  textSecondary: '#94a3c8',
+  textTertiary: '#5b6e9a',
+  border: 'rgba(148, 163, 200, 0.28)',
+  borderSubtle: 'rgba(148, 163, 200, 0.12)',
+  ...sharedStatus,
+} as const;
+
+/** Places — bioluminescent reef: teal × violet on deep ocean navy. */
+const placesSemantic = {
+  accent: '#2dd4bf',
+  accentHover: '#5eead4',
+  accentMuted: '#2dd4bf40',
+  accentLight: '#ccfbf1',
+  secondary: '#a78bfa',
+  secondaryHover: '#c4b5fd',
+  secondaryMuted: '#a78bfa40',
+  tertiary: '#67e8f9',
+  tertiaryHover: '#a5f3fc',
+  background: '#070f1a',
+  surface: 'rgba(10, 22, 48, 0.76)',
+  surfaceElevated: 'rgba(14, 32, 62, 0.86)',
+  surface0: '#060d18',
+  surface1: 'rgba(12, 26, 54, 0.82)',
+  surface2: 'rgba(16, 34, 66, 0.9)',
+  surface3: 'rgba(22, 44, 80, 0.94)',
+  textPrimary: '#ecfeff',
+  textSecondary: '#82b4c8',
+  textTertiary: '#4a7a8a',
+  border: 'rgba(103, 232, 249, 0.22)',
+  borderSubtle: 'rgba(103, 232, 249, 0.1)',
+  ...sharedStatus,
+} as const;
+
+const buildCssVars = (
+  semantic: typeof moviesSemantic | typeof placesSemantic,
+  extras: {
+    quaternary: string;
+    quinary: string;
+    glowPrimary: string;
+    glowStrong: string;
+    gradientPrimary: string;
+    gradientCard: string;
+    gradientShell: string;
+    gradientMetalBg: string;
+    gradientMetalSurface: string;
+    gradientMetalPill: string;
+    y2kGlintA: string;
+    y2kGlintB: string;
+    moire1: string;
+    moire2: string;
+    moireAccent: string;
+    waxAccent?: string;
+    shellBorder: string;
+    headerSurface: string;
+    panelSurface: string;
+  }
+): Record<string, string> => ({
+  '--color-accent': semantic.accent,
+  '--color-accent-hover': semantic.accentHover,
+  '--color-accent-muted': semantic.accentMuted,
+  '--color-accent-light': semantic.accentLight,
+  '--color-secondary': semantic.secondary,
+  '--color-secondary-hover': semantic.secondaryHover,
+  '--color-secondary-muted': semantic.secondaryMuted,
+  '--color-tertiary': semantic.tertiary,
+  '--color-tertiary-hover': semantic.tertiaryHover,
+  '--color-quaternary': extras.quaternary,
+  '--color-quinary': extras.quinary,
+  '--color-background': semantic.background,
+  '--color-surface': semantic.surface,
+  '--color-surface-elevated': semantic.surfaceElevated,
+  '--color-surface-0': semantic.surface0,
+  '--color-surface-1': semantic.surface1,
+  '--color-surface-2': semantic.surface2,
+  '--color-surface-3': semantic.surface3,
+  '--color-text-primary': semantic.textPrimary,
+  '--color-text-secondary': semantic.textSecondary,
+  '--color-text-tertiary': semantic.textTertiary,
+  '--color-border': semantic.border,
+  '--color-border-subtle': semantic.borderSubtle,
+  '--color-success': semantic.success,
+  '--color-warning': semantic.warning,
+  '--color-error': semantic.error,
+  '--color-overlay': semantic.overlay,
+  '--glow-primary': extras.glowPrimary,
+  '--glow-strong': extras.glowStrong,
+  '--gradient-primary': extras.gradientPrimary,
+  '--gradient-card': extras.gradientCard,
+  '--gradient-shell': extras.gradientShell,
+  '--gradient-metal-bg': extras.gradientMetalBg,
+  '--gradient-metal-surface': extras.gradientMetalSurface,
+  '--gradient-metal-pill': extras.gradientMetalPill,
+  '--y2k-metal-glint-a': extras.y2kGlintA,
+  '--y2k-metal-glint-b': extras.y2kGlintB,
+  '--moire-color-1': extras.moire1,
+  '--moire-color-2': extras.moire2,
+  '--moire-accent': extras.moireAccent,
+  '--shell-border': extras.shellBorder,
+  '--shell-header-surface': extras.headerSurface,
+  '--shell-panel-surface': extras.panelSurface,
+  '--texture-paper-surface': extras.panelSurface,
+  '--texture-grain-strength': '0.04',
+  '--texture-fiber-strength': '0.03',
+  '--texture-vignette-strength': '0.38',
+  '--chrome-surface': extras.panelSurface,
+  ...(extras.waxAccent ? { '--wax-accent': extras.waxAccent } : {}),
+});
+
+export const moviesThemeDefinition: AppThemeDefinition = {
+  name: 'movies',
+  label: 'Movies',
+  semantic: moviesSemantic,
+  moire: {
+    color1: '#ff6eb4',
+    color2: '#7dd3fc',
+    accent: '#f472b6',
+  },
+  tokens: {
+    accent: moviesSemantic.accent,
+    accentHover: moviesSemantic.accentHover,
+    accentLight: moviesSemantic.accentLight,
+    secondary: moviesSemantic.secondary,
+    tertiary: moviesSemantic.tertiary,
+    background: moviesSemantic.background,
+    surface0: moviesSemantic.surface0,
+    surface1: moviesSemantic.surface1,
+    surface2: moviesSemantic.surface2,
+    surface3: moviesSemantic.surface3,
+    gradientCard:
+      'linear-gradient(178deg, rgba(20, 32, 72, 0.94) 0%, rgba(12, 18, 50, 0.9) 52%, rgba(6, 8, 28, 0.92) 100%)',
+    glow: '0 0 20px rgba(244, 114, 182, 0.18), 0 0 36px rgba(125, 211, 252, 0.1)',
+    glowStrong: '0 0 28px rgba(244, 114, 182, 0.28), 0 0 48px rgba(252, 231, 243, 0.14)',
+  },
+  shell: {
+    canvasGap: 'clamp(0.7rem, 0.38rem + 0.8vw, 1.15rem)',
+    canvasPaddingBlock: 'clamp(0.3rem, 0.18rem + 0.4vw, 0.7rem)',
+    stackGap: 'clamp(0.85rem, 0.68rem + 0.55vw, 1.3rem)',
+    stackPaddingTop: 'clamp(0.55rem, 0.42rem + 0.55vw, 0.95rem)',
+    stackPaddingBottom: 'clamp(0.8rem, 0.6rem + 0.8vw, 1.35rem)',
+    panelBorderStrong: 'rgba(200, 215, 255, 0.18)',
+    panelBorderSoft: 'rgba(200, 215, 255, 0.08)',
+    panelHighlight: 'rgba(255, 230, 255, 0.07)',
+    panelGlass: 'rgba(255, 230, 255, 0.025)',
+    panelShadow: '0 22px 48px rgba(2, 4, 18, 0.42)',
+    panelShadowSoft: '0 12px 26px rgba(2, 4, 18, 0.24)',
+    headerSurface:
+      'linear-gradient(155deg, rgba(20, 32, 72, 0.96) 0%, rgba(10, 16, 42, 0.97) 58%, rgba(6, 8, 26, 0.98) 100%)',
+    panelSurface:
+      'linear-gradient(165deg, rgba(18, 28, 66, 0.93) 0%, rgba(10, 16, 42, 0.95) 45%, rgba(6, 8, 26, 0.97) 100%)',
+  },
+  cssVars: buildCssVars(moviesSemantic, {
+    quaternary: '#c4b5fd',
+    quinary: '#7dd3fc',
+    glowPrimary: '0 0 20px rgba(244, 114, 182, 0.18), 0 0 36px rgba(125, 211, 252, 0.1)',
+    glowStrong: '0 0 28px rgba(244, 114, 182, 0.28), 0 0 48px rgba(252, 231, 243, 0.14)',
+    gradientPrimary: 'linear-gradient(128deg, #f472b6 0%, #fb7185 42%, #fce7f3 100%)',
+    gradientCard:
+      'linear-gradient(178deg, rgba(20, 32, 72, 0.94) 0%, rgba(12, 18, 50, 0.9) 52%, rgba(6, 8, 28, 0.92) 100%)',
+    gradientShell:
+      'linear-gradient(182deg, #0d1535 0%, #080f2a 42%, #060c1e 72%, #040816 100%)',
+    gradientMetalBg:
+      'linear-gradient(182deg, #0d1535 0%, #080f2a 42%, #060c1e 72%, #040816 100%)',
+    gradientMetalSurface:
+      'linear-gradient(180deg, #fce7f3 0%, #f9a8d4 38%, #f472b6 72%, #831843 100%)',
+    gradientMetalPill:
+      'linear-gradient(180deg, #fdf4ff 0%, #fce7f3 38%, #f472b6 100%)',
+    y2kGlintA: 'rgba(252, 231, 243, 0.18)',
+    y2kGlintB: 'rgba(186, 230, 253, 0.12)',
+    moire1: '#ff6eb4',
+    moire2: '#7dd3fc',
+    moireAccent: '#f472b6',
+    waxAccent: '#831843',
+    shellBorder: 'rgba(148, 163, 210, 0.18)',
+    headerSurface:
+      'linear-gradient(155deg, rgba(20, 32, 72, 0.96) 0%, rgba(10, 16, 42, 0.97) 58%, rgba(6, 8, 26, 0.98) 100%)',
+    panelSurface:
+      'linear-gradient(165deg, rgba(18, 28, 66, 0.93) 0%, rgba(10, 16, 42, 0.95) 45%, rgba(6, 8, 26, 0.97) 100%)',
+  }),
+};
+
+export const placesThemeDefinition: AppThemeDefinition = {
+  name: 'places',
+  label: 'Places',
+  semantic: placesSemantic,
+  moire: {
+    color1: '#2dd4bf',
+    color2: '#a78bfa',
+    accent: '#2dd4bf',
+  },
+  tokens: {
+    accent: placesSemantic.accent,
+    accentHover: placesSemantic.accentHover,
+    accentLight: placesSemantic.accentLight,
+    secondary: placesSemantic.secondary,
+    tertiary: placesSemantic.tertiary,
+    background: placesSemantic.background,
+    surface0: placesSemantic.surface0,
+    surface1: placesSemantic.surface1,
+    surface2: placesSemantic.surface2,
+    surface3: placesSemantic.surface3,
+    gradientCard:
+      'linear-gradient(178deg, rgba(10, 30, 62, 0.94) 0%, rgba(6, 18, 44, 0.9) 52%, rgba(4, 10, 30, 0.92) 100%)',
+    glow: '0 0 20px rgba(45, 212, 191, 0.18), 0 0 36px rgba(167, 139, 250, 0.1)',
+    glowStrong: '0 0 28px rgba(45, 212, 191, 0.26), 0 0 48px rgba(204, 251, 241, 0.14)',
+  },
+  shell: {
+    canvasGap: 'clamp(0.7rem, 0.38rem + 0.8vw, 1.15rem)',
+    canvasPaddingBlock: 'clamp(0.3rem, 0.18rem + 0.4vw, 0.7rem)',
+    stackGap: 'clamp(0.85rem, 0.68rem + 0.55vw, 1.3rem)',
+    stackPaddingTop: 'clamp(0.55rem, 0.42rem + 0.55vw, 0.95rem)',
+    stackPaddingBottom: 'clamp(0.8rem, 0.6rem + 0.8vw, 1.35rem)',
+    panelBorderStrong: 'rgba(103, 232, 249, 0.2)',
+    panelBorderSoft: 'rgba(103, 232, 249, 0.09)',
+    panelHighlight: 'rgba(204, 251, 241, 0.07)',
+    panelGlass: 'rgba(204, 251, 241, 0.025)',
+    panelShadow: '0 22px 48px rgba(2, 4, 20, 0.42)',
+    panelShadowSoft: '0 12px 26px rgba(2, 4, 20, 0.24)',
+    headerSurface:
+      'linear-gradient(155deg, rgba(10, 30, 64, 0.96) 0%, rgba(6, 18, 44, 0.97) 58%, rgba(4, 10, 28, 0.98) 100%)',
+    panelSurface:
+      'linear-gradient(165deg, rgba(8, 26, 58, 0.93) 0%, rgba(6, 16, 42, 0.95) 45%, rgba(4, 10, 26, 0.97) 100%)',
+  },
+  cssVars: buildCssVars(placesSemantic, {
+    quaternary: '#67e8f9',
+    quinary: '#a78bfa',
+    glowPrimary: '0 0 20px rgba(45, 212, 191, 0.18), 0 0 36px rgba(167, 139, 250, 0.1)',
+    glowStrong: '0 0 28px rgba(45, 212, 191, 0.26), 0 0 48px rgba(204, 251, 241, 0.14)',
+    gradientPrimary: 'linear-gradient(128deg, #2dd4bf 0%, #5eead4 40%, #ccfbf1 100%)',
+    gradientCard:
+      'linear-gradient(178deg, rgba(10, 30, 62, 0.94) 0%, rgba(6, 18, 44, 0.9) 52%, rgba(4, 10, 30, 0.92) 100%)',
+    gradientShell:
+      'linear-gradient(182deg, #0a1828 0%, #071020 42%, #050c1a 72%, #030816 100%)',
+    gradientMetalBg:
+      'linear-gradient(182deg, #0a1828 0%, #071020 42%, #050c1a 72%, #030816 100%)',
+    gradientMetalSurface:
+      'linear-gradient(180deg, #ccfbf1 0%, #99f6e4 38%, #2dd4bf 72%, #065f46 100%)',
+    gradientMetalPill:
+      'linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 38%, #2dd4bf 100%)',
+    y2kGlintA: 'rgba(204, 251, 241, 0.18)',
+    y2kGlintB: 'rgba(196, 181, 253, 0.12)',
+    moire1: '#2dd4bf',
+    moire2: '#a78bfa',
+    moireAccent: '#2dd4bf',
+    shellBorder: 'rgba(45, 212, 191, 0.18)',
+    headerSurface:
+      'linear-gradient(155deg, rgba(10, 30, 64, 0.96) 0%, rgba(6, 18, 44, 0.97) 58%, rgba(4, 10, 28, 0.98) 100%)',
+    panelSurface:
+      'linear-gradient(165deg, rgba(8, 26, 58, 0.93) 0%, rgba(6, 16, 42, 0.95) 45%, rgba(4, 10, 26, 0.97) 100%)',
+  }),
+};
+
+export const appThemes: Record<ThemeName, AppThemeDefinition> = {
+  movies: moviesThemeDefinition,
+  places: placesThemeDefinition,
+};
+
+export const getAppTheme = (name: ThemeName): AppThemeDefinition => appThemes[name];
