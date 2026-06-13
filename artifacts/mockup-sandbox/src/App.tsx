@@ -32,6 +32,9 @@ function PreviewRenderer({
   useEffect(() => {
     let cancelled = false;
 
+    setComponent(null);
+    setError(null);
+
     async function loadComponent(): Promise<void> {
       const key = `./components/mockups/${componentPath}.tsx`;
       const loader = modules[key];
@@ -131,7 +134,6 @@ function App() {
   if (previewPath) {
     return (
       <PreviewRenderer
-        key={previewPath}
         componentPath={previewPath}
         modules={discoveredModules}
       />
