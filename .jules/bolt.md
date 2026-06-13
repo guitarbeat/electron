@@ -1,0 +1,3 @@
+## 2024-05-14 - Replace Array.find() in useEffect loop with a pre-computed Map
+**Learning:** Found a common React performance bottleneck where an array iteration in `useEffect` used `.find()` inside a loop (making it O(N^2)). This was specifically in a `useEffect` that checks state transitions (newly watched movies) against a `previousStateRef` array.
+**Action:** When comparing current collection state to a previous reference collection via `useRef`, avoid `ref.current.find()` within a `.forEach` loop over the current items. Always pre-compute a `Map` from the previous reference for O(1) lookups before the loop to make it O(N).
