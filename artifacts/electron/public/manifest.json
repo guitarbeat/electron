@@ -1,0 +1,75 @@
+{
+  "name": "Electron — Movie Night",
+  "short_name": "Electron",
+  "id": "/",
+  "description": "Aaron & Electra's collaborative movie night & date-planning app.",
+  "start_url": "/",
+  "scope": "/",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07091a",
+  "theme_color": "#07091a",
+  "prefer_related_applications": false,
+  "categories": ["entertainment", "lifestyle", "social"],
+  "shortcuts": [
+    {
+      "name": "Open Notes & Memories",
+      "short_name": "Memories",
+      "description": "Jump back into the shared notes and memories flow.",
+      "url": "/?tab=queue&panel=memories"
+    },
+    {
+      "name": "Open Movies",
+      "short_name": "Movies",
+      "description": "Go straight to the shared movie queue.",
+      "url": "/?tab=queue"
+    },
+    {
+      "name": "Open Messages",
+      "short_name": "Messages",
+      "description": "Jump into the shared message board.",
+      "url": "/?panel=messages"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/pwa-screenshot-queue.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "label": "Movie queue with poster-driven expansion flow"
+    },
+    {
+      "src": "/pwa-screenshot-memories.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "label": "Notes and memories workspace with archive and composer"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/electron-logo-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/electron-logo-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
