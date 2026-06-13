@@ -162,11 +162,17 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // Performance optimization: Pre-compute Map for O(1) lookups
+    // This turns an O(N^2) operation into O(N) when checking for newly watched movies
+    const prevMoviesMap = new Map();
+    for (const movie of previousMoviesRef.current) {
+      prevMoviesMap.set(movie.id, movie);
+    }
+
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
+        const prevMovie = prevMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
