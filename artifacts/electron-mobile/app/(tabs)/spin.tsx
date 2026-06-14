@@ -1,73 +1,126 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Animated,
-  Easing,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import type { Movie } from "@/components/MovieCard";
 import { useColors } from "@/hooks/useColors";
 import { useSession } from "@/context/SessionContext";
-import type { Movie } from "@/components/MovieCard";
-import { getState } from "@/lib/api";
+import { getState, mutateState } from "@/lib/api";
 
 export default function SpinScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { currentUser } = useSession();
+  const queryClient = useQueryClient();
+
   const [picked, setPicked] = useState<Movie | null>(null);
   const [spinning, setSpinning] = useState(false);
-  const spinAnim = useRef(new Animated.Value(0)).current;
+  const [marked, setMarked] = useState(false);
+
+  const rotation = useSharedValue(0);
+  const totalRotation = useRef(0);
 
   const { data, isLoading } = useQuery({
     queryKey: ["state", "movies"],
     queryFn: () => getState<Movie[]>("movies"),
+    refetchInterval: 60_000,
   });
 
   const unwatched = (data?.data ?? []).filter((m) =>
     currentUser ? !m.watchedBy.includes(currentUser) : m.watchedBy.length === 0
   );
 
-  const spin = () => {
+  const [markError, setMarkError] = useState<string | null>(null);
+
+  const markWatchedMutation = useMutation({
+    mutationFn: async (movie: Movie) => {
+      if (!currentUser) throw new Error("Not signed in");
+      return mutateState<Movie[]>("movies", {
+        op: "toggle_watched",
+        baseVersion: data?.version ?? "",
+        payload: { movieId: movie.id },
+      });
+    },
+    onSuccess: (result) => {
+      queryClient.setQueryData(["state", "movies"], result);
+      setMarked(true);
+      setMarkError(null);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (err: Error) => {
+      setMarkError(err.message ?? "Failed to mark as watched. Try again.");
+    },
+  });
+
+  const spin = async () => {
     if (unwatched.length === 0 || spinning) return;
     setSpinning(true);
     setPicked(null);
+    setMarked(false);
+    setMarkError(null);
 
-    spinAnim.setValue(0);
-    Animated.timing(spinAnim, {
-      toValue: 1,
-      duration: 1400,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start(() => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    const extraSpins = 5 + Math.floor(Math.random() * 4);
+    totalRotation.current += extraSpins * 360;
+
+    rotation.value = withTiming(
+      totalRotation.current,
+      {
+        duration: 1600,
+        easing: Easing.out(Easing.cubic),
+      },
+      (finished) => {
+        "worklet";
+        if (finished) {
+        }
+      }
+    );
+
+    setTimeout(async () => {
       const idx = Math.floor(Math.random() * unwatched.length);
       setPicked(unwatched[idx]);
       setSpinning(false);
-    });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }, 1600);
   };
 
-  const rotate = spinAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "1440deg"],
-  });
+  const wheelStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   const movieCount = data?.data?.length ?? 0;
 
+  const isAlreadyWatched =
+    picked && currentUser ? picked.watchedBy.includes(currentUser) : false;
+
   return (
-    <View
-      style={[
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      contentContainerStyle={[
         styles.container,
-        { backgroundColor: colors.background, paddingBottom: insets.bottom + 100 },
+        { paddingBottom: insets.bottom + 100 },
       ]}
+      showsVerticalScrollIndicator={false}
     >
-      {/* Header copy */}
+      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.headline, { color: colors.textPrimary }]}>
           Can't decide?
@@ -78,7 +131,7 @@ export default function SpinScreen() {
         </Text>
       </View>
 
-      {/* Spinner wheel */}
+      {/* Wheel */}
       <View style={styles.wheelArea}>
         <Animated.View
           style={[
@@ -86,8 +139,8 @@ export default function SpinScreen() {
             {
               borderColor: colors.primary,
               backgroundColor: colors.surface1,
-              transform: [{ rotate }],
             },
+            wheelStyle,
           ]}
         >
           {isLoading ? (
@@ -249,7 +302,81 @@ export default function SpinScreen() {
             </View>
           </View>
 
-          {/* Re-spin */}
+          {/* Mark as Watched */}
+          {currentUser && (
+            <Pressable
+              onPress={() => {
+                if (!marked && !isAlreadyWatched) {
+                  markWatchedMutation.mutate(picked);
+                }
+              }}
+              disabled={
+                marked ||
+                isAlreadyWatched ||
+                markWatchedMutation.isPending
+              }
+              style={({ pressed }) => [
+                styles.markWatchedBtn,
+                {
+                  backgroundColor:
+                    marked || isAlreadyWatched
+                      ? colors.success + "22"
+                      : colors.primary,
+                  borderColor:
+                    marked || isAlreadyWatched
+                      ? colors.success + "66"
+                      : colors.primary,
+                  opacity:
+                    pressed || markWatchedMutation.isPending ? 0.7 : 1,
+                },
+              ]}
+            >
+              {markWatchedMutation.isPending ? (
+                <ActivityIndicator
+                  color={marked || isAlreadyWatched ? colors.success : "#fff"}
+                  size="small"
+                />
+              ) : (
+                <>
+                  <Ionicons
+                    name={
+                      marked || isAlreadyWatched
+                        ? "checkmark-circle"
+                        : "eye-outline"
+                    }
+                    size={16}
+                    color={
+                      marked || isAlreadyWatched ? colors.success : "#fff"
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.markWatchedText,
+                      {
+                        color:
+                          marked || isAlreadyWatched
+                            ? colors.success
+                            : "#fff",
+                      },
+                    ]}
+                  >
+                    {marked || isAlreadyWatched
+                      ? "Marked as watched!"
+                      : "Mark as Watched"}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          )}
+
+          {/* Mark error */}
+          {markError && (
+            <Text style={[styles.markError, { color: colors.error }]}>
+              {markError}
+            </Text>
+          )}
+
+          {/* Pick again */}
           <Pressable
             onPress={spin}
             disabled={spinning}
@@ -265,13 +392,12 @@ export default function SpinScreen() {
           </Pressable>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: "center",
     paddingTop: 24,
     gap: 24,
@@ -285,22 +411,22 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   wheel: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
     borderWidth: 3,
     alignItems: "center",
     justifyContent: "center",
   },
-  wheelEmoji: { fontSize: 52 },
+  wheelEmoji: { fontSize: 56 },
   pointer: {
     position: "absolute",
-    bottom: -10,
+    bottom: -12,
     width: 0,
     height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderTopWidth: 18,
+    borderLeftWidth: 11,
+    borderRightWidth: 11,
+    borderTopWidth: 20,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
   },
@@ -350,6 +476,17 @@ const styles = StyleSheet.create({
   resultMetaText: { fontSize: 12 },
   resultDot: { fontSize: 12, marginHorizontal: 2 },
   resultGenre: { fontSize: 12 },
+  markWatchedBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 11,
+  },
+  markWatchedText: { fontSize: 15, fontWeight: "600" },
+  markError: { fontSize: 13, textAlign: "center" },
   reSpinBtn: {
     flexDirection: "row",
     alignItems: "center",
