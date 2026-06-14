@@ -132,7 +132,6 @@ const MoviesTopControls = React.forwardRef<
   const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
 
   // ── Motion state ─────────────────────────────────────────────────────────────
-  const [isSubmitAnimating, setIsSubmitAnimating] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const [clickOrigin, setClickOrigin] = useState({ x: 0, y: 0 });
   // Stable particle positions — compute once, never change
@@ -533,8 +532,6 @@ const MoviesTopControls = React.forwardRef<
                     clearFocusBoundaryCheck();
                     hideAutocomplete();
                     internalSearchInputRef.current?.blur();
-                    setIsSubmitAnimating(true);
-                    window.setTimeout(() => setIsSubmitAnimating(false), 700);
                     void onSubmit();
                   }
                 }}
