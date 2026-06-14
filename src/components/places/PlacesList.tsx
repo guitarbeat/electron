@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/useProviders';
 import { usePlaces } from '@/hooks/places';
@@ -15,7 +14,7 @@ import type { PlacesMapHandle } from './PlacesMap.tsx';
 import PlaceCard from './PlaceCard.tsx';
 import PlaceSuggestionCard from './PlaceSuggestionCard.tsx';
 import PlaceEditModal from './PlaceEditModal.tsx';
-import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopControls.tsx';
+import PlacesTopControls from './PlacesTopControls.tsx';
 import { buildPlaceSections } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
 import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
