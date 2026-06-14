@@ -10,7 +10,10 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
+  debounce,
+  formatMemoryTimestamp,
+  encodeStorageData,
+  decodeStorageData,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -886,5 +889,78 @@ test('shuffleArray', async (t) => {
     } finally {
       if (m) m.mock.restore();
     }
+  });
+});
+
+test("debounce", async (t) => {
+  await t.test("delays execution until the wait time has passed", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let count = 0;
+    const fn = () => { count++; };
+    const debounced = debounce(fn, 100);
+
+    debounced();
+    assert.equal(count, 0);
+
+    t.mock.timers.tick(50);
+    assert.equal(count, 0);
+
+    t.mock.timers.tick(50);
+    assert.equal(count, 1);
+    } finally { t.mock.timers.reset(); }
+  });
+
+  await t.test("clears previous timeout if called again within wait time", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let count = 0;
+    const fn = () => { count++; };
+    const debounced = debounce(fn, 100);
+
+    debounced();
+    t.mock.timers.tick(50);
+    debounced();
+    t.mock.timers.tick(50);
+
+    assert.equal(count, 0);
+
+    t.mock.timers.tick(50);
+    assert.equal(count, 1);
+    } finally { t.mock.timers.reset(); }
+  });
+
+  await t.test("executes immediately if the immediate flag is true", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let count = 0;
+    const fn = () => { count++; };
+    const debounced = debounce(fn, 100, true);
+
+    debounced();
+    assert.equal(count, 1);
+
+    t.mock.timers.tick(50);
+    debounced();
+    assert.equal(count, 1); // Not called again within the wait time
+
+    t.mock.timers.tick(100);
+    debounced();
+    assert.equal(count, 2); // Can be called again after wait time
+    } finally { t.mock.timers.reset(); }
+  });
+
+  await t.test("passes arguments to the debounced function correctly", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let receivedArgs: any[] = [];
+    const fn = (...args: any[]) => { receivedArgs = args; };
+    const debounced = debounce(fn, 100);
+
+    debounced("test", 123);
+    t.mock.timers.tick(100);
+
+    assert.deepEqual(receivedArgs, ["test", 123]);
+    } finally { t.mock.timers.reset(); }
   });
 });
