@@ -48,8 +48,6 @@ interface Props {
 const SK_MOBILE = ['m1', 'm2', 'm3', 'm4'];
 const SK_DESKTOP = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'];
 
-const GRID = 'clamp(6rem, 10vw, 8rem)';
-
 const MovieSectionBody: React.FC<Props> = ({
   sections,
   isLoading,
@@ -70,6 +68,13 @@ const MovieSectionBody: React.FC<Props> = ({
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
   const isEmpty = (arr: unknown[]) => arr.length === 0;
 
+  const GRID = isMobile
+    ? 'clamp(8.5rem, 42vw, 12rem)'
+    : 'clamp(6.5rem, 10vw, 9rem)';
+  const GRID_GAP = isMobile
+    ? 'clamp(0.45rem, 1.5vw, 0.65rem)'
+    : 'clamp(0.3rem, 0.6vw, 0.5rem)';
+
   const showInitialLoading =
     isLoading && isSuggestionsLoading &&
     isEmpty(sections.queue) && isEmpty(sections.suggestions) && isEmpty(sections.completed);
@@ -77,7 +82,7 @@ const MovieSectionBody: React.FC<Props> = ({
   const movieGrid = (movies: Movie[], emptyLabel: string) => (
     <div
       className="watchlist-content"
-      style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${GRID}, 1fr))`, gap: '0.35rem' }}
+      style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${GRID}, 1fr))`, gap: GRID_GAP }}
     >
       {movies.length > 0 ? (
         movies.map((movie) => (
@@ -116,7 +121,7 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
     return (
-      <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap="0.35rem">
+      <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
         <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
           <CollectionEmptyState padding={spacing.xl} className="collection-empty-state--tight">
             <span style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</span>
@@ -137,11 +142,11 @@ const MovieSectionBody: React.FC<Props> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
         isSuggestionsLoading && isEmpty(sections.suggestions) ? (
-          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap="0.35rem">
+          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
             {sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
           </CollectionGrid>
         ) : (
-          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap="0.35rem">
+          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
             {sections.suggestions.map((suggestion) => (
               <SuggestionCard
                 key={suggestion.id}
