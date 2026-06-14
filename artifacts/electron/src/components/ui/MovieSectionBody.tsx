@@ -11,7 +11,6 @@ import { spacing } from '@/theme/tokens';
 import SuggestionCard from '@/components/movies/SuggestionCard';
 import MovieCard from '@/components/movies/MovieCard';
 import type { MovieSections } from '@/components/movies/lib/movieSections';
-import MovieEmptyBento from '@/components/movies/MovieEmptyBento';
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -132,15 +131,6 @@ const MovieSectionBody: React.FC<Props> = ({
   }
 
   const isQueueEmpty = isEmpty(sections.queue) && isEmpty(sections.suggestions) && !isSuggestionsLoading;
-
-  // ── All-empty CTA ─────────────────────────────────────────────────────────
-  if (isQueueEmpty && isEmpty(sections.completed)) {
-    return (
-      <div className="watchlist-content" style={{ padding: isMobile ? '0.75rem' : '1rem 1.25rem' }}>
-        <MovieEmptyBento onAddMovieFocus={onAddMovieFocus} isMobile={isMobile} />
-      </div>
-    );
-  }
 
   // ── Full section body ─────────────────────────────────────────────────────
   return (
