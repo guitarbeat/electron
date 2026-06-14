@@ -440,7 +440,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         onDeleteRequest={setMovieToDelete}
         onToggleError={(message) => setToast({ message, type: 'error' })}
         actions={{ toggleWatched, renameMovie, addMemory, updateMemory, deleteMemory: deleteMemoryRecord, togglePin: toggleMemoryPin }}
-        sectionIds={MOVIE_SECTION_IDS}
       />
       {movieToDelete && (
         <ConfirmDialog
