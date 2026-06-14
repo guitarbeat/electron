@@ -2,9 +2,13 @@
 
 .app-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  /* Columns shrink to content; justify-content centers the group when search
+     slot is empty. When search is active (--has-search), the 1fr center col
+     fills the available space and centering has no effect. */
+  grid-template-columns: auto auto auto;
+  justify-content: center;
   align-items: center;
-  gap: clamp(0.8rem, 1.6vw, 1.3rem);
+  gap: clamp(0.5rem, 1vw, 0.9rem);
   padding: clamp(0.9rem, 0.8rem + 0.45vw, 1.2rem) clamp(1.1rem, 1.3vw, 1.5rem);
   width: 100%;
   min-height: 3.8rem;
@@ -39,7 +43,6 @@
   min-width: 0;
   position: relative;
   z-index: 1;
-  justify-self: start;
 }
 
 /* Center: search-slot only — invisible when empty, expands on search */
@@ -49,8 +52,10 @@
   overflow: hidden;
 }
 
+/* When search is active: center col stretches to 1fr so search fills space */
 .app-header--has-search {
   grid-template-columns: auto 1fr auto;
+  justify-content: start; /* disable centering — 1fr fills remaining space */
 }
 
 .app-header__center--search {
@@ -69,8 +74,21 @@
   min-width: 0;
   position: relative;
   z-index: 1;
-  justify-self: end;
   gap: 0.55rem;
+}
+
+/* Thin separator between nav and profile; hidden when search is present */
+.app-header__right::before {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 1.2rem;
+  background: color-mix(in srgb, #f472b6 15%, rgba(255, 236, 206, 0.06));
+  flex-shrink: 0;
+  margin-right: 0.15rem;
+}
+.app-header--has-search .app-header__right::before {
+  display: none;
 }
 
 
@@ -188,11 +206,16 @@
 @media (max-width: 900px) {
   .app-header {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
       'center center'
       'left right';
+    justify-content: start;
     align-items: center;
+  }
+
+  .app-header--has-search {
+    grid-template-columns: 1fr auto;
   }
 
   .app-header__left {
@@ -206,7 +229,6 @@
 
   .app-header__right {
     grid-area: right;
-    justify-self: end;
   }
 }
 
