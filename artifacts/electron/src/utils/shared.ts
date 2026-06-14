@@ -312,8 +312,8 @@ export const copyTextToClipboard = async (value: string): Promise<void> => {
 export const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
-export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
-  arr.map((item) => ({ ...item }));
+export const shallowCloneArray = <T>(arr: T[]): T[] =>
+  [...arr];
 
 export const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];
