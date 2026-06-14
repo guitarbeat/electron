@@ -399,6 +399,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               onClick={() => setSelectedMovieId(null)}
               disabled={isSpinning || !selectedMovieId}
               className="spin-wheel-action"
+              title={
+                isSpinning
+                  ? 'Cannot clear while spinning'
+                  : !selectedMovieId
+                  ? 'No result to clear'
+                  : 'Clear current result'
+              }
             >
               Clear Result
             </Button>
