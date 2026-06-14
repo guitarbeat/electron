@@ -59,7 +59,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
-  }, [isOpen]);
+  }, [isOpen, toggle]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -67,7 +67,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [isOpen]);
+  }, [isOpen, toggle]);
 
   const handleLogout = () => {
     if (isDisabled) return;
