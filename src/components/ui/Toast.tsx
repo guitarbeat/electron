@@ -236,6 +236,7 @@ const Toast: React.FC<ToastProps> = ({
               type="button"
               onClick={handleDismiss}
               aria-label="Dismiss notification"
+              title="Dismiss notification"
               style={{
                 background: 'none',
                 border: 'none',
