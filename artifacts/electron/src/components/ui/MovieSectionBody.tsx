@@ -11,6 +11,7 @@ import { spacing } from '@/theme/tokens';
 import SuggestionCard from '@/components/movies/SuggestionCard';
 import MovieCard from '@/components/movies/MovieCard';
 import type { MovieSections } from '@/components/movies/lib/movieSections';
+import MovieEmptyBento from '@/components/movies/MovieEmptyBento';
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -135,27 +136,9 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── All-empty CTA ─────────────────────────────────────────────────────────
   if (isQueueEmpty && isEmpty(sections.completed)) {
     return (
-      <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap="0.35rem">
-        <CollectionEmptyState
-          padding={isMobile ? spacing.lg : spacing['3xl']}
-          className={`watchlist-empty-queue-state${isMobile ? ' collection-empty-state--tight' : ''}`}
-        >
-          <span className="watchlist-empty-queue-state__icon" aria-hidden="true">🎬</span>
-          <strong className="watchlist-empty-queue-state__title">Your movie list is wide open</strong>
-          <span className="watchlist-empty-queue-state__copy">
-            No movies lined up yet. Add something you both want to watch and kick off movie night.
-          </span>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={onAddMovieFocus}
-            className="watchlist-empty-queue-state__action"
-          >
-            Add a movie
-          </Button>
-        </CollectionEmptyState>
-      </CollectionGrid>
+      <div className="watchlist-content" style={{ padding: isMobile ? '0.75rem' : '1rem 1.25rem' }}>
+        <MovieEmptyBento onAddMovieFocus={onAddMovieFocus} isMobile={isMobile} />
+      </div>
     );
   }
 

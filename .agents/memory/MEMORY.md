@@ -1,2 +1,3 @@
 - [Electron App Migration](electron-migration.md) — Electron (collaborative movie watchlist) migrated from Vercel/v0 into pnpm workspace as react-vite artifact at previewPath `/`
 - [API Cross-Package Bundling](api-cross-package.md) — api-server needs copies of frontend src files inside its own src tree; esbuild can't cross artifact boundaries
+- [Replit DATABASE_URL conflict](replit-db-url.md) — Replit reserves DATABASE_URL as a runtime-managed secret; use NEON_DATABASE_URL (highest priority) instead
