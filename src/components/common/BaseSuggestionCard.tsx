@@ -85,6 +85,8 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
                 onClick={onAccept}
                 disabled={actionsDisabled}
                 leftIcon={<CheckIcon />}
+                aria-label="Accept suggestion"
+                title="Accept suggestion"
               />
             }
             cluster={
@@ -94,6 +96,8 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
                 onClick={onReject}
                 disabled={actionsDisabled}
                 leftIcon={<CrossIcon />}
+                aria-label="Reject suggestion"
+                title="Reject suggestion"
               />
             }
           />

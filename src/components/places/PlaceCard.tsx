@@ -216,6 +216,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                       disabled={isSubmitting || isActionLoading}
                       leftIcon={<CheckIcon />}
                       className={`place-item-action-btn${isVisited ? " place-item-action-btn--unmark" : " place-item-action-btn--visit"}`}
+                      aria-label={isVisited ? "Mark as unvisited" : "Mark as visited"}
+                      title={isVisited ? "Mark as unvisited" : "Mark as visited"}
                     />
                   }
                   secondary={
@@ -226,6 +228,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                       leftIcon={<EditIcon />}
                       disabled={isSubmitting || isActionLoading}
                       className="place-item-edit-btn"
+                      aria-label="Edit place"
+                      title="Edit place"
                     />
                   }
                   cluster={
@@ -236,6 +240,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                       leftIcon={<TrashIcon />}
                       disabled={isSubmitting || isActionLoading}
                       className="place-item-delete-btn"
+                      aria-label="Remove place"
                       title="Remove place"
                     />
                   }

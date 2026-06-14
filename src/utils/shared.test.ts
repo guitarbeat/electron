@@ -9,8 +9,10 @@ import {
   consoleError,
   parseJsonContent,
   shuffleArray,
+  formatMemoryTimestamp,
+  encodeStorageData,
+  decodeStorageData,
   sanitizeInput,
-  shuffleArray,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
