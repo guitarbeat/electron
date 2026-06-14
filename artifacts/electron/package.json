@@ -53,7 +53,6 @@
     "@types/react-dom": "catalog:",
     "@types/three": "^0.184.1",
     "@types/web-app-manifest": "^1.0.9",
-    "@vercel/analytics": "^2.0.1",
     "@vitejs/plugin-react": "catalog:",
     "@workspace/api-client-react": "workspace:*",
     "chroma-js": "^3.2.0",

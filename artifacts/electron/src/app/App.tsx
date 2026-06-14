@@ -18,7 +18,6 @@ import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { MainTab } from '@/shared/types';
 
 import MinigameModal from '@/ui/MinigameModal';
-import { Analytics } from '@vercel/analytics/react';
 import './App.scss';
 import './y2k-skin.scss';
 import './workspace-polish.scss';
@@ -462,7 +461,6 @@ const App: React.FC = () => {
         ))}
 
       </div>
-      <Analytics />
     </ThemeProvider>
   );
 };
