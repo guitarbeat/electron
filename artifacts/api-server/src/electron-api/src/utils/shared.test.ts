@@ -10,7 +10,6 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -235,7 +234,26 @@ test("executeAction", async (t) => {
 
     assert.deepEqual(calls, ["complete"]);
   });
+
+  await t.test("still runs action when completion is missing", () => {
+    const calls: string[] = [];
+
+    executeAction(() => {
+      calls.push("action");
+    });
+
+    assert.deepEqual(calls, ["action"]);
+  });
+
+  await t.test("safely does nothing when both are missing", () => {
+    const calls: string[] = [];
+
+    executeAction();
+
+    assert.deepEqual(calls, []);
+  });
 });
+
 
 test("isValidUrl", async (t) => {
   await t.test("returns true for valid HTTP URLs", () => {
