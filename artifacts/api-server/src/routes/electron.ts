@@ -43,13 +43,18 @@ const toWebRequest = async (req: IncomingMessage & { url?: string; method?: stri
 
 const writeFetchResponse = async (res: ExpressResponse, fetchRes: Response): Promise<void> => {
   res.status(fetchRes.status);
+
+  const setCookies = fetchRes.headers.getSetCookie();
+  for (const cookie of setCookies) {
+    res.append("Set-Cookie", cookie);
+  }
+
   fetchRes.headers.forEach((value, key) => {
-    if (key.toLowerCase() === "set-cookie") {
-      res.append("Set-Cookie", value);
-    } else {
+    if (key.toLowerCase() !== "set-cookie") {
       res.setHeader(key, value);
     }
   });
+
   const body = await fetchRes.arrayBuffer();
   res.end(Buffer.from(body));
 };
