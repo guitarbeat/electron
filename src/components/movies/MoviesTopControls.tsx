@@ -425,22 +425,16 @@ const MoviesTopControls = React.forwardRef<
           trimmedSearchQuery,
           autocompleteQuery,
           autocompleteResults.length,
-          autocompleteError,
+          autocompleteError
         ),
       [
         autocompleteError,
         autocompleteQuery,
         autocompleteResults.length,
-        autocompleteError
-      ),
-    [
-      autocompleteError,
-      autocompleteQuery,
-      autocompleteResults.length,
-      isAutocompleteLoading,
-      trimmedSearchQuery,
-    ]
-  );
+        isAutocompleteLoading,
+        trimmedSearchQuery,
+      ]
+    );
   const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
   const filteredAutocompleteResults = useMemo(
     () =>
@@ -583,8 +577,7 @@ const MoviesTopControls = React.forwardRef<
                     event.preventDefault();
                     selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
                   }
-                }
-              }}
+                }}
               placeholder="Add a movie or show title"
               aria-label="Movie or show title"
               role="combobox"
@@ -711,7 +704,8 @@ const MoviesTopControls = React.forwardRef<
                   {autocompleteError}
                 </div>
               ) : autocompleteResults.length > 0 ? (
-                filteredAutocompleteResults.length === 0 ? (
+                <>
+                {filteredAutocompleteResults.length === 0 ? (
                   <div className="watchlist-top-controls__autocomplete-status">
                     No{" "}
                     {autocompleteTypeFilter === "series"
@@ -719,7 +713,7 @@ const MoviesTopControls = React.forwardRef<
                       : "movies"}{" "}
                     found
                   </div>
-                )}
+                ) : null}
                 {!isAutocompleteLoading && autocompleteResults.length > 0 && (
                   <div
                     className="watchlist-top-controls__autocomplete-filters"
@@ -816,6 +810,8 @@ const MoviesTopControls = React.forwardRef<
                     No titles found for &quot;{trimmedSearchQuery}&quot;
                   </div>
                 ) : null}
+                </>
+              ) : null}
               </div>
             )}
           </div>
