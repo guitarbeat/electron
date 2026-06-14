@@ -25,6 +25,10 @@ app.use(
     },
   }),
 );
+// origin:true reflects the actual request Origin back instead of using "*",
+// which is required when any client sends credentials (cookies). This is
+// safe: same-origin requests from the web app are unaffected, and the Expo
+// mobile web preview needs credentialed cross-origin fetches for session cookies.
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
