@@ -44,8 +44,21 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
+# Agent backups and ephemeral exports
+.migration-backup/
+.paintress/
+.agents/sessions/
+.canvas/
+
+# Build and framework caches
+.next/
+.vercel/
+.turbo/
+.vite/
+
 # Replit
 .cache/
 .local/
-.vercel
 .env*
+env.txt
+.vercel
