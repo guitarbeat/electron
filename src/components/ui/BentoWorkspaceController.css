@@ -333,12 +333,6 @@
     font-size: 0.625rem;
   }
 
-  /* Sort chips: min 36px touch target */
-  .bento-sort-chip {
-    font-size: 0.68rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 2.25rem;
-  }
 }
 
 /* ── Y2K skin ─────────────────────────────────────────────────────── */

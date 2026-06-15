@@ -26,7 +26,6 @@ import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import BentoWorkspaceController, {
   type BentoStatTileConfig,
-  type BentoSortChipConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import "./MoviesPhotoMode.css";
