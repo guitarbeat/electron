@@ -150,7 +150,12 @@ const AppNavStrip: FC<Props> = ({
               <span>{statusChip.detail}</span>
             </span>
             {statusChip.action && statusChip.actionLabel && (
-              <button type="button" className="ans__chip-action" onClick={statusChip.action}>
+              <button
+                type="button"
+                className="ans__chip-action"
+                onClick={statusChip.action}
+                aria-label={statusChip.actionLabel}
+              >
                 {statusChip.actionLabel}
               </button>
             )}
