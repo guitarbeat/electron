@@ -12,7 +12,6 @@ import React, {
 } from 'react';
 import type { User } from '@/shared/types';
 import { applyTheme } from '@/theme/applyTheme';
-import { type ThemeName } from '@/theme/themes';
 import { spacing } from '@/theme/tokens';
 import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
@@ -40,6 +39,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [themeName] = useState<ThemeName>('movies');
   const theme = useMemo(() => getAppTheme(themeName), [themeName]);
 
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
     applyTheme(themeName);
   }, [themeName]);

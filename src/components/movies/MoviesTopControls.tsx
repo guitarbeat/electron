@@ -658,7 +658,7 @@ const MoviesTopControls = React.forwardRef<
                     <span className="watchlist-top-controls__autocomplete-loading-dot" />
                     <span className="watchlist-top-controls__autocomplete-loading-dot" />
                   </div>
-                )}
+                ) : null}
                 {!isAutocompleteLoading && autocompleteResults.length > 0 && (
                   <div
                     className="watchlist-top-controls__autocomplete-filters"
