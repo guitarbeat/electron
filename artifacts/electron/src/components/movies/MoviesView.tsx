@@ -162,11 +162,20 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // Bolt: O(N) optimization to prevent nested loop bottlenecks
+    // Pre-compute map of previous movies outside the loop.
+    // Using a for...of loop avoids intermediate array allocation.
+    const previousMoviesMap = new Map<string, Movie>();
+    if (previousMoviesRef.current) {
+      for (const m of previousMoviesRef.current) {
+        previousMoviesMap.set(m.id, m);
+      }
+    }
+
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
+        const prevMovie = previousMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
