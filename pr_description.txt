@@ -1,5 +1,0 @@
-🎯 **What:** The `encodeStorageData` utility function in `src/utils/shared.ts` did not have tests in the main `shared.test.ts` test file. A duplicate test file `storage_encoding.test.ts` was present but not appropriately integrated.
-
-📊 **Coverage:** The tests cover the encoding of basic JSON objects to base64, handling of legacy plaintext data, and graceful error handling on unsupported characters (like invalid Latin1 characters). The `decodeStorageData` function is also fully tested.
-
-✨ **Result:** Test coverage for `encodeStorageData` is now comprehensive and consolidated within `src/utils/shared.test.ts`, matching the project's standard structure, while cleaning up the duplicated test file.

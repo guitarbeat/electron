@@ -5,6 +5,7 @@ export interface RadialMenuMetrics {
 }
 
 export interface RadialMenuViewport {
+  chromeTop?: number;
   height: number;
   insetBottom?: number;
   insetLeft?: number;
@@ -70,6 +71,7 @@ export const clampPositionToViewport = (
   const insetTop = viewport.insetTop ?? 0;
   const insetRight = viewport.insetRight ?? 0;
   const insetBottom = viewport.insetBottom ?? 0;
+  const chromeTop = viewport.chromeTop ?? 0;
 
   const minX = offsetLeft + insetLeft + metrics.safeMargin - metrics.toggleOffset + metrics.fanRadius;
   const maxX =
@@ -79,7 +81,8 @@ export const clampPositionToViewport = (
     metrics.fanRadius -
     metrics.safeMargin -
     insetRight;
-  const minY = offsetTop + insetTop + metrics.safeMargin - metrics.toggleOffset + metrics.fanRadius;
+  const minY =
+    offsetTop + Math.max(insetTop, chromeTop) + metrics.safeMargin - metrics.toggleOffset + metrics.fanRadius;
   const maxY =
     offsetTop +
     viewport.height -

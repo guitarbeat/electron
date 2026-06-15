@@ -3,27 +3,37 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import { useUser } from '@/app/useProviders';
 import type { Movie, MovieSuggestion, SharedMemory, MoviesViewProps } from '@/shared/types';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { MovieCardSkeleton } from '@/ui/Skeleton';
-import {
-  CollectionEmptyState,
-  CollectionGrid,
-  CollectionSection,
-} from "@/ui/CollectionLayout";
-import Button from "@/ui/Button";
 import SyncBanner from "@/components/ui/SyncBanner";
-import { spacing } from "@/theme/tokens";
+import MovieSectionBody from "@/ui/MovieSectionBody";
 import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
 import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from './MoviesTopControls';
-import SuggestionCard from './SuggestionCard';
-import MovieCard from './MovieCard';
-import { buildMovieSections } from './lib/movieSections';
+import { buildMovieSections, type MovieSortOrder } from './lib/movieSections';
 import type { MovieAutocompleteResult } from '@/services/metadata';
+import BentoWorkspaceController, {
+  type BentoStatTileConfig,
+  type BentoSortChipConfig,
+  type SortOrder,
+} from '@/components/ui/BentoWorkspaceController';
 import './MoviesPhotoMode.css';
+
+const MOVIE_SECTION_IDS = {
+  incoming: 'movies-section-incoming',
+  queue: 'movies-section-queue',
+  completed: 'movies-section-watched',
+};
+
+const MOVIE_SORTS: BentoSortChipConfig[] = [
+  { value: 'recent', label: '🕐 Recent' },
+  { value: 'alpha', label: 'A→Z' },
+  { value: 'rating', label: '★ Rating' },
+];
+
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
+  const [sortOrder, setSortOrder] = useState<MovieSortOrder>('recent');
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
     useState(false);
@@ -39,7 +49,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isAdding,
     setIsAdding,
     movieToDelete,
+    setMovieToDelete,
     setToast,
+    successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
     isSubmittingRecommendation,
@@ -58,23 +70,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
+    toggleWatched,
+    renameMovie,
+    addMemory,
+    updateMemory,
+    deleteMemoryRecord,
+    toggleMemoryPin,
   } = useMoviesWorkspace({ currentUser, isPaused });
-  const skeletonKeys = useMemo(
-    () =>
-      isMobile
-        ? ["mobile-1", "mobile-2", "mobile-3", "mobile-4"]
-        : [
-            "desktop-1",
-            "desktop-2",
-            "desktop-3",
-            "desktop-4",
-            "desktop-5",
-            "desktop-6",
-            "desktop-7",
-            "desktop-8",
-          ],
-    [isMobile],
-  );
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
     const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
@@ -105,9 +107,36 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     return memoriesByMovieId;
   }, [memories, movies]);
   const sections = useMemo(
-    () => buildMovieSections(movies, pendingSuggestions),
-    [movies, pendingSuggestions],
+    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
+    [movies, pendingSuggestions, sortOrder],
   );
+
+  const movieStats = useMemo((): BentoStatTileConfig[] => [
+    {
+      id: 'incoming',
+      label: 'Incoming',
+      count: sections.suggestions.length,
+      icon: '💌',
+      sectionId: MOVIE_SECTION_IDS.incoming,
+      tone: 'incoming',
+    },
+    {
+      id: 'queue',
+      label: 'Up Next',
+      count: sections.queue.length,
+      icon: '🎞',
+      sectionId: MOVIE_SECTION_IDS.queue,
+      tone: 'default',
+    },
+    {
+      id: 'watched',
+      label: 'Watched',
+      count: sections.completed.length,
+      icon: '✓',
+      sectionId: MOVIE_SECTION_IDS.completed,
+      tone: 'completed',
+    },
+  ], [sections.suggestions.length, sections.queue.length, sections.completed.length]);
   const latestMemory = memories[0] ?? null;
   const upNextSummaryCount = sections.queue.length + sections.suggestions.length;
   useEffect(() => {
@@ -115,11 +144,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       previousMoviesRef.current = movies || null;
       return;
     }
+
+    // Pre-compute map for O(1) lookups to avoid O(N^2) complexity in the loop
+    const prevMoviesMap = new Map(
+      previousMoviesRef.current.map((movie) => [movie.id, movie])
+    );
+
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = previousMoviesRef.current?.find(
-          (entry) => entry.id === movie.id,
-        );
+        const prevMovie = prevMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
@@ -334,231 +367,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       setMovieToDelete(null);
     }
   }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
-  const handleToggleError = useCallback(
-    (message: string) => {
-      setToast({ message, type: "error" });
-    },
-    [setToast],
-  );
-  const renderMovieGrid = useCallback(
-    (moviesToRender: Movie[], emptyState: string) => (
-      <CollectionGrid
-        className="watchlist-content"
-        minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-      >
-        {moviesToRender.length > 0 ? (
-          moviesToRender.map((movie) => (
-            <MovieCard
-              key={movie.id}
-              movie={movie}
-              currentUser={currentUser}
-              onToggle={() => toggleWatched(movie.id)}
-              onToggleError={handleToggleError}
-              onRename={(title) => renameMovie(movie.id, title)}
-              onDelete={() => setMovieToDelete(movie)}
-              isHighlighted={successMovieId === movie.id}
-              memories={movieMemories.get(movie.id) ?? []}
-              onAddMemory={
-                currentUser
-                  ? async (note) => {
-                      await addMemory(movie.id, movie.title, currentUser, note);
-                    }
-                  : undefined
-              }
-              onUpdateMemory={async (memoryId, note) => {
-                await updateMemory(memoryId, { note });
-              }}
-              onDeleteMemory={async (memoryId) => {
-                await deleteMemoryRecord(memoryId);
-              }}
-              onTogglePin={async (memoryId) => {
-                await toggleMemoryPin(memoryId);
-              }}
-            />
-          ))
-        ) : (
-          <CollectionEmptyState
-            padding={isMobile ? spacing.md : spacing["2xl"]}
-            className={`watchlist-empty-watched-state${isMobile ? " collection-empty-state--tight" : ""}`}
-          >
-            <span
-              className="watchlist-empty-watched-state__icon"
-              aria-hidden="true"
-            >
-              ✓
-            </span>
-            <span className="watchlist-empty-watched-state__text">
-              {emptyState}
-            </span>
-          </CollectionEmptyState>
-        )}
-      </CollectionGrid>
-    ),
-    [
-      currentUser,
-      isMobile,
-      handleToggleError,
-      movieMemories,
-    ]
-  );
-  const showInitialLoading =
-    isLoading &&
-    isSuggestionsLoading &&
-    movies.length === 0 &&
-    pendingSuggestions.length === 0;
-  const moviesBody = useMemo(() => {
-    if (showInitialLoading) {
-      return (
-        <CollectionGrid
-          className="watchlist-content"
-          minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-        >
-          <div
-            style={{
-              gridColumn: "1 / -1",
-              display: "flex",
-              flexDirection: "column",
-              gap: spacing.xl,
-            }}
-          >
-            <CollectionEmptyState
-              padding={spacing.xl}
-              className="collection-empty-state--tight"
-            >
-              <span
-                style={{ fontSize: "1.75rem", lineHeight: 1, opacity: 0.7 }}
-                aria-hidden="true"
-              >
-                🍿
-              </span>
-              <strong>Loading your movies</strong>
-            </CollectionEmptyState>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "inherit",
-                gap: "inherit",
-              }}
-            >
-              {skeletonKeys.map((key) => (
-                <MovieCardSkeleton key={key} />
-              ))}
-            </div>
-          </div>
-        </CollectionGrid>
-      );
-    }
-    const isQueueEmpty = sections.queue.length === 0 && sections.suggestions.length === 0 && !isSuggestionsLoading;
-    const isWatchedEmpty = sections.completed.length === 0;
-    const isAllEmpty = isQueueEmpty && isWatchedEmpty;
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: isMobile ? spacing.xl : spacing["2xl"],
-        }}
-      >
-        {isAllEmpty ? (
-          <CollectionGrid
-            className="watchlist-content"
-            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-          >
-            <CollectionEmptyState
-              padding={isMobile ? spacing.lg : spacing["3xl"]}
-              className={`watchlist-empty-queue-state${isMobile ? " collection-empty-state--tight" : ""}`}
-            >
-              <span
-                className="watchlist-empty-queue-state__icon"
-                aria-hidden="true"
-              >
-                🎬
-              </span>
-              <strong className="watchlist-empty-queue-state__title">
-                Your movie list is wide open
-              </strong>
-              <span className="watchlist-empty-queue-state__copy">
-                No movies lined up yet. Add something you both want to watch and
-                kick off movie night.
-              </span>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={focusSearchInput}
-                className="watchlist-empty-queue-state__action"
-              >
-                Add a movie
-              </Button>
-            </CollectionEmptyState>
-          </CollectionGrid>
-        ) : (
-          <>
-            {/* ── Incoming suggestions ── */}
-            {(isSuggestionsLoading || sections.suggestions.length > 0) && (
-              <CollectionSection heading="Incoming" tone="incoming">
-                {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-                  <CollectionGrid
-                    className="watchlist-content"
-                    minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                  >
-                    {skeletonKeys.slice(0, 4).map((key) => (
-                      <MovieCardSkeleton key={key} />
-                    ))}
-                  </CollectionGrid>
-                ) : (
-                  <CollectionGrid
-                    className="watchlist-content"
-                    minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-                  >
-                    {sections.suggestions.map((suggestion) => (
-                      <SuggestionCard
-                        key={suggestion.id}
-                        suggestion={suggestion}
-                        onAccept={() => void handleAcceptSuggestion(suggestion)}
-                        onReject={() => void handleRejectSuggestion(suggestion)}
-                        canRespond={Boolean(currentUser)}
-                        disableActions={!currentUser}
-                        isProcessing={processingSuggestionId === suggestion.id}
-                      />
-                    ))}
-                  </CollectionGrid>
-                )}
-              </CollectionSection>
-            )}
-            {/* ── Up Next ── */}
-            {sections.queue.length > 0 && (
-              <CollectionSection heading="Up Next">
-                {renderMovieGrid(
-                  sections.queue,
-                  "Your movie list is wide open",
-                )}
-              </CollectionSection>
-            )}
-            {/* ── Watched ── */}
-            {sections.completed.length > 0 && (
-              <CollectionSection heading="Watched" tone="completed">
-                {renderMovieGrid(sections.completed, "No watched movies yet")}
-              </CollectionSection>
-            )}
-          </>
-        )}
-      </div>
-    );
-
-  }, [
-    currentUser,
-    focusSearchInput,
-    handleAcceptSuggestion,
-    handleRejectSuggestion,
-    isMobile,
-    isSuggestionsLoading,
-    renderMovieGrid,
-    sections,
-    showInitialLoading,
-    skeletonKeys,
-    processingSuggestionId,
-  ]);
   return (
     <div className="watchlist-container places-container">
       {isMoviesWorkspaceDegraded && (
@@ -573,32 +381,57 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           }
         />
       )}
-      <MoviesTopControls
-        ref={moviesTopControlsRef}
+      <BentoWorkspaceController
+        stats={movieStats}
+        sorts={MOVIE_SORTS}
+        activeSortOrder={sortOrder}
+        onSortChange={(order) => setSortOrder(order as MovieSortOrder)}
+        ariaLabel="Movies workspace controls"
+      >
+        <MoviesTopControls
+          ref={moviesTopControlsRef}
+          currentUser={currentUser}
+          upNextCount={upNextSummaryCount}
+          watchedCount={sections.completed.length}
+          noteCount={memories.length}
+          latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+          latestNoteAuthor={latestMemory?.author ?? null}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedAutocompleteResult={selectedAutocompleteResult}
+          setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+          guestName={guestName}
+          setGuestName={setGuestName}
+          onSubmit={handleAddAction}
+          onRecommend={openRecommendationComposer}
+          onSubmitRecommendation={handleSubmitRecommendation}
+          onCancelRecommendation={resetRecommendationComposer}
+          recommendationReason={recommendationReason}
+          setRecommendationReason={handleRecommendationReasonChange}
+          showRecommendationComposer={isRecommendationComposerOpen}
+          isAdding={isAdding}
+          isSubmittingRecommendation={isSubmittingRecommendation}
+          suggestionError={suggestionError}
+          canRecommend={true}
+        />
+      </BentoWorkspaceController>
+      <MovieSectionBody
+        sections={sections}
+        isLoading={isLoading}
+        isSuggestionsLoading={isSuggestionsLoading}
         currentUser={currentUser}
-        upNextCount={upNextSummaryCount}
-        watchedCount={sections.completed.length}
-        noteCount={memories.length}
-        latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
-        latestNoteAuthor={latestMemory?.author ?? null}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        setSelectedAutocompleteResult={setSelectedAutocompleteResult}
-        guestName={guestName}
-        setGuestName={setGuestName}
-        onSubmit={handleAddAction}
-        onRecommend={openRecommendationComposer}
-        onSubmitRecommendation={handleSubmitRecommendation}
-        onCancelRecommendation={resetRecommendationComposer}
-        recommendationReason={recommendationReason}
-        setRecommendationReason={handleRecommendationReasonChange}
-        showRecommendationComposer={isRecommendationComposerOpen}
-        isAdding={isAdding}
-        isSubmittingRecommendation={isSubmittingRecommendation}
-        suggestionError={suggestionError}
-        canRecommend={true}
+        isMobile={isMobile}
+        processingSuggestionId={processingSuggestionId}
+        successMovieId={successMovieId}
+        movieMemories={movieMemories}
+        onAddMovieFocus={focusSearchInput}
+        onAcceptSuggestion={handleAcceptSuggestion}
+        onRejectSuggestion={handleRejectSuggestion}
+        onDeleteRequest={setMovieToDelete}
+        onToggleError={(message) => setToast({ message, type: 'error' })}
+        actions={{ toggleWatched, renameMovie, addMemory, updateMemory, deleteMemory: deleteMemoryRecord, togglePin: toggleMemoryPin }}
+        sectionIds={MOVIE_SECTION_IDS}
       />
-      {moviesBody}
       {movieToDelete && (
         <ConfirmDialog
           isOpen={Boolean(movieToDelete)}

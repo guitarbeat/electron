@@ -33,6 +33,7 @@ const SpinIcon = () => (
 const STORAGE_KEY = 'radialMenu.position';
 const DISCOVERED_KEY = 'radialMenu.discovered';
 const ITEM_COUNT = 3;
+const DESKTOP_CHROME_CLEARANCE_TOP = 92;
 
 const isMobileViewport = (): boolean =>
   typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
@@ -68,6 +69,7 @@ const getViewportBox = () => {
     height: visualViewport?.height ?? window.innerHeight,
     offsetLeft: visualViewport?.offsetLeft ?? 0,
     offsetTop: visualViewport?.offsetTop ?? 0,
+    chromeTop: isMobileViewport() ? 0 : DESKTOP_CHROME_CLEARANCE_TOP,
     insetTop: getSafeAreaInset('top'),
     insetRight: getSafeAreaInset('right'),
     insetBottom: getSafeAreaInset('bottom'),

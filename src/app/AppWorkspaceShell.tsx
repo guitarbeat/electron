@@ -45,10 +45,11 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
       id="main-content"
       className={`workspace-stage workspace-stage--simplified${isMobile ? ' workspace-stage--mobile-shell' : ''}`}
       tabIndex={-1}
+      style={{ position: 'relative', overflow: 'hidden' }}
     >
       <section
         className={`workspace-surface workspace-surface--${activeTab}`}
-        style={{ minWidth: 0 }}
+        style={{ position: 'relative', zIndex: 1, minWidth: 0 }}
         aria-label={activeTab === 'movies' ? 'Movies workspace' : 'Places workspace'}
       >
         {activeTab === 'movies' ? (

@@ -619,23 +619,6 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   return (
     <div className="spin-game-wrapper">
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.85rem',
-        padding: '0.75rem 1rem 1rem',
-        userSelect: 'none',
-        position: 'relative'
-      }}
-    >
-      <ProgressBar
-        current={currentIndex}
-        total={candidates.length}
-        kept={kept.length}
-      />
-
       <div
         style={{
           display: "flex",
