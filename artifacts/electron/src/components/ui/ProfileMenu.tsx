@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FC } from "react";
+import { useState, useRef, useEffect, useCallback, type FC } from "react";
 import { useUser } from "@/app/useProviders";
 import type { User } from "@/shared/types";
 import { usePins } from "@/hooks/usePins";
@@ -106,10 +106,10 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
   const isDisabled = isLoading || isVerifying;
   const pinMode = currentUser && userHasPin(currentUser) ? "change" : "set";
 
-  const toggle = (next: boolean) => {
+  const toggle = useCallback((next: boolean) => {
     setIsOpen(next);
     onOpenChange?.(next);
-  };
+  }, [onOpenChange]);
 
   useEffect(() => {
     if (!isOpen) return;
