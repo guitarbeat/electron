@@ -210,6 +210,7 @@ const Toast: React.FC<ToastProps> = ({
                 onAction();
                 handleDismiss();
               }}
+              aria-label={actionLabel}
               style={{
                 border: `1px solid ${styles.borderColor}`,
                 background: 'rgba(255,255,255,0.08)',
