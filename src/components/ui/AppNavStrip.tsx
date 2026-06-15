@@ -1,7 +1,8 @@
 import { type FC, useRef, useEffect, useMemo, useState } from 'react';
 import { gsap } from 'gsap';
-import { RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from 'lucide-react';
+import { RefreshCw, SatelliteDish, WifiOff, X } from 'lucide-react';
 import type { MainTab } from '@/shared/types';
+import MagicToggle from './MagicToggle';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import './AppNavStrip.css';
 
@@ -103,42 +104,22 @@ const AppNavStrip: FC<Props> = ({
 
       <span className="ans__sep" aria-hidden="true" />
 
-      <button
-        type="button"
-        className={`ans__btn${activeTab === 'movies' ? ' is-active' : ''}`}
-        onClick={() => onTabChange('movies')}
-        aria-current={activeTab === 'movies' ? 'page' : undefined}
-      >
-        <span className="ans__btn-glyph" aria-hidden="true">🎬</span>
-        <span className="ans__btn-label">Movies</span>
-      </button>
-
-      <span className="ans__sep" aria-hidden="true" />
-
-      <button
-        type="button"
-        className={`ans__btn${activeTab === 'places' ? ' is-active' : ''}`}
-        onClick={() => onTabChange('places')}
-        aria-current={activeTab === 'places' ? 'page' : undefined}
-      >
-        <span className="ans__btn-glyph" aria-hidden="true">📍</span>
-        <span className="ans__btn-label">Places</span>
-      </button>
-
-      {onOpenSpin && (
-        <>
-          <span className="ans__sep" aria-hidden="true" />
-          <button
-            type="button"
-            className="ans__btn ans__btn--spin"
-            onClick={onOpenSpin}
-            aria-label="Spin the wheel to pick a movie"
-          >
-            <RotateCw size={13} strokeWidth={2.4} aria-hidden="true" />
-            <span className="ans__btn-label">Spin</span>
-          </button>
-        </>
-      )}
+      <MagicToggle<MainTab | 'spin'>
+        options={[
+          { value: 'movies', label: '🎬 Movies' },
+          { value: 'places', label: '📍 Places' },
+          ...(onOpenSpin ? [{ value: 'spin' as const, label: '🎡 Spin' }] : [])
+        ]}
+        activeValue={activeTab}
+        onChange={(val) => {
+          if (val === 'spin' && onOpenSpin) {
+            onOpenSpin();
+          } else if (val !== 'spin') {
+            onTabChange(val);
+          }
+        }}
+        ariaLabel="Main navigation tabs"
+      />
 
       {showChip && statusChip && (
         <>
