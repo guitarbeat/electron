@@ -20,6 +20,6 @@ jobs:
           node-version: '22'
 
       - name: Run Thermo-Nuclear Code Quality Review
-        run: npx --yes @cursor/plugins thermo-nuclear-code-quality-review
+        run: npx --yes skills use cursor/plugins@thermo-nuclear-code-quality-review
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
