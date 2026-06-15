@@ -55,7 +55,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
         menuRef.current && triggerRef.current &&
         !menuRef.current.contains(e.target as Node) &&
         !triggerRef.current.contains(e.target as Node)
-      ) toggle(false);
+      ) toggleRef.current(false);
     };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
@@ -63,7 +63,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) { toggle(false); triggerRef.current?.focus(); }
+      if (e.key === 'Escape' && isOpen) { toggleRef.current(false); triggerRef.current?.focus(); }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);

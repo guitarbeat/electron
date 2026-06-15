@@ -24,7 +24,6 @@ import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
 import { createPortal } from 'react-dom';
 import {
   type BentoStatTileConfig,
-  type BentoSortChipConfig,
   type SortOrder,
 } from '@/components/ui/BentoWorkspaceController';
 import { useBentoSlot } from '@/app/BentoSlotContext';
@@ -35,7 +34,7 @@ const PLACE_SECTION_IDS = {
   completed: 'places-section-visited',
 };
 
-const PLACE_SORTS: BentoSortChipConfig[] = [
+const PLACE_SORTS: MagicToggleOption<PlaceSortOrder>[] = [
   { value: 'recent', label: '🕐 Recent' },
   { value: 'alpha', label: 'A→Z' },
 ];
