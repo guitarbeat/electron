@@ -218,6 +218,8 @@ const ImageChoiceEditor: React.FC<{
               type="button"
               className="quiz-editor__upload-preview"
               onClick={() => fileInputRefs.current[idx]?.click()}
+              aria-label="Upload image for option"
+              title="Upload image for option"
             >
               {option.imageUrl ? (
                 <img
