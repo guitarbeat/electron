@@ -14,6 +14,7 @@ import {
   decodeStorageData,
   encodeStorageData,
   formatMemoryTimestamp,
+  normalizeMovieTitle,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -958,5 +959,31 @@ test("shallowCloneArray", async (t) => {
     const clone = shallowCloneArray(original);
     assert.deepEqual(clone, []);
     assert.notStrictEqual(clone, original);
+  });
+});
+
+test("normalizeMovieTitle", async (t) => {
+  await t.test("trims leading and trailing spaces", () => {
+    assert.equal(normalizeMovieTitle("  The Matrix  "), "the matrix");
+  });
+
+  await t.test("converts to lowercase", () => {
+    assert.equal(normalizeMovieTitle("THE MATRIX"), "the matrix");
+  });
+
+  await t.test("handles mixed case and spaces", () => {
+    assert.equal(normalizeMovieTitle("  tHe MaTrIx  "), "the matrix");
+  });
+
+  await t.test("handles already normalized titles", () => {
+    assert.equal(normalizeMovieTitle("the matrix"), "the matrix");
+  });
+
+  await t.test("handles empty string", () => {
+    assert.equal(normalizeMovieTitle(""), "");
+  });
+
+  await t.test("handles string with only spaces", () => {
+    assert.equal(normalizeMovieTitle("   "), "");
   });
 });
