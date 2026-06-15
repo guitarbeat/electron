@@ -8,6 +8,15 @@ export const deepClone = <T>(value: T): T => {
   return JSON.parse(JSON.stringify(value)) as T;
 };
 
+export const isValidUrl = (url: string): boolean => {
+  try {
+    const parsedUrl = new URL(url);
+    return ["http:", "https:"].includes(parsedUrl.protocol);
+  } catch {
+    return false;
+  }
+};
+
 export const sanitizeInput = (input: string | null | undefined): string => {
   if (!input) return "";
   return input
