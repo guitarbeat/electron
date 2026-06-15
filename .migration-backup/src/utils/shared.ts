@@ -313,7 +313,7 @@ export const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
 export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
-  arr.map((item) => ({ ...item }));
+  [...arr];
 
 export const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];

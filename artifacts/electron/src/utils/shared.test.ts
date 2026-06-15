@@ -1041,3 +1041,40 @@ test("debounce", async (t) => {
     }
   });
 });
+
+test("shallowCloneArray", async (t) => {
+  await t.test("returns a new array instance", () => {
+    const original = [{ a: 1 }, { b: 2 }];
+    const cloned = shallowCloneArray(original);
+
+    assert.notStrictEqual(cloned, original, "Returned array should be a new reference");
+    assert.deepEqual(cloned, original, "Returned array should have the same contents");
+  });
+
+  await t.test("contains the exact same object references (shallow copy)", () => {
+    const obj1 = { id: 1 };
+    const obj2 = { id: 2 };
+    const original = [obj1, obj2];
+    const cloned = shallowCloneArray(original);
+
+    assert.strictEqual(cloned[0], original[0], "Elements should be the exact same object references");
+    assert.strictEqual(cloned[1], original[1], "Elements should be the exact same object references");
+  });
+
+  await t.test("works with empty arrays", () => {
+    const original: { id: number }[] = [];
+    const cloned = shallowCloneArray(original);
+
+    assert.notStrictEqual(cloned, original);
+    assert.deepEqual(cloned, []);
+  });
+
+  await t.test("works with arrays containing single elements", () => {
+    const obj = { data: "test" };
+    const original = [obj];
+    const cloned = shallowCloneArray(original);
+
+    assert.notStrictEqual(cloned, original);
+    assert.strictEqual(cloned[0], obj);
+  });
+});
