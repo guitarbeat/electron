@@ -67,10 +67,10 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
             textAlign: 'center',
             padding: '2rem 1.5rem',
             borderRadius: '1rem',
-            border: '1px solid rgba(180, 142, 92, 0.28)',
+            border: '1px solid rgba(148, 163, 200, 0.22)',
             background:
-              'linear-gradient(180deg, rgba(90,63,39,0.88) 0%, rgba(58,39,24,0.92) 100%)',
-            boxShadow: '0 24px 56px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)',
+              'linear-gradient(180deg, rgba(14,22,58,0.9) 0%, rgba(8,12,36,0.94) 100%)',
+            boxShadow: '0 24px 56px rgba(2,4,18,0.36), inset 0 1px 0 rgba(200,215,255,0.06)',
           }}
         >
           <span
@@ -85,7 +85,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
               fontFamily: 'Inter, system-ui, sans-serif',
               fontSize: '1.1rem',
               fontWeight: 600,
-              color: '#f7efdf',
+              color: '#e8efff',
               letterSpacing: '-0.01em',
             }}
           >
@@ -97,7 +97,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
               fontFamily: 'Inter, system-ui, sans-serif',
               fontSize: '0.875rem',
               lineHeight: 1.55,
-              color: '#b9a489',
+              color: '#94a3c8',
             }}
           >
             {isNetworkError
@@ -112,9 +112,9 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
                 style={{
                   padding: '0.5rem 1.25rem',
                   borderRadius: '9999px',
-                  border: '1px solid rgba(200,141,89,0.4)',
-                  background: 'rgba(200,141,89,0.12)',
-                  color: '#efd2af',
+                  border: '1px solid rgba(148,163,200,0.3)',
+                  background: 'rgba(148,163,200,0.1)',
+                  color: '#c8d5f0',
                   fontFamily: 'Inter, system-ui, sans-serif',
                   fontSize: '0.8125rem',
                   fontWeight: 600,
@@ -132,9 +132,9 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
               style={{
                 padding: '0.5rem 1.25rem',
                 borderRadius: '9999px',
-                border: '1px solid rgba(200,141,89,0.5)',
-                background: 'rgba(200,141,89,0.22)',
-                color: '#f7efdf',
+                border: '1px solid rgba(244,114,182,0.4)',
+                background: 'rgba(244,114,182,0.15)',
+                color: '#f0e8ff',
                 fontFamily: 'Inter, system-ui, sans-serif',
                 fontSize: '0.8125rem',
                 fontWeight: 600,

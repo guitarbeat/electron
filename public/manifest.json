@@ -8,8 +8,8 @@
   "display_override": ["window-controls-overlay", "standalone"],
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#1d140e",
-  "theme_color": "#1d140e",
+  "background_color": "#07091a",
+  "theme_color": "#07091a",
   "prefer_related_applications": false,
   "categories": ["entertainment", "lifestyle", "social"],
   "shortcuts": [
