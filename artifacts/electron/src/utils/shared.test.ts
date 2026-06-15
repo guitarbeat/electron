@@ -7,6 +7,7 @@ import {
   executeAction,
   isValidUrl,
   consoleError,
+  debounce,
   parseJsonContent,
   sanitizeInput,
   shuffleArray,
@@ -985,5 +986,58 @@ test("normalizeMovieTitle", async (t) => {
 
   await t.test("handles string with only spaces", () => {
     assert.equal(normalizeMovieTitle("   "), "");
+  });
+});
+
+test("debounce", async (t) => {
+  await t.test("delays execution until the wait time has passed", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let count = 0;
+      const debounced = debounce(() => {
+        count++;
+      }, 100);
+
+      debounced();
+      assert.equal(count, 0);
+      t.mock.timers.tick(100);
+      assert.equal(count, 1);
+    } finally {
+      t.mock.timers.reset();
+    }
+  });
+
+  await t.test("clears previous timeout if called again within wait time", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let count = 0;
+      const debounced = debounce(() => {
+        count++;
+      }, 100);
+
+      debounced();
+      t.mock.timers.tick(50);
+      debounced();
+      t.mock.timers.tick(100);
+      assert.equal(count, 1);
+    } finally {
+      t.mock.timers.reset();
+    }
+  });
+
+  await t.test("passes arguments to the debounced function", () => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    try {
+      let receivedArgs: unknown[] = [];
+      const debounced = debounce((...args: unknown[]) => {
+        receivedArgs = args;
+      }, 100);
+
+      debounced("test", 123);
+      t.mock.timers.tick(100);
+      assert.deepEqual(receivedArgs, ["test", 123]);
+    } finally {
+      t.mock.timers.reset();
+    }
   });
 });
