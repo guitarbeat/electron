@@ -12,6 +12,7 @@ import {
   sanitizeInput,
   shuffleArray,
   shallowCloneArray,
+  throttle,
   decodeStorageData,
   encodeStorageData,
   formatMemoryTimestamp,
@@ -728,15 +729,11 @@ test("consoleError", async (t) => {
     try {
       consoleError("Test message", undefined);
       assert.equal(m.mock.calls.length, 1);
-      assert.deepEqual(m.mock.calls[0].arguments, [
-        "Test message",
-        undefined,
-      ]);
+      assert.deepEqual(m.mock.calls[0].arguments, ["Test message", undefined]);
     } finally {
       m.mock.restore();
     }
   });
-
 });
 
 test("encodeStorageData and decodeStorageData", async (t) => {
@@ -797,37 +794,36 @@ test("encodeStorageData and decodeStorageData", async (t) => {
   );
 });
 
-
-test('formatMemoryTimestamp', async (t) => {
+test("formatMemoryTimestamp", async (t) => {
   const originalTz = process.env.TZ;
 
   t.beforeEach(() => {
-    process.env.TZ = 'UTC';
+    process.env.TZ = "UTC";
   });
 
   t.afterEach(() => {
     process.env.TZ = originalTz;
   });
 
-  await t.test('formats a valid date string correctly', () => {
-    const result = formatMemoryTimestamp('2025-01-05T15:45:00Z');
+  await t.test("formats a valid date string correctly", () => {
+    const result = formatMemoryTimestamp("2025-01-05T15:45:00Z");
     // In node's UTC locale string it should be "Jan 5, 2025, 3:45 PM"
-    assert.equal(result, 'Jan 5, 2025, 3:45 PM');
+    assert.equal(result, "Jan 5, 2025, 3:45 PM");
   });
 
-  await t.test('handles different months and days', () => {
-    const result = formatMemoryTimestamp('2024-12-31T08:30:00Z');
-    assert.equal(result, 'Dec 31, 2024, 8:30 AM');
+  await t.test("handles different months and days", () => {
+    const result = formatMemoryTimestamp("2024-12-31T08:30:00Z");
+    assert.equal(result, "Dec 31, 2024, 8:30 AM");
   });
 
   await t.test('returns "Unknown date" for invalid date strings', () => {
-    const result = formatMemoryTimestamp('invalid-date');
-    assert.equal(result, 'Unknown date');
+    const result = formatMemoryTimestamp("invalid-date");
+    assert.equal(result, "Unknown date");
   });
 
   await t.test('returns "Unknown date" for empty strings', () => {
-    const result = formatMemoryTimestamp('');
-    assert.equal(result, 'Unknown date');
+    const result = formatMemoryTimestamp("");
+    assert.equal(result, "Unknown date");
   });
 });
 
@@ -879,28 +875,31 @@ test("shuffleArray", async (t) => {
       }
     }
 
-    assert.equal(allSame, false, "shuffleArray returned the exact same order 5 times in a row for a 20-element array");
+    assert.equal(
+      allSame,
+      false,
+      "shuffleArray returned the exact same order 5 times in a row for a 20-element array",
+    );
   });
 });
 
-
-test('shuffleArray', async (t) => {
-  await t.test('returns empty array when given empty array', () => {
+test("shuffleArray", async (t) => {
+  await t.test("returns empty array when given empty array", () => {
     assert.deepEqual(shuffleArray([]), []);
   });
 
-  await t.test('returns same single element for array of length 1', () => {
+  await t.test("returns same single element for array of length 1", () => {
     assert.deepEqual(shuffleArray([1]), [1]);
   });
 
-  await t.test('does not mutate original array', () => {
+  await t.test("does not mutate original array", () => {
     const original = [1, 2, 3];
     const shuffled = shuffleArray(original);
     assert.notStrictEqual(shuffled, original);
     assert.deepEqual(original, [1, 2, 3]);
   });
 
-  await t.test('contains all original elements', () => {
+  await t.test("contains all original elements", () => {
     const original = [1, 2, 3, 4, 5];
     const shuffled = shuffleArray(original);
     assert.equal(shuffled.length, original.length);
@@ -909,11 +908,14 @@ test('shuffleArray', async (t) => {
     }
   });
 
-  await t.test('shuffles array based on pseudo-random values', () => {
+  await t.test("shuffles array based on pseudo-random values", () => {
     const original = [1, 2, 3, 4, 5];
     let m;
-    if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.getRandomValues) {
-      m = mock.method(globalThis.crypto, 'getRandomValues', (arr) => {
+    if (
+      typeof globalThis.crypto !== "undefined" &&
+      globalThis.crypto.getRandomValues
+    ) {
+      m = mock.method(globalThis.crypto, "getRandomValues", (arr) => {
         arr[0] = 0; // Ensures getSecureRandom returns 0
         return arr;
       });
@@ -1042,7 +1044,7 @@ test("debounce", async (t) => {
   });
 });
 
-test("shallowCloneArray", async (t) => {
+test("shallowCloneArray (object arrays)", async (t) => {
   await t.test("returns a new array instance", () => {
     const original = [{ a: 1 }, { b: 2 }];
     const cloned = shallowCloneArray(original);
@@ -1077,4 +1079,44 @@ test("shallowCloneArray", async (t) => {
     assert.notStrictEqual(cloned, original);
     assert.strictEqual(cloned[0], obj);
   });
+});
+
+test("throttle", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+
+  let count = 0;
+  let lastArgs: any[] = [];
+  const fn = (...args: any[]) => {
+    count++;
+    lastArgs = args;
+  };
+
+  const throttledFn = throttle(fn, 100);
+
+  // Initial call executes immediately
+  throttledFn(1, 2);
+  assert.equal(count, 1);
+  assert.deepEqual(lastArgs, [1, 2]);
+
+  // Calls within the timeout limit are ignored
+  throttledFn(3, 4);
+  assert.equal(count, 1);
+  assert.deepEqual(lastArgs, [1, 2]);
+
+  // Timer ticks but not enough
+  t.mock.timers.tick(50);
+  throttledFn(5, 6);
+  assert.equal(count, 1);
+  assert.deepEqual(lastArgs, [1, 2]);
+
+  // Timer ticks past the limit
+  t.mock.timers.tick(50);
+  throttledFn(7, 8);
+  assert.equal(count, 2);
+  assert.deepEqual(lastArgs, [7, 8]);
+
+  // Throttled again
+  throttledFn(9, 10);
+  assert.equal(count, 2);
+  assert.deepEqual(lastArgs, [7, 8]);
 });
