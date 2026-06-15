@@ -10,6 +10,7 @@ import {
   parseJsonContent,
   sanitizeInput,
   shuffleArray,
+  shallowCloneArray,
   decodeStorageData,
   encodeStorageData,
   formatMemoryTimestamp,
@@ -888,5 +889,33 @@ test('shuffleArray', async (t) => {
     } finally {
       if (m) m.mock.restore();
     }
+  });
+});
+
+test("shallowCloneArray", async (t) => {
+  await t.test("returns a new array instance", () => {
+    const original = [1, 2, 3];
+    const clone = shallowCloneArray(original);
+    assert.notStrictEqual(clone, original);
+  });
+
+  await t.test("contains the same elements", () => {
+    const original = [1, 2, 3];
+    const clone = shallowCloneArray(original);
+    assert.deepEqual(clone, original);
+  });
+
+  await t.test("maintains object references for shallow clone", () => {
+    const obj = { id: 1 };
+    const original = [obj];
+    const clone = shallowCloneArray(original);
+    assert.strictEqual(clone[0], original[0]);
+  });
+
+  await t.test("handles empty array", () => {
+    const original: any[] = [];
+    const clone = shallowCloneArray(original);
+    assert.deepEqual(clone, []);
+    assert.notStrictEqual(clone, original);
   });
 });
