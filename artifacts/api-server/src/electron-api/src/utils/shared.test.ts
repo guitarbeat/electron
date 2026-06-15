@@ -10,7 +10,10 @@ import {
   parseJsonContent,
   shuffleArray,
   sanitizeInput,
-  shuffleArray,
+  readApiErrorMessage,
+  encodeStorageData,
+  decodeStorageData,
+  formatMemoryTimestamp,
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -886,5 +889,105 @@ test('shuffleArray', async (t) => {
     } finally {
       if (m) m.mock.restore();
     }
+  });
+});
+
+test("readApiErrorMessage", async (t) => {
+  await t.test("extracts error message from valid JSON response", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ error: "Something went wrong" }),
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Something went wrong");
+  });
+
+  await t.test("uses fallback when error property is missing", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ someOtherProp: "value" }),
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Fallback error");
+  });
+
+  await t.test("uses fallback when JSON parsing fails", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => { throw new Error("Invalid JSON"); },
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Fallback error");
+  });
+
+  await t.test("sanitizes the error message", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ error: "  Error \n with \r chars  " }),
+    } as unknown as Response;
+
+    // Assuming sanitizeInput trims and removes \r\n
+    const expected = sanitizeInput("  Error \n with \r chars  ");
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, expected);
+  });
+});
+
+
+test("readApiErrorMessage", async (t) => {
+  await t.test("extracts error message from valid JSON response", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ error: "Something went wrong" }),
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Something went wrong");
+  });
+
+  await t.test("uses fallback when error property is missing", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ someOtherProp: "value" }),
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Fallback error");
+  });
+
+  await t.test("uses fallback when JSON parsing fails", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => { throw new Error("Invalid JSON"); },
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Fallback error");
+  });
+
+  await t.test("sanitizes the error message", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ error: "  Error \n with \r chars  " }),
+    } as unknown as Response;
+
+    const expected = sanitizeInput("  Error \n with \r chars  ");
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, expected);
+  });
+
+  await t.test("uses fallback when sanitized error message is empty", async () => {
+    const mockResponse = {
+      clone: () => mockResponse,
+      json: async () => ({ error: "   \n\r  " }),
+    } as unknown as Response;
+
+    const result = await readApiErrorMessage(mockResponse, "Fallback error");
+    assert.equal(result, "Fallback error");
   });
 });
