@@ -541,6 +541,71 @@ test("concurrentMap", async (t) => {
     assert.ok(maxActiveTasks <= 2, "Should not start more tasks than items");
   });
 
+
+  await t.test("executes tasks in the correct order based on concurrency", async () => {
+    const items = [1, 2, 3, 4, 5];
+    const executionOrder: number[] = [];
+
+    // We'll use a controlled function that blocks until we tell it to proceed
+    // This allows us to verify concurrency behavior directly
+    let activeCount = 0;
+
+    const results = await concurrentMap(items, 2, async (item) => {
+      activeCount++;
+      // If we have more than 2 active tasks, the concurrency limit is broken
+      assert.ok(activeCount <= 2, `Concurrency limit exceeded: ${activeCount} active tasks`);
+
+      executionOrder.push(item);
+
+      // Artificial delay to simulate work and allow concurrency to happen
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      activeCount--;
+      return item * 10;
+    });
+
+    assert.deepEqual(results, [10, 20, 30, 40, 50]);
+    // They should start in order
+    assert.deepEqual(executionOrder, [1, 2, 3, 4, 5]);
+  });
+
+
+  await t.test("verifies tasks start concurrently but do not exceed concurrency limit", async () => {
+    const items = [1, 2, 3, 4, 5];
+    let maxConcurrent = 0;
+    let currentConcurrent = 0;
+
+    // We use a promise that we control to make tasks "hang" until we resolve it
+    let releaseTasks: () => void;
+    const hangPromise = new Promise<void>(resolve => {
+      releaseTasks = resolve;
+    });
+
+    // Start the concurrent map
+    const mapPromise = concurrentMap(items, 2, async (item) => {
+      currentConcurrent++;
+      maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
+
+      // Wait for the release signal
+      await hangPromise;
+
+      currentConcurrent--;
+      return item * 2;
+    });
+
+    // Let the event loop cycle so the workers can start and block on hangPromise
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // At this point, only 2 tasks should have started because concurrency is 2
+    assert.equal(maxConcurrent, 2, "Should start exactly up to concurrency limit");
+
+    // Release the tasks
+    releaseTasks!();
+
+    const results = await mapPromise;
+    assert.deepEqual(results, [2, 4, 6, 8, 10]);
+  });
+
   await t.test("rejects if a task fails", async () => {
     const items = [1, 2, 3, 4, 5];
 
