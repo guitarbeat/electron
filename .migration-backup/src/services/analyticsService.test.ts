@@ -151,7 +151,8 @@ test('readStoredJson calls window.localStorage.getItem successfully', () => {
   global.window = {
     localStorage: {
       getItem: () => {
-        return JSON.stringify({ ok: true });
+        // v1 encoded: {"ok":true}
+        return 'v1:eyJvayI6dHJ1ZX0=';
       }
     }
   } as unknown as Window & typeof globalThis;
@@ -196,7 +197,8 @@ test('writeStoredJson calls window.localStorage.setItem successfully', () => {
     });
     assert.deepEqual(result, { ok: true });
     assert.equal(storedKey, 'testKey');
-    assert.equal(storedValue, '{"ok":true}');
+    // {"ok":true} encoded is v1:eyJvayI6dHJ1ZX0=
+    assert.equal(storedValue, 'v1:eyJvayI6dHJ1ZX0=');
     assert.equal(mockWarn.mock.calls.length, 0);
   } finally {
     global.window = originalWindow;
@@ -207,8 +209,9 @@ test('writeStoredJson calls window.localStorage.setItem successfully', () => {
 test('trackMetric increments metric successfully', () => {
   const originalWindow = global.window;
 
+  // v1 encoded {"suggestion_submitted":1} is v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6MX0=
   const storage: Record<string, string> = {
-    'movieList.analyticsMetrics': JSON.stringify({ suggestion_submitted: 1 })
+    'movieList.analyticsMetrics': 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6MX0='
   };
 
   global.window = {
@@ -223,11 +226,13 @@ test('trackMetric increments metric successfully', () => {
   try {
     const result = trackMetric('suggestion_submitted');
     assert.deepEqual(result, { suggestion_submitted: 2 });
-    assert.equal(storage['movieList.analyticsMetrics'], '{"suggestion_submitted":2}');
+    // {"suggestion_submitted":2} encoded is v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Mn0=
+    assert.equal(storage['movieList.analyticsMetrics'], 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Mn0=');
 
     const result2 = trackMetric('suggestion_accepted');
     assert.deepEqual(result2, { suggestion_submitted: 2, suggestion_accepted: 1 });
-    assert.equal(storage['movieList.analyticsMetrics'], '{"suggestion_submitted":2,"suggestion_accepted":1}');
+    // {"suggestion_submitted":2,"suggestion_accepted":1} encoded is v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Miwic3VnZ2VzdGlvbl9hY2NlcHRlZCI6MX0=
+    assert.equal(storage['movieList.analyticsMetrics'], 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Miwic3VnZ2VzdGlvbl9hY2NlcHRlZCI6MX0=');
   } finally {
     global.window = originalWindow;
   }
@@ -237,8 +242,17 @@ test('getMetricCount retrieves metric successfully', () => {
   const originalWindow = global.window;
 
   const storage: Record<string, string> = {
-    'movieList.analyticsMetrics': JSON.stringify({ suggestion_submitted: 5 })
+    'movieList.analyticsMetrics': 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6NX0='
   };
+
+  // Test with undefined window
+  global.window = undefined as unknown as Window & typeof globalThis;
+  try {
+    const count0 = getMetricCount('suggestion_submitted');
+    assert.equal(count0, 0);
+  } finally {
+    global.window = originalWindow;
+  }
 
   global.window = {
     localStorage: {
