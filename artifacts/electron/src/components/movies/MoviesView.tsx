@@ -31,6 +31,7 @@ import {
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
+import { useMoviesWorkspaceActions } from "@/hooks/movies/useMoviesWorkspaceActions";
 import "./MoviesPhotoMode.css";
 
 const MOVIE_SECTION_IDS = {
@@ -202,211 +203,53 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     });
     previousMoviesRef.current = movies;
   }, [movies, previousMoviesRef, setSuccessMovieId, setToast]);
-  const resetRecommendationComposer = useCallback(() => {
-    setIsRecommendationComposerOpen(false);
-    setRecommendationReason("");
-    setSuggestionError(null);
-  }, []);
-  const handleRecommendationReasonChange = useCallback((value: string) => {
-    setSuggestionError(null);
-    setRecommendationReason(value);
-  }, []);
+
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
+
+  const {
+    resetRecommendationComposer,
+    handleRecommendationReasonChange,
+    openRecommendationComposer,
+    handleAddAction,
+    handleSubmitRecommendation,
+    handleAcceptSuggestion,
+    handleRejectSuggestion,
+    confirmDelete,
+  } = useMoviesWorkspaceActions({
+    currentUser,
+    guestName,
+    isAdding,
+    setIsAdding,
+    isSubmittingRecommendation,
+    searchQuery,
+    setSearchQuery,
+    selectedAutocompleteResult,
+    setSelectedAutocompleteResult,
+    recommendationReason,
+    setRecommendationReason,
+    setIsRecommendationComposerOpen,
+    setSuggestionError,
+    setSuccessMovieId,
+    setToast,
+    addMovie,
+    submitRecommendation,
+    acceptSuggestionToWatchlist,
+    rejectPendingSuggestion,
+    deleteMovie,
+    movieToDelete,
+    setMovieToDelete,
+    focusSearchInput,
+  });
+
   useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
     }
   }, [resetRecommendationComposer, searchQuery]);
-  const openRecommendationComposer = useCallback(() => {
-    if (!searchQuery.trim()) {
-      return;
-    }
-    setSuggestionError(null);
-    setIsRecommendationComposerOpen(true);
-  }, [searchQuery]);
-  const handleAddAction = useCallback(async () => {
-    if (isAdding || isSubmittingRecommendation) {
-      return;
-    }
-    const title =
-      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
-    if (!title) {
-      return;
-    }
-    if (!currentUser) {
-      setIsAdding(true);
-      try {
-        const suggestion = await submitRecommendation({
-          title,
-          suggestedBy: guestName.trim() || undefined,
-          selectedResult: selectedAutocompleteResult,
-        });
-        setSearchQuery("");
-        setSelectedAutocompleteResult(null);
-        setToast({
-          message: `"${title}" sent to suggestions as ${suggestion.suggestedBy}.`,
-          type: "success",
-        });
-        window.requestAnimationFrame(focusSearchInput);
-      } catch (error) {
-        setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to send suggestion",
-          type: "error",
-        });
-      } finally {
-        setIsAdding(false);
-      }
-      return;
-    }
-    setIsAdding(true);
-    try {
-      const addedMovie = await addMovie(
-        title,
-        selectedAutocompleteResult ?? undefined,
-      );
-      setSuccessMovieId(addedMovie.id);
-      window.setTimeout(
-        () =>
-          setSuccessMovieId((current) =>
-            current === addedMovie.id ? null : current,
-          ),
-        2400,
-      );
-      setSearchQuery("");
-      setSelectedAutocompleteResult(null);
-      setToast({
-        message: `"${title}" added to movies!`,
-        type: "success",
-      });
-      window.requestAnimationFrame(focusSearchInput);
-    } catch (error) {
-      setToast({
-        message: error instanceof Error ? error.message : "Failed to add movie",
-        type: "error",
-      });
-    } finally {
-      setIsAdding(false);
-    }
-  }, [
-    addMovie,
-    currentUser,
-    guestName,
-    focusSearchInput,
-    isAdding,
-    isSubmittingRecommendation,
-    searchQuery,
-    selectedAutocompleteResult,
-    setIsAdding,
-    setSearchQuery,
-    setSelectedAutocompleteResult,
-    setSuccessMovieId,
-    setToast,
-    submitRecommendation,
-  ]);
-  const handleSubmitRecommendation = useCallback(async () => {
-    if (isAdding || isSubmittingRecommendation) {
-      return;
-    }
-    const title =
-      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
-    if (!title) {
-      return;
-    }
-    setSuggestionError(null);
-    try {
-      await submitRecommendation({
-        title,
-        reason: recommendationReason,
-        suggestedBy: guestName.trim() || undefined,
-        selectedResult: selectedAutocompleteResult,
-      });
-      resetRecommendationComposer();
-      setSearchQuery("");
-      setSelectedAutocompleteResult(null);
-      setToast({
-        message: currentUser
-          ? `"${title}" suggested for review!`
-          : `"${title}" sent to suggestions${guestName.trim() ? ` as ${guestName.trim()}` : ""}!`,
-        type: "success",
-      });
-      window.requestAnimationFrame(focusSearchInput);
-    } catch (error) {
-      setSuggestionError(
-        error instanceof Error ? error.message : "Failed to add suggestion",
-      );
-      setToast({ message: "Failed to add suggestion", type: "error" });
-    }
-  }, [
-    currentUser,
-    focusSearchInput,
-    guestName,
-    isAdding,
-    isSubmittingRecommendation,
-    recommendationReason,
-    resetRecommendationComposer,
-    searchQuery,
-    selectedAutocompleteResult,
-    setSearchQuery,
-    setSelectedAutocompleteResult,
-    setToast,
-    submitRecommendation,
-  ]);
-  const handleAcceptSuggestion = useCallback(
-    async (suggestion: MovieSuggestion) => {
-      try {
-        await acceptSuggestionToWatchlist(suggestion.id);
-        setToast({
-          message: `"${suggestion.title}" added to movies!`,
-          type: "success",
-        });
-      } catch (error) {
-        setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to accept suggestion",
-          type: "error",
-        });
-      }
-    },
-    [acceptSuggestionToWatchlist, setToast],
-  );
-  const handleRejectSuggestion = useCallback(
-    async (suggestion: MovieSuggestion) => {
-      try {
-        await rejectPendingSuggestion(suggestion.id);
-        setToast({ message: `"${suggestion.title}" rejected.`, type: "info" });
-      } catch (error) {
-        setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to reject suggestion",
-          type: "error",
-        });
-      }
-    },
-    [rejectPendingSuggestion, setToast],
-  );
-  const confirmDelete = useCallback(async () => {
-    if (!movieToDelete) {
-      return;
-    }
-    try {
-      await deleteMovie(movieToDelete.id);
-      setToast({ message: `"${movieToDelete.title}" removed!`, type: "info" });
-    } catch {
-      setToast({ message: "Failed to remove movie", type: "error" });
-    } finally {
-      setMovieToDelete(null);
-    }
-  }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
+
   return (
     <>
       {searchPortalEl &&
