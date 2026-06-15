@@ -1,0 +1,1479 @@
+TAP version 13
+# Subtest: health liveness works when req.url is a relative path
+ok 1 - health liveness works when req.url is a relative path
+  ---
+  duration_ms: 37.967803
+  type: 'test'
+  ...
+# Subtest: deep health reports scope and PIN diagnostics without failing readiness
+ok 2 - deep health reports scope and PIN diagnostics without failing readiness
+  ---
+  duration_ms: 3.15512
+  type: 'test'
+  ...
+# Subtest: applyFetchResponseHeaders preserves multiple Set-Cookie headers
+ok 3 - applyFetchResponseHeaders preserves multiple Set-Cookie headers
+  ---
+  duration_ms: 57.539275
+  type: 'test'
+  ...
+# Subtest: OMDb proxy caches identical successful lookups for one hour
+ok 4 - OMDb proxy caches identical successful lookups for one hour
+  ---
+  duration_ms: 55.750786
+  type: 'test'
+  ...
+# Subtest: OMDb proxy rejects requests without any lookup parameters
+ok 5 - OMDb proxy rejects requests without any lookup parameters
+  ---
+  duration_ms: 1.295666
+  type: 'test'
+  ...
+# Subtest: OMDb proxy forwards search-style autocomplete queries
+ok 6 - OMDb proxy forwards search-style autocomplete queries
+  ---
+  duration_ms: 1.905101
+  type: 'test'
+  ...
+# Subtest: OMDb proxy reports missing OMDB_API_KEY as a config failure
+ok 7 - OMDb proxy reports missing OMDB_API_KEY as a config failure
+  ---
+  duration_ms: 1.032957
+  type: 'test'
+  ...
+# Subtest: OMDb proxy falls back to VITE_OMDB_API_KEY when the server key is missing
+ok 8 - OMDb proxy falls back to VITE_OMDB_API_KEY when the server key is missing
+  ---
+  duration_ms: 2.513618
+  type: 'test'
+  ...
+# Subtest: OMDb proxy translates upstream credential failures into a stable auth error
+ok 9 - OMDb proxy translates upstream credential failures into a stable auth error
+  ---
+  duration_ms: 2.029855
+  type: 'test'
+  ...
+# Subtest: OMDb proxy replaces empty apikey query values with configured credentials
+ok 10 - OMDb proxy replaces empty apikey query values with configured credentials
+  ---
+  duration_ms: 1.472297
+  type: 'test'
+  ...
+# Subtest: session endpoint reports missing PIN coverage when the shared pin store is unavailable
+ok 11 - session endpoint reports missing PIN coverage when the shared pin store is unavailable
+  ---
+  duration_ms: 47.945753
+  type: 'test'
+  ...
+# Subtest: profile endpoint allows selecting a user while reporting missing PIN coverage
+ok 12 - profile endpoint allows selecting a user while reporting missing PIN coverage
+  ---
+  duration_ms: 4.357856
+  type: 'test'
+  ...
+# Subtest: profile endpoint still requires a PIN for protected users
+ok 13 - profile endpoint still requires a PIN for protected users
+  ---
+  duration_ms: 128.65543
+  type: 'test'
+  ...
+# Subtest: session endpoint reports both users as missing PINs when pins.json is empty
+ok 14 - session endpoint reports both users as missing PINs when pins.json is empty
+  ---
+  duration_ms: 1.543941
+  type: 'test'
+  ...
+# Subtest: PIN lockout state only starts after configured max failures
+ok 15 - PIN lockout state only starts after configured max failures
+  ---
+  duration_ms: 0.264744
+  type: 'test'
+  ...
+# Subtest: PIN lockout state sets lock duration at max failures
+ok 16 - PIN lockout state sets lock duration at max failures
+  ---
+  duration_ms: 0.209645
+  type: 'test'
+  ...
+# Subtest: readSharedStateFileRecord distinguishes missing rows from present empty strings
+ok 17 - readSharedStateFileRecord distinguishes missing rows from present empty strings
+  ---
+  duration_ms: 2.281322
+  type: 'test'
+  ...
+# Subtest: patchSharedStateFile upserts content and listSharedStateFilenames returns sorted names
+ok 18 - patchSharedStateFile upserts content and listSharedStateFilenames returns sorted names
+  ---
+  duration_ms: 0.525087
+  type: 'test'
+  ...
+# Subtest: normalizeSpinHistoryParsed accepts string titles
+ok 19 - normalizeSpinHistoryParsed accepts string titles
+  ---
+  duration_ms: 2.538969
+  type: 'test'
+  ...
+# Subtest: normalizeSpinHistoryParsed maps legacy objects
+ok 20 - normalizeSpinHistoryParsed maps legacy objects
+  ---
+  duration_ms: 0.337048
+  type: 'test'
+  ...
+# Subtest: normalizeSpinHistoryParsed drops invalid entries
+ok 21 - normalizeSpinHistoryParsed drops invalid entries
+  ---
+  duration_ms: 0.191466
+  type: 'test'
+  ...
+# Subtest: normalizeDailySpinRecord accepts canonical daily record
+ok 22 - normalizeDailySpinRecord accepts canonical daily record
+  ---
+  duration_ms: 0.620761
+  type: 'test'
+  ...
+# Subtest: normalizeDailySpinRecord upgrades legacy single-spin records
+ok 23 - normalizeDailySpinRecord upgrades legacy single-spin records
+  ---
+  duration_ms: 0.331318
+  type: 'test'
+  ...
+# Subtest: normalizeDailySpinRecord rejects bad spunBy
+ok 24 - normalizeDailySpinRecord rejects bad spunBy
+  ---
+  duration_ms: 0.165523
+  type: 'test'
+  ...
+# Subtest: appendDailySpinEntry appends spins on the same UTC day
+ok 25 - appendDailySpinEntry appends spins on the same UTC day
+  ---
+  duration_ms: 0.45521
+  type: 'test'
+  ...
+# Subtest: appendDailySpinEntry resets when the UTC day changes
+ok 26 - appendDailySpinEntry resets when the UTC day changes
+  ---
+  duration_ms: 0.274439
+  type: 'test'
+  ...
+# Subtest: reading a missing placeSuggestions scope bootstraps the default shared-state row once
+ok 27 - reading a missing placeSuggestions scope bootstraps the default shared-state row once
+  ---
+  duration_ms: 40.518392
+  type: 'test'
+  ...
+# Subtest: reading an existing placeSuggestions scope does not rewrite shared-state store
+ok 28 - reading an existing placeSuggestions scope does not rewrite shared-state store
+  ---
+  duration_ms: 1.156694
+  type: 'test'
+  ...
+# Subtest: missing pins.json reports both users as missing PINs and bootstraps the key
+ok 29 - missing pins.json reports both users as missing PINs and bootstraps the key
+  ---
+  duration_ms: 2.062246
+  type: 'test'
+  ...
+# [session] SESSION_SIGNING_SECRET is not configured. A random secret is being used instead. All active sessions will be invalidated on every server restart. Set SESSION_SIGNING_SECRET to a stable value in production.
+# Subtest: dynamic state read route returns 404 for unknown scopes
+ok 30 - dynamic state read route returns 404 for unknown scopes
+  ---
+  duration_ms: 33.743946
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route returns 404 for unknown scopes
+ok 31 - dynamic state mutate route returns 404 for unknown scopes
+  ---
+  duration_ms: 1.593522
+  type: 'test'
+  ...
+# Subtest: getScopeWarning maps shared-store and config errors to user-safe copy
+ok 32 - getScopeWarning maps shared-store and config errors to user-safe copy
+  ---
+  duration_ms: 0.787609
+  type: 'test'
+  ...
+# Subtest: dynamic state read route falls back to default state when DATABASE_URL is missing
+ok 33 - dynamic state read route falls back to default state when DATABASE_URL is missing
+  ---
+  duration_ms: 2.844736
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route renames a movie when a profile session is present
+ok 34 - dynamic state mutate route renames a movie when a profile session is present
+  ---
+  duration_ms: 7.673741
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route lets guests create movie suggestions
+ok 35 - dynamic state mutate route lets guests create movie suggestions
+  ---
+  duration_ms: 3.606235
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route lets guests create place suggestions
+ok 36 - dynamic state mutate route lets guests create place suggestions
+  ---
+  duration_ms: 3.719587
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route keeps selection metadata for signed-in suggestions
+ok 37 - dynamic state mutate route keeps selection metadata for signed-in suggestions
+  ---
+  duration_ms: 2.562828
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route rejects editing another user memory
+ok 38 - dynamic state mutate route rejects editing another user memory
+  ---
+  duration_ms: 4.390492
+  type: 'test'
+  ...
+# Subtest: dynamic state mutate route rejects deleting another user memory
+ok 39 - dynamic state mutate route rejects deleting another user memory
+  ---
+  duration_ms: 2.533875
+  type: 'test'
+  ...
+# Subtest: TVMaze proxy caches identical search requests for one hour
+ok 40 - TVMaze proxy caches identical search requests for one hour
+  ---
+  duration_ms: 42.612245
+  type: 'test'
+  ...
+# Subtest: TVMaze proxy validates the query mode
+ok 41 - TVMaze proxy validates the query mode
+  ---
+  duration_ms: 1.317878
+  type: 'test'
+  ...
+# Subtest: logo lab query flag is enabled for present and truthy values
+ok 42 - logo lab query flag is enabled for present and truthy values
+  ---
+  duration_ms: 1.584489
+  type: 'test'
+  ...
+# Subtest: logo lab query flag is disabled for missing or explicit falsey values
+ok 43 - logo lab query flag is disabled for missing or explicit falsey values
+  ---
+  duration_ms: 0.256865
+  type: 'test'
+  ...
+# Subtest: logo lab variant query falls back to the default mark when missing or invalid
+ok 44 - logo lab variant query falls back to the default mark when missing or invalid
+  ---
+  duration_ms: 0.439951
+  type: 'test'
+  ...
+# Subtest: getWorkspaceMeta
+    # Subtest: returns movie workspace copy
+    ok 1 - returns movie workspace copy
+      ---
+      duration_ms: 1.061759
+      type: 'test'
+      ...
+    # Subtest: returns places workspace copy
+    ok 2 - returns places workspace copy
+      ---
+      duration_ms: 0.204525
+      type: 'test'
+      ...
+    1..2
+ok 45 - getWorkspaceMeta
+  ---
+  duration_ms: 4.526697
+  type: 'test'
+  ...
+# Subtest: electron marks expose the planned five variants
+ok 46 - electron marks expose the planned five variants
+  ---
+  duration_ms: 1.977473
+  type: 'test'
+  ...
+# Subtest: electron mark svg markup renders accessible color output
+ok 47 - electron mark svg markup renders accessible color output
+  ---
+  duration_ms: 0.711907
+  type: 'test'
+  ...
+# Subtest: electron mark svg markup supports monochrome output without gradients
+ok 48 - electron mark svg markup supports monochrome output without gradients
+  ---
+  duration_ms: 0.34659
+  type: 'test'
+  ...
+# Subtest: electron mark data uri wraps encoded svg markup
+ok 49 - electron mark data uri wraps encoded svg markup
+  ---
+  duration_ms: 0.330119
+  type: 'test'
+  ...
+# Subtest: uses compact radial-menu geometry through the CSS mobile breakpoint
+ok 50 - uses compact radial-menu geometry through the CSS mobile breakpoint
+  ---
+  duration_ms: 1.217324
+  type: 'test'
+  ...
+# Subtest: docked position keeps the menu inside the viewport with safe-area insets
+ok 51 - docked position keeps the menu inside the viewport with safe-area insets
+  ---
+  duration_ms: 1.0442
+  type: 'test'
+  ...
+# Subtest: clamping matches compact geometry instead of desktop offsets
+ok 52 - clamping matches compact geometry instead of desktop offsets
+  ---
+  duration_ms: 0.284379
+  type: 'test'
+  ...
+# Subtest: parseRuntimeMinutes
+    # Subtest: parses plain minutes and hour-minute strings
+    ok 1 - parses plain minutes and hour-minute strings
+      ---
+      duration_ms: 1.45987
+      type: 'test'
+      ...
+    1..1
+ok 53 - parseRuntimeMinutes
+  ---
+  duration_ms: 2.57054
+  type: 'test'
+  ...
+# Subtest: filterMoviesByVibe
+    # Subtest: filters by Short & Sweet using parsed runtime
+    ok 1 - filters by Short & Sweet using parsed runtime
+      ---
+      duration_ms: 1.116906
+      type: 'test'
+      ...
+    # Subtest: filters by genre and category tags
+    ok 2 - filters by genre and category tags
+      ---
+      duration_ms: 0.49631
+      type: 'test'
+      ...
+    1..2
+ok 54 - filterMoviesByVibe
+  ---
+  duration_ms: 3.417369
+  type: 'test'
+  ...
+# Subtest: getAvailableMatchmakerVibes
+    # Subtest: returns the most common tags in descending order
+    ok 1 - returns the most common tags in descending order
+      ---
+      duration_ms: 13.177619
+      type: 'test'
+      ...
+    1..1
+ok 55 - getAvailableMatchmakerVibes
+  ---
+  duration_ms: 13.467613
+  type: 'test'
+  ...
+# Subtest: createMatchmakerPool
+    # Subtest: creates a deterministic pool from the filtered movies
+    not ok 1 - creates a deterministic pool from the filtered movies
+      ---
+      duration_ms: 2.091075
+      type: 'test'
+      location: '/app/src/components/matchmaker/matchmakerGame.test.ts:99:11'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly deep-equal:
+        + actual - expected
+
+          [
+        +   'm-1',
+            'm-3',
+        -   'm-1'
+          ]
+
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected:
+        0: 'm-3'
+        1: 'm-1'
+      actual:
+        0: 'm-1'
+        1: 'm-3'
+      operator: 'deepStrictEqual'
+      stack: |-
+        TestContext.<anonymous> (file:///app/src/components/matchmaker/matchmakerGame.test.ts:102:12)
+        Test.runInAsyncScope (node:async_hooks:214:14)
+        Test.run (node:internal/test_runner/test:1047:25)
+        Test.start (node:internal/test_runner/test:944:17)
+        TestContext.test (node:internal/test_runner/test:373:20)
+        TestContext.<anonymous> (file:///app/src/components/matchmaker/matchmakerGame.test.ts:99:11)
+        Test.runInAsyncScope (node:async_hooks:214:14)
+        Test.run (node:internal/test_runner/test:1047:25)
+        Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+        Test.postRun (node:internal/test_runner/test:1173:19)
+      ...
+    1..1
+not ok 56 - createMatchmakerPool
+  ---
+  duration_ms: 2.97568
+  type: 'test'
+  location: '/app/src/components/matchmaker/matchmakerGame.test.ts:98:1'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: matchmaker swipe helpers
+    # Subtest: records a swipe once for the correct user
+    ok 1 - records a swipe once for the correct user
+      ---
+      duration_ms: 0.861952
+      type: 'test'
+      ...
+    # Subtest: marks the game completed once both users finish the pool
+    ok 2 - marks the game completed once both users finish the pool
+      ---
+      duration_ms: 0.398827
+      type: 'test'
+      ...
+    # Subtest: undoes the last swipe in movie-pool order and reopens the game
+    ok 3 - undoes the last swipe in movie-pool order and reopens the game
+      ---
+      duration_ms: 0.292982
+      type: 'test'
+      ...
+    1..3
+ok 57 - matchmaker swipe helpers
+  ---
+  duration_ms: 2.357531
+  type: 'test'
+  ...
+# Subtest: getUserSwipedIds
+    # Subtest: returns likes and dislikes for the selected user
+    ok 1 - returns likes and dislikes for the selected user
+      ---
+      duration_ms: 0.332672
+      type: 'test'
+      ...
+    1..1
+ok 58 - getUserSwipedIds
+  ---
+  duration_ms: 0.61765
+  type: 'test'
+  ...
+# Subtest: selectRandomMatch
+    # Subtest: returns a deterministic match or null
+    ok 1 - returns a deterministic match or null
+      ---
+      duration_ms: 0.22833
+      type: 'test'
+      ...
+    1..1
+ok 59 - selectRandomMatch
+  ---
+  duration_ms: 0.590402
+  type: 'test'
+  ...
+# Subtest: shouldSubmitMessageOnKeyDown
+    # Subtest: submits on Enter
+    ok 1 - submits on Enter
+      ---
+      duration_ms: 0.93597
+      type: 'test'
+      ...
+    # Subtest: does not submit on Shift+Enter so the user can insert a newline
+    ok 2 - does not submit on Shift+Enter so the user can insert a newline
+      ---
+      duration_ms: 0.210295
+      type: 'test'
+      ...
+    # Subtest: ignores non-Enter keys
+    ok 3 - ignores non-Enter keys
+      ---
+      duration_ms: 0.260082
+      type: 'test'
+      ...
+    # Subtest: does not submit while composing text with an IME
+    ok 4 - does not submit while composing text with an IME
+      ---
+      duration_ms: 0.263106
+      type: 'test'
+      ...
+    1..4
+ok 60 - shouldSubmitMessageOnKeyDown
+  ---
+  duration_ms: 5.557745
+  type: 'test'
+  ...
+# Subtest: getMovieActionState exposes movie action labels and visibility
+    # Subtest: logged-in unwatched movie with no notes
+    ok 1 - logged-in unwatched movie with no notes
+      ---
+      duration_ms: 1.162659
+      type: 'test'
+      ...
+    # Subtest: logged-in watched movie with notes
+    ok 2 - logged-in watched movie with notes
+      ---
+      duration_ms: 0.334085
+      type: 'test'
+      ...
+    # Subtest: guest with existing notes
+    ok 3 - guest with existing notes
+      ---
+      duration_ms: 0.487201
+      type: 'test'
+      ...
+    # Subtest: guest with no notes
+    ok 4 - guest with no notes
+      ---
+      duration_ms: 0.344134
+      type: 'test'
+      ...
+    1..4
+ok 61 - getMovieActionState exposes movie action labels and visibility
+  ---
+  duration_ms: 6.076435
+  type: 'test'
+  ...
+# Subtest: shouldFetchMovieAutocomplete enforces the minimum query length and skips matched selections
+    # Subtest: does not search for very short queries
+    ok 1 - does not search for very short queries
+      ---
+      duration_ms: 1.101065
+      type: 'test'
+      ...
+    # Subtest: does not re-search when the selected title still matches the query
+    ok 2 - does not re-search when the selected title still matches the query
+      ---
+      duration_ms: 0.239551
+      type: 'test'
+      ...
+    # Subtest: searches again after the user edits away from the selected title
+    ok 3 - searches again after the user edits away from the selected title
+      ---
+      duration_ms: 0.187788
+      type: 'test'
+      ...
+    1..3
+ok 62 - shouldFetchMovieAutocomplete enforces the minimum query length and skips matched selections
+  ---
+  duration_ms: 3.361605
+  type: 'test'
+  ...
+# Subtest: shouldClearSelectedMovieResult only clears after the input diverges from the selection
+    # Subtest: keeps the selection when casing or whitespace changes only
+    ok 1 - keeps the selection when casing or whitespace changes only
+      ---
+      duration_ms: 0.266466
+      type: 'test'
+      ...
+    # Subtest: clears the selection after the title changes
+    ok 2 - clears the selection after the title changes
+      ---
+      duration_ms: 0.192957
+      type: 'test'
+      ...
+    1..2
+ok 63 - shouldClearSelectedMovieResult only clears after the input diverges from the selection
+  ---
+  duration_ms: 1.267862
+  type: 'test'
+  ...
+# Subtest: hasStoredMovieAutocompleteFeedback only reopens cached feedback for the current query
+    # Subtest: reopens cached results for the exact selected title
+    ok 1 - reopens cached results for the exact selected title
+      ---
+      duration_ms: 0.405335
+      type: 'test'
+      ...
+    # Subtest: does not reuse cached feedback after the query diverges
+    ok 2 - does not reuse cached feedback after the query diverges
+      ---
+      duration_ms: 0.400103
+      type: 'test'
+      ...
+    # Subtest: does not reuse cached feedback for very short queries
+    ok 3 - does not reuse cached feedback for very short queries
+      ---
+      duration_ms: 0.302021
+      type: 'test'
+      ...
+    1..3
+ok 64 - hasStoredMovieAutocompleteFeedback only reopens cached feedback for the current query
+  ---
+  duration_ms: 2.0083
+  type: 'test'
+  ...
+# Subtest: getMovieAutocompleteEnterSelectionIndex prefers the active row and falls back to the first result
+    # Subtest: uses the active row when one is highlighted
+    ok 1 - uses the active row when one is highlighted
+      ---
+      duration_ms: 0.257228
+      type: 'test'
+      ...
+    # Subtest: defaults to the first result when none is highlighted
+    ok 2 - defaults to the first result when none is highlighted
+      ---
+      duration_ms: 0.186833
+      type: 'test'
+      ...
+    # Subtest: returns -1 when there are no results
+    ok 3 - returns -1 when there are no results
+      ---
+      duration_ms: 0.248867
+      type: 'test'
+      ...
+    1..3
+ok 65 - getMovieAutocompleteEnterSelectionIndex prefers the active row and falls back to the first result
+  ---
+  duration_ms: 1.129974
+  type: 'test'
+  ...
+# Subtest: getNextMovieAutocompleteIndex wraps keyboard navigation through the result list
+    # Subtest: moves forward through results and loops back to the top
+    ok 1 - moves forward through results and loops back to the top
+      ---
+      duration_ms: 0.197233
+      type: 'test'
+      ...
+    # Subtest: moves backward through results and loops to the end
+    ok 2 - moves backward through results and loops to the end
+      ---
+      duration_ms: 0.104706
+      type: 'test'
+      ...
+    # Subtest: returns -1 when there are no results
+    ok 3 - returns -1 when there are no results
+      ---
+      duration_ms: 0.090876
+      type: 'test'
+      ...
+    1..3
+ok 66 - getNextMovieAutocompleteIndex wraps keyboard navigation through the result list
+  ---
+  duration_ms: 2.584935
+  type: 'test'
+  ...
+# Subtest: buildMovieSections groups suggestions, up-next, and watched titles for inline rendering
+ok 67 - buildMovieSections groups suggestions, up-next, and watched titles for inline rendering
+  ---
+  duration_ms: 2.557838
+  type: 'test'
+  ...
+# Subtest: buildPlaceSections groups queue, visited, and suggestions for inline rendering
+ok 68 - buildPlaceSections groups queue, visited, and suggestions for inline rendering
+  ---
+  duration_ms: 2.084551
+  type: 'test'
+  ...
+# Subtest: spinMatchGame subset helpers
+    # Subtest: requires at least one kept movie before spinning
+    ok 1 - requires at least one kept movie before spinning
+      ---
+      duration_ms: 1.149066
+      type: 'test'
+      ...
+    # Subtest: explains the subset flow clearly
+    ok 2 - explains the subset flow clearly
+      ---
+      duration_ms: 0.244544
+      type: 'test'
+      ...
+    1..2
+ok 69 - spinMatchGame subset helpers
+  ---
+  duration_ms: 5.09346
+  type: 'test'
+  ...
+# Subtest: getSpinCandidates
+    # Subtest: returns queue candidates when queue mode has unwatched items
+    ok 1 - returns queue candidates when queue mode has unwatched items
+      ---
+      duration_ms: 1.813002
+      type: 'test'
+      ...
+    # Subtest: falls back to all movies when queue mode is empty
+    ok 2 - falls back to all movies when queue mode is empty
+      ---
+      duration_ms: 0.337321
+      type: 'test'
+      ...
+    1..2
+ok 70 - getSpinCandidates
+  ---
+  duration_ms: 3.623093
+  type: 'test'
+  ...
+# Subtest: buildSpinWheelGradient
+    # Subtest: builds an empty-state gradient with no segments
+    ok 1 - builds an empty-state gradient with no segments
+      ---
+      duration_ms: 0.332136
+      type: 'test'
+      ...
+    # Subtest: builds stepped conic gradient segments
+    ok 2 - builds stepped conic gradient segments
+      ---
+      duration_ms: 0.402834
+      type: 'test'
+      ...
+    1..2
+ok 71 - buildSpinWheelGradient
+  ---
+  duration_ms: 1.644686
+  type: 'test'
+  ...
+# Subtest: appendSpinHistory
+    # Subtest: prepends the newest title and caps the history length
+    ok 1 - prepends the newest title and caps the history length
+      ---
+      duration_ms: 0.321582
+      type: 'test'
+      ...
+    1..1
+ok 72 - appendSpinHistory
+  ---
+  duration_ms: 0.601083
+  type: 'test'
+  ...
+# Subtest: computeSpinOutcome
+    # Subtest: returns a deterministic winner and next rotation
+    ok 1 - returns a deterministic winner and next rotation
+      ---
+      duration_ms: 0.581531
+      type: 'test'
+      ...
+    # Subtest: returns null when there are no candidates
+    ok 2 - returns null when there are no candidates
+      ---
+      duration_ms: 0.301332
+      type: 'test'
+      ...
+    1..2
+ok 73 - computeSpinOutcome
+  ---
+  duration_ms: 1.822615
+  type: 'test'
+  ...
+# Subtest: getSpinPool
+    # Subtest: uses the selected subset when selections exist
+    ok 1 - uses the selected subset when selections exist
+      ---
+      duration_ms: 0.316821
+      type: 'test'
+      ...
+    # Subtest: falls back to the base candidate pool when the selection is empty
+    ok 2 - falls back to the base candidate pool when the selection is empty
+      ---
+      duration_ms: 0.164438
+      type: 'test'
+      ...
+    # Subtest: falls back to the base candidate pool when selected ids do not match
+    ok 3 - falls back to the base candidate pool when selected ids do not match
+      ---
+      duration_ms: 0.472713
+      type: 'test'
+      ...
+    1..3
+ok 74 - getSpinPool
+  ---
+  duration_ms: 3.512647
+  type: 'test'
+  ...
+# Subtest: getSyncBannerContent
+    # Subtest: returns local-only messaging for degraded sync
+    ok 1 - returns local-only messaging for degraded sync
+      ---
+      duration_ms: 31.022743
+      type: 'test'
+      ...
+    # Subtest: returns action-needed messaging for blocked sync
+    ok 2 - returns action-needed messaging for blocked sync
+      ---
+      duration_ms: 0.520814
+      type: 'test'
+      ...
+    # Subtest: prefers friendly content for caller-provided label
+    ok 3 - prefers friendly content for caller-provided label
+      ---
+      duration_ms: 0.585969
+      type: 'test'
+      ...
+    # Subtest: classifies outbox warnings
+    ok 4 - classifies outbox warnings
+      ---
+      duration_ms: 0.423776
+      type: 'test'
+      ...
+    # Subtest: classifies client network warnings
+    ok 5 - classifies client network warnings
+      ---
+      duration_ms: 0.520275
+      type: 'test'
+      ...
+    # Subtest: classifies database API warnings
+    ok 6 - classifies database API warnings
+      ---
+      duration_ms: 0.767123
+      type: 'test'
+      ...
+    1..6
+ok 75 - getSyncBannerContent
+  ---
+  duration_ms: 36.217522
+  type: 'test'
+  ...
+# Subtest: getMovieSelectionFromSuggestion forwards stored suggestion identity to addMovie
+    # Subtest: returns imdbID and type when both are present
+    ok 1 - returns imdbID and type when both are present
+      ---
+      duration_ms: 3.031219
+      type: 'test'
+      ...
+    # Subtest: falls back to undefined for legacy suggestions without selection metadata
+    ok 2 - falls back to undefined for legacy suggestions without selection metadata
+      ---
+      duration_ms: 0.239636
+      type: 'test'
+      ...
+    1..2
+ok 76 - getMovieSelectionFromSuggestion forwards stored suggestion identity to addMovie
+  ---
+  duration_ms: 4.687125
+  type: 'test'
+  ...
+# Subtest: cloneMessages
+    # Subtest: returns a new array with copied message objects
+    ok 1 - returns a new array with copied message objects
+      ---
+      duration_ms: 1.755104
+      type: 'test'
+      ...
+    1..1
+ok 77 - cloneMessages
+  ---
+  duration_ms: 2.899097
+  type: 'test'
+  ...
+# Subtest: isMessageRecord
+    # Subtest: accepts valid message records
+    ok 1 - accepts valid message records
+      ---
+      duration_ms: 0.512541
+      type: 'test'
+      ...
+    # Subtest: rejects invalid message records
+    ok 2 - rejects invalid message records
+      ---
+      duration_ms: 0.326048
+      type: 'test'
+      ...
+    1..2
+ok 78 - isMessageRecord
+  ---
+  duration_ms: 1.267634
+  type: 'test'
+  ...
+# Subtest: parseMessagesContent
+    # Subtest: returns an empty array for empty content
+    ok 1 - returns an empty array for empty content
+      ---
+      duration_ms: 0.305723
+      type: 'test'
+      ...
+    # Subtest: keeps valid records and drops invalid rows
+    ok 2 - keeps valid records and drops invalid rows
+      ---
+      duration_ms: 0.341777
+      type: 'test'
+      ...
+    # Subtest: throws on invalid JSON
+    ok 3 - throws on invalid JSON
+      ---
+      duration_ms: 0.714156
+      type: 'test'
+      ...
+    1..3
+ok 79 - parseMessagesContent
+  ---
+  duration_ms: 2.509978
+  type: 'test'
+  ...
+# Subtest: clonePins
+    # Subtest: returns a new object with the same properties
+    ok 1 - returns a new object with the same properties
+      ---
+      duration_ms: 1.836511
+      type: 'test'
+      ...
+    # Subtest: handles empty object
+    ok 2 - handles empty object
+      ---
+      duration_ms: 0.233242
+      type: 'test'
+      ...
+    1..2
+ok 80 - clonePins
+  ---
+  duration_ms: 3.621139
+  type: 'test'
+  ...
+# Subtest: normalizeUserPins
+    # Subtest: returns null for non-objects
+    ok 1 - returns null for non-objects
+      ---
+      duration_ms: 0.371178
+      type: 'test'
+      ...
+    # Subtest: normalizes valid properties, keeping them if valid
+    ok 2 - normalizes valid properties, keeping them if valid
+      ---
+      duration_ms: 0.227411
+      type: 'test'
+      ...
+    # Subtest: filters out non-string or empty string values
+    ok 3 - filters out non-string or empty string values
+      ---
+      duration_ms: 0.285292
+      type: 'test'
+      ...
+    # Subtest: handles missing properties correctly
+    ok 4 - handles missing properties correctly
+      ---
+      duration_ms: 0.264799
+      type: 'test'
+      ...
+    # Subtest: ignores unknown properties
+    ok 5 - ignores unknown properties
+      ---
+      duration_ms: 0.425134
+      type: 'test'
+      ...
+    1..5
+ok 81 - normalizeUserPins
+  ---
+  duration_ms: 7.483101
+  type: 'test'
+  ...
+# Subtest: isUserPinsRecord
+    # Subtest: returns true for valid objects
+    ok 1 - returns true for valid objects
+      ---
+      duration_ms: 0.461215
+      type: 'test'
+      ...
+    # Subtest: returns false for invalid inputs
+    ok 2 - returns false for invalid inputs
+      ---
+      duration_ms: 0.275143
+      type: 'test'
+      ...
+    1..2
+ok 82 - isUserPinsRecord
+  ---
+  duration_ms: 1.204533
+  type: 'test'
+  ...
+# Subtest: parsePinsContent
+    # Subtest: returns empty object for undefined/empty string
+    ok 1 - returns empty object for undefined/empty string
+      ---
+      duration_ms: 0.191176
+      type: 'test'
+      ...
+    # Subtest: parses valid JSON and normalizes
+    ok 2 - parses valid JSON and normalizes
+      ---
+      duration_ms: 0.251473
+      type: 'test'
+      ...
+    # Subtest: normalizes valid JSON arrays into empty user pin slots
+    ok 3 - normalizes valid JSON arrays into empty user pin slots
+      ---
+      duration_ms: 0.211728
+      type: 'test'
+      ...
+    # Subtest: handles invalid JSON gracefully
+    ok 4 - handles invalid JSON gracefully
+      ---
+      duration_ms: 0.294157
+      type: 'test'
+      ...
+    # Subtest: handles valid JSON that normalizes to null (e.g., null string)
+    ok 5 - handles valid JSON that normalizes to null (e.g., null string)
+      ---
+      duration_ms: 0.120482
+      type: 'test'
+      ...
+    1..5
+ok 83 - parsePinsContent
+  ---
+  duration_ms: 1.594563
+  type: 'test'
+  ...
+# Subtest: createSerialTaskRunner
+    # Subtest: executes asynchronous tasks sequentially
+    ok 1 - executes asynchronous tasks sequentially
+      ---
+      duration_ms: 12.990374
+      type: 'test'
+      ...
+    # Subtest: properly passes return values
+    ok 2 - properly passes return values
+      ---
+      duration_ms: 1.271566
+      type: 'test'
+      ...
+    # Subtest: handles rejected promises without breaking the chain
+    ok 3 - handles rejected promises without breaking the chain
+      ---
+      duration_ms: 0.844749
+      type: 'test'
+      ...
+    1..3
+ok 84 - createSerialTaskRunner
+  ---
+  duration_ms: 18.659768
+  type: 'test'
+  ...
+# Subtest: searchMovieAutocomplete normalizes OMDb movie results and caps the per-source list size
+ok 85 - searchMovieAutocomplete normalizes OMDb movie results and caps the per-source list size
+  ---
+  duration_ms: 49.346644
+  type: 'test'
+  ...
+# Subtest: searchMovieAutocomplete returns an empty array when both providers succeed without matches
+ok 86 - searchMovieAutocomplete returns an empty array when both providers succeed without matches
+  ---
+  duration_ms: 1.502751
+  type: 'test'
+  ...
+# Subtest: searchMovieAutocomplete interleaves OMDb movies with TVMaze series results
+ok 87 - searchMovieAutocomplete interleaves OMDb movies with TVMaze series results
+  ---
+  duration_ms: 2.339591
+  type: 'test'
+  ...
+# Subtest: searchMovieAutocomplete returns partial results when one provider fails
+ok 88 - searchMovieAutocomplete returns partial results when one provider fails
+  ---
+  duration_ms: 1.644041
+  type: 'test'
+  ...
+# Subtest: searchMovieAutocomplete surfaces a precise error when both providers fail
+ok 89 - searchMovieAutocomplete surfaces a precise error when both providers fail
+  ---
+  duration_ms: 3.262826
+  type: 'test'
+  ...
+# Subtest: fetchOmdbMetadata falls back to requested title when API omits Title
+ok 90 - fetchOmdbMetadata falls back to requested title when API omits Title
+  ---
+  duration_ms: 2.33462
+  type: 'test'
+  ...
+# Subtest: searchOmdbMovies drops search rows with no usable title
+ok 91 - searchOmdbMovies drops search rows with no usable title
+  ---
+  duration_ms: 0.924247
+  type: 'test'
+  ...
+# Subtest: pollingManager notifies listeners when polling fails
+ok 92 - pollingManager notifies listeners when polling fails
+  ---
+  duration_ms: 1.697465
+  type: 'test'
+  ...
+# Subtest: isMockMode defaults to false when no override is present
+ok 93 - isMockMode defaults to false when no override is present
+  ---
+  duration_ms: 1.365074
+  type: 'test'
+  ...
+# Subtest: isMockMode returns true when explicitly enabled in localStorage
+ok 94 - isMockMode returns true when explicitly enabled in localStorage
+  ---
+  duration_ms: 0.256472
+  type: 'test'
+  ...
+# Subtest: readScope preserves optimistic queued movie mutations when degraded replay fails
+ok 95 - readScope preserves optimistic queued movie mutations when degraded replay fails
+  ---
+  duration_ms: 41.016452
+  type: 'test'
+  ...
+# Subtest: normalizeSuggestionRecord
+    # Subtest: accepts valid suggestion records with optional selection metadata
+    ok 1 - accepts valid suggestion records with optional selection metadata
+      ---
+      duration_ms: 2.124015
+      type: 'test'
+      ...
+    # Subtest: drops invalid selection metadata while keeping the suggestion
+    ok 2 - drops invalid selection metadata while keeping the suggestion
+      ---
+      duration_ms: 0.273319
+      type: 'test'
+      ...
+    1..2
+ok 96 - normalizeSuggestionRecord
+  ---
+  duration_ms: 4.311295
+  type: 'test'
+  ...
+# Subtest: normalizeSuggestions keeps valid suggestion records
+ok 97 - normalizeSuggestions keeps valid suggestion records
+  ---
+  duration_ms: 0.271987
+  type: 'test'
+  ...
+# Subtest: normalizePlaceSuggestionRecord
+    # Subtest: accepts valid record
+    ok 1 - accepts valid record
+      ---
+      duration_ms: 0.549486
+      type: 'test'
+      ...
+    # Subtest: rejects missing required fields
+    ok 2 - rejects missing required fields
+      ---
+      duration_ms: 0.213155
+      type: 'test'
+      ...
+    # Subtest: accepts guest suggester names
+    ok 3 - accepts guest suggester names
+      ---
+      duration_ms: 0.219814
+      type: 'test'
+      ...
+    # Subtest: rejects invalid status
+    ok 4 - rejects invalid status
+      ---
+      duration_ms: 0.409272
+      type: 'test'
+      ...
+    # Subtest: includes optional metadata
+    ok 5 - includes optional metadata
+      ---
+      duration_ms: 0.483612
+      type: 'test'
+      ...
+    1..5
+ok 98 - normalizePlaceSuggestionRecord
+  ---
+  duration_ms: 3.822633
+  type: 'test'
+  ...
+# Subtest: normalizePlaceSuggestions
+ok 99 - normalizePlaceSuggestions
+  ---
+  duration_ms: 0.346697
+  type: 'test'
+  ...
+# Subtest: fetchWithRetry returns on first ok
+ok 100 - fetchWithRetry returns on first ok
+  ---
+  duration_ms: 35.569394
+  type: 'test'
+  ...
+# Subtest: fetchWithRetry retries on 503 then succeeds
+ok 101 - fetchWithRetry retries on 503 then succeeds
+  ---
+  duration_ms: 218.690582
+  type: 'test'
+  ...
+# Subtest: fetchWithRetry returns last response after max attempts on 503
+ok 102 - fetchWithRetry returns last response after max attempts on 503
+  ---
+  duration_ms: 619.713253
+  type: 'test'
+  ...
+# Subtest: fetchWithRetry does not retry 404
+ok 103 - fetchWithRetry does not retry 404
+  ---
+  duration_ms: 1.049861
+  type: 'test'
+  ...
+# Subtest: fetchWithRetry times out and retries
+ok 104 - fetchWithRetry times out and retries
+  ---
+  duration_ms: 655.348311
+  type: 'test'
+  ...
+# Subtest: areDeeplyEqual
+    # Subtest: returns true for identical primitives
+    ok 1 - returns true for identical primitives
+      ---
+      duration_ms: 1.266289
+      type: 'test'
+      ...
+    # Subtest: returns false for different primitives
+    ok 2 - returns false for different primitives
+      ---
+      duration_ms: 0.346377
+      type: 'test'
+      ...
+    # Subtest: returns true for deeply equal objects
+    ok 3 - returns true for deeply equal objects
+      ---
+      duration_ms: 0.338322
+      type: 'test'
+      ...
+    # Subtest: returns false for different objects
+    ok 4 - returns false for different objects
+      ---
+      duration_ms: 0.350967
+      type: 'test'
+      ...
+    # Subtest: returns true for deeply equal arrays
+    ok 5 - returns true for deeply equal arrays
+      ---
+      duration_ms: 0.249055
+      type: 'test'
+      ...
+    # Subtest: returns false for different arrays
+    ok 6 - returns false for different arrays
+      ---
+      duration_ms: 0.345294
+      type: 'test'
+      ...
+    # Subtest: handles mixed structures
+    ok 7 - handles mixed structures
+      ---
+      duration_ms: 0.225071
+      type: 'test'
+      ...
+    # Subtest: handles type mismatches
+    ok 8 - handles type mismatches
+      ---
+      duration_ms: 0.308624
+      type: 'test'
+      ...
+    1..8
+ok 105 - areDeeplyEqual
+  ---
+  duration_ms: 7.254045
+  type: 'test'
+  ...
+# Subtest: executeAction
+    # Subtest: runs action and completion in order
+    ok 1 - runs action and completion in order
+      ---
+      duration_ms: 1.336863
+      type: 'test'
+      ...
+    # Subtest: still runs completion when action is missing
+    ok 2 - still runs completion when action is missing
+      ---
+      duration_ms: 0.215392
+      type: 'test'
+      ...
+    1..2
+ok 106 - executeAction
+  ---
+  duration_ms: 2.025649
+  type: 'test'
+  ...
+# Subtest: isValidUrl
+    # Subtest: returns true for valid HTTP URLs
+    ok 1 - returns true for valid HTTP URLs
+      ---
+      duration_ms: 0.200327
+      type: 'test'
+      ...
+    # Subtest: returns true for valid HTTPS URLs
+    ok 2 - returns true for valid HTTPS URLs
+      ---
+      duration_ms: 0.120597
+      type: 'test'
+      ...
+    # Subtest: returns false for empty or missing input
+    ok 3 - returns false for empty or missing input
+      ---
+      duration_ms: 0.135316
+      type: 'test'
+      ...
+    # Subtest: returns false for malformed URLs
+    ok 4 - returns false for malformed URLs
+      ---
+      duration_ms: 0.232106
+      type: 'test'
+      ...
+    # Subtest: returns false for unsafe or unsupported protocols
+    ok 5 - returns false for unsafe or unsupported protocols
+      ---
+      duration_ms: 0.172506
+      type: 'test'
+      ...
+    # Subtest: returns false for protocol-relative URLs (missing protocol)
+    ok 6 - returns false for protocol-relative URLs (missing protocol)
+      ---
+      duration_ms: 0.128407
+      type: 'test'
+      ...
+    1..6
+ok 107 - isValidUrl
+  ---
+  duration_ms: 1.705474
+  type: 'test'
+  ...
+# Subtest: sanitizeInput
+    # Subtest: returns empty string for empty inputs
+    ok 1 - returns empty string for empty inputs
+      ---
+      duration_ms: 0.224229
+      type: 'test'
+      ...
+    # Subtest: trims leading and trailing whitespace
+    ok 2 - trims leading and trailing whitespace
+      ---
+      duration_ms: 0.248344
+      type: 'test'
+      ...
+    # Subtest: removes control characters
+    ok 3 - removes control characters
+      ---
+      duration_ms: 0.12567
+      type: 'test'
+      ...
+    # Subtest: keeps normal characters aside from trimming
+    ok 4 - keeps normal characters aside from trimming
+      ---
+      duration_ms: 0.097167
+      type: 'test'
+      ...
+    # Subtest: returns empty string for control characters and whitespace only
+    ok 5 - returns empty string for control characters and whitespace only
+      ---
+      duration_ms: 0.101327
+      type: 'test'
+      ...
+    1..5
+ok 108 - sanitizeInput
+  ---
+  duration_ms: 1.332435
+  type: 'test'
+  ...
+# Subtest: parseJsonContent
+    # Subtest: parses valid JSON string correctly
+    ok 1 - parses valid JSON string correctly
+      ---
+      duration_ms: 0.196539
+      type: 'test'
+      ...
+    # Subtest: throws an error with context for invalid JSON
+    ok 2 - throws an error with context for invalid JSON
+      ---
+      duration_ms: 0.684323
+      type: 'test'
+      ...
+    1..2
+ok 109 - parseJsonContent
+  ---
+  duration_ms: 1.144755
+  type: 'test'
+  ...
+# Subtest: createValidator
+    # Subtest: validates valid data successfully
+    ok 1 - validates valid data successfully
+      ---
+      duration_ms: 0.451718
+      type: 'test'
+      ...
+    # Subtest: enforces required rule
+    ok 2 - enforces required rule
+      ---
+      duration_ms: 0.285318
+      type: 'test'
+      ...
+    # Subtest: enforces maxLength rule
+    ok 3 - enforces maxLength rule
+      ---
+      duration_ms: 0.165607
+      type: 'test'
+      ...
+    # Subtest: enforces minLength rule
+    ok 4 - enforces minLength rule
+      ---
+      duration_ms: 0.241893
+      type: 'test'
+      ...
+    # Subtest: enforces pattern rule
+    ok 5 - enforces pattern rule
+      ---
+      duration_ms: 0.390157
+      type: 'test'
+      ...
+    # Subtest: enforces custom rule
+    ok 6 - enforces custom rule
+      ---
+      duration_ms: 0.201918
+      type: 'test'
+      ...
+    # Subtest: trims whitespace before validation
+    ok 7 - trims whitespace before validation
+      ---
+      duration_ms: 0.25744
+      type: 'test'
+      ...
+    # Subtest: ignores missing non-required fields
+    ok 8 - ignores missing non-required fields
+      ---
+      duration_ms: 0.248831
+      type: 'test'
+      ...
+    # Subtest: coerces non-string values to string
+    ok 9 - coerces non-string values to string
+      ---
+      duration_ms: 0.162302
+      type: 'test'
+      ...
+    # Subtest: accumulates multiple errors across different fields
+    ok 10 - accumulates multiple errors across different fields
+      ---
+      duration_ms: 1.786455
+      type: 'test'
+      ...
+    1..10
+ok 110 - createValidator
+  ---
+  duration_ms: 5.213412
+  type: 'test'
+  ...
+# Subtest: encodeStorageData and decodeStorageData
+    # Subtest: encodes and decodes data correctly
+    ok 1 - encodes and decodes data correctly
+      ---
+      duration_ms: 1.991996
+      type: 'test'
+      ...
+    # Subtest: handles legacy plaintext data
+    ok 2 - handles legacy plaintext data
+      ---
+      duration_ms: 0.226263
+      type: 'test'
+      ...
+    # Subtest: handles non-JSON versioned data
+    ok 3 - handles non-JSON versioned data
+      ---
+      duration_ms: 0.360227
+      type: 'test'
+      ...
+    # Subtest: gracefully handles malformed v1: data
+    ok 4 - gracefully handles malformed v1: data
+      ---
+      duration_ms: 0.289022
+      type: 'test'
+      ...
+    1..4
+ok 111 - encodeStorageData and decodeStorageData
+  ---
+  duration_ms: 4.766384
+  type: 'test'
+  ...
+1..111
+# tests 232
+# suites 0
+# pass 230
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4273.859407
