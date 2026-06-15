@@ -35,12 +35,12 @@ const MagicComponent = React.lazy(
 );
 const RetroEffects = React.lazy(() =>
   import('@/components/effects/RetroEffects').catch(
-    () => ({ default: () => null }) as { default: React.FC }
+    () => ({ default: (() => null) as React.ComponentType<any> })
   )
 );
 const RadialMenu = React.lazy(() =>
   import('@/components/effects/RadialMenu').catch(
-    () => ({ default: () => null }) as { default: React.FC }
+    () => ({ default: (() => null) as React.ComponentType<any> })
   )
 );
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
