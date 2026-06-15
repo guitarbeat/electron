@@ -14,7 +14,7 @@ import { CHARACTERS, QuizQuestion } from './lib/types';
 import QuestionsTab from './QuestionsTab';
 import DescriptionsTab from './DescriptionsTab';
 import SyncBanner from '@/components/ui/SyncBanner';
-import Button from '@/ui/Button';
+import Button from '@/ui/LegacyButton';
 import { spacing, colors } from '@/theme/tokens';
 import { ArrowLeftIcon, EyeIcon } from '@/common/Icons';
 import './retro-ad.css';

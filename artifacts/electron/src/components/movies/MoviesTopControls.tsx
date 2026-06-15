@@ -13,7 +13,7 @@ import {
   AnimatePresence,
 } from 'motion/react';
 import type { User } from '@/shared/types';
-import Button from '@/ui/Button';
+import Button from '@/ui/LegacyButton';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon } from '@/common/Icons';
 import {

@@ -8,7 +8,7 @@ import {
   CollectionGrid,
   CollectionSection,
 } from '@/ui/CollectionLayout';
-import { MovieCardSkeleton } from '@/ui/Skeleton';
+import { MovieCardSkeleton } from '@/ui/LegacySkeleton';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
