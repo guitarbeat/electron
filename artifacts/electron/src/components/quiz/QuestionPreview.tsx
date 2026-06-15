@@ -125,10 +125,10 @@ const QuestionPreview: React.FC<QuestionPreviewProps> = ({ question, previewMode
                   </div>
 
                   <div className="quiz-retro-nav-row">
-                    <button type="button" className="quiz-retro-btn quiz-retro-btn--secondary">
+                    <button type="button" className="quiz-retro-btn quiz-retro-btn--secondary" aria-label="Previous question">
                       {'<< BACK'}
                     </button>
-                    <button type="button" className="quiz-retro-btn">
+                    <button type="button" className="quiz-retro-btn" aria-label="Next question">
                       {'NEXT QUESTION >>>'}
                     </button>
                   </div>
