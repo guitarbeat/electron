@@ -1,4 +1,3 @@
-
 import React, {
   useCallback,
   useEffect,
@@ -20,8 +19,8 @@ import { PlusIcon } from '@/common/Icons';
 import {
   searchMovieAutocomplete,
   type MovieAutocompleteResult,
-} from '@/services/metadata';
-import MovieRecommendationComposer from './MovieRecommendationComposer';
+} from "@/services/metadata";
+import MovieRecommendationComposer from "./MovieRecommendationComposer";
 
 import {
   getNextMovieAutocompleteIndex,
@@ -32,7 +31,7 @@ import {
   normalizeMovieAutocompleteQuery,
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
-} from './lib/movieAutocomplete';
+} from "./lib/movieAutocomplete";
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
@@ -157,59 +156,59 @@ const MoviesTopControls = React.forwardRef<
     [],
   );
 
-  const clearFocusBoundaryCheck = useCallback(() => {
-    if (focusBoundaryFrameRef.current !== null) {
-      window.cancelAnimationFrame(focusBoundaryFrameRef.current);
-      focusBoundaryFrameRef.current = null;
-    }
-  }, []);
+    const clearFocusBoundaryCheck = useCallback(() => {
+      if (focusBoundaryFrameRef.current !== null) {
+        window.cancelAnimationFrame(focusBoundaryFrameRef.current);
+        focusBoundaryFrameRef.current = null;
+      }
+    }, []);
 
-  const openAutocomplete = useCallback(() => {
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteMounted(true);
-    setIsAutocompleteOpen(true);
-    setActiveAutocompleteIndex(-1);
-  }, []);
+    const openAutocomplete = useCallback(() => {
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
+      }
+      setIsAutocompleteMounted(true);
+      setIsAutocompleteOpen(true);
+      setActiveAutocompleteIndex(-1);
+    }, []);
 
-  const hideAutocomplete = useCallback(() => {
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteOpen(false);
-    setActiveAutocompleteIndex(-1);
-    setIsAutocompleteLoading(false);
-    setAutocompleteTypeFilter('all');
-    setIsAutocompleteMounted(false);
-  }, []);
+    const hideAutocomplete = useCallback(() => {
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
+      }
+      setIsAutocompleteOpen(false);
+      setActiveAutocompleteIndex(-1);
+      setIsAutocompleteLoading(false);
+      setAutocompleteTypeFilter("all");
+      setIsAutocompleteMounted(false);
+    }, []);
 
-  const resetAutocomplete = useCallback(() => {
-    autocompleteRequestIdRef.current += 1;
-    setAutocompleteQuery('');
-    setAutocompleteResults([]);
-    setActiveAutocompleteIndex(-1);
-    setIsAutocompleteOpen(false);
-    setIsAutocompleteMounted(false);
-    setAutocompleteTypeFilter('all');
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteLoading(false);
-    setAutocompleteError(null);
-  }, []);
+    const resetAutocomplete = useCallback(() => {
+      autocompleteRequestIdRef.current += 1;
+      setAutocompleteQuery("");
+      setAutocompleteResults([]);
+      setActiveAutocompleteIndex(-1);
+      setIsAutocompleteOpen(false);
+      setIsAutocompleteMounted(false);
+      setAutocompleteTypeFilter("all");
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
+      }
+      setIsAutocompleteLoading(false);
+      setAutocompleteError(null);
+    }, []);
 
-  const selectAutocompleteResult = useCallback(
-    (result: MovieAutocompleteResult) => {
-      setSelectedAutocompleteResult(result);
-      setSearchQuery(result.title);
-      hideAutocomplete();
-    },
-    [hideAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
-  );
+    const selectAutocompleteResult = useCallback(
+      (result: MovieAutocompleteResult) => {
+        setSelectedAutocompleteResult(result);
+        setSearchQuery(result.title);
+        hideAutocomplete();
+      },
+      [hideAutocomplete, setSearchQuery, setSelectedAutocompleteResult],
+    );
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -282,18 +281,84 @@ const MoviesTopControls = React.forwardRef<
       }
     }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      abortController.abort();
-    };
-  }, [
-    hideAutocomplete,
-    isAutocompleteRegionFocused,
-    normalizedSearchQuery,
-    resetAutocomplete,
-    selectedAutocompleteResult,
-    trimmedSearchQuery,
-  ]);
+      if (
+        !shouldFetchMovieAutocomplete(
+          trimmedSearchQuery,
+          selectedAutocompleteResult,
+        )
+      ) {
+        return;
+      }
+
+      const abortController = new AbortController();
+      const requestId = autocompleteRequestIdRef.current + 1;
+      autocompleteRequestIdRef.current = requestId;
+      setAutocompleteQuery(normalizedSearchQuery);
+      setActiveAutocompleteIndex(-1);
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
+      }
+      setIsAutocompleteMounted(true);
+      setIsAutocompleteOpen(true);
+      setIsAutocompleteLoading(true);
+      setAutocompleteError(null);
+
+      const timeoutId = window.setTimeout(async () => {
+        try {
+          const nextResults = await searchMovieAutocomplete(
+            trimmedSearchQuery,
+            {
+              signal: abortController.signal,
+            },
+          );
+          if (
+            autocompleteRequestIdRef.current !== requestId ||
+            abortController.signal.aborted
+          ) {
+            return;
+          }
+
+          setAutocompleteQuery(normalizedSearchQuery);
+          setAutocompleteResults(nextResults);
+          setActiveAutocompleteIndex(-1);
+        } catch (error) {
+          if (
+            autocompleteRequestIdRef.current !== requestId ||
+            abortController.signal.aborted
+          ) {
+            return;
+          }
+
+          setAutocompleteQuery(normalizedSearchQuery);
+          setAutocompleteResults([]);
+          setActiveAutocompleteIndex(-1);
+          setAutocompleteError(
+            error instanceof Error && error.message
+              ? error.message
+              : "Movie suggestions are unavailable right now.",
+          );
+        } finally {
+          if (
+            autocompleteRequestIdRef.current === requestId &&
+            !abortController.signal.aborted
+          ) {
+            setIsAutocompleteLoading(false);
+          }
+        }
+
+        return () => {
+          window.clearTimeout(timeoutId);
+          abortController.abort();
+        };
+      }, [
+        hideAutocomplete,
+        isAutocompleteRegionFocused,
+        normalizedSearchQuery,
+        resetAutocomplete,
+        selectedAutocompleteResult,
+        trimmedSearchQuery,
+      ]);
 
   const hasAutocompleteFeedback = useMemo(
     () =>
@@ -729,17 +794,143 @@ const MoviesTopControls = React.forwardRef<
                       }}
                       onPointerDown={(event) => {
                         event.preventDefault();
-                        selectAutocompleteResult(result);
-                      }}
-                      onMouseEnter={() => setActiveAutocompleteIndex(index)}
+                        hideAutocomplete();
+                      }
+                      return;
+                    }
+
+                    if (event.key === "Enter" && isAutocompleteOpen) {
+                      const selectedIndex =
+                        getMovieAutocompleteEnterSelectionIndex(
+                          activeAutocompleteIndex,
+                          filteredAutocompleteResults.length,
+                        );
+                      if (
+                        selectedIndex < 0 ||
+                        !filteredAutocompleteResults[selectedIndex]
+                      ) {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      selectAutocompleteResult(
+                        filteredAutocompleteResults[selectedIndex],
+                      );
+                    }
+                  }}
+                  placeholder="Add a movie or show title"
+                  aria-label="Movie or show title"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={isAutocompleteOpen}
+                  aria-controls={autocompleteListId}
+                  aria-activedescendant={
+                    isAutocompleteOpen && activeAutocompleteIndex >= 0
+                      ? `${autocompleteListId}-option-${activeAutocompleteIndex}`
+                      : undefined
+                  }
+                  autoComplete="off"
+                  fullWidth
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="watchlist-top-controls__search-clear"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSelectedAutocompleteResult(null);
+                      resetAutocomplete();
+                      internalSearchInputRef.current?.focus();
+                    }}
+                    aria-label="Clear search"
+                    style={{
+                      position: "absolute",
+                      right: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      color: "var(--color-text-secondary)",
+                      cursor: "pointer",
+                      fontSize: "1.2rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "4px",
+                      opacity: 0.6,
+                      transition: "opacity 0.2s",
+                      zIndex: 2,
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.opacity = "0.6")
+                    }
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              {isAutocompleteMounted && hasAutocompleteFeedback && (
+                <div
+                  id={autocompleteListId}
+                  className={`watchlist-top-controls__autocomplete${isAutocompleteOpen ? " is-open" : ""}`}
+                  role="listbox"
+                  aria-label="Movie and show suggestions"
+                  onPointerDown={() => {
+                    // Mark that the user started a touch/click inside the dropdown.
+                    // This keeps the dropdown open on iOS Safari where tapping a button
+                    // doesn't move focus (document.activeElement stays <body>).
+                    dropdownInteractionPendingRef.current = true;
+                    window.setTimeout(() => {
+                      dropdownInteractionPendingRef.current = false;
+                    }, 300);
+                  }}
+                >
+                  {isAutocompleteLoading && (
+                    <div
+                      className="watchlist-top-controls__autocomplete-loading"
+                      role="status"
+                      aria-label="Searching"
                     >
-                      <span className="watchlist-top-controls__autocomplete-poster">
-                        {result.poster ? (
-                          <AutocompletePosterImage src={result.poster} />
-                        ) : (
-                          <span
-                            className="watchlist-top-controls__autocomplete-poster-fallback"
-                            aria-hidden
+                      <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                      <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                      <span className="watchlist-top-controls__autocomplete-loading-dot" />
+                    </div>
+                  )}
+                  {!isAutocompleteLoading && autocompleteResults.length > 0 && (
+                    <div
+                      className="watchlist-top-controls__autocomplete-filters"
+                      role="group"
+                      aria-label="Filter by type"
+                    >
+                      {(
+                        [
+                          { value: "all", label: "All" },
+                          { value: "movie", label: "Movies" },
+                          { value: "series", label: "TV Series" },
+                        ] as const
+                      ).map(({ value, label }) => {
+                        const count =
+                          value === "all"
+                            ? autocompleteResults.length
+                            : autocompleteResults.filter(
+                                (r) => r.type === value,
+                              ).length;
+                        const isDisabled = count === 0 && value !== "all";
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            className={`watchlist-top-controls__autocomplete-filter-chip${
+                              autocompleteTypeFilter === value
+                                ? " is-active"
+                                : ""
+                            }${count === 0 ? " is-empty" : ""}`}
+                            disabled={isDisabled}
+                            onPointerDown={(e) => {
+                              e.preventDefault(); // prevents input blur on all pointer types
+                              if (!isDisabled) setAutocompleteTypeFilter(value);
+                            }}
                           >
                             {result.title.charAt(0).toUpperCase()}
                           </span>
@@ -833,6 +1024,31 @@ const MoviesTopControls = React.forwardRef<
   );
 });
 
-MoviesTopControls.displayName = 'MoviesTopControls';
+        {showRecommendationComposer && hasSearchQuery && (
+          <MovieRecommendationComposer
+            currentUser={currentUser}
+            movieTitle={searchQuery.trim()}
+            guestName={guestName}
+            reason={recommendationReason}
+            error={suggestionError}
+            isSubmitting={isSubmittingRecommendation}
+            onGuestNameChange={setGuestName}
+            onReasonChange={setRecommendationReason}
+            onSubmit={onSubmitRecommendation}
+            onCancel={onCancelRecommendation}
+          />
+        )}
+
+        {suggestionError && !showRecommendationComposer && (
+          <div className="places-top-controls__error" role="alert">
+            {suggestionError}
+          </div>
+        )}
+      </section>
+    );
+  },
+);
+
+MoviesTopControls.displayName = "MoviesTopControls";
 
 export default MoviesTopControls;
