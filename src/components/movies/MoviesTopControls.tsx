@@ -14,6 +14,7 @@ import {
 } from 'motion/react';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
+import { MagicToggle } from '@/ui/MagicToggle';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon } from '@/common/Icons';
 import {
