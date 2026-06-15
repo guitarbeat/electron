@@ -25,28 +25,31 @@ import './workspace-polish.scss';
 
 const MagicComponent = React.lazy(
   () =>
-    import('@/components/effects/moire/Moire') as Promise<{
+    import("@/components/effects/moire/Moire") as Promise<{
       default: React.ComponentType<{
         isVisible?: boolean;
         opacity?: number;
         color1?: string;
         color2?: string;
       }>;
-    }>
+    }>,
 );
 const RetroEffects = React.lazy(() =>
-  import('@/components/effects/RetroEffects').catch(
-    () => ({ default: () => null }) as { default: React.FC }
-  )
+  import("@/components/effects/RetroEffects").catch(
+    () => ({ default: () => null }) as { default: React.FC },
+  ),
 );
 const RadialMenu = React.lazy(() =>
-  import('@/components/effects/RadialMenu').catch(
-    () => ({ default: () => null }) as { default: React.FC }
-  )
+  import("@/components/effects/RadialMenu").catch(
+    () => ({ default: () => null }) as { default: React.FC },
+  ),
 );
-const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));
-const CohesionAudit = React.lazy(() => import('@/app/CohesionAudit'));
-const modalBodyStyle = { flex: 1, overflowY: 'auto' } satisfies React.CSSProperties;
+const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
+const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));
+const modalBodyStyle = {
+  flex: 1,
+  overflowY: "auto",
+} satisfies React.CSSProperties;
 const isCohesionAuditRoute =
   typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
 const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
@@ -55,13 +58,13 @@ const BOOT_SCREEN_MIN_MS = 600;
 
 /** True once at module load — avoids creating a canvas on every render. */
 const webGLAvailable: boolean = (() => {
-  if (typeof document === 'undefined') return false;
+  if (typeof document === "undefined") return false;
   try {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     return Boolean(
-      canvas.getContext('webgl2') ??
-      canvas.getContext('webgl') ??
-      canvas.getContext('experimental-webgl')
+      canvas.getContext("webgl2") ??
+      canvas.getContext("webgl") ??
+      canvas.getContext("experimental-webgl"),
     );
   } catch {
     return false;
@@ -90,15 +93,15 @@ const ThemedMoire: React.FC = () => {
 };
 
 type ViewTransitionCapableDocument = Document & {
-  startViewTransition?: (
-    callback: () => void | Promise<void>
-  ) => { finished: Promise<void> };
+  startViewTransition?: (callback: () => void | Promise<void>) => {
+    finished: Promise<void>;
+  };
 };
 
 const getRequestedTab = (value: string | null): MainTab | null => {
   if (!value) return null;
-  if (value === 'places') return 'places';
-  if (value === 'movies') return 'movies';
+  if (value === "places") return "places";
+  if (value === "movies") return "movies";
   return null;
 };
 
@@ -108,7 +111,7 @@ interface StoredAppViewState {
 }
 
 const readStoredAppViewState = (): StoredAppViewState | null => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
@@ -120,7 +123,7 @@ const readStoredAppViewState = (): StoredAppViewState | null => {
 
     const parsed = JSON.parse(raw) as Partial<StoredAppViewState>;
     return {
-      activeTab: parsed.activeTab === 'places' ? 'places' : 'movies',
+      activeTab: parsed.activeTab === "places" ? "places" : "movies",
       showMessages: Boolean(parsed.showMessages),
     };
   } catch {
@@ -134,33 +137,39 @@ const App: React.FC = () => {
   const { isOnline, isStandalone, canInstallApp, hasUpdateReady, outboxStatus, handleApplyUpdate, handleRetryPendingSync, handleInstallApp } = usePwaRuntime();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
-  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   const [isBootReady, setIsBootReady] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
   const [activeTab, setActiveTab] = useState<MainTab>(() => {
-    if (typeof window !== 'undefined') {
-      const fromHash = getRequestedTab(window.location.hash.replace(/^#/, ''));
+    if (typeof window !== "undefined") {
+      const fromHash = getRequestedTab(window.location.hash.replace(/^#/, ""));
       if (fromHash) return fromHash;
     }
-    return persistedViewState?.activeTab ?? 'movies';
+    return persistedViewState?.activeTab ?? "movies";
   });
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
-    readQuizCompletionState(currentUser)
+    readQuizCompletionState(currentUser),
   );
-  const [showMessages, setShowMessages] = useState(persistedViewState?.showMessages ?? false);
+  const [showMessages, setShowMessages] = useState(
+    persistedViewState?.showMessages ?? false,
+  );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
-    () => typeof window !== 'undefined' && localStorage.getItem('cursorTrailEnabled') === 'true'
+    () =>
+      typeof window !== "undefined" &&
+      localStorage.getItem("cursorTrailEnabled") === "true",
   );
   const shortcutHandledRef = React.useRef(false);
 
   const logoLabState = useMemo(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return {
         enabled: false,
         initialVariant: undefined,
@@ -183,7 +192,10 @@ const App: React.FC = () => {
         return;
       }
 
-      const remaining = Math.max(0, BOOT_SCREEN_MIN_MS - (performance.now() - startedAt));
+      const remaining = Math.max(
+        0,
+        BOOT_SCREEN_MIN_MS - (performance.now() - startedAt),
+      );
       timerId = window.setTimeout(() => {
         if (!cancelled) {
           setIsBootReady(true);
@@ -204,7 +216,7 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -213,19 +225,19 @@ const App: React.FC = () => {
       JSON.stringify({
         activeTab,
         showMessages,
-      } satisfies StoredAppViewState)
+      } satisfies StoredAppViewState),
     );
   }, [activeTab, showMessages]);
 
   useEffect(() => {
-    if (shortcutHandledRef.current || typeof window === 'undefined') {
+    if (shortcutHandledRef.current || typeof window === "undefined") {
       return;
     }
 
     shortcutHandledRef.current = true;
     const search = new URLSearchParams(window.location.search);
-    const requestedTab = getRequestedTab(search.get('tab'));
-    const requestedPanel = search.get('panel');
+    const requestedTab = getRequestedTab(search.get("tab"));
+    const requestedPanel = search.get("panel");
     let didApplyShortcut = false;
 
     if (requestedTab) {
@@ -233,16 +245,16 @@ const App: React.FC = () => {
       didApplyShortcut = true;
     }
 
-    if (requestedPanel === 'messages') {
+    if (requestedPanel === "messages") {
       setShowMessages(true);
       didApplyShortcut = true;
     }
 
     if (didApplyShortcut) {
-      search.delete('tab');
-      search.delete('panel');
-      const next = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ''}${window.location.hash}`;
-      window.history.replaceState({}, '', next);
+      search.delete("tab");
+      search.delete("panel");
+      const next = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", next);
     }
   }, []);
 
@@ -252,7 +264,7 @@ const App: React.FC = () => {
       setQuizCompleted(completed);
       writeQuizCompletionState(currentUser, completed);
     },
-    [currentUser]
+    [currentUser],
   );
 
   const openQuizExperience = useCallback(() => {
@@ -283,7 +295,10 @@ const App: React.FC = () => {
       };
 
       const transitionDocument = document as ViewTransitionCapableDocument;
-      if (prefersReducedMotion || typeof transitionDocument.startViewTransition !== 'function') {
+      if (
+        prefersReducedMotion ||
+        typeof transitionDocument.startViewTransition !== "function"
+      ) {
         nextTab();
         return;
       }
@@ -292,25 +307,25 @@ const App: React.FC = () => {
         nextTab();
       });
     },
-    [activeTab, playSwitch, prefersReducedMotion]
+    [activeTab, playSwitch, prefersReducedMotion],
   );
 
   // Keep URL hash in sync with active tab
   useEffect(() => {
-    const current = window.location.hash.replace(/^#/, '');
+    const current = window.location.hash.replace(/^#/, "");
     if (current !== activeTab) {
-      window.history.replaceState(null, '', `#${activeTab}`);
+      window.history.replaceState(null, "", `#${activeTab}`);
     }
   }, [activeTab]);
 
   // Respond to back/forward navigation and direct hash links
   useEffect(() => {
     const onHashChange = () => {
-      const tab = getRequestedTab(window.location.hash.replace(/^#/, ''));
+      const tab = getRequestedTab(window.location.hash.replace(/^#/, ""));
       if (tab) handleTabChange(tab);
     };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, [handleTabChange]);
 
   const openSpinMatch = useCallback(() => {
@@ -349,7 +364,7 @@ const App: React.FC = () => {
       showQuizFlow,
       showSpinWheel,
       showSpinWheelOnly,
-    ]
+    ],
   );
 
   if (isCohesionAuditRoute) {
@@ -413,32 +428,36 @@ const App: React.FC = () => {
 
 
         <div className="app-shell__canvas app-shell__canvas--main">
-          <div className={`app-workspace-stack app-workspace-stack--${activeTab}`}>
+          <div
+            className={`app-workspace-stack app-workspace-stack--${activeTab}`}
+          >
             <AppHeaderSlotProvider>
-            <div className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === 'movies' ? ' movies-unified-shell' : ''}`}>
-              <AppHeader
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                pwaStatus={{
-                  isOnline,
-                  isStandalone,
-                  canInstall: canInstallApp,
-                  hasUpdateReady,
-                  pendingSyncCount: outboxStatus.pendingCount,
-                  blockedSyncCount: outboxStatus.blockedCount,
-                }}
-                onInstallApp={() => void handleInstallApp()}
-                onApplyUpdate={handleApplyUpdate}
-                onRetrySync={handleRetryPendingSync}
-                onOpenSpin={openSpinMatch}
-              />
-              <WorkspaceErrorBoundary>
-                <AppWorkspaceShell
-                  isMobile={isMobile}
+              <div
+                className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === "movies" ? " movies-unified-shell" : ""}`}
+              >
+                <AppHeader
                   activeTab={activeTab}
+                  onTabChange={handleTabChange}
+                  pwaStatus={{
+                    isOnline,
+                    isStandalone,
+                    canInstall: canInstallApp,
+                    hasUpdateReady,
+                    pendingSyncCount: outboxStatus.pendingCount,
+                    blockedSyncCount: outboxStatus.blockedCount,
+                  }}
+                  onInstallApp={() => void handleInstallApp()}
+                  onApplyUpdate={handleApplyUpdate}
+                  onRetrySync={handleRetryPendingSync}
+                  onOpenSpin={openSpinMatch}
                 />
-              </WorkspaceErrorBoundary>
-            </div>
+                <WorkspaceErrorBoundary>
+                  <AppWorkspaceShell
+                    isMobile={isMobile}
+                    activeTab={activeTab}
+                  />
+                </WorkspaceErrorBoundary>
+              </div>
             </AppHeaderSlotProvider>
           </div>
         </div>
