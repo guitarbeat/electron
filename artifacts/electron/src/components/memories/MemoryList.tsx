@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { SharedMemory, User } from '@/shared/types';
-import Button from '@/ui/Button';
+import Button from '@/ui/LegacyButton';
 import { Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { colors, radius, spacing, typography, layouts, sanitizeInput } from '@/utils';

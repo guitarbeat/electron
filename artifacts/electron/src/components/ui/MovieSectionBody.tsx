@@ -1,12 +1,12 @@
 import React from 'react';
 import type { Movie, MovieSuggestion, SharedMemory, User } from '@/shared/types';
-import { MovieCardSkeleton } from '@/ui/Skeleton';
+import { MovieCardSkeleton } from '@/ui/LegacySkeleton';
 import {
   CollectionEmptyState,
   CollectionGrid,
   CollectionSection,
 } from '@/ui/CollectionLayout';
-import Button from '@/ui/Button';
+import Button from '@/ui/LegacyButton';
 import { spacing } from '@/theme/tokens';
 import SuggestionCard from '@/components/movies/SuggestionCard';
 import MovieCard from '@/components/movies/MovieCard';

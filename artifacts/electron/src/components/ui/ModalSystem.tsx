@@ -15,7 +15,7 @@ import {
   trapFocusOnTab,
 } from './lib/modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
-import Button from './Button';
+import Button from './LegacyButton';
 import SharedBottomSheet from './BottomSheet';
 import SharedMinigameModal from './MinigameModal';
 

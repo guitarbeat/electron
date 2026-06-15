@@ -248,6 +248,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       const timer = setTimeout(() => setIsShaking(false), 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isShaking]);
 
   useEffect(() => {
@@ -275,6 +276,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
+    return undefined;
   }, [isOpen, onCancel]);
 
   const triggerError = (message: string, reset?: () => void) => {

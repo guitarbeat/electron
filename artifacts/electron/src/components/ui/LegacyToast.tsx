@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import Card from './Card';
+import Card from './LegacyCard';
 import { CheckIcon } from '@/common/Icons';
 import { colors, shadows, spacing, typography, radius, motion } from '@/theme/tokens';
 import { useAudio } from '@/hooks/useAudio';
@@ -64,6 +64,7 @@ const Toast: React.FC<ToastProps> = ({
         clearTimeout(dismissTimer);
       };
     }
+    return undefined;
   }, [duration, onDismiss, persistent, playError, playPop, playSuccess, type]);
 
   const handleDismiss = () => {

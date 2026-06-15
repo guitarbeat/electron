@@ -33,14 +33,21 @@ const MagicComponent = React.lazy(
       }>;
     }>
 );
-const RetroEffects = React.lazy(() =>
+type RetroEffectsComponent = React.ComponentType<{ cursorTrailEnabled: boolean }>;
+type RadialMenuComponent = React.ComponentType<{
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
+  onOpenSpin?: () => void;
+}>;
+
+const RetroEffects = React.lazy<RetroEffectsComponent>(() =>
   import('@/components/effects/RetroEffects').catch(
-    () => ({ default: () => null }) as { default: React.FC }
+    () => ({ default: (() => null) as RetroEffectsComponent })
   )
 );
-const RadialMenu = React.lazy(() =>
+const RadialMenu = React.lazy<RadialMenuComponent>(() =>
   import('@/components/effects/RadialMenu').catch(
-    () => ({ default: () => null }) as { default: React.FC }
+    () => ({ default: (() => null) as RadialMenuComponent })
   )
 );
 const ElectronLogoLab = React.lazy(() => import('@/branding/ElectronLogoLab'));

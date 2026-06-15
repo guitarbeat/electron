@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Button from '@/ui/Button';
+import Button from '@/ui/LegacyButton';
 import { useMovies } from '@/hooks/movies/useMovies';
 import { useUser } from '@/app/useProviders';
 import { colors, spacing } from '@/theme/tokens';

@@ -1,6 +1,6 @@
 import React from 'react';
-import Card from '@/ui/Card';
-import Button from '@/ui/Button';
+import Card from '@/ui/LegacyCard';
+import Button from '@/ui/LegacyButton';
 import { Input, Textarea } from '@/ui/FormFields';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import type { User } from '@/shared/types';
