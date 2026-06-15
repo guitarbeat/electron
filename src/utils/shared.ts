@@ -7,3 +7,13 @@ export const deepClone = <T>(value: T): T => {
   }
   return JSON.parse(JSON.stringify(value)) as T;
 };
+
+export const sanitizeInput = (input: string | null | undefined): string => {
+  if (!input) return "";
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+};
