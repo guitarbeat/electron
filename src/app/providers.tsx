@@ -9,21 +9,21 @@ import React, {
   useMemo,
   useState,
   ReactNode,
-} from 'react';
-import type { User } from '@/shared/types';
-import { applyTheme } from '@/theme/applyTheme';
-import { getAppTheme, type ThemeName } from '@/theme/themes';
-import { spacing } from '@/theme/tokens';
-import Toast from '@/components/ui/Toast';
-import { sessionInvalidationEvent } from '@/services/state';
-import type { SessionState } from '@/services/state/stateTypes';
-import { getErrorMessage, readApiErrorMessage } from '@/utils';
+} from "react";
+import type { User } from "@/shared/types";
+import { applyTheme } from "@/theme/applyTheme";
+import { getAppTheme } from "@/theme/themes";
+import { spacing } from "@/theme/tokens";
+import Toast from "@/components/ui/Toast";
+import { sessionInvalidationEvent } from "@/services/state";
+import type { SessionState } from "@/services/state/stateTypes";
+import { getErrorMessage, readApiErrorMessage } from "@/utils";
 import {
   ThemeContext,
   ToastContext,
   UserContext,
   type ToastInput,
-} from './providerContexts';
+} from "./providerContexts";
 
 const debugSession = (...args: unknown[]) => {
   if (import.meta.env.DEV) {
@@ -35,24 +35,28 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const currentTheme = 'movies' as const;
-  const themeTokens = moviesTheme;
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const currentTheme = "movies" as const;
+  const theme = getAppTheme(currentTheme);
 
   useEffect(() => {
-    applyTheme(themeName);
-  }, [themeName]);
+    applyTheme(currentTheme);
+  }, [currentTheme]);
 
   const value = useMemo(
     () => ({
-      currentTheme: themeName,
+      currentTheme,
       theme,
       themeTokens: theme.tokens,
     }),
-    [theme, themeName]
+    [theme, currentTheme],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 // ============================================================================
@@ -64,19 +68,29 @@ interface ToastRecord extends ToastInput {
 }
 
 const toastId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.getRandomValues === "function"
+  ) {
     const bytes = crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
+      "",
+    );
   }
 
   return `toast-${Date.now()}`;
 };
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [toasts, setToasts] = useState<ToastRecord[]>([]);
 
   const dismissToast = useCallback((id: string) => {
@@ -89,7 +103,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const showToast = useCallback((input: ToastInput) => {
     const id = toastId();
-    const actionLabel = input.actionLabel || (input.onUndo ? 'Undo' : undefined);
+    const actionLabel =
+      input.actionLabel || (input.onUndo ? "Undo" : undefined);
     const onAction = input.onAction || input.onUndo;
 
     setToasts((current) => [
@@ -111,7 +126,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       dismissToast,
       clearToasts,
     }),
-    [showToast, dismissToast, clearToasts]
+    [showToast, dismissToast, clearToasts],
   );
 
   return (
@@ -121,20 +136,20 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         aria-live="polite"
         aria-atomic="false"
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: spacing.md,
-          left: '50%',
-          transform: 'translateX(-50%)',
+          left: "50%",
+          transform: "translateX(-50%)",
           zIndex: 250,
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           gap: spacing.sm,
-          width: 'min(720px, calc(100vw - 1rem))',
-          pointerEvents: 'none',
+          width: "min(720px, calc(100vw - 1rem))",
+          pointerEvents: "none",
         }}
       >
         {toasts.map((toast) => (
-          <div key={toast.id} style={{ pointerEvents: 'auto' }}>
+          <div key={toast.id} style={{ pointerEvents: "auto" }}>
             <Toast
               message={toast.message}
               type={toast.type}
@@ -155,7 +170,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 // User Context
 // ============================================================================
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [hasAccess, setHasAccess] = useState(false);
   const [pinProtectedUsers, setPinProtectedUsers] = useState<User[]>([]);
@@ -163,7 +180,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   const applySessionState = useCallback((nextState: SessionState) => {
-    debugSession('[session] Applying state:', {
+    debugSession("[session] Applying state:", {
       hasAccess: nextState.hasAccess,
       currentUser: nextState.currentUser,
       pinProtectedUsers: nextState.pinProtectedUsers,
@@ -176,18 +193,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const refreshSession = useCallback(async () => {
-    debugSession('[session] Refreshing session…');
+    debugSession("[session] Refreshing session…");
     setIsSessionLoading(true);
     try {
       let response: Response;
       try {
-        response = await fetch('/api/session', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
+        response = await fetch("/api/session", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
         });
       } catch (error) {
-        debugSession('[session] Refresh network error — clearing state', error);
+        debugSession("[session] Refresh network error — clearing state", error);
         setHasAccess(false);
         setCurrentUserState(null);
         setPinProtectedUsers([]);
@@ -196,7 +213,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (!response.ok) {
-        debugSession('[session] Refresh failed — status', response.status, '— clearing state');
+        debugSession(
+          "[session] Refresh failed — status",
+          response.status,
+          "— clearing state",
+        );
         setHasAccess(false);
         setCurrentUserState(null);
         setPinProtectedUsers([]);
@@ -205,7 +226,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const session = (await response.json()) as SessionState;
-      debugSession('[session] Refresh succeeded:', session);
+      debugSession("[session] Refresh succeeded:", session);
       applySessionState(session);
     } finally {
       setIsSessionLoading(false);
@@ -217,18 +238,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [refreshSession]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return undefined;
     }
 
     const handleSessionInvalid = () => {
-      debugSession('[session] Session invalidation event received — refreshing');
+      debugSession(
+        "[session] Session invalidation event received — refreshing",
+      );
       void refreshSession();
     };
 
     window.addEventListener(sessionInvalidationEvent, handleSessionInvalid);
     return () =>
-      window.removeEventListener(sessionInvalidationEvent, handleSessionInvalid);
+      window.removeEventListener(
+        sessionInvalidationEvent,
+        handleSessionInvalid,
+      );
   }, [refreshSession]);
 
   const value = useMemo(
@@ -240,28 +266,30 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       currentUser,
       setCurrentUser: async (user: User | null, pin?: string) => {
         if (user) {
-          debugSession('[session] Logging in as:', user);
+          debugSession("[session] Logging in as:", user);
         } else {
-          debugSession('[session] Logging out');
+          debugSession("[session] Logging out");
         }
         try {
-          const response = await fetch('/api/session/profile', {
-            method: user ? 'POST' : 'DELETE',
-            credentials: 'include',
-            cache: 'no-store',
+          const response = await fetch("/api/session/profile", {
+            method: user ? "POST" : "DELETE",
+            credentials: "include",
+            cache: "no-store",
             headers: user
               ? {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 }
               : undefined,
-            body: user ? JSON.stringify({ user, ...(pin ? { pin } : {}) }) : undefined,
+            body: user
+              ? JSON.stringify({ user, ...(pin ? { pin } : {}) })
+              : undefined,
           });
 
           if (response.status === 401 || response.status === 403) {
             debugSession(
-              '[session] Profile update rejected (status',
+              "[session] Profile update rejected (status",
               response.status,
-              ') — refreshing session'
+              ") — refreshing session",
             );
             await refreshSession();
             return false;
@@ -269,19 +297,22 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
           if (!response.ok) {
             throw new Error(
-              await readApiErrorMessage(response, 'Failed to update profile session.')
+              await readApiErrorMessage(
+                response,
+                "Failed to update profile session.",
+              ),
             );
           }
 
           const session = (await response.json()) as SessionState;
-          debugSession('[session] Profile update succeeded:', session);
+          debugSession("[session] Profile update succeeded:", session);
           applySessionState(session);
           return true;
         } catch (error) {
-          debugSession('[session] Profile update error:', error);
+          debugSession("[session] Profile update error:", error);
           throw new Error(
-            getErrorMessage(error, 'Profile login is unavailable right now.'),
-            { cause: error }
+            getErrorMessage(error, "Profile login is unavailable right now."),
+            { cause: error },
           );
         }
       },
@@ -295,7 +326,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       pinProtectedUsers,
       usersMissingPins,
       refreshSession,
-    ]
+    ],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

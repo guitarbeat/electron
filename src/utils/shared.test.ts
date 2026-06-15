@@ -1,58 +1,205 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import {
-  layouts,
   areDeeplyEqual,
   concurrentMap,
   createValidator,
   executeAction,
-  getErrorMessage,
   isValidUrl,
   consoleError,
   parseJsonContent,
-  readApiErrorMessage,
   sanitizeInput,
 } from "./shared.ts";
 
-test('areDeeplyEqual', async (t) => {
+test("areDeeplyEqual", async (t) => {
   const testCases = [
     // Primitives
-    { name: 'returns true for identical primitives - number', left: 1, right: 1, expected: true },
-    { name: 'returns true for identical primitives - string', left: 'hello', right: 'hello', expected: true },
-    { name: 'returns true for identical primitives - boolean', left: true, right: true, expected: true },
-    { name: 'returns true for identical primitives - null', left: null, right: null, expected: true },
-    { name: 'returns true for identical primitives - undefined', left: undefined, right: undefined, expected: true },
-    { name: 'returns false for different primitives - number', left: 1, right: 2, expected: false },
-    { name: 'returns false for different primitives - string', left: 'hello', right: 'world', expected: false },
-    { name: 'returns false for different primitives - boolean', left: true, right: false, expected: false },
-    { name: 'returns false for different primitives - null vs undefined', left: null, right: undefined, expected: false },
-    { name: 'returns false for different primitives - number vs string', left: 1, right: '1' as unknown as number, expected: false },
+    {
+      name: "returns true for identical primitives - number",
+      left: 1,
+      right: 1,
+      expected: true,
+    },
+    {
+      name: "returns true for identical primitives - string",
+      left: "hello",
+      right: "hello",
+      expected: true,
+    },
+    {
+      name: "returns true for identical primitives - boolean",
+      left: true,
+      right: true,
+      expected: true,
+    },
+    {
+      name: "returns true for identical primitives - null",
+      left: null,
+      right: null,
+      expected: true,
+    },
+    {
+      name: "returns true for identical primitives - undefined",
+      left: undefined,
+      right: undefined,
+      expected: true,
+    },
+    {
+      name: "returns false for different primitives - number",
+      left: 1,
+      right: 2,
+      expected: false,
+    },
+    {
+      name: "returns false for different primitives - string",
+      left: "hello",
+      right: "world",
+      expected: false,
+    },
+    {
+      name: "returns false for different primitives - boolean",
+      left: true,
+      right: false,
+      expected: false,
+    },
+    {
+      name: "returns false for different primitives - null vs undefined",
+      left: null,
+      right: undefined,
+      expected: false,
+    },
+    {
+      name: "returns false for different primitives - number vs string",
+      left: 1,
+      right: "1" as unknown as number,
+      expected: false,
+    },
 
     // Objects
-    { name: 'returns true for deeply equal objects - empty', left: {}, right: {}, expected: true },
-    { name: 'returns true for deeply equal objects - simple', left: { a: 1, b: 2 }, right: { a: 1, b: 2 }, expected: true },
-    { name: 'returns true for deeply equal objects - unordered keys', left: { a: 1, b: 2 }, right: { b: 2, a: 1 }, expected: true },
-    { name: 'returns true for deeply equal objects - nested', left: { a: { b: 1 } }, right: { a: { b: 1 } }, expected: true },
-    { name: 'returns false for different objects - different values', left: { a: 1 }, right: { a: 2 }, expected: false },
-    { name: 'returns false for different objects - different keys', left: { a: 1 }, right: { b: 1 }, expected: false },
-    { name: 'returns false for different objects - missing key', left: { a: 1 }, right: { a: 1, b: 2 }, expected: false },
-    { name: 'returns false for different objects - nested difference', left: { a: { b: 1 } }, right: { a: { b: 2 } }, expected: false },
+    {
+      name: "returns true for deeply equal objects - empty",
+      left: {},
+      right: {},
+      expected: true,
+    },
+    {
+      name: "returns true for deeply equal objects - simple",
+      left: { a: 1, b: 2 },
+      right: { a: 1, b: 2 },
+      expected: true,
+    },
+    {
+      name: "returns true for deeply equal objects - unordered keys",
+      left: { a: 1, b: 2 },
+      right: { b: 2, a: 1 },
+      expected: true,
+    },
+    {
+      name: "returns true for deeply equal objects - nested",
+      left: { a: { b: 1 } },
+      right: { a: { b: 1 } },
+      expected: true,
+    },
+    {
+      name: "returns false for different objects - different values",
+      left: { a: 1 },
+      right: { a: 2 },
+      expected: false,
+    },
+    {
+      name: "returns false for different objects - different keys",
+      left: { a: 1 },
+      right: { b: 1 },
+      expected: false,
+    },
+    {
+      name: "returns false for different objects - missing key",
+      left: { a: 1 },
+      right: { a: 1, b: 2 },
+      expected: false,
+    },
+    {
+      name: "returns false for different objects - nested difference",
+      left: { a: { b: 1 } },
+      right: { a: { b: 2 } },
+      expected: false,
+    },
 
     // Arrays
-    { name: 'returns true for deeply equal arrays - empty', left: [], right: [], expected: true },
-    { name: 'returns true for deeply equal arrays - simple', left: [1, 2, 3], right: [1, 2, 3], expected: true },
-    { name: 'returns true for deeply equal arrays - objects', left: [{ a: 1 }], right: [{ a: 1 }], expected: true },
-    { name: 'returns true for deeply equal arrays - nested', left: [[1]], right: [[1]], expected: true },
-    { name: 'returns false for different arrays - length', left: [1, 2], right: [1, 2, 3], expected: false },
-    { name: 'returns false for different arrays - order', left: [1, 2], right: [2, 1], expected: false },
-    { name: 'returns false for different arrays - object content', left: [{ a: 1 }], right: [{ a: 2 }], expected: false },
+    {
+      name: "returns true for deeply equal arrays - empty",
+      left: [],
+      right: [],
+      expected: true,
+    },
+    {
+      name: "returns true for deeply equal arrays - simple",
+      left: [1, 2, 3],
+      right: [1, 2, 3],
+      expected: true,
+    },
+    {
+      name: "returns true for deeply equal arrays - objects",
+      left: [{ a: 1 }],
+      right: [{ a: 1 }],
+      expected: true,
+    },
+    {
+      name: "returns true for deeply equal arrays - nested",
+      left: [[1]],
+      right: [[1]],
+      expected: true,
+    },
+    {
+      name: "returns false for different arrays - length",
+      left: [1, 2],
+      right: [1, 2, 3],
+      expected: false,
+    },
+    {
+      name: "returns false for different arrays - order",
+      left: [1, 2],
+      right: [2, 1],
+      expected: false,
+    },
+    {
+      name: "returns false for different arrays - object content",
+      left: [{ a: 1 }],
+      right: [{ a: 2 }],
+      expected: false,
+    },
 
     // Mixed & Edge Cases
-    { name: 'handles mixed structures - equal', left: { a: [1, { b: 2 }], c: 'hello', d: null }, right: { a: [1, { b: 2 }], c: 'hello', d: null }, expected: true },
-    { name: 'handles mixed structures - not equal', left: { a: [1, { b: 2 }], c: 'hello', d: null }, right: { a: [1, { b: 2 }], c: 'hello', d: undefined as unknown as null }, expected: false },
-    { name: 'handles type mismatches - object vs array', left: {} as unknown, right: [] as unknown, expected: false },
-    { name: 'handles type mismatches - null vs object', left: null as unknown, right: {} as unknown, expected: false },
-    { name: 'handles type mismatches - number vs object', left: 1 as unknown, right: { a: 1 } as unknown, expected: false },
+    {
+      name: "handles mixed structures - equal",
+      left: { a: [1, { b: 2 }], c: "hello", d: null },
+      right: { a: [1, { b: 2 }], c: "hello", d: null },
+      expected: true,
+    },
+    {
+      name: "handles mixed structures - not equal",
+      left: { a: [1, { b: 2 }], c: "hello", d: null },
+      right: { a: [1, { b: 2 }], c: "hello", d: undefined as unknown as null },
+      expected: false,
+    },
+    {
+      name: "handles type mismatches - object vs array",
+      left: {} as unknown,
+      right: [] as unknown,
+      expected: false,
+    },
+    {
+      name: "handles type mismatches - null vs object",
+      left: null as unknown,
+      right: {} as unknown,
+      expected: false,
+    },
+    {
+      name: "handles type mismatches - number vs object",
+      left: 1 as unknown,
+      right: { a: 1 } as unknown,
+      expected: false,
+    },
   ];
 
   for (const tc of testCases) {
@@ -61,8 +208,8 @@ test('areDeeplyEqual', async (t) => {
     });
   }
 });
-test('executeAction', async (t) => {
-  await t.test('runs action and completion in order', () => {
+test("executeAction", async (t) => {
+  await t.test("runs action and completion in order", () => {
     const calls: string[] = [];
 
     executeAction(
