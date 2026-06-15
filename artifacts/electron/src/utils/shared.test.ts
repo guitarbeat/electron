@@ -238,6 +238,47 @@ test("executeAction", async (t) => {
 
     assert.deepEqual(calls, ["complete"]);
   });
+
+  await t.test("runs action when completion is missing", () => {
+    const calls: string[] = [];
+
+    executeAction(() => {
+      calls.push("action");
+    });
+
+    assert.deepEqual(calls, ["action"]);
+  });
+
+  await t.test("runs without error when both are missing", () => {
+    assert.doesNotThrow(() => {
+      executeAction();
+    });
+  });
+
+  await t.test("propagates error if action throws", () => {
+    assert.throws(
+      () => {
+        executeAction(() => {
+          throw new Error("Action failed");
+        });
+      },
+      (err: any) => err.message === "Action failed"
+    );
+  });
+
+  await t.test("propagates error if onComplete throws", () => {
+    assert.throws(
+      () => {
+        executeAction(
+          () => {},
+          () => {
+            throw new Error("Complete failed");
+          }
+        );
+      },
+      (err: any) => err.message === "Complete failed"
+    );
+  });
 });
 
 test("isValidUrl", async (t) => {
