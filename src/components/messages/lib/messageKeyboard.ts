@@ -15,7 +15,7 @@ export const shouldSubmitMessageOnKeyDown = ({
     return false;
   }
 
-  if (key !== 'Enter') {
+  if (key !== "Enter") {
     return false;
   }
 

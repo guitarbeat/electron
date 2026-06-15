@@ -1,4 +1,4 @@
-import { encodeStorageData, decodeStorageData } from '../utils/shared.ts';
+import { encodeStorageData, decodeStorageData } from "../utils/shared.ts";
 
 export interface StoredJsonReadOptions<T> {
   storageKey: string;
@@ -20,7 +20,7 @@ export const readStoredJson = <T>({
   clone,
   label,
 }: StoredJsonReadOptions<T>): T | null => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
@@ -50,7 +50,7 @@ export const writeStoredJson = <T>({
 }: StoredJsonWriteOptions<T>): T => {
   const nextValue = clone(value);
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     try {
       const encoded = encodeStorageData(JSON.stringify(nextValue));
       window.localStorage.setItem(storageKey, encoded);
@@ -63,7 +63,7 @@ export const writeStoredJson = <T>({
 };
 
 export const removeStoredJson = (storageKey: string, label: string): void => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 

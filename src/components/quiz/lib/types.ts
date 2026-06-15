@@ -4,7 +4,11 @@
  * Type definitions for the personality quiz system
  */
 
-export type QuizCharacter = 'Electra' | 'Aaron' | 'Madeleine' | 'Nosferatu/Smeemo';
+export type QuizCharacter =
+  | "Electra"
+  | "Aaron"
+  | "Madeleine"
+  | "Nosferatu/Smeemo";
 
 // Multiple Choice Question
 export interface MultipleChoiceOption {
@@ -14,7 +18,7 @@ export interface MultipleChoiceOption {
 
 export interface MultipleChoiceQuestion {
   id: string;
-  type: 'multiple-choice';
+  type: "multiple-choice";
   question: string;
   options: MultipleChoiceOption[];
 }
@@ -22,7 +26,7 @@ export interface MultipleChoiceQuestion {
 // Agree/Disagree Scale Question
 export interface AgreeDisagreeQuestion {
   id: string;
-  type: 'agree-disagree';
+  type: "agree-disagree";
   question: string;
   // Scores for each level: [Strongly Disagree, Disagree, Neutral, Agree, Strongly Agree]
   scores: {
@@ -43,7 +47,7 @@ export interface ImageChoiceOption {
 
 export interface ImageChoiceQuestion {
   id: string;
-  type: 'image-choice';
+  type: "image-choice";
   question: string;
   options: ImageChoiceOption[];
 }
@@ -51,7 +55,7 @@ export interface ImageChoiceQuestion {
 // XY Axis Question (2D grid placement)
 export interface XYAxisQuestion {
   id: string;
-  type: 'xy-axis';
+  type: "xy-axis";
   question: string;
   xAxis: {
     leftLabel: string;
@@ -80,18 +84,28 @@ export type QuizQuestion =
 export interface QuizAnswer {
   questionId: string;
   answerIndex?: number; // For multiple choice and image choice
-  scaleValue?: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree'; // For agree/disagree
+  scaleValue?:
+    | "stronglyDisagree"
+    | "disagree"
+    | "neutral"
+    | "agree"
+    | "stronglyAgree"; // For agree/disagree
   xyPosition?: { x: number; y: number }; // For xy-axis (-1 to 1 range)
 }
 
 // Character scores
 export type CharacterScores = Record<QuizCharacter, number>;
 
-export const CHARACTERS: QuizCharacter[] = ['Aaron', 'Electra', 'Madeleine', 'Nosferatu/Smeemo'];
+export const CHARACTERS: QuizCharacter[] = [
+  "Aaron",
+  "Electra",
+  "Madeleine",
+  "Nosferatu/Smeemo",
+];
 
 // Quiz result
 export interface QuizResult {
-  character: QuizCharacter | 'Neither';
+  character: QuizCharacter | "Neither";
   scores: CharacterScores;
   percentages: Record<QuizCharacter, number>;
 }

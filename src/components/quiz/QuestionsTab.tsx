@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import type {
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
   MultipleChoiceQuestion,
   QuizQuestion,
   XYAxisQuestion,
-} from './lib/types';
-import { questionTemplates, TemplateType } from './lib/QuestionTemplates';
-import QuestionPreview from './QuestionPreview';
+} from "./lib/types";
+import { questionTemplates, TemplateType } from "./lib/QuestionTemplates";
+import QuestionPreview from "./QuestionPreview";
 import QuestionEditorPanel, {
   AgreeDisagreeSummary,
   ImageOptionsSummary,
   OptionsSummary,
   XYAxisSummary,
-} from './QuestionEditorPanel';
-import { getQuestionDetail, QUESTION_TYPE_LABELS } from './lib/QuestionEditorMeta';
-import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import ConfirmDialog from '@/ui/ConfirmDialog';
-import { deepClone } from '@/utils';
+} from "./QuestionEditorPanel";
+import {
+  getQuestionDetail,
+  QUESTION_TYPE_LABELS,
+} from "./lib/QuestionEditorMeta";
+import Card from "@/ui/Card";
+import Button from "@/ui/Button";
+import ConfirmDialog from "@/ui/ConfirmDialog";
+import { deepClone } from "@/utils";
 
 interface QuestionsTabProps {
   questions: QuizQuestion[];
@@ -51,10 +54,13 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   dragOverIndex,
   setDragOverIndex,
 }) => {
-  const [questionToDeleteId, setQuestionToDeleteId] = useState<string | null>(null);
-  const [liveDraftQuestion, setLiveDraftQuestion] = useState<QuizQuestion | null>(null);
+  const [questionToDeleteId, setQuestionToDeleteId] = useState<string | null>(
+    null,
+  );
+  const [liveDraftQuestion, setLiveDraftQuestion] =
+    useState<QuizQuestion | null>(null);
 
-  const addNewQuestion = (templateId: TemplateType = 'blank') => {
+  const addNewQuestion = (templateId: TemplateType = "blank") => {
     const template = questionTemplates.find((t) => t.id === templateId);
     if (!template) return;
 
@@ -100,7 +106,9 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
   };
 
   const saveQuestion = (updated: QuizQuestion) => {
-    onUpdateQuestions(questions.map((q) => (q.id === updated.id ? updated : q)));
+    onUpdateQuestions(
+      questions.map((q) => (q.id === updated.id ? updated : q)),
+    );
     setLiveDraftQuestion(null);
     setEditingQuestion(null);
   };
@@ -159,7 +167,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
     return (
       <div
         className={`quiz-editor__composer-layout ${
-          showPreview ? 'quiz-editor__composer-layout--with-preview' : ''
+          showPreview ? "quiz-editor__composer-layout--with-preview" : ""
         }`}
       >
         <QuestionEditorPanel
@@ -189,18 +197,28 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
           <div className="quiz-editor__library-header">
             <div className="quiz-editor__panel-intro">
               <p className="quiz-editor__section-eyebrow">Question Library</p>
-              <h2 className="quiz-editor__section-title">Shape the quiz sequence.</h2>
+              <h2 className="quiz-editor__section-title">
+                Shape the quiz sequence.
+              </h2>
               <p className="quiz-editor__section-copy">
-                Add new moments from scratch or spin up a ready-made structure, then rearrange the
-                flow until the pacing feels right.
+                Add new moments from scratch or spin up a ready-made structure,
+                then rearrange the flow until the pacing feels right.
               </p>
             </div>
 
             <div className="quiz-editor__library-actions">
-              <Button variant="ghost" size="sm" onClick={() => setShowTemplates(!showTemplates)}>
-                {showTemplates ? 'Hide Templates' : 'Browse Templates'}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTemplates(!showTemplates)}
+              >
+                {showTemplates ? "Hide Templates" : "Browse Templates"}
               </Button>
-              <Button variant="primary" size="sm" onClick={() => addNewQuestion('blank')}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => addNewQuestion("blank")}
+              >
                 New Question
               </Button>
             </div>
@@ -215,9 +233,13 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   onClick={() => addNewQuestion(template.id)}
                   className="quiz-editor__template-card"
                 >
-                  <div className="quiz-editor__template-icon">{template.icon}</div>
+                  <div className="quiz-editor__template-icon">
+                    {template.icon}
+                  </div>
                   <p className="quiz-editor__template-name">{template.name}</p>
-                  <p className="quiz-editor__template-description">{template.description}</p>
+                  <p className="quiz-editor__template-description">
+                    {template.description}
+                  </p>
                 </button>
               ))}
             </div>
@@ -226,7 +248,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
               <button
                 type="button"
                 className="quiz-editor__quick-button"
-                onClick={() => addNewQuestion('blank')}
+                onClick={() => addNewQuestion("blank")}
               >
                 <div className="quiz-editor__template-icon">✍️</div>
                 <p className="quiz-editor__template-name">Multiple Choice</p>
@@ -238,7 +260,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
               <button
                 type="button"
                 className="quiz-editor__quick-button"
-                onClick={() => addNewQuestion('agree-disagree')}
+                onClick={() => addNewQuestion("agree-disagree")}
               >
                 <div className="quiz-editor__template-icon">⚖️</div>
                 <p className="quiz-editor__template-name">Agree / Disagree</p>
@@ -250,7 +272,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
               <button
                 type="button"
                 className="quiz-editor__quick-button"
-                onClick={() => addNewQuestion('image-grid')}
+                onClick={() => addNewQuestion("image-grid")}
               >
                 <div className="quiz-editor__template-icon">🖼️</div>
                 <p className="quiz-editor__template-name">Image Choice</p>
@@ -262,7 +284,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
               <button
                 type="button"
                 className="quiz-editor__quick-button"
-                onClick={() => addNewQuestion('xy-axis')}
+                onClick={() => addNewQuestion("xy-axis")}
               >
                 <div className="quiz-editor__template-icon">🧭</div>
                 <p className="quiz-editor__template-name">2D Spectrum</p>
@@ -277,14 +299,25 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
 
       <div className="quiz-editor__list-toolbar">
         <p className="quiz-editor__list-toolbar-note">
-          Drag cards to reorder the quiz, or use the quick controls when you want a precise move.
+          Drag cards to reorder the quiz, or use the quick controls when you
+          want a precise move.
         </p>
 
         <div className="quiz-editor__library-actions">
-          <Button variant="ghost" size="sm" onClick={expandAll} disabled={questions.length === 0}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={expandAll}
+            disabled={questions.length === 0}
+          >
             Expand All
           </Button>
-          <Button variant="ghost" size="sm" onClick={collapseAll} disabled={questions.length === 0}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={collapseAll}
+            disabled={questions.length === 0}
+          >
             Collapse All
           </Button>
         </div>
@@ -293,7 +326,8 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       {questions.length === 0 ? (
         <div className="quiz-editor__summary-block">
           <p className="quiz-editor__section-copy">
-            No questions yet. Start with a blank question or open the template browser above.
+            No questions yet. Start with a blank question or open the template
+            browser above.
           </p>
         </div>
       ) : (
@@ -313,14 +347,17 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                 onDrop={() => handleDrop(index)}
                 onDragEnd={handleDragEnd}
                 className={`quiz-editor__question-card ${
-                  isExpanded ? 'quiz-editor__question-card--expanded' : ''
-                } ${isDragOver ? 'quiz-editor__question-card--drag-over' : ''}`}
+                  isExpanded ? "quiz-editor__question-card--expanded" : ""
+                } ${isDragOver ? "quiz-editor__question-card--drag-over" : ""}`}
                 style={{
                   opacity: isDragging ? 0.55 : 1,
                 }}
               >
                 <div className="quiz-editor__question-card-header">
-                  <div className="quiz-editor__drag-handle" title="Drag to reorder">
+                  <div
+                    className="quiz-editor__drag-handle"
+                    title="Drag to reorder"
+                  >
                     ⋮⋮
                   </div>
 
@@ -330,23 +367,31 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                     tabIndex={0}
                     onClick={() => toggleExpand(q.id)}
                     onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
+                      if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         toggleExpand(q.id);
                       }
                     }}
                   >
                     <div className="quiz-editor__question-topline">
-                      <span className="quiz-editor__question-index">#{index + 1}</span>
-                      <span className="quiz-editor__type-badge">{QUESTION_TYPE_LABELS[q.type]}</span>
+                      <span className="quiz-editor__question-index">
+                        #{index + 1}
+                      </span>
+                      <span className="quiz-editor__type-badge">
+                        {QUESTION_TYPE_LABELS[q.type]}
+                      </span>
                     </div>
 
                     <p className="quiz-editor__question-text">{q.question}</p>
 
                     <div className="quiz-editor__question-meta">
-                      <p className="quiz-editor__question-detail">{getQuestionDetail(q)}</p>
                       <p className="quiz-editor__question-detail">
-                        {isExpanded ? 'Expanded details' : 'Tap to inspect summary'}
+                        {getQuestionDetail(q)}
+                      </p>
+                      <p className="quiz-editor__question-detail">
+                        {isExpanded
+                          ? "Expanded details"
+                          : "Tap to inspect summary"}
                       </p>
                     </div>
                   </div>
@@ -363,7 +408,9 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => moveQuestion(index, Math.max(0, index - 1))}
+                      onClick={() =>
+                        moveQuestion(index, Math.max(0, index - 1))
+                      }
                       disabled={index === 0}
                       title="Move up"
                     >
@@ -372,7 +419,12 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => moveQuestion(index, Math.min(questions.length - 1, index + 1))}
+                      onClick={() =>
+                        moveQuestion(
+                          index,
+                          Math.min(questions.length - 1, index + 1),
+                        )
+                      }
                       disabled={index === questions.length - 1}
                       title="Move down"
                     >
@@ -392,27 +444,42 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                 {isExpanded && (
                   <div className="quiz-editor__question-body">
                     <div className="quiz-editor__panel-intro">
-                      <p className="quiz-editor__section-eyebrow">Question Summary</p>
+                      <p className="quiz-editor__section-eyebrow">
+                        Question Summary
+                      </p>
                       <p className="quiz-editor__section-copy">
-                        Review the current structure before jumping back into the full editor.
+                        Review the current structure before jumping back into
+                        the full editor.
                       </p>
                     </div>
 
                     <div className="quiz-editor__summary-block">
-                      {q.type === 'multiple-choice' && (
-                        <OptionsSummary options={(q as MultipleChoiceQuestion).options} />
+                      {q.type === "multiple-choice" && (
+                        <OptionsSummary
+                          options={(q as MultipleChoiceQuestion).options}
+                        />
                       )}
-                      {q.type === 'image-choice' && (
-                        <ImageOptionsSummary options={(q as ImageChoiceQuestion).options} />
+                      {q.type === "image-choice" && (
+                        <ImageOptionsSummary
+                          options={(q as ImageChoiceQuestion).options}
+                        />
                       )}
-                      {q.type === 'agree-disagree' && (
-                        <AgreeDisagreeSummary scores={(q as AgreeDisagreeQuestion).scores} />
+                      {q.type === "agree-disagree" && (
+                        <AgreeDisagreeSummary
+                          scores={(q as AgreeDisagreeQuestion).scores}
+                        />
                       )}
-                      {q.type === 'xy-axis' && <XYAxisSummary question={q as XYAxisQuestion} />}
+                      {q.type === "xy-axis" && (
+                        <XYAxisSummary question={q as XYAxisQuestion} />
+                      )}
                     </div>
 
                     <div>
-                      <Button variant="secondary" size="sm" onClick={() => setEditingQuestion(q)}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setEditingQuestion(q)}
+                      >
                         Edit Question
                       </Button>
                     </div>
@@ -427,7 +494,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <ConfirmDialog
         isOpen={!!questionToDeleteId}
         title="Delete Question"
-        message={`Delete "${questionToDelete?.question || 'this question'}"?`}
+        message={`Delete "${questionToDelete?.question || "this question"}"?`}
         confirmText="Delete"
         onConfirm={confirmDeleteQuestion}
         onCancel={() => setQuestionToDeleteId(null)}

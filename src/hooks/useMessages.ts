@@ -1,23 +1,26 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useUser } from '@/app/useProviders';
-import type { Message } from '@/shared/types';
-import { areDeeplyEqual, sanitizeInput } from '@/utils';
-import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/content';
-import { usePolling } from '@/services/polling';
-import { readScope, retryScopeSync } from '@/services/state';
+import { useCallback, useMemo, useState } from "react";
+import { useUser } from "@/app/useProviders";
+import type { Message } from "@/shared/types";
+import { areDeeplyEqual, sanitizeInput } from "@/utils";
+import {
+  addMessage as addMessageService,
+  deleteMessage as deleteMessageService,
+} from "@/services/content";
+import { usePolling } from "@/services/polling";
+import { readScope, retryScopeSync } from "@/services/state";
 
 const POLLING_INTERVAL = 15000;
 
 export const useMessages = () => {
   const { currentUser } = useUser();
-  const readMessages = useCallback(() => readScope('messages'), []);
+  const readMessages = useCallback(() => readScope("messages"), []);
   const {
     data: snapshot,
     error,
     isLoading,
     refresh,
   } = usePolling(readMessages, POLLING_INTERVAL, areDeeplyEqual, {
-    key: 'messages',
+    key: "messages",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,9 +28,10 @@ export const useMessages = () => {
     () =>
       [...(snapshot?.data ?? [])].sort(
         (left, right) =>
-          new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
+          new Date(left.createdAt).getTime() -
+          new Date(right.createdAt).getTime(),
       ),
-    [snapshot]
+    [snapshot],
   );
 
   const addMessage = useCallback(
@@ -35,11 +39,11 @@ export const useMessages = () => {
       const trimmedContent = sanitizeInput(content);
 
       if (!currentUser) {
-        throw new Error('Choose Aaron or Electra to send a message.');
+        throw new Error("Choose Aaron or Electra to send a message.");
       }
 
       if (!trimmedContent) {
-        throw new Error('Please enter a message.');
+        throw new Error("Please enter a message.");
       }
 
       setIsSubmitting(true);
@@ -51,17 +55,17 @@ export const useMessages = () => {
         setIsSubmitting(false);
       }
     },
-    [currentUser, refresh]
+    [currentUser, refresh],
   );
 
   const deleteMessage = useCallback(
     async (message: Message) => {
       if (!currentUser) {
-        throw new Error('Choose Aaron or Electra to delete a message.');
+        throw new Error("Choose Aaron or Electra to delete a message.");
       }
 
       if (message.author !== currentUser) {
-        throw new Error('You can only delete your own messages.');
+        throw new Error("You can only delete your own messages.");
       }
 
       setIsSubmitting(true);
@@ -72,11 +76,11 @@ export const useMessages = () => {
         setIsSubmitting(false);
       }
     },
-    [currentUser, refresh]
+    [currentUser, refresh],
   );
 
   const retrySync = useCallback(async () => {
-    await retryScopeSync('messages');
+    await retryScopeSync("messages");
     refresh();
   }, [refresh]);
 

@@ -1,18 +1,18 @@
-import React from 'react';
-import WatcherBadge from '@/common/WatcherBadge';
+import React from "react";
+import WatcherBadge from "@/common/WatcherBadge";
 
 interface MediaCardWatcherStackProps {
   watchers: string[];
-  size?: 'sm' | 'md';
+  size?: "sm" | "md";
   showLabel?: boolean;
   className?: string;
 }
 
 export const MediaCardWatcherStack: React.FC<MediaCardWatcherStackProps> = ({
   watchers,
-  size = 'md',
+  size = "md",
   showLabel = false,
-  className = '',
+  className = "",
 }) => {
   if (watchers.length === 0) return null;
 

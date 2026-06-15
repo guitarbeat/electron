@@ -2,14 +2,14 @@ import {
   CHARACTERS,
   type QuizCharacter,
   type QuizQuestion,
-} from '../../components/quiz/lib/types.ts';
+} from "../../components/quiz/lib/types.ts";
 import {
   characterDescriptions as defaultDescriptions,
   neitherDescription as defaultNeither,
   quizQuestions as defaultQuestions,
-} from '../../components/quiz/lib/data.ts';
-import { reconcileMatchmakerStatus } from '../../components/matchmaker/matchmakerGame.ts';
-import { normalizePinRecord, type PinRecord } from '../content/pinHelpers.ts';
+} from "../../components/quiz/lib/data.ts";
+import { reconcileMatchmakerStatus } from "../../components/matchmaker/matchmakerGame.ts";
+import { normalizePinRecord, type PinRecord } from "../content/pinHelpers.ts";
 import type {
   MatchmakerGame,
   Message,
@@ -17,13 +17,19 @@ import type {
   Place,
   PlaceSuggestion,
   SharedMemory,
-} from '../../shared/types.ts';
-import type { DailySpinRecord, SpinEntry } from './stateTypes.ts';
-import { deepClone, isUser, isValidUrl, parseJsonContent, sanitizeInput } from '../../utils/shared.ts';
-import type { PinsState, QuizData } from './stateTypes.ts';
+} from "../../shared/types.ts";
+import type { DailySpinRecord, SpinEntry } from "./stateTypes.ts";
+import {
+  deepClone,
+  isUser,
+  isValidUrl,
+  parseJsonContent,
+  sanitizeInput,
+} from "../../utils/shared.ts";
+import type { PinsState, QuizData } from "./stateTypes.ts";
 
 const normalizeRequiredString = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -32,7 +38,7 @@ const normalizeRequiredString = (value: unknown): string | null => {
 };
 
 const normalizeOptionalString = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
 
@@ -41,7 +47,7 @@ const normalizeOptionalString = (value: unknown): string | undefined => {
 };
 
 const normalizeCreatedAt = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -49,7 +55,7 @@ const normalizeCreatedAt = (value: unknown): string | null => {
 };
 
 const normalizeOptionalDate = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
 
@@ -57,7 +63,7 @@ const normalizeOptionalDate = (value: unknown): string | undefined => {
 };
 
 const normalizeOptionalUrl = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
 
@@ -66,7 +72,7 @@ const normalizeOptionalUrl = (value: unknown): string | undefined => {
 };
 
 const normalizeOptionalNumber = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+  typeof value === "number" && Number.isFinite(value) ? value : undefined;
 
 export const defaultQuizData: QuizData = {
   questions: defaultQuestions,
@@ -74,11 +80,10 @@ export const defaultQuizData: QuizData = {
   neitherDescription: defaultNeither,
 };
 
-export const cloneQuizData = (data: QuizData): QuizData =>
-  deepClone(data);
+export const cloneQuizData = (data: QuizData): QuizData => deepClone(data);
 
 export const normalizeQuizData = (value: unknown): QuizData | null => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -91,14 +96,18 @@ export const normalizeQuizData = (value: unknown): QuizData | null => {
     return null;
   }
 
-  const characterDescriptions = CHARACTERS.reduce<Record<QuizCharacter, string>>(
+  const characterDescriptions = CHARACTERS.reduce<
+    Record<QuizCharacter, string>
+  >(
     (acc, character) => {
       const nextValue = candidate.characterDescriptions?.[character];
       acc[character] =
-        typeof nextValue === 'string' ? nextValue : defaultDescriptions[character];
+        typeof nextValue === "string"
+          ? nextValue
+          : defaultDescriptions[character];
       return acc;
     },
-    {} as Record<QuizCharacter, string>
+    {} as Record<QuizCharacter, string>,
   );
 
   return {
@@ -108,7 +117,7 @@ export const normalizeQuizData = (value: unknown): QuizData | null => {
         : defaultQuestions,
     characterDescriptions,
     neitherDescription:
-      typeof candidate.neitherDescription === 'string'
+      typeof candidate.neitherDescription === "string"
         ? candidate.neitherDescription
         : defaultNeither,
   };
@@ -120,7 +129,7 @@ export const cloneMessages = (messages: Message[]): Message[] =>
   }));
 
 export const normalizeMessageRecord = (value: unknown): Message | null => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -145,12 +154,14 @@ export const normalizeMessageRecord = (value: unknown): Message | null => {
 export const isMessageRecord = (value: unknown): value is Message =>
   normalizeMessageRecord(value) !== null;
 
-export const parseMessagesContent = (content: string | undefined): Message[] => {
+export const parseMessagesContent = (
+  content: string | undefined,
+): Message[] => {
   if (!content) {
     return [];
   }
 
-  const parsed = parseJsonContent(content, 'messages');
+  const parsed = parseJsonContent(content, "messages");
   return Array.isArray(parsed)
     ? parsed.flatMap((message) => {
         const normalized = normalizeMessageRecord(message);
@@ -164,8 +175,10 @@ export const cloneMemories = (memories: SharedMemory[]): SharedMemory[] =>
     ...memory,
   }));
 
-export const normalizeSharedMemoryRecord = (value: unknown): SharedMemory | null => {
-  if (!value || typeof value !== 'object') {
+export const normalizeSharedMemoryRecord = (
+  value: unknown,
+): SharedMemory | null => {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -188,7 +201,8 @@ export const normalizeSharedMemoryRecord = (value: unknown): SharedMemory | null
     note,
     createdAt,
     updatedAt: normalizeOptionalDate(memory.updatedAt),
-    isPinned: typeof memory.isPinned === 'boolean' ? memory.isPinned : undefined,
+    isPinned:
+      typeof memory.isPinned === "boolean" ? memory.isPinned : undefined,
     imageUrl: normalizeOptionalUrl(memory.imageUrl),
   };
 };
@@ -201,14 +215,20 @@ export const normalizeMemories = (value: unknown): SharedMemory[] =>
       })
     : [];
 
-const isSuggestionStatus = (value: unknown): value is MovieSuggestion['status'] =>
-  value === 'pending' || value === 'accepted' || value === 'rejected';
+const isSuggestionStatus = (
+  value: unknown,
+): value is MovieSuggestion["status"] =>
+  value === "pending" || value === "accepted" || value === "rejected";
 
-const isMovieSuggestionType = (value: unknown): value is NonNullable<MovieSuggestion['type']> =>
-  value === 'movie' || value === 'series';
+const isMovieSuggestionType = (
+  value: unknown,
+): value is NonNullable<MovieSuggestion["type"]> =>
+  value === "movie" || value === "series";
 
-export const normalizeSuggestionRecord = (value: unknown): MovieSuggestion | null => {
-  if (!value || typeof value !== 'object') {
+export const normalizeSuggestionRecord = (
+  value: unknown,
+): MovieSuggestion | null => {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -218,7 +238,13 @@ export const normalizeSuggestionRecord = (value: unknown): MovieSuggestion | nul
   const suggestedBy = normalizeRequiredString(suggestion.suggestedBy);
   const createdAt = normalizeCreatedAt(suggestion.createdAt);
 
-  if (!id || !title || !suggestedBy || !createdAt || !isSuggestionStatus(suggestion.status)) {
+  if (
+    !id ||
+    !title ||
+    !suggestedBy ||
+    !createdAt ||
+    !isSuggestionStatus(suggestion.status)
+  ) {
     return null;
   }
 
@@ -232,7 +258,9 @@ export const normalizeSuggestionRecord = (value: unknown): MovieSuggestion | nul
     createdAt,
     reason: normalizeOptionalString(suggestion.reason),
     respondedAt: normalizeOptionalDate(suggestion.respondedAt),
-    respondedBy: isUser(suggestion.respondedBy) ? suggestion.respondedBy : undefined,
+    respondedBy: isUser(suggestion.respondedBy)
+      ? suggestion.respondedBy
+      : undefined,
   };
 };
 
@@ -244,11 +272,15 @@ export const normalizeSuggestions = (value: unknown): MovieSuggestion[] =>
       })
     : [];
 
-const isPlaceSuggestionStatus = (value: unknown): value is PlaceSuggestion['status'] =>
-  value === 'pending' || value === 'accepted' || value === 'rejected';
+const isPlaceSuggestionStatus = (
+  value: unknown,
+): value is PlaceSuggestion["status"] =>
+  value === "pending" || value === "accepted" || value === "rejected";
 
-export const normalizePlaceSuggestionRecord = (value: unknown): PlaceSuggestion | null => {
-  if (!value || typeof value !== 'object') {
+export const normalizePlaceSuggestionRecord = (
+  value: unknown,
+): PlaceSuggestion | null => {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -258,7 +290,13 @@ export const normalizePlaceSuggestionRecord = (value: unknown): PlaceSuggestion 
   const suggestedBy = normalizeRequiredString(suggestion.suggestedBy);
   const createdAt = normalizeCreatedAt(suggestion.createdAt);
 
-  if (!id || !name || !suggestedBy || !createdAt || !isPlaceSuggestionStatus(suggestion.status)) {
+  if (
+    !id ||
+    !name ||
+    !suggestedBy ||
+    !createdAt ||
+    !isPlaceSuggestionStatus(suggestion.status)
+  ) {
     return null;
   }
 
@@ -274,7 +312,9 @@ export const normalizePlaceSuggestionRecord = (value: unknown): PlaceSuggestion 
     description: normalizeOptionalString(suggestion.description),
     imageUrl: normalizeOptionalUrl(suggestion.imageUrl),
     respondedAt: normalizeOptionalDate(suggestion.respondedAt),
-    respondedBy: isUser(suggestion.respondedBy) ? suggestion.respondedBy : undefined,
+    respondedBy: isUser(suggestion.respondedBy)
+      ? suggestion.respondedBy
+      : undefined,
   };
 };
 
@@ -292,7 +332,7 @@ export const clonePlaces = (places: Place[]): Place[] =>
   }));
 
 export const normalizePlaceRecord = (value: unknown): Place | null => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -330,13 +370,17 @@ export const normalizePlaces = (value: unknown): Place[] =>
     : [];
 
 const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string');
+  Array.isArray(value) && value.every((item) => typeof item === "string");
 
-const isMatchmakerStatus = (value: unknown): value is MatchmakerGame['status'] =>
-  value === 'active' || value === 'completed';
+const isMatchmakerStatus = (
+  value: unknown,
+): value is MatchmakerGame["status"] =>
+  value === "active" || value === "completed";
 
-export const normalizeMatchmakerGame = (value: unknown): MatchmakerGame | null => {
-  if (!value || typeof value !== 'object') {
+export const normalizeMatchmakerGame = (
+  value: unknown,
+): MatchmakerGame | null => {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -368,13 +412,17 @@ export const normalizeMatchmakerGame = (value: unknown): MatchmakerGame | null =
     electraLikes: [...game.electraLikes],
     aaronDislikes: [...game.aaronDislikes],
     electraDislikes: [...game.electraDislikes],
-    aaronSwipeOrder: isStringArray(game.aaronSwipeOrder) ? [...game.aaronSwipeOrder] : [],
-    electraSwipeOrder: isStringArray(game.electraSwipeOrder) ? [...game.electraSwipeOrder] : [],
+    aaronSwipeOrder: isStringArray(game.aaronSwipeOrder)
+      ? [...game.aaronSwipeOrder]
+      : [],
+    electraSwipeOrder: isStringArray(game.electraSwipeOrder)
+      ? [...game.electraSwipeOrder]
+      : [],
   });
 };
 
 export const cloneMatchmakerGame = (
-  game: MatchmakerGame | null
+  game: MatchmakerGame | null,
 ): MatchmakerGame | null =>
   game
     ? {
@@ -408,19 +456,19 @@ export const normalizeStoredPins = (value: unknown): PinRecord =>
 export const clonePinsState = (pins: PinsState): PinsState => ({ ...pins });
 
 const spinHistoryTitleFromEntry = (entry: unknown): string | null => {
-  if (typeof entry === 'string') {
+  if (typeof entry === "string") {
     const t = sanitizeInput(entry);
     return t || null;
   }
-  if (!entry || typeof entry !== 'object') {
+  if (!entry || typeof entry !== "object") {
     return null;
   }
   const o = entry as { title?: unknown; movieTitle?: unknown };
-  if (typeof o.title === 'string') {
+  if (typeof o.title === "string") {
     const t = sanitizeInput(o.title);
     return t || null;
   }
-  if (typeof o.movieTitle === 'string') {
+  if (typeof o.movieTitle === "string") {
     const t = sanitizeInput(o.movieTitle);
     return t || null;
   }
@@ -438,7 +486,7 @@ export const normalizeSpinHistoryParsed = (value: unknown): string[] => {
 };
 
 export const normalizeSpinEntry = (value: unknown): SpinEntry | null => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -461,7 +509,7 @@ export const normalizeSpinEntry = (value: unknown): SpinEntry | null => {
 
 export const appendDailySpinEntry = (
   current: DailySpinRecord | null,
-  nextEntry: SpinEntry
+  nextEntry: SpinEntry,
 ): DailySpinRecord => {
   const nextDate = nextEntry.createdAt.slice(0, 10);
   const spins = current?.date === nextDate ? current.spins : [];
@@ -472,8 +520,10 @@ export const appendDailySpinEntry = (
   };
 };
 
-export const normalizeDailySpinRecord = (value: unknown): DailySpinRecord | null => {
-  if (!value || typeof value !== 'object') {
+export const normalizeDailySpinRecord = (
+  value: unknown,
+): DailySpinRecord | null => {
+  if (!value || typeof value !== "object") {
     return null;
   }
 

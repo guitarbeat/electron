@@ -1,5 +1,5 @@
-import React from 'react';
-import FishTank from '@/components/effects/FishTank';
+import React from "react";
+import FishTank from "@/components/effects/FishTank";
 
 /**
  * Full-screen loading state shown while the session is bootstrapping.
@@ -32,10 +32,17 @@ const LoadingScreen: React.FC = () => (
         }
       }
     `}</style>
-    <div className="session-loading-screen" role="status" aria-live="polite" aria-label="Loading">
+    <div
+      className="session-loading-screen"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading"
+    >
       <div className="session-loading-screen__panel">
         <p className="session-loading-screen__eyebrow">Electron</p>
-        <h1 className="session-loading-screen__title">Loading your watchlist</h1>
+        <h1 className="session-loading-screen__title">
+          Loading your watchlist
+        </h1>
         <p className="session-loading-screen__subtitle">
           Preparing the app and restoring your session.
         </p>
@@ -45,7 +52,15 @@ const LoadingScreen: React.FC = () => (
           <span />
         </div>
       </div>
-      <div className="loading-screen__tank" style={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: 'min(560px, 90vw)' }}>
+      <div
+        className="loading-screen__tank"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          maxWidth: "min(560px, 90vw)",
+        }}
+      >
         <FishTank />
       </div>
     </div>

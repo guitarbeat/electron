@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import type {
   AgreeDisagreeQuestion,
   ImageChoiceQuestion,
@@ -6,33 +6,52 @@ import type {
   QuizCharacter,
   QuizQuestion,
   XYAxisQuestion,
-} from './lib/types';
-import ScoreSlider from './ScoreSlider';
-import { getQuestionDetail, QUESTION_TYPE_LABELS } from './lib/QuestionEditorMeta';
-import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import { Input, Textarea } from '@/ui/FormFields';
-import { useToast } from '@/app/useProviders';
-import { spacing, colors, typography } from '@/theme/tokens';
+} from "./lib/types";
+import ScoreSlider from "./ScoreSlider";
+import {
+  getQuestionDetail,
+  QUESTION_TYPE_LABELS,
+} from "./lib/QuestionEditorMeta";
+import Card from "@/ui/Card";
+import Button from "@/ui/Button";
+import { Input, Textarea } from "@/ui/FormFields";
+import { useToast } from "@/app/useProviders";
+import { spacing, colors, typography } from "@/theme/tokens";
 
 const QUADRANT_INFO = [
-  { key: 'topLeft', icon: '⬆⬅', name: 'Top-Left', position: 'left + top' },
-  { key: 'topRight', icon: '⬆➡', name: 'Top-Right', position: 'right + top' },
-  { key: 'bottomLeft', icon: '⬇⬅', name: 'Bottom-Left', position: 'left + bottom' },
-  { key: 'bottomRight', icon: '⬇➡', name: 'Bottom-Right', position: 'right + bottom' },
+  { key: "topLeft", icon: "⬆⬅", name: "Top-Left", position: "left + top" },
+  { key: "topRight", icon: "⬆➡", name: "Top-Right", position: "right + top" },
+  {
+    key: "bottomLeft",
+    icon: "⬇⬅",
+    name: "Bottom-Left",
+    position: "left + bottom",
+  },
+  {
+    key: "bottomRight",
+    icon: "⬇➡",
+    name: "Bottom-Right",
+    position: "right + bottom",
+  },
 ] as const;
 
 const AgreeDisagreeEditor: React.FC<{
   question: AgreeDisagreeQuestion;
   onChange: (q: AgreeDisagreeQuestion) => void;
 }> = ({ question, onChange }) => {
-  const levels = ['stronglyDisagree', 'disagree', 'neutral', 'agree', 'stronglyAgree'] as const;
+  const levels = [
+    "stronglyDisagree",
+    "disagree",
+    "neutral",
+    "agree",
+    "stronglyAgree",
+  ] as const;
   const levelLabels = {
-    stronglyDisagree: 'Strongly Disagree',
-    disagree: 'Disagree',
-    neutral: 'Neutral',
-    agree: 'Agree',
-    stronglyAgree: 'Strongly Agree',
+    stronglyDisagree: "Strongly Disagree",
+    disagree: "Disagree",
+    neutral: "Neutral",
+    agree: "Agree",
+    stronglyAgree: "Strongly Agree",
   };
 
   return (
@@ -40,7 +59,8 @@ const AgreeDisagreeEditor: React.FC<{
       <div className="quiz-editor__editor-subsection">
         <h3 className="quiz-editor__subsection-title">Scoring by response</h3>
         <p className="quiz-editor__subsection-copy">
-          Shape how each point on the scale contributes to each character result.
+          Shape how each point on the scale contributes to each character
+          result.
         </p>
       </div>
       {levels.map((level) => (
@@ -75,8 +95,8 @@ const MultipleChoiceEditor: React.FC<{
 }> = ({ question, onChange }) => {
   const updateOption = (
     index: number,
-    field: 'text' | 'scores',
-    value: string | Partial<Record<QuizCharacter, number>>
+    field: "text" | "scores",
+    value: string | Partial<Record<QuizCharacter, number>>,
   ) => {
     const newOptions = [...question.options];
     newOptions[index] = { ...newOptions[index], [field]: value };
@@ -86,7 +106,7 @@ const MultipleChoiceEditor: React.FC<{
   const addOption = () => {
     onChange({
       ...question,
-      options: [...question.options, { text: 'New option', scores: {} }],
+      options: [...question.options, { text: "New option", scores: {} }],
     });
   };
 
@@ -103,18 +123,25 @@ const MultipleChoiceEditor: React.FC<{
       <div className="quiz-editor__editor-subsection">
         <h3 className="quiz-editor__subsection-title">Answer options</h3>
         <p className="quiz-editor__subsection-copy">
-          Write the answer copy, then assign score weight to each character outcome.
+          Write the answer copy, then assign score weight to each character
+          outcome.
         </p>
       </div>
       {question.options.map((option, idx) => (
         <div key={idx} className="quiz-editor__option-card">
-          <div style={{ display: 'flex', gap: spacing.sm, marginBottom: spacing.sm }}>
+          <div
+            style={{
+              display: "flex",
+              gap: spacing.sm,
+              marginBottom: spacing.sm,
+            }}
+          >
             <div style={{ flex: 1 }}>
               <Input
                 value={option.text}
-                onChange={(e) => updateOption(idx, 'text', e.target.value)}
+                onChange={(e) => updateOption(idx, "text", e.target.value)}
                 placeholder="Option text"
-                style={{ textAlign: 'left' }}
+                style={{ textAlign: "left" }}
               />
             </div>
             <Button
@@ -152,22 +179,26 @@ const ImageChoiceEditor: React.FC<{
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { showToast } = useToast();
 
-  const updateOption = (index: number, field: 'imageUrl' | 'alt', value: string) => {
+  const updateOption = (
+    index: number,
+    field: "imageUrl" | "alt",
+    value: string,
+  ) => {
     const newOptions = [...question.options];
     newOptions[index] = { ...newOptions[index], [field]: value };
     onChange({ ...question, options: newOptions });
   };
 
   const handleImageUpload = async (index: number, file: File) => {
-    if (!file.type.startsWith('image/')) {
-      showToast({ message: 'Please select an image file.', type: 'error' });
+    if (!file.type.startsWith("image/")) {
+      showToast({ message: "Please select an image file.", type: "error" });
       return;
     }
 
     if (file.size > 500 * 1024) {
       showToast({
-        message: 'Image too large. Please use an image under 500KB.',
-        type: 'error',
+        message: "Image too large. Please use an image under 500KB.",
+        type: "error",
       });
       return;
     }
@@ -179,7 +210,7 @@ const ImageChoiceEditor: React.FC<{
       newOptions[index] = {
         ...newOptions[index],
         imageUrl: base64,
-        alt: newOptions[index].alt || file.name.replace(/\.[^/.]+$/, ''),
+        alt: newOptions[index].alt || file.name.replace(/\.[^/.]+$/, ""),
       };
       onChange({ ...question, options: newOptions });
     };
@@ -189,7 +220,10 @@ const ImageChoiceEditor: React.FC<{
   const addOption = () => {
     onChange({
       ...question,
-      options: [...question.options, { imageUrl: '', alt: 'New image', scores: {} }],
+      options: [
+        ...question.options,
+        { imageUrl: "", alt: "New image", scores: {} },
+      ],
     });
   };
 
@@ -201,14 +235,15 @@ const ImageChoiceEditor: React.FC<{
     });
   };
 
-  const isBase64Image = (url: string) => url.startsWith('data:image');
+  const isBase64Image = (url: string) => url.startsWith("data:image");
 
   return (
     <div className="quiz-editor__editor-section">
       <div className="quiz-editor__editor-subsection">
         <h3 className="quiz-editor__subsection-title">Image options</h3>
         <p className="quiz-editor__subsection-copy">
-          Upload art under 500KB, or point to an existing asset from `/quiz-photos/`.
+          Upload art under 500KB, or point to an existing asset from
+          `/quiz-photos/`.
         </p>
       </div>
       {question.options.map((option, idx) => (
@@ -226,13 +261,15 @@ const ImageChoiceEditor: React.FC<{
                   src={option.imageUrl}
                   alt={option.alt}
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
                   }}
                 />
               ) : (
-                <div className="quiz-editor__upload-preview-note">Click to upload</div>
+                <div className="quiz-editor__upload-preview-note">
+                  Click to upload
+                </div>
               )}
             </button>
 
@@ -243,7 +280,7 @@ const ImageChoiceEditor: React.FC<{
                 }}
                 type="file"
                 accept="image/*"
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleImageUpload(idx, file);
@@ -255,7 +292,7 @@ const ImageChoiceEditor: React.FC<{
                   variant="secondary"
                   size="sm"
                   onClick={() => fileInputRefs.current[idx]?.click()}
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                 >
                   Upload Image
                 </Button>
@@ -263,10 +300,14 @@ const ImageChoiceEditor: React.FC<{
 
               <Input
                 label="Or enter URL"
-                value={isBase64Image(option.imageUrl) ? '(uploaded image)' : option.imageUrl}
-                onChange={(e) => updateOption(idx, 'imageUrl', e.target.value)}
+                value={
+                  isBase64Image(option.imageUrl)
+                    ? "(uploaded image)"
+                    : option.imageUrl
+                }
+                onChange={(e) => updateOption(idx, "imageUrl", e.target.value)}
                 placeholder="/quiz-photos/quiz-img-1.png"
-                style={{ textAlign: 'left' }}
+                style={{ textAlign: "left" }}
                 disabled={isBase64Image(option.imageUrl)}
               />
 
@@ -274,8 +315,11 @@ const ImageChoiceEditor: React.FC<{
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => updateOption(idx, 'imageUrl', '')}
-                  style={{ marginTop: spacing.xs, fontSize: typography.fontSize.xs }}
+                  onClick={() => updateOption(idx, "imageUrl", "")}
+                  style={{
+                    marginTop: spacing.xs,
+                    fontSize: typography.fontSize.xs,
+                  }}
                 >
                   Clear uploaded image
                 </Button>
@@ -299,9 +343,9 @@ const ImageChoiceEditor: React.FC<{
             <Input
               label="Alt Text (description)"
               value={option.alt}
-              onChange={(e) => updateOption(idx, 'alt', e.target.value)}
+              onChange={(e) => updateOption(idx, "alt", e.target.value)}
               placeholder="Description of the image"
-              style={{ textAlign: 'left' }}
+              style={{ textAlign: "left" }}
             />
           </div>
 
@@ -326,14 +370,14 @@ const XYAxisEditor: React.FC<{
   question: XYAxisQuestion;
   onChange: (q: XYAxisQuestion) => void;
 }> = ({ question, onChange }) => {
-  const updateXAxis = (field: 'leftLabel' | 'rightLabel', value: string) => {
+  const updateXAxis = (field: "leftLabel" | "rightLabel", value: string) => {
     onChange({
       ...question,
       xAxis: { ...question.xAxis, [field]: value },
     });
   };
 
-  const updateYAxis = (field: 'topLabel' | 'bottomLabel', value: string) => {
+  const updateYAxis = (field: "topLabel" | "bottomLabel", value: string) => {
     onChange({
       ...question,
       yAxis: { ...question.yAxis, [field]: value },
@@ -341,8 +385,8 @@ const XYAxisEditor: React.FC<{
   };
 
   const updateQuadrantScores = (
-    quadrant: keyof XYAxisQuestion['quadrantScores'],
-    scores: Partial<Record<QuizCharacter, number>>
+    quadrant: keyof XYAxisQuestion["quadrantScores"],
+    scores: Partial<Record<QuizCharacter, number>>,
   ) => {
     onChange({
       ...question,
@@ -356,10 +400,14 @@ const XYAxisEditor: React.FC<{
   return (
     <div className="quiz-editor__editor-section">
       <div className="quiz-editor__editor-block">
-        <div className="quiz-editor__editor-subsection" style={{ marginBottom: spacing.md }}>
+        <div
+          className="quiz-editor__editor-subsection"
+          style={{ marginBottom: spacing.md }}
+        >
           <h3 className="quiz-editor__subsection-title">Axis labels</h3>
           <p className="quiz-editor__subsection-copy">
-            Name the two poles so the grid feels immediately understandable to quiz takers.
+            Name the two poles so the grid feels immediately understandable to
+            quiz takers.
           </p>
         </div>
 
@@ -367,30 +415,30 @@ const XYAxisEditor: React.FC<{
           <Input
             label="Y-Axis Top"
             value={question.yAxis.topLabel}
-            onChange={(e) => updateYAxis('topLabel', e.target.value)}
+            onChange={(e) => updateYAxis("topLabel", e.target.value)}
             placeholder="e.g., Spontaneous"
-            style={{ textAlign: 'left' }}
+            style={{ textAlign: "left" }}
           />
           <Input
             label="Y-Axis Bottom"
             value={question.yAxis.bottomLabel}
-            onChange={(e) => updateYAxis('bottomLabel', e.target.value)}
+            onChange={(e) => updateYAxis("bottomLabel", e.target.value)}
             placeholder="e.g., Planned"
-            style={{ textAlign: 'left' }}
+            style={{ textAlign: "left" }}
           />
           <Input
             label="X-Axis Left"
             value={question.xAxis.leftLabel}
-            onChange={(e) => updateXAxis('leftLabel', e.target.value)}
+            onChange={(e) => updateXAxis("leftLabel", e.target.value)}
             placeholder="e.g., Solo"
-            style={{ textAlign: 'left' }}
+            style={{ textAlign: "left" }}
           />
           <Input
             label="X-Axis Right"
             value={question.xAxis.rightLabel}
-            onChange={(e) => updateXAxis('rightLabel', e.target.value)}
+            onChange={(e) => updateXAxis("rightLabel", e.target.value)}
             placeholder="e.g., Social"
-            style={{ textAlign: 'left' }}
+            style={{ textAlign: "left" }}
           />
         </div>
       </div>
@@ -398,22 +446,25 @@ const XYAxisEditor: React.FC<{
       <div className="quiz-editor__editor-subsection">
         <h3 className="quiz-editor__subsection-title">Quadrant scores</h3>
         <p className="quiz-editor__subsection-copy">
-          Define which character wins when someone lands in each region of the grid.
+          Define which character wins when someone lands in each region of the
+          grid.
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: spacing.md }}
+      >
         {QUADRANT_INFO.map(({ key, icon, name, position }) => (
           <div key={key} className="quiz-editor__score-card">
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
+                display: "flex",
+                alignItems: "center",
                 gap: spacing.sm,
                 marginBottom: spacing.sm,
               }}
             >
-              <span style={{ fontSize: '16px' }}>{icon}</span>
+              <span style={{ fontSize: "16px" }}>{icon}</span>
               <span
                 style={{
                   fontSize: typography.fontSize.sm,
@@ -425,9 +476,9 @@ const XYAxisEditor: React.FC<{
               </span>
               <span
                 style={{
-                  fontSize: typography.fontSize['2xs'],
+                  fontSize: typography.fontSize["2xs"],
                   color: colors.textTertiary,
-                  marginLeft: 'auto',
+                  marginLeft: "auto",
                 }}
               >
                 ({position})
@@ -444,27 +495,27 @@ const XYAxisEditor: React.FC<{
   );
 };
 
-export const OptionsSummary: React.FC<{ options: MultipleChoiceQuestion['options'] }> = ({
-  options,
-}) => (
+export const OptionsSummary: React.FC<{
+  options: MultipleChoiceQuestion["options"];
+}> = ({ options }) => (
   <div className="quiz-editor__summary-list">
     {options.map((opt, i) => {
       const scoreStr = Object.entries(opt.scores)
-        .filter(([, v]) => typeof v === 'number' && v > 0)
+        .filter(([, v]) => typeof v === "number" && v > 0)
         .map(([char, v]) => `${char[0]}:${v}`)
-        .join(' ');
+        .join(" ");
       return (
         <div key={i} className="quiz-editor__summary-line">
-          {opt.text} {scoreStr ? `(${scoreStr})` : ''}
+          {opt.text} {scoreStr ? `(${scoreStr})` : ""}
         </div>
       );
     })}
   </div>
 );
 
-export const ImageOptionsSummary: React.FC<{ options: ImageChoiceQuestion['options'] }> = ({
-  options,
-}) => (
+export const ImageOptionsSummary: React.FC<{
+  options: ImageChoiceQuestion["options"];
+}> = ({ options }) => (
   <div className="quiz-editor__summary-thumbs">
     {options.map((opt, i) => (
       <div key={i} className="quiz-editor__summary-thumb">
@@ -472,7 +523,7 @@ export const ImageOptionsSummary: React.FC<{ options: ImageChoiceQuestion['optio
           <img
             src={opt.imageUrl}
             alt={opt.alt}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         )}
       </div>
@@ -480,20 +531,26 @@ export const ImageOptionsSummary: React.FC<{ options: ImageChoiceQuestion['optio
   </div>
 );
 
-export const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['scores'] }> = ({
-  scores,
-}) => {
-  const levels = ['stronglyDisagree', 'disagree', 'neutral', 'agree', 'stronglyAgree'] as const;
+export const AgreeDisagreeSummary: React.FC<{
+  scores: AgreeDisagreeQuestion["scores"];
+}> = ({ scores }) => {
+  const levels = [
+    "stronglyDisagree",
+    "disagree",
+    "neutral",
+    "agree",
+    "stronglyAgree",
+  ] as const;
   return (
     <div className="quiz-editor__summary-pills">
       {levels.map((level) => {
         const scoreStr = Object.entries(scores[level])
-          .filter(([, v]) => typeof v === 'number' && v > 0)
+          .filter(([, v]) => typeof v === "number" && v > 0)
           .map(([char, v]) => `${char[0]}:${v}`)
-          .join(' ');
+          .join(" ");
         return (
           <span key={level} className="quiz-editor__summary-pill">
-            {level.slice(0, 2).toUpperCase()}: {scoreStr || '—'}
+            {level.slice(0, 2).toUpperCase()}: {scoreStr || "—"}
           </span>
         );
       })}
@@ -501,7 +558,9 @@ export const AgreeDisagreeSummary: React.FC<{ scores: AgreeDisagreeQuestion['sco
   );
 };
 
-export const XYAxisSummary: React.FC<{ question: XYAxisQuestion }> = ({ question }) => (
+export const XYAxisSummary: React.FC<{ question: XYAxisQuestion }> = ({
+  question,
+}) => (
   <div className="quiz-editor__summary-list">
     <div className="quiz-editor__summary-line">
       X: {question.xAxis.leftLabel} ↔ {question.xAxis.rightLabel}
@@ -533,7 +592,10 @@ const QuestionEditorPanel: React.FC<QuestionEditorPanelProps> = ({
     onDraftChange?.(nextQuestion);
   };
 
-  const updateField = <K extends keyof QuizQuestion>(field: K, value: QuizQuestion[K]) => {
+  const updateField = <K extends keyof QuizQuestion>(
+    field: K,
+    value: QuizQuestion[K],
+  ) => {
     commitChange({ ...local, [field]: value } as QuizQuestion);
   };
 
@@ -543,9 +605,12 @@ const QuestionEditorPanel: React.FC<QuestionEditorPanelProps> = ({
         <div className="quiz-editor__editor-header">
           <div className="quiz-editor__panel-intro">
             <p className="quiz-editor__section-eyebrow">Question Composer</p>
-            <h2 className="quiz-editor__section-title">Refine how this moment feels.</h2>
+            <h2 className="quiz-editor__section-title">
+              Refine how this moment feels.
+            </h2>
             <p className="quiz-editor__section-copy">
-              Tighten the prompt, then calibrate the scoring so the result logic stays intentional.
+              Tighten the prompt, then calibrate the scoring so the result logic
+              stays intentional.
             </p>
           </div>
 
@@ -561,43 +626,48 @@ const QuestionEditorPanel: React.FC<QuestionEditorPanelProps> = ({
 
         <div className="quiz-editor__editor-meta">
           <span className="quiz-editor__type-badge">{questionTypeLabel}</span>
-          <span className="quiz-editor__editor-meta-note">{getQuestionDetail(local)}</span>
+          <span className="quiz-editor__editor-meta-note">
+            {getQuestionDetail(local)}
+          </span>
         </div>
 
         <div className="quiz-editor__editor-section">
           <Textarea
             label="Question Text"
             value={local.question}
-            onChange={(e) => updateField('question', e.target.value)}
+            onChange={(e) => updateField("question", e.target.value)}
             rows={4}
-            style={{ textAlign: 'left', minHeight: '6.25rem' }}
+            style={{ textAlign: "left", minHeight: "6.25rem" }}
           />
         </div>
 
         <div className="quiz-editor__editor-scroll">
-          {local.type === 'multiple-choice' && (
+          {local.type === "multiple-choice" && (
             <MultipleChoiceEditor
               question={local as MultipleChoiceQuestion}
               onChange={commitChange}
             />
           )}
 
-          {local.type === 'agree-disagree' && (
+          {local.type === "agree-disagree" && (
             <AgreeDisagreeEditor
               question={local as AgreeDisagreeQuestion}
               onChange={commitChange}
             />
           )}
 
-          {local.type === 'image-choice' && (
+          {local.type === "image-choice" && (
             <ImageChoiceEditor
               question={local as ImageChoiceQuestion}
               onChange={commitChange}
             />
           )}
 
-          {local.type === 'xy-axis' && (
-            <XYAxisEditor question={local as XYAxisQuestion} onChange={commitChange} />
+          {local.type === "xy-axis" && (
+            <XYAxisEditor
+              question={local as XYAxisQuestion}
+              onChange={commitChange}
+            />
           )}
         </div>
       </div>

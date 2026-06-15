@@ -40,7 +40,8 @@ export const createValidator = (rules: ValidationRules) => {
 
     Object.entries(rules).forEach(([field, rule]) => {
       const rawValue = data[field];
-      const value = typeof rawValue === 'string' ? rawValue : String(rawValue || '');
+      const value =
+        typeof rawValue === "string" ? rawValue : String(rawValue || "");
       const trimmedValue = value.trim();
 
       if (rule.required && !trimmedValue) {
@@ -55,16 +56,22 @@ export const createValidator = (rules: ValidationRules) => {
       }
 
       // eslint-disable-next-line no-control-regex
-      const cleanValue = value.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
+      const cleanValue = value
+        .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "")
+        .trim();
 
       if (rule.maxLength && cleanValue.length > rule.maxLength) {
-        const error = rule.message || `${field} exceeds maximum length of ${rule.maxLength} characters`;
+        const error =
+          rule.message ||
+          `${field} exceeds maximum length of ${rule.maxLength} characters`;
         errors[field] = error;
         fieldErrors.push(error);
       }
 
       if (rule.minLength && cleanValue.length < rule.minLength) {
-        const error = rule.message || `${field} must be at least ${rule.minLength} characters`;
+        const error =
+          rule.message ||
+          `${field} must be at least ${rule.minLength} characters`;
         errors[field] = error;
         fieldErrors.push(error);
       }
@@ -114,23 +121,23 @@ export const CommonRules = {
   email: {
     required: true,
     pattern: ValidationPatterns.email,
-    message: 'Please enter a valid email address',
+    message: "Please enter a valid email address",
   },
   url: {
     pattern: ValidationPatterns.url,
-    message: 'Please enter a valid URL starting with http:// or https://',
+    message: "Please enter a valid URL starting with http:// or https://",
   },
   username: {
     required: true,
     minLength: 3,
     maxLength: 20,
     pattern: ValidationPatterns.alphanumeric,
-    message: 'Username must be 3-20 alphanumeric characters',
+    message: "Username must be 3-20 alphanumeric characters",
   },
   password: {
     required: true,
     minLength: 8,
-    message: 'Password must be at least 8 characters long',
+    message: "Password must be at least 8 characters long",
   },
   movieTitle: {
     required: true,
@@ -150,12 +157,12 @@ export const CommonRules = {
   placeName: {
     required: true,
     maxLength: 100,
-    message: 'Place name must be 100 characters or less',
+    message: "Place name must be 100 characters or less",
   },
   notes: {
     required: false,
     maxLength: 500,
-    message: 'Notes must be 500 characters or less',
+    message: "Notes must be 500 characters or less",
   },
 } as const;
 
@@ -175,11 +182,11 @@ export const validateMemory = createValidator({
     custom: (value) => {
       const mentions = value.match(/(@\w+)/g);
       if (mentions) {
-        const invalidMentions = mentions.filter(mention =>
-          !['@aaron', '@electra'].includes(mention.toLowerCase())
+        const invalidMentions = mentions.filter(
+          (mention) => !["@aaron", "@electra"].includes(mention.toLowerCase()),
         );
         if (invalidMentions.length > 0) {
-          return `Invalid mentions: ${invalidMentions.join(', ')}. Only @aaron and @electra are allowed.`;
+          return `Invalid mentions: ${invalidMentions.join(", ")}. Only @aaron and @electra are allowed.`;
         }
       }
       return null;

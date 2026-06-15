@@ -1,11 +1,11 @@
-import type { User } from '@/shared/types';
+import type { User } from "@/shared/types";
 
-const QUIZ_COMPLETION_STORAGE_KEY = 'quiz-completed-by-user';
+const QUIZ_COMPLETION_STORAGE_KEY = "quiz-completed-by-user";
 
-const getQuizCompletionKey = (user: User | null) => user ?? 'guest';
+const getQuizCompletionKey = (user: User | null) => user ?? "guest";
 
 export const readQuizCompletionState = (user: User | null): boolean => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return false;
   }
 
@@ -23,8 +23,11 @@ export const readQuizCompletionState = (user: User | null): boolean => {
   }
 };
 
-export const writeQuizCompletionState = (user: User | null, completed: boolean) => {
-  if (typeof window === 'undefined') {
+export const writeQuizCompletionState = (
+  user: User | null,
+  completed: boolean,
+) => {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -40,5 +43,8 @@ export const writeQuizCompletionState = (user: User | null, completed: boolean) 
   }
 
   nextState[getQuizCompletionKey(user)] = completed;
-  window.localStorage.setItem(QUIZ_COMPLETION_STORAGE_KEY, JSON.stringify(nextState));
+  window.localStorage.setItem(
+    QUIZ_COMPLETION_STORAGE_KEY,
+    JSON.stringify(nextState),
+  );
 };

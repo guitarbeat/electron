@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { QuizResult, QuizCharacter } from './lib/types';
-import BlinkText from './BlinkText';
+import React, { useState, useEffect } from "react";
+import { QuizResult, QuizCharacter } from "./lib/types";
+import BlinkText from "./BlinkText";
 
 interface ResultsScreenProps {
   result: QuizResult;
@@ -12,42 +12,51 @@ interface ResultsScreenProps {
 }
 
 const characterEmojis: Record<string, string> = {
-  Electra: '💖',
-  Aaron: '🦉',
-  Madeleine: '👑',
-  'Nosferatu/Smeemo': '🦇',
-  Neither: '🤷',
+  Electra: "💖",
+  Aaron: "🦉",
+  Madeleine: "👑",
+  "Nosferatu/Smeemo": "🦇",
+  Neither: "🤷",
 };
 
 const characterColors: Record<string, string> = {
-  Electra: '#ff69b4',
-  Aaron: '#00bfff',
-  Madeleine: '#ffd700',
-  'Nosferatu/Smeemo': '#9400d3',
-  Neither: '#888888',
+  Electra: "#ff69b4",
+  Aaron: "#00bfff",
+  Madeleine: "#ffd700",
+  "Nosferatu/Smeemo": "#9400d3",
+  Neither: "#888888",
 };
 
-const RESULT_NAME_STYLE = { fontSize: '26px' } as const;
+const RESULT_NAME_STYLE = { fontSize: "26px" } as const;
 const RESULT_DESCRIPTION_STYLE = (characterColor: string) =>
   ({
     background: `${characterColor}22`,
     border: `3px solid ${characterColor}`,
-    padding: '8px',
-    marginBottom: '12px',
+    padding: "8px",
+    marginBottom: "12px",
   }) satisfies React.CSSProperties;
-const ACTION_BUTTON_STACK_STYLE = { display: 'flex', flexDirection: 'column', gap: 6 } as const;
-const PRIMARY_ACTION_STYLE = { width: '100%', fontSize: '14px' } as const;
-const SECONDARY_ACTION_STYLE = { width: '100%' } as const;
-const EDIT_ACTION_STYLE = { width: '100%', fontSize: '12px', opacity: 0.85 } as const;
+const ACTION_BUTTON_STACK_STYLE = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 6,
+} as const;
+const PRIMARY_ACTION_STYLE = { width: "100%", fontSize: "14px" } as const;
+const SECONDARY_ACTION_STYLE = { width: "100%" } as const;
+const EDIT_ACTION_STYLE = {
+  width: "100%",
+  fontSize: "12px",
+  opacity: 0.85,
+} as const;
 
 const getResultDescription = (
   result: QuizResult,
   characterDescriptions: Record<QuizCharacter, string>,
-  neitherDescription: string
+  neitherDescription: string,
 ) =>
-  result.character === 'Neither'
+  result.character === "Neither"
     ? neitherDescription
-    : (characterDescriptions[result.character as QuizCharacter] ?? `You got ${result.character}!`);
+    : (characterDescriptions[result.character as QuizCharacter] ??
+      `You got ${result.character}!`);
 
 const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
@@ -58,30 +67,38 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
   neitherDescription,
 }) => {
   const [starAngle, setStarAngle] = useState(0);
-  const characterColor = characterColors[result.character] || '#888888';
-  const characterEmoji = characterEmojis[result.character] || '🤷';
-  const description = getResultDescription(result, characterDescriptions, neitherDescription);
+  const characterColor = characterColors[result.character] || "#888888";
+  const characterEmoji = characterEmojis[result.character] || "🤷";
+  const description = getResultDescription(
+    result,
+    characterDescriptions,
+    neitherDescription,
+  );
 
   useEffect(() => {
-    const id = setInterval(() => setStarAngle(a => (a + 8) % 360), 40);
+    const id = setInterval(() => setStarAngle((a) => (a + 8) % 360), 40);
     return () => clearInterval(id);
   }, []);
 
-  const sortedChars = (Object.keys(result.percentages) as QuizCharacter[])
-    .sort((a, b) => result.percentages[b] - result.percentages[a]);
+  const sortedChars = (Object.keys(result.percentages) as QuizCharacter[]).sort(
+    (a, b) => result.percentages[b] - result.percentages[a],
+  );
 
   return (
     <div className="quiz-retro-wrapper">
       {/* Top marquee */}
       <div className="quiz-retro-marquee-bar">
         <span className="quiz-retro-marquee-inner">
-          🎉 CONGRATULATIONS!!! YOUR RESULTS ARE IN!!! 🎉 SHARE WITH YOUR FRIENDS!!! 🎉 YOU ARE AMAZING!!! 🎉
+          🎉 CONGRATULATIONS!!! YOUR RESULTS ARE IN!!! 🎉 SHARE WITH YOUR
+          FRIENDS!!! 🎉 YOU ARE AMAZING!!! 🎉
         </span>
       </div>
 
       <div className="quiz-retro-rainbow-border">
         <div className="quiz-retro-header-bar">
-          <span>★ YOUR OFFICIAL PERSONALITY RESULTS - CERTIFIED 100% ACCURATE!!! ★</span>
+          <span>
+            ★ YOUR OFFICIAL PERSONALITY RESULTS - CERTIFIED 100% ACCURATE!!! ★
+          </span>
         </div>
       </div>
 
@@ -90,12 +107,18 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
         <div className="quiz-retro-results-win">
           <span
             className="quiz-retro-results-star"
-            style={{ transform: `rotate(${starAngle}deg)`, display: 'inline-block', fontSize: 36 }}
+            style={{
+              transform: `rotate(${starAngle}deg)`,
+              display: "inline-block",
+              fontSize: 36,
+            }}
           >
             ⭐
           </span>
           <div>
-            <BlinkText style={{ fontSize: '18px' }}>CONGRATULATIONS!!!</BlinkText>
+            <BlinkText style={{ fontSize: "18px" }}>
+              CONGRATULATIONS!!!
+            </BlinkText>
           </div>
           <div className="quiz-retro-results-sub">YOUR RESULTS ARE IN!!!</div>
         </div>
@@ -118,21 +141,21 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
 
           {/* Score breakdown */}
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: "12px" }}>
             <div className="quiz-retro-results-breakdown-title">
               📊 YOUR MATCH BREAKDOWN (100% ACCURATE!!!):
             </div>
             {sortedChars.map((char) => {
               const isWinner = char === result.character;
               const pct = result.percentages[char];
-              const color = characterColors[char] || '#888888';
+              const color = characterColors[char] || "#888888";
               return (
                 <div key={char} className="quiz-retro-results-bar-row">
                   <div
                     className="quiz-retro-results-bar-label"
                     style={{
-                      fontWeight: isWinner ? 'bold' : 'normal',
-                      color: isWinner ? color : '#444444',
+                      fontWeight: isWinner ? "bold" : "normal",
+                      color: isWinner ? color : "#444444",
                     }}
                   >
                     {characterEmojis[char]} {char}
@@ -143,15 +166,15 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
                       style={{
                         width: `${pct}%`,
                         background: color,
-                        boxShadow: isWinner ? `0 0 6px ${color}` : 'none',
+                        boxShadow: isWinner ? `0 0 6px ${color}` : "none",
                       }}
                     />
                   </div>
                   <div
                     className="quiz-retro-results-bar-pct"
                     style={{
-                      fontWeight: isWinner ? 'bold' : 'normal',
-                      color: isWinner ? color : '#444444',
+                      fontWeight: isWinner ? "bold" : "normal",
+                      color: isWinner ? color : "#444444",
                     }}
                   >
                     {pct}%
@@ -169,7 +192,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
               style={PRIMARY_ACTION_STYLE}
               aria-label="Continue to movie watchlist"
             >
-              {'🎬 CONTINUE TO WATCHLIST >>>'}
+              {"🎬 CONTINUE TO WATCHLIST >>>"}
             </button>
             <button
               className="quiz-retro-btn quiz-retro-btn--secondary"
@@ -194,16 +217,23 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
 
         {/* Share strip */}
         <div className="quiz-retro-results-share">
-          <BlinkText style={{ fontSize: '13px' }}>
+          <BlinkText style={{ fontSize: "13px" }}>
             *** SHARE YOUR RESULTS WITH FRIENDS!!! ***
           </BlinkText>
           <p>THEY NEED TO KNOW YOUR TRUE PERSONALITY!!!</p>
         </div>
       </div>
 
-      <div className="quiz-retro-marquee-bar" style={{ marginTop: 4, marginBottom: 0 }}>
-        <span className="quiz-retro-marquee-inner" style={{ animationDelay: '-5s' }}>
-          🌟 AMAZING RESULTS!!! TELL EVERYONE!!! 🌟 YOU ARE TRULY SPECIAL!!! 🌟 TAKE THE QUIZ AGAIN FOR MORE FUN!!! 🌟
+      <div
+        className="quiz-retro-marquee-bar"
+        style={{ marginTop: 4, marginBottom: 0 }}
+      >
+        <span
+          className="quiz-retro-marquee-inner"
+          style={{ animationDelay: "-5s" }}
+        >
+          🌟 AMAZING RESULTS!!! TELL EVERYONE!!! 🌟 YOU ARE TRULY SPECIAL!!! 🌟
+          TAKE THE QUIZ AGAIN FOR MORE FUN!!! 🌟
         </span>
       </div>
     </div>

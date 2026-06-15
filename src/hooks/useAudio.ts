@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from "react";
 
 let sharedAudioContext: AudioContext | null = null;
 let audioContextUnavailable = false;
@@ -8,25 +8,30 @@ let unlockGestureHandler: (() => void) | null = null;
 
 const getAudioContextClass = () =>
   window.AudioContext ||
-  (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  (window as unknown as { webkitAudioContext?: typeof AudioContext })
+    .webkitAudioContext;
 
 const removeUnlockListeners = (): void => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
   const handler = unlockGestureHandler;
   if (!handler) {
     return;
   }
-  window.removeEventListener('pointerdown', handler, true);
-  window.removeEventListener('keydown', handler, true);
-  window.removeEventListener('touchstart', handler, true);
+  window.removeEventListener("pointerdown", handler, true);
+  window.removeEventListener("keydown", handler, true);
+  window.removeEventListener("touchstart", handler, true);
   unlockGestureHandler = null;
   unlockListenersInstalled = false;
 };
 
 const unlockAudioFromUserGesture = (): void => {
-  if (typeof window === 'undefined' || audioContextUnavailable || userGestureAudioUnlocked) {
+  if (
+    typeof window === "undefined" ||
+    audioContextUnavailable ||
+    userGestureAudioUnlocked
+  ) {
     return;
   }
 
@@ -40,7 +45,7 @@ const unlockAudioFromUserGesture = (): void => {
     if (!sharedAudioContext) {
       sharedAudioContext = new AudioContextClass();
     }
-    if (sharedAudioContext.state === 'suspended') {
+    if (sharedAudioContext.state === "suspended") {
       void sharedAudioContext.resume().catch(() => undefined);
     }
     userGestureAudioUnlocked = true;
@@ -51,7 +56,11 @@ const unlockAudioFromUserGesture = (): void => {
 };
 
 const installUnlockListeners = (): void => {
-  if (typeof window === 'undefined' || unlockListenersInstalled || userGestureAudioUnlocked) {
+  if (
+    typeof window === "undefined" ||
+    unlockListenersInstalled ||
+    userGestureAudioUnlocked
+  ) {
     return;
   }
   unlockListenersInstalled = true;
@@ -59,13 +68,19 @@ const installUnlockListeners = (): void => {
     unlockAudioFromUserGesture();
   };
   unlockGestureHandler = handler;
-  window.addEventListener('pointerdown', handler, { capture: true, passive: true });
-  window.addEventListener('keydown', handler, { capture: true, passive: true });
-  window.addEventListener('touchstart', handler, { capture: true, passive: true });
+  window.addEventListener("pointerdown", handler, {
+    capture: true,
+    passive: true,
+  });
+  window.addEventListener("keydown", handler, { capture: true, passive: true });
+  window.addEventListener("touchstart", handler, {
+    capture: true,
+    passive: true,
+  });
 };
 
 const getAudioContextForPlayback = (): AudioContext | null => {
-  if (typeof window === 'undefined' || audioContextUnavailable) {
+  if (typeof window === "undefined" || audioContextUnavailable) {
     return null;
   }
 
@@ -88,7 +103,7 @@ const getAudioContextForPlayback = (): AudioContext | null => {
     }
   }
 
-  if (sharedAudioContext.state === 'suspended') {
+  if (sharedAudioContext.state === "suspended") {
     void sharedAudioContext.resume().catch(() => undefined);
   }
 
@@ -111,7 +126,10 @@ export const useAudio = () => {
     };
   }, []);
 
-  const getCtx = useCallback((): AudioContext | null => getAudioContextForPlayback(), []);
+  const getCtx = useCallback(
+    (): AudioContext | null => getAudioContextForPlayback(),
+    [],
+  );
 
   /**
    * Play a single synthesized tone with a soft attack and smooth decay.
@@ -126,10 +144,10 @@ export const useAudio = () => {
     (
       frequency: number,
       endFrequency: number | null = null,
-      type: OscillatorType = 'sine',
+      type: OscillatorType = "sine",
       duration = 0.1,
       volume = 0.05,
-      attackTime = 0.004
+      attackTime = 0.004,
     ) => {
       const ctx = getCtx();
       if (!ctx) return;
@@ -154,7 +172,7 @@ export const useAudio = () => {
       osc.start(now);
       osc.stop(now + duration);
     },
-    [getCtx]
+    [getCtx],
   );
 
   /**
@@ -162,7 +180,7 @@ export const useAudio = () => {
    * Very short, barely audible, just enough to register the action.
    */
   const playClick = useCallback(() => {
-    playTone(587, null, 'sine', 0.032, 0.022, 0.002);
+    playTone(587, null, "sine", 0.032, 0.022, 0.002);
   }, [playTone]);
 
   /**
@@ -170,7 +188,7 @@ export const useAudio = () => {
    * That bubbly Y2K "bloop" (think MSN Messenger notification character).
    */
   const playPop = useCallback(() => {
-    playTone(330, 660, 'sine', 0.08, 0.046, 0.003);
+    playTone(330, 660, "sine", 0.08, 0.046, 0.003);
   }, [playTone]);
 
   /**
@@ -178,8 +196,8 @@ export const useAudio = () => {
    * Like a tab/window switch in Windows XP or early browser chrome.
    */
   const playSwitch = useCallback(() => {
-    playTone(330, null, 'sine', 0.055, 0.032, 0.003);
-    setTimeout(() => playTone(440, null, 'sine', 0.065, 0.032, 0.003), 52);
+    playTone(330, null, "sine", 0.055, 0.032, 0.003);
+    setTimeout(() => playTone(440, null, "sine", 0.065, 0.032, 0.003), 52);
   }, [playTone]);
 
   /**
@@ -187,10 +205,10 @@ export const useAudio = () => {
    * The Y2K "achievement unlocked" arpeggio, warm and melodic.
    */
   const playSuccess = useCallback(() => {
-    playTone(523.25, null, 'sine', 0.13, 0.052, 0.004);
-    setTimeout(() => playTone(659.25, null, 'sine', 0.14, 0.048, 0.004), 72);
-    setTimeout(() => playTone(783.99, null, 'sine', 0.16, 0.044, 0.004), 144);
-    setTimeout(() => playTone(1046.5, null, 'sine', 0.14, 0.036, 0.004), 216);
+    playTone(523.25, null, "sine", 0.13, 0.052, 0.004);
+    setTimeout(() => playTone(659.25, null, "sine", 0.14, 0.048, 0.004), 72);
+    setTimeout(() => playTone(783.99, null, "sine", 0.16, 0.044, 0.004), 144);
+    setTimeout(() => playTone(1046.5, null, "sine", 0.14, 0.036, 0.004), 216);
   }, [playTone]);
 
   /**
@@ -198,8 +216,8 @@ export const useAudio = () => {
    * Error, but gentle — like an early-2000s "nope" without the buzzer harshness.
    */
   const playError = useCallback(() => {
-    playTone(493.88, 392, 'sine', 0.13, 0.042, 0.006);
-    setTimeout(() => playTone(392, 293.66, 'sine', 0.12, 0.034, 0.006), 118);
+    playTone(493.88, 392, "sine", 0.13, 0.042, 0.006);
+    setTimeout(() => playTone(392, 293.66, "sine", 0.12, 0.034, 0.006), 118);
   }, [playTone]);
 
   /**
@@ -207,9 +225,17 @@ export const useAudio = () => {
    * Evokes AIM "door creak" era but stripped down to just the tone.
    */
   const playWarning = useCallback(() => {
-    playTone(783.99, null, 'sine', 0.09, 0.044, 0.004);
-    setTimeout(() => playTone(659.25, null, 'sine', 0.10, 0.036, 0.004), 105);
+    playTone(783.99, null, "sine", 0.09, 0.044, 0.004);
+    setTimeout(() => playTone(659.25, null, "sine", 0.1, 0.036, 0.004), 105);
   }, [playTone]);
 
-  return { playTone, playClick, playPop, playSwitch, playSuccess, playError, playWarning };
+  return {
+    playTone,
+    playClick,
+    playPop,
+    playSwitch,
+    playSuccess,
+    playError,
+    playWarning,
+  };
 };

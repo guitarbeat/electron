@@ -1,13 +1,13 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import { pollingManager } from './index.ts';
+import { pollingManager } from "./index.ts";
 
-test('pollingManager notifies listeners when polling fails', async () => {
+test("pollingManager notifies listeners when polling fails", async () => {
   const originalConsoleError = console.error;
   console.error = () => {};
 
-  const error = new Error('Fetch failed');
+  const error = new Error("Fetch failed");
   const key = `polling-error-${Date.now()}`;
   let receivedData: unknown;
   let receivedError: unknown;
@@ -21,7 +21,7 @@ test('pollingManager notifies listeners when polling fails', async () => {
     (data, subscribeError) => {
       receivedData = data;
       receivedError = subscribeError;
-    }
+    },
   );
 
   try {

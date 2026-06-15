@@ -1,15 +1,26 @@
-import { type FC, useState } from 'react';
-import { USER_PHOTOS } from '@/shared/types';
-import type { User } from '@/shared/types';
+import { type FC, useState } from "react";
+import { USER_PHOTOS } from "@/shared/types";
+import type { User } from "@/shared/types";
 
 interface Props {
   user: User | null;
 }
 
 const PersonIcon: FC = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path
+      d="M4 20c0-4 4-6 8-6s8 2 8 6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
@@ -43,11 +54,7 @@ const UserAvatar: FC<Props> = ({ user }) => {
     );
   }
 
-  return (
-    <span className="app-header__avatar-initial">
-      {user.charAt(0)}
-    </span>
-  );
+  return <span className="app-header__avatar-initial">{user.charAt(0)}</span>;
 };
 
 export default UserAvatar;

@@ -1,23 +1,23 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import type { Movie } from '@/shared/types';
-import { getMovieActionState } from './movieActionState.ts';
+import type { Movie } from "@/shared/types";
+import { getMovieActionState } from "./movieActionState.ts";
 
 const createMovie = (overrides: Partial<Movie> = {}): Movie => ({
-  id: 'movie-1',
-  title: 'Heat',
-  addedBy: 'Aaron',
+  id: "movie-1",
+  title: "Heat",
+  addedBy: "Aaron",
   watchedBy: [],
-  createdAt: '2026-03-27T00:00:00.000Z',
+  createdAt: "2026-03-27T00:00:00.000Z",
   ...overrides,
 });
 
-test('getMovieActionState exposes movie action labels and visibility', async (t) => {
-  await t.test('logged-in unwatched movie with no notes', () => {
+test("getMovieActionState exposes movie action labels and visibility", async (t) => {
+  await t.test("logged-in unwatched movie with no notes", () => {
     const state = getMovieActionState({
       movie: createMovie(),
-      currentUser: 'Aaron',
+      currentUser: "Aaron",
       memoriesCount: 0,
     });
 
@@ -25,31 +25,31 @@ test('getMovieActionState exposes movie action labels and visibility', async (t)
     assert.equal(state.showWatchedAction, true);
     assert.equal(state.showNotesAction, true);
     assert.equal(state.watchedByCurrentUser, false);
-    assert.equal(state.primaryActionLabel, 'Mark watched');
-    assert.equal(state.notesButtonLabel, 'Add note');
+    assert.equal(state.primaryActionLabel, "Mark watched");
+    assert.equal(state.notesButtonLabel, "Add note");
     assert.equal(state.notesBadgeText, null);
   });
 
-  await t.test('logged-in watched movie with notes', () => {
+  await t.test("logged-in watched movie with notes", () => {
     const state = getMovieActionState({
       movie: createMovie({
-        watchedBy: ['Aaron'],
+        watchedBy: ["Aaron"],
       }),
-      currentUser: 'Aaron',
+      currentUser: "Aaron",
       memoriesCount: 2,
     });
 
     assert.equal(state.showActionRail, true);
     assert.equal(state.watchedByCurrentUser, true);
-    assert.equal(state.primaryActionLabel, 'Watched');
-    assert.equal(state.notesButtonLabel, '2 notes');
-    assert.equal(state.notesBadgeText, '2');
+    assert.equal(state.primaryActionLabel, "Watched");
+    assert.equal(state.notesButtonLabel, "2 notes");
+    assert.equal(state.notesBadgeText, "2");
   });
 
-  await t.test('guest with existing notes', () => {
+  await t.test("guest with existing notes", () => {
     const state = getMovieActionState({
       movie: createMovie({
-        watchedBy: ['Electra'],
+        watchedBy: ["Electra"],
       }),
       currentUser: null,
       memoriesCount: 1,
@@ -59,11 +59,11 @@ test('getMovieActionState exposes movie action labels and visibility', async (t)
     assert.equal(state.showActionRail, true);
     assert.equal(state.showWatchedAction, false);
     assert.equal(state.showNotesAction, true);
-    assert.equal(state.notesButtonLabel, '1 note');
+    assert.equal(state.notesButtonLabel, "1 note");
     assert.equal(state.notesButtonAriaLabel, 'View notes for "Heat"');
   });
 
-  await t.test('guest with no notes', () => {
+  await t.test("guest with no notes", () => {
     const state = getMovieActionState({
       movie: createMovie(),
       currentUser: null,

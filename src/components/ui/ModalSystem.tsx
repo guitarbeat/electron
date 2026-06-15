@@ -1,26 +1,24 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { useEffect, useId, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import {
-  colors,
-  radius,
-  spacing,
-  typography,
-  shadows,
-} from '@/theme/tokens';
+import React, { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
+import { colors, radius, spacing, typography, shadows } from "@/theme/tokens";
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
-} from './lib/modalPrimitives';
-import { useAudio } from '@/hooks/useAudio';
-import Button from './Button';
-import SharedBottomSheet from './BottomSheet';
-import SharedMinigameModal from './MinigameModal';
+} from "./lib/modalPrimitives";
+import { useAudio } from "@/hooks/useAudio";
+import Button from "./Button";
+import SharedBottomSheet from "./BottomSheet";
+import SharedMinigameModal from "./MinigameModal";
 
 // Base modal hook for shared functionality
-const useModalBase = (isOpen: boolean, onClose?: () => void, closeDisabled?: boolean) => {
+const useModalBase = (
+  isOpen: boolean,
+  onClose?: () => void,
+  closeDisabled?: boolean,
+) => {
   const { playPop } = useAudio();
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -34,11 +32,12 @@ const useModalBase = (isOpen: boolean, onClose?: () => void, closeDisabled?: boo
     }
 
     previousFocusedElement.current = document.activeElement as HTMLElement;
-    hadModalOpenClassRef.current = document.body.classList.contains('modal-open');
-    document.body.classList.add('modal-open');
+    hadModalOpenClassRef.current =
+      document.body.classList.contains("modal-open");
+    document.body.classList.add("modal-open");
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFocusWithin(dialogRef.current)) {
+      if (event.key === "Escape" && isFocusWithin(dialogRef.current)) {
         if (closeDisabled) {
           event.preventDefault();
           return;
@@ -46,16 +45,16 @@ const useModalBase = (isOpen: boolean, onClose?: () => void, closeDisabled?: boo
         event.preventDefault();
         onClose?.();
       }
-      if (event.key === 'Tab' && dialogRef.current) {
+      if (event.key === "Tab" && dialogRef.current) {
         trapFocusOnTab(event, dialogRef.current);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
       if (!hadModalOpenClassRef.current) {
-        document.body.classList.remove('modal-open');
+        document.body.classList.remove("modal-open");
       }
     };
   }, [closeDisabled, isOpen, onClose]);
@@ -74,7 +73,7 @@ interface ModalProps {
   maxHeight?: number;
   closeDisabled?: boolean;
   closeDisabledLabel?: string;
-  variant?: 'centered' | 'bottom-sheet';
+  variant?: "centered" | "bottom-sheet";
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -82,46 +81,52 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  ariaLabel = 'Dialog',
+  ariaLabel = "Dialog",
   maxWidth = 520,
   maxHeight = 720,
   closeDisabled = false,
   closeDisabledLabel,
-  variant = 'centered',
+  variant = "centered",
 }) => {
-  const { dialogRef, closeButtonRef, playPop } = useModalBase(isOpen, onClose, closeDisabled);
+  const { dialogRef, closeButtonRef, playPop } = useModalBase(
+    isOpen,
+    onClose,
+    closeDisabled,
+  );
   const titleId = useId();
 
   if (!isOpen) return null;
 
-  const isBottomSheet = variant === 'bottom-sheet';
-  
-  const modalStyle = isBottomSheet ? {
-    position: 'fixed' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    maxWidth: '100%',
-    maxHeight: 'min(90dvh, 90vh)',
-    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-    transform: 'translateY(0)',
-    borderRadius: `${radius.lg} ${radius.lg} 0 0`,
-  } : {
-    position: 'fixed' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    maxWidth,
-    maxHeight,
-    borderRadius: radius.lg,
-  };
+  const isBottomSheet = variant === "bottom-sheet";
+
+  const modalStyle = isBottomSheet
+    ? {
+        position: "fixed" as const,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        maxWidth: "100%",
+        maxHeight: "min(90dvh, 90vh)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        transform: "translateY(0)",
+        borderRadius: `${radius.lg} ${radius.lg} 0 0`,
+      }
+    : {
+        position: "fixed" as const,
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        maxWidth,
+        maxHeight,
+        borderRadius: radius.lg,
+      };
 
   return createPortal(
     <div
       style={{
-        ...getModalOverlayStyle('rgba(0, 0, 0, 0.4)'),
-        minHeight: '100dvh',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        ...getModalOverlayStyle("rgba(0, 0, 0, 0.4)"),
+        minHeight: "100dvh",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
       role="dialog"
       aria-modal="true"
@@ -131,17 +136,21 @@ const Modal: React.FC<ModalProps> = ({
       <button
         type="button"
         onClick={closeDisabled ? undefined : onClose}
-        aria-label={closeDisabled ? closeDisabledLabel ?? 'Dialog cannot be closed' : 'Close dialog'}
+        aria-label={
+          closeDisabled
+            ? (closeDisabledLabel ?? "Dialog cannot be closed")
+            : "Close dialog"
+        }
         disabled={closeDisabled}
         tabIndex={-1}
         style={{
-          position: 'absolute',
+          position: "absolute",
           inset: 0,
-          border: 'none',
+          border: "none",
           padding: 0,
           margin: 0,
-          background: 'transparent',
-          cursor: closeDisabled ? 'default' : 'pointer',
+          background: "transparent",
+          cursor: closeDisabled ? "default" : "pointer",
         }}
       />
       <div
@@ -151,19 +160,21 @@ const Modal: React.FC<ModalProps> = ({
           zIndex: 1,
           backgroundColor: colors.surface,
           boxShadow: shadows.cardElevated,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {(title || !closeDisabled) && (
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               padding: spacing.lg,
-              borderBottom: title ? `1px solid ${colors.borderSecondary}30` : undefined,
+              borderBottom: title
+                ? `1px solid ${colors.borderSecondary}30`
+                : undefined,
             }}
           >
             {title && (
@@ -174,7 +185,7 @@ const Modal: React.FC<ModalProps> = ({
                   fontSize: typography.fontSize.lg,
                   fontWeight: typography.fontWeight.semibold,
                   color: colors.textPrimary,
-                  fontFamily: typography.fontFamily.heading.join(', '),
+                  fontFamily: typography.fontFamily.heading.join(", "),
                 }}
               >
                 {title}
@@ -198,12 +209,12 @@ const Modal: React.FC<ModalProps> = ({
                 ref={closeButtonRef}
                 type="button"
                 disabled
-                aria-label={closeDisabledLabel ?? 'Dialog cannot be closed'}
+                aria-label={closeDisabledLabel ?? "Dialog cannot be closed"}
                 title={closeDisabledLabel}
                 style={{
                   ...getModalCloseButtonStyle(),
                   opacity: 0.45,
-                  cursor: 'not-allowed',
+                  cursor: "not-allowed",
                 }}
               >
                 ×
@@ -211,11 +222,11 @@ const Modal: React.FC<ModalProps> = ({
             )}
           </div>
         )}
-        
+
         <div
           style={{
             flex: 1,
-            overflowY: 'auto',
+            overflowY: "auto",
             padding: title ? undefined : spacing.lg,
           }}
         >
@@ -223,7 +234,7 @@ const Modal: React.FC<ModalProps> = ({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 
@@ -236,7 +247,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  variant?: 'danger' | 'primary';
+  variant?: "danger" | "primary";
   isLoading?: boolean;
 }
 
@@ -244,11 +255,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   onConfirm,
   onCancel,
-  variant = 'danger',
+  variant = "danger",
   isLoading = false,
 }) => {
   const { playClick } = useAudio();
@@ -273,19 +284,15 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         >
           {message}
         </p>
-        
+
         <div
           style={{
-            display: 'flex',
+            display: "flex",
             gap: spacing.md,
-            justifyContent: 'flex-end',
+            justifyContent: "flex-end",
           }}
         >
-          <Button
-            variant="ghost"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <Button variant="ghost" onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </Button>
           <Button

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Props {
   children: React.ReactNode;
@@ -22,13 +22,13 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
 
   static getDerivedStateFromError(error: unknown): State {
     const message =
-      error instanceof Error ? error.message : 'An unexpected error occurred.';
+      error instanceof Error ? error.message : "An unexpected error occurred.";
     return { hasError: true, errorMessage: message };
   }
 
   componentDidCatch(error: unknown, info: React.ErrorInfo) {
     if (import.meta.env.DEV) {
-      console.error('[WorkspaceErrorBoundary] caught error:', error, info);
+      console.error("[WorkspaceErrorBoundary] caught error:", error, info);
     }
   }
 
@@ -46,81 +46,94 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
     }
 
     const isNetworkError =
-      this.state.errorMessage?.toLowerCase().includes('failed to fetch') ||
-      this.state.errorMessage?.toLowerCase().includes('dynamically imported');
+      this.state.errorMessage?.toLowerCase().includes("failed to fetch") ||
+      this.state.errorMessage?.toLowerCase().includes("dynamically imported");
 
     return (
       <main
         id="main-content"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem',
-          minHeight: '40vh',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+          minHeight: "40vh",
         }}
       >
         <div
           style={{
-            maxWidth: '28rem',
-            width: '100%',
-            textAlign: 'center',
-            padding: '2rem 1.5rem',
-            borderRadius: '1rem',
-            border: '1px solid rgba(148, 163, 200, 0.22)',
+            maxWidth: "28rem",
+            width: "100%",
+            textAlign: "center",
+            padding: "2rem 1.5rem",
+            borderRadius: "1rem",
+            border: "1px solid rgba(148, 163, 200, 0.22)",
             background:
-              'linear-gradient(180deg, rgba(14,22,58,0.9) 0%, rgba(8,12,36,0.94) 100%)',
-            boxShadow: '0 24px 56px rgba(2,4,18,0.36), inset 0 1px 0 rgba(200,215,255,0.06)',
+              "linear-gradient(180deg, rgba(14,22,58,0.9) 0%, rgba(8,12,36,0.94) 100%)",
+            boxShadow:
+              "0 24px 56px rgba(2,4,18,0.36), inset 0 1px 0 rgba(200,215,255,0.06)",
           }}
         >
           <span
             aria-hidden="true"
-            style={{ fontSize: '2rem', lineHeight: 1, display: 'block', marginBottom: '0.75rem' }}
+            style={{
+              fontSize: "2rem",
+              lineHeight: 1,
+              display: "block",
+              marginBottom: "0.75rem",
+            }}
           >
             🎬
           </span>
           <h2
             style={{
-              margin: '0 0 0.5rem',
-              fontFamily: 'Inter, system-ui, sans-serif',
-              fontSize: '1.1rem',
+              margin: "0 0 0.5rem",
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: "1.1rem",
               fontWeight: 600,
-              color: '#e8efff',
-              letterSpacing: '-0.01em',
+              color: "#e8efff",
+              letterSpacing: "-0.01em",
             }}
           >
             Something went wrong
           </h2>
           <p
             style={{
-              margin: '0 0 1.25rem',
-              fontFamily: 'Inter, system-ui, sans-serif',
-              fontSize: '0.875rem',
+              margin: "0 0 1.25rem",
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: "0.875rem",
               lineHeight: 1.55,
-              color: '#94a3c8',
+              color: "#94a3c8",
             }}
           >
             {isNetworkError
-              ? 'A part of the app failed to load. This can happen after an update or on a slow connection.'
-              : 'An unexpected error occurred in the workspace.'}
+              ? "A part of the app failed to load. This can happen after an update or on a slow connection."
+              : "An unexpected error occurred in the workspace."}
           </p>
-          <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.625rem",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
             {!isNetworkError && (
               <button
                 type="button"
                 onClick={this.handleRetry}
                 style={{
-                  padding: '0.5rem 1.25rem',
-                  borderRadius: '9999px',
-                  border: '1px solid rgba(148,163,200,0.3)',
-                  background: 'rgba(148,163,200,0.1)',
-                  color: '#c8d5f0',
-                  fontFamily: 'Inter, system-ui, sans-serif',
-                  fontSize: '0.8125rem',
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: "9999px",
+                  border: "1px solid rgba(148,163,200,0.3)",
+                  background: "rgba(148,163,200,0.1)",
+                  color: "#c8d5f0",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontSize: "0.8125rem",
                   fontWeight: 600,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
                 }}
               >
                 Try again
@@ -130,17 +143,17 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
               type="button"
               onClick={this.handleReload}
               style={{
-                padding: '0.5rem 1.25rem',
-                borderRadius: '9999px',
-                border: '1px solid rgba(244,114,182,0.4)',
-                background: 'rgba(244,114,182,0.15)',
-                color: '#f0e8ff',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                fontSize: '0.8125rem',
+                padding: "0.5rem 1.25rem",
+                borderRadius: "9999px",
+                border: "1px solid rgba(244,114,182,0.4)",
+                background: "rgba(244,114,182,0.15)",
+                color: "#f0e8ff",
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontSize: "0.8125rem",
                 fontWeight: 600,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                cursor: "pointer",
               }}
             >
               Reload page

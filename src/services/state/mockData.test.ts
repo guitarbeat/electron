@@ -1,7 +1,7 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import { isMockMode } from './mockData.ts';
+import { isMockMode } from "./mockData.ts";
 
 class MemoryStorage {
   #store = new Map<string, string>();
@@ -21,12 +21,12 @@ class MemoryStorage {
 
 const originalWindow = globalThis.window;
 
-test('isMockMode defaults to false when no override is present', () => {
+test("isMockMode defaults to false when no override is present", () => {
   const windowStub = {
     localStorage: new MemoryStorage(),
   } as unknown as Window & typeof globalThis;
 
-  Object.defineProperty(globalThis, 'window', {
+  Object.defineProperty(globalThis, "window", {
     configurable: true,
     value: windowStub,
   });
@@ -34,22 +34,22 @@ test('isMockMode defaults to false when no override is present', () => {
   try {
     assert.equal(isMockMode(), false);
   } finally {
-    Object.defineProperty(globalThis, 'window', {
+    Object.defineProperty(globalThis, "window", {
       configurable: true,
       value: originalWindow,
     });
   }
 });
 
-test('isMockMode returns true when explicitly enabled in localStorage', () => {
+test("isMockMode returns true when explicitly enabled in localStorage", () => {
   const localStorage = new MemoryStorage();
-  localStorage.setItem('useMockData', 'true');
+  localStorage.setItem("useMockData", "true");
 
   const windowStub = {
     localStorage,
   } as unknown as Window & typeof globalThis;
 
-  Object.defineProperty(globalThis, 'window', {
+  Object.defineProperty(globalThis, "window", {
     configurable: true,
     value: windowStub,
   });
@@ -57,7 +57,7 @@ test('isMockMode returns true when explicitly enabled in localStorage', () => {
   try {
     assert.equal(isMockMode(), true);
   } finally {
-    Object.defineProperty(globalThis, 'window', {
+    Object.defineProperty(globalThis, "window", {
       configurable: true,
       value: originalWindow,
     });

@@ -1,18 +1,21 @@
-import type { Place, PlaceSuggestion } from '@/shared/types';
-import { buildCollectionSections, type CollectionSections } from '../../../utils/workspace.ts';
+import type { Place, PlaceSuggestion } from "@/shared/types";
+import {
+  buildCollectionSections,
+  type CollectionSections,
+} from "../../../utils/workspace.ts";
 
-export type PlaceSortOrder = 'recent' | 'alpha';
+export type PlaceSortOrder = "recent" | "alpha";
 
 export type PlaceSections = CollectionSections<Place, PlaceSuggestion>;
 
 function sortPlaces(places: Place[], sortOrder: PlaceSortOrder): Place[] {
   const sorted = [...places];
   switch (sortOrder) {
-    case 'alpha':
+    case "alpha":
       return sorted.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
       );
-    case 'recent':
+    case "recent":
     default:
       return sorted.sort(
         (a, b) =>
@@ -24,7 +27,7 @@ function sortPlaces(places: Place[], sortOrder: PlaceSortOrder): Place[] {
 export const buildPlaceSections = (
   places: Place[],
   pendingSuggestions: PlaceSuggestion[] = [],
-  sortOrder: PlaceSortOrder = 'recent',
+  sortOrder: PlaceSortOrder = "recent",
 ): PlaceSections => {
   const sorted = sortPlaces(places, sortOrder);
   return buildCollectionSections(sorted, pendingSuggestions, (place) =>

@@ -1,11 +1,11 @@
-export type User = 'Aaron' | 'Electra';
+export type User = "Aaron" | "Electra";
 
 export const USER_PHOTOS: Record<User, string> = {
-  Aaron: 'https://cataas.com/cat/black?width=200&height=200',
-  Electra: 'https://cataas.com/cat/cute?width=200&height=200',
+  Aaron: "https://cataas.com/cat/black?width=200&height=200",
+  Electra: "https://cataas.com/cat/cute?width=200&height=200",
 };
 
-export type MainTab = 'movies' | 'places';
+export type MainTab = "movies" | "places";
 
 export interface Place {
   id: string;
@@ -32,7 +32,7 @@ export interface PlaceSuggestion {
   rating?: string;
   description?: string;
   imageUrl?: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   respondedAt?: string;
   respondedBy?: User; // Aaron or Electra
 }
@@ -61,8 +61,8 @@ export interface MovieSuggestion {
   suggestedBy: string; // Any name (not restricted to User type)
   reason?: string; // Optional: "You'd love this because..."
   imdbID?: string;
-  type?: 'movie' | 'series';
-  status: 'pending' | 'accepted' | 'rejected';
+  type?: "movie" | "series";
+  status: "pending" | "accepted" | "rejected";
   createdAt: string;
   respondedAt?: string;
   respondedBy?: User; // Aaron or Electra
@@ -96,7 +96,7 @@ export interface MatchmakerGame {
   electraDislikes: string[]; // Array of movie IDs
   aaronSwipeOrder?: string[]; // Ordered history of Aaron's swipes
   electraSwipeOrder?: string[]; // Ordered history of Electra's swipes
-  status: 'active' | 'completed';
+  status: "active" | "completed";
   createdAt: string;
   startedBy: User;
 }
@@ -108,5 +108,5 @@ export interface MoviesViewProps {
   onClosePlanControls?: () => void;
 }
 
-export type { QuizCharacter } from '../components/quiz/lib/types.ts';
-export { CHARACTERS } from '../components/quiz/lib/types.ts';
+export type { QuizCharacter } from "../components/quiz/lib/types.ts";
+export { CHARACTERS } from "../components/quiz/lib/types.ts";

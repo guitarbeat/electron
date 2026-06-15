@@ -1,10 +1,10 @@
-import React from 'react';
-import type { Movie } from '@/shared/types';
-import { colors, spacing, typography } from '@/theme/tokens';
-import Button from '@/ui/Button';
-import { Input } from '@/ui/FormFields';
-import { Modal } from '@/ui/ModalSystem';
-import { MAX_MOVIE_TITLE_LENGTH, sanitizeInput } from '@/utils';
+import React from "react";
+import type { Movie } from "@/shared/types";
+import { colors, spacing, typography } from "@/theme/tokens";
+import Button from "@/ui/Button";
+import { Input } from "@/ui/FormFields";
+import { Modal } from "@/ui/ModalSystem";
+import { MAX_MOVIE_TITLE_LENGTH, sanitizeInput } from "@/utils";
 
 interface MovieTitleEditModalProps {
   movie: Movie;
@@ -65,7 +65,11 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
       await onSubmit(cleanTitle);
       onClose();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Failed to update title');
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Failed to update title",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -79,18 +83,20 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
       ariaLabel={`Edit title for ${movie.title}`}
       closeDisabled={isSaving}
       closeDisabledLabel="Saving title"
-      variant={isMobile ? 'bottom-sheet' : 'centered'}
+      variant={isMobile ? "bottom-sheet" : "centered"}
     >
       <form
         onSubmit={handleSubmit}
         style={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           gap: spacing.lg,
           padding: spacing.lg,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: spacing.sm }}
+        >
           <p
             style={{
               margin: 0,
@@ -98,8 +104,8 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
               ...typography.presets.bodySm,
             }}
           >
-            Update the shared movie title. Poster details will refresh automatically in the
-            background.
+            Update the shared movie title. Poster details will refresh
+            automatically in the background.
           </p>
 
           <Input
@@ -120,24 +126,30 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
           <div
             aria-live="polite"
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               gap: spacing.sm,
               color: colors.textTertiary,
               ...typography.presets.caption,
             }}
           >
-            <span>{isUnchanged ? 'Make a change to save the new title.' : 'Title changes are shared immediately.'}</span>
-            <span>{draftTitle.length}/{MAX_MOVIE_TITLE_LENGTH}</span>
+            <span>
+              {isUnchanged
+                ? "Make a change to save the new title."
+                : "Title changes are shared immediately."}
+            </span>
+            <span>
+              {draftTitle.length}/{MAX_MOVIE_TITLE_LENGTH}
+            </span>
           </div>
         </div>
 
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
             gap: spacing.sm,
           }}
         >
@@ -145,19 +157,34 @@ const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
             <Button
               type="button"
               variant="ghost"
-              onClick={() => { onDelete(); onClose(); }}
+              onClick={() => {
+                onDelete();
+                onClose();
+              }}
               disabled={isSaving}
-              style={{ color: colors.error ?? '#c0392b' }}
+              style={{ color: colors.error ?? "#c0392b" }}
             >
               Remove
             </Button>
-          ) : <span />}
+          ) : (
+            <span />
+          )}
 
-          <div style={{ display: 'flex', gap: spacing.sm }}>
-            <Button type="button" variant="ghost" onClick={onClose} disabled={isSaving}>
+          <div style={{ display: "flex", gap: spacing.sm }}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSaving}
+            >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isSaving} loadingText="Saving..." disabled={!canSubmit}>
+            <Button
+              type="submit"
+              isLoading={isSaving}
+              loadingText="Saving..."
+              disabled={!canSubmit}
+            >
               Save title
             </Button>
           </div>

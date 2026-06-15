@@ -51,7 +51,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             style={{
               ...typography.presets.eyebrow,
               color: colors.textSecondary,
-              fontSize: typography.fontSize['3xs'],
+              fontSize: typography.fontSize["3xs"],
             }}
           >
             {label}

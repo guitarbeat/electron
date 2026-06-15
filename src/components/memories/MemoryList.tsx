@@ -1,10 +1,17 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { SharedMemory, User } from '@/shared/types';
-import Button from '@/ui/Button';
-import { Textarea } from '@/ui/FormFields';
-import ConfirmDialog from '@/ui/ConfirmDialog';
-import { colors, radius, spacing, typography, layouts, sanitizeInput } from '@/utils';
-import { formatMemoryTimestamp } from '@/utils';
+import React, { useState, useMemo, useCallback } from "react";
+import { SharedMemory, User } from "@/shared/types";
+import Button from "@/ui/Button";
+import { Textarea } from "@/ui/FormFields";
+import ConfirmDialog from "@/ui/ConfirmDialog";
+import {
+  colors,
+  radius,
+  spacing,
+  typography,
+  layouts,
+  sanitizeInput,
+} from "@/utils";
+import { formatMemoryTimestamp } from "@/utils";
 import {
   ALL_MOVIES_FILTER,
   INITIAL_VISIBLE_COUNT,
@@ -12,7 +19,7 @@ import {
   MemorySortMode,
   getStickyNoteRotation,
   getStickyNoteTheme,
-} from './lib/memoryUtils';
+} from "./lib/memoryUtils";
 
 interface MemoryListProps {
   memories: SharedMemory[];
@@ -39,18 +46,18 @@ interface MemoryListProps {
 
 const mentionStyle: React.CSSProperties = {
   fontWeight: 700,
-  textDecoration: 'underline',
-  textUnderlineOffset: '2px',
+  textDecoration: "underline",
+  textUnderlineOffset: "2px",
 };
 
 const renderMemoryNote = (text: string) => {
   const parts = text.split(MEMORY_MENTION_REGEX);
   return parts.map((part, index) => {
     const normalized = part.toLowerCase();
-    if (normalized !== '@aaron' && normalized !== '@electra') {
+    if (normalized !== "@aaron" && normalized !== "@electra") {
       return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
     }
-    const color = normalized === '@aaron' ? '#376dff' : '#e45858';
+    const color = normalized === "@aaron" ? "#376dff" : "#e45858";
     return (
       <span
         key={`${part}-${index}`}
@@ -88,16 +95,18 @@ const MemoryList: React.FC<MemoryListProps> = ({
   onTogglePin,
 }) => {
   const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
-  const [draftNote, setDraftNote] = useState('');
+  const [draftNote, setDraftNote] = useState("");
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
-  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
+  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(
+    null,
+  );
 
   // Validation for memory editing
   const canManageMemories = Boolean(currentUser);
   const isSingleMovieContext = Boolean(contextMovieTitle);
   const pinnedCount = useMemo(
     () => sortedMemories.filter((memory) => memory.isPinned).length,
-    [sortedMemories]
+    [sortedMemories],
   );
 
   const confirmDeleteMemory = useCallback(async () => {
@@ -116,13 +125,10 @@ const MemoryList: React.FC<MemoryListProps> = ({
     }
   }, [memoryToDelete, currentUser, onDeleteMemory]);
 
-  const startEditing = useCallback(
-    (memory: SharedMemory) => {
-      setEditingMemoryId(memory.id);
-      setDraftNote(memory.note);
-    },
-    []
-  );
+  const startEditing = useCallback((memory: SharedMemory) => {
+    setEditingMemoryId(memory.id);
+    setDraftNote(memory.note);
+  }, []);
 
   const saveEdit = useCallback(
     async (memory: SharedMemory) => {
@@ -133,17 +139,17 @@ const MemoryList: React.FC<MemoryListProps> = ({
       try {
         await onEditMemory(memory, trimmedNote);
         setEditingMemoryId(null);
-        setDraftNote('');
+        setDraftNote("");
       } finally {
         setIsBusyMemoryId(null);
       }
     },
-    [draftNote, onEditMemory]
+    [draftNote, onEditMemory],
   );
 
   const cancelEdit = useCallback(() => {
     setEditingMemoryId(null);
-    setDraftNote('');
+    setDraftNote("");
   }, []);
 
   const togglePin = useCallback(
@@ -155,7 +161,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
         setIsBusyMemoryId(null);
       }
     },
-    [onTogglePin]
+    [onTogglePin],
   );
 
   return (
@@ -164,46 +170,66 @@ const MemoryList: React.FC<MemoryListProps> = ({
         marginTop: spacing.lg,
         padding: isMobile ? spacing.sm : spacing.md,
         borderRadius: radius.md,
-        border: '1px solid rgba(255, 228, 177, 0.34)',
+        border: "1px solid rgba(255, 228, 177, 0.34)",
         background:
-          'linear-gradient(165deg, rgba(57, 34, 18, 0.45) 0%, rgba(38, 22, 11, 0.55) 100%)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+          "linear-gradient(165deg, rgba(57, 34, 18, 0.45) 0%, rgba(38, 22, 11, 0.55) 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
       }}
     >
-      <div style={{ ...layouts.spaceBetween('row', spacing.sm), flexWrap: 'wrap', marginBottom: spacing.sm }}>
+      <div
+        style={{
+          ...layouts.spaceBetween("row", spacing.sm),
+          flexWrap: "wrap",
+          marginBottom: spacing.sm,
+        }}
+      >
         <h4
           style={{
             margin: 0,
-            color: '#ffe3b1',
+            color: "#ffe3b1",
             fontSize: typography.fontSize.base,
-            fontFamily: typography.fontFamily.heading.join(', '),
+            fontFamily: typography.fontFamily.heading.join(", "),
             letterSpacing: typography.letterSpacing.normal,
           }}
         >
-          {contextMovieTitle ? `Notes on ${contextMovieTitle}` : 'Latest notes'}
+          {contextMovieTitle ? `Notes on ${contextMovieTitle}` : "Latest notes"}
         </h4>
-        <span style={{ color: '#f7ddba', fontSize: typography.fontSize.xs }}>
-          {pinnedCount} pinned note{pinnedCount === 1 ? '' : 's'}
+        <span style={{ color: "#f7ddba", fontSize: typography.fontSize.xs }}>
+          {pinnedCount} pinned note{pinnedCount === 1 ? "" : "s"}
         </span>
       </div>
 
       {memories.length > 0 && !isSingleMovieContext && (
-        <div style={{ ...layouts.grid(isMobile ? 1 : 2, spacing.sm), marginBottom: spacing.sm, padding: spacing.sm, border: '1px dashed rgba(255, 227, 172, 0.3)', borderRadius: radius.sm, background: 'rgba(18, 25, 43, 0.32)' }}>
-          <label style={{ color: colors.textSecondary, fontSize: typography.fontSize.xs }}>
+        <div
+          style={{
+            ...layouts.grid(isMobile ? 1 : 2, spacing.sm),
+            marginBottom: spacing.sm,
+            padding: spacing.sm,
+            border: "1px dashed rgba(255, 227, 172, 0.3)",
+            borderRadius: radius.sm,
+            background: "rgba(18, 25, 43, 0.32)",
+          }}
+        >
+          <label
+            style={{
+              color: colors.textSecondary,
+              fontSize: typography.fontSize.xs,
+            }}
+          >
             Filter by title
             <select
               value={activeMovieFilter}
               onChange={(e) => onActiveMovieFilterChange(e.target.value)}
               style={{
                 marginTop: spacing.xs,
-                width: '100%',
-                height: '40px',
+                width: "100%",
+                height: "40px",
                 borderRadius: radius.md,
                 border: `1px solid ${colors.borderSecondary}40`,
                 backgroundColor: colors.surface,
                 color: colors.textPrimary,
                 padding: `0 ${spacing.sm}`,
-                fontFamily: typography.fontFamily.body.join(', '),
+                fontFamily: typography.fontFamily.body.join(", "),
               }}
             >
               <option value={ALL_MOVIES_FILTER}>All titles</option>
@@ -215,22 +241,29 @@ const MemoryList: React.FC<MemoryListProps> = ({
             </select>
           </label>
 
-          <label style={{ color: colors.textSecondary, fontSize: typography.fontSize.xs }}>
+          <label
+            style={{
+              color: colors.textSecondary,
+              fontSize: typography.fontSize.xs,
+            }}
+          >
             Sort
             <select
               value={sortMode}
-              onChange={(e) => onSortModeChange(e.target.value as MemorySortMode)}
+              onChange={(e) =>
+                onSortModeChange(e.target.value as MemorySortMode)
+              }
               style={{
                 marginTop: spacing.xs,
-                width: '100%',
-                minWidth: isMobile ? '100%' : '170px',
-                height: '40px',
+                width: "100%",
+                minWidth: isMobile ? "100%" : "170px",
+                height: "40px",
                 borderRadius: radius.md,
                 border: `1px solid ${colors.borderSecondary}40`,
                 backgroundColor: colors.surface,
                 color: colors.textPrimary,
                 padding: `0 ${spacing.sm}`,
-                fontFamily: typography.fontFamily.body.join(', '),
+                fontFamily: typography.fontFamily.body.join(", "),
               }}
             >
               <option value="newest">Newest first</option>
@@ -241,26 +274,42 @@ const MemoryList: React.FC<MemoryListProps> = ({
       )}
 
       {isLoading && memories.length === 0 && (
-        <p style={{ margin: 0, color: colors.textSecondary }}>Loading notes...</p>
+        <p style={{ margin: 0, color: colors.textSecondary }}>
+          Loading notes...
+        </p>
       )}
 
       {memoriesError && memories.length === 0 && (
-        <p style={{ margin: 0, color: colors.error, fontSize: typography.fontSize.sm }}>
+        <p
+          style={{
+            margin: 0,
+            color: colors.error,
+            fontSize: typography.fontSize.sm,
+          }}
+        >
           Couldn&apos;t load notes right now. Try again in a few seconds.
         </p>
       )}
 
       {!isLoading && !memoriesError && visibleMemories.length === 0 && (
-        <p style={{ margin: 0, color: '#f6e4cb' }}>
+        <p style={{ margin: 0, color: "#f6e4cb" }}>
           {isSingleMovieContext
-            ? 'No notes yet.'
+            ? "No notes yet."
             : activeMovieFilter === ALL_MOVIES_FILTER
-              ? 'No notes yet.'
-              : 'No matching notes.'}
+              ? "No notes yet."
+              : "No matching notes."}
         </p>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: spacing.md }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile
+            ? "1fr"
+            : "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: spacing.md,
+        }}
+      >
         {visibleMemories.map((memory) => {
           const noteTheme = getStickyNoteTheme(memory);
           const noteRotation = getStickyNoteRotation(memory);
@@ -272,57 +321,81 @@ const MemoryList: React.FC<MemoryListProps> = ({
             <div
               key={memory.id}
               style={{
-                position: 'relative',
+                position: "relative",
                 border: `1px solid ${noteTheme.border}`,
                 borderRadius: radius.sm,
                 padding: `${spacing.md} ${spacing.sm} ${spacing.sm}`,
                 background: noteTheme.background,
-                boxShadow: '0 10px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.45)',
-                minHeight: isMobile ? 'auto' : '220px',
-                display: 'flex',
-                flexDirection: 'column',
+                boxShadow:
+                  "0 10px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.45)",
+                minHeight: isMobile ? "auto" : "220px",
+                display: "flex",
+                flexDirection: "column",
                 gap: spacing.xs,
-                transform: isMobile ? 'none' : `rotate(${noteRotation}deg)`,
-                transformOrigin: 'top center',
+                transform: isMobile ? "none" : `rotate(${noteRotation}deg)`,
+                transformOrigin: "top center",
               }}
             >
               <div
                 aria-hidden
                 style={{
-                  position: 'absolute',
-                  top: '-8px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '16px',
-                  height: '16px',
+                  position: "absolute",
+                  top: "-8px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "16px",
+                  height: "16px",
                   borderRadius: radius.full,
                   background: noteTheme.pin,
-                  border: '1px solid rgba(0,0,0,0.22)',
-                  boxShadow: '0 3px 5px rgba(0,0,0,0.35)',
+                  border: "1px solid rgba(0,0,0,0.22)",
+                  boxShadow: "0 3px 5px rgba(0,0,0,0.35)",
                 }}
               />
 
-              <div style={{ ...layouts.spaceBetween('row', spacing.sm), flexWrap: 'wrap' }}>
-                <strong style={{ color: noteTheme.heading, fontSize: typography.fontSize.sm }}>
-                  {isSingleMovieContext ? 'Quote or thought' : memory.movieTitle}
+              <div
+                style={{
+                  ...layouts.spaceBetween("row", spacing.sm),
+                  flexWrap: "wrap",
+                }}
+              >
+                <strong
+                  style={{
+                    color: noteTheme.heading,
+                    fontSize: typography.fontSize.sm,
+                  }}
+                >
+                  {isSingleMovieContext
+                    ? "Quote or thought"
+                    : memory.movieTitle}
                 </strong>
-                <div style={{ ...layouts.flexRow('flex-start', 'center', spacing.xs) }}>
+                <div
+                  style={{
+                    ...layouts.flexRow("flex-start", "center", spacing.xs),
+                  }}
+                >
                   {memory.isPinned && (
                     <span
                       style={{
-                        color: '#6b3f00',
-                        background: 'rgba(255, 235, 179, 0.8)',
+                        color: "#6b3f00",
+                        background: "rgba(255, 235, 179, 0.8)",
                         borderRadius: radius.full,
-                        fontSize: typography.fontSize['2xs'],
-                        padding: '1px 8px',
-                        border: '1px solid rgba(125, 87, 16, 0.35)',
+                        fontSize: typography.fontSize["2xs"],
+                        padding: "1px 8px",
+                        border: "1px solid rgba(125, 87, 16, 0.35)",
                       }}
                     >
                       PINNED
                     </span>
                   )}
-                  <span style={{ color: noteTheme.meta, fontSize: typography.fontSize.xs }}>
-                    {formatMemoryTimestamp(memory.updatedAt || memory.createdAt)}
+                  <span
+                    style={{
+                      color: noteTheme.meta,
+                      fontSize: typography.fontSize.xs,
+                    }}
+                  >
+                    {formatMemoryTimestamp(
+                      memory.updatedAt || memory.createdAt,
+                    )}
                   </span>
                 </div>
               </div>
@@ -333,10 +406,16 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     label="Edit note"
                     value={draftNote}
                     onChange={(e) => setDraftNote(e.target.value)}
-                    style={{ minHeight: '100px' }}
+                    style={{ minHeight: "100px" }}
                     disabled={isBusy}
                   />
-                  <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: spacing.xs,
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <Button
                       type="button"
                       size="sm"
@@ -364,7 +443,7 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     color: noteTheme.text,
                     fontSize: typography.fontSize.sm,
                     lineHeight: typography.lineHeight.normal,
-                    whiteSpace: 'pre-wrap',
+                    whiteSpace: "pre-wrap",
                     flex: 1,
                   }}
                 >
@@ -379,13 +458,13 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     color: noteTheme.text,
                     fontSize: typography.fontSize.sm,
                     lineHeight: typography.lineHeight.normal,
-                    whiteSpace: 'pre-wrap',
+                    whiteSpace: "pre-wrap",
                     flex: 1,
-                    border: 'none',
-                    background: 'transparent',
+                    border: "none",
+                    background: "transparent",
                     padding: 0,
-                    textAlign: 'left',
-                    cursor: 'pointer',
+                    textAlign: "left",
+                    cursor: "pointer",
                   }}
                   aria-label={`Jump to movie ${memory.movieTitle}`}
                 >
@@ -404,14 +483,23 @@ const MemoryList: React.FC<MemoryListProps> = ({
               </span>
 
               {!isEditing && (
-                <div style={{ ...layouts.flexRow('flex-start', 'center', spacing.xs), flexWrap: 'wrap', marginTop: 'auto' }}>
+                <div
+                  style={{
+                    ...layouts.flexRow("flex-start", "center", spacing.xs),
+                    flexWrap: "wrap",
+                    marginTop: "auto",
+                  }}
+                >
                   {!isSingleMovieContext && (
                     <Button
                       type="button"
                       size="sm"
                       variant="ghost"
                       onClick={() => onJumpToMovie(memory)}
-                      style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
+                      style={{
+                        border: "1px solid rgba(106, 77, 40, 0.45)",
+                        color: "#4e2d11",
+                      }}
                     >
                       Open movie
                     </Button>
@@ -423,9 +511,12 @@ const MemoryList: React.FC<MemoryListProps> = ({
                     variant="ghost"
                     disabled={!canManageMemories || isBusy}
                     onClick={() => togglePin(memory)}
-                    style={{ border: '1px solid rgba(106, 77, 40, 0.45)', color: '#4e2d11' }}
+                    style={{
+                      border: "1px solid rgba(106, 77, 40, 0.45)",
+                      color: "#4e2d11",
+                    }}
                   >
-                    {memory.isPinned ? 'Unpin note' : 'Keep pinned'}
+                    {memory.isPinned ? "Unpin note" : "Keep pinned"}
                   </Button>
 
                   {isMemoryOwner ? (
@@ -437,8 +528,8 @@ const MemoryList: React.FC<MemoryListProps> = ({
                         disabled={!canManageMemories || isBusy}
                         onClick={() => startEditing(memory)}
                         style={{
-                          border: '1px solid rgba(106, 77, 40, 0.45)',
-                          color: '#4e2d11',
+                          border: "1px solid rgba(106, 77, 40, 0.45)",
+                          color: "#4e2d11",
                         }}
                       >
                         Edit note
@@ -451,8 +542,8 @@ const MemoryList: React.FC<MemoryListProps> = ({
                         disabled={!canManageMemories || isBusy}
                         onClick={() => setMemoryToDelete(memory)}
                         style={{
-                          border: '1px solid rgba(153, 66, 58, 0.45)',
-                          color: '#7a261f',
+                          border: "1px solid rgba(153, 66, 58, 0.45)",
+                          color: "#7a261f",
                         }}
                       >
                         Delete note
@@ -467,7 +558,13 @@ const MemoryList: React.FC<MemoryListProps> = ({
       </div>
 
       {sortedMemories.length > visibleCount && (
-        <div style={{ marginTop: spacing.sm, display: 'flex', justifyContent: 'center' }}>
+        <div
+          style={{
+            marginTop: spacing.sm,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           <Button
             type="button"
             variant="ghost"
@@ -483,27 +580,34 @@ const MemoryList: React.FC<MemoryListProps> = ({
         </div>
       )}
 
-      {sortedMemories.length <= visibleCount && visibleCount > INITIAL_VISIBLE_COUNT && (
-        <div style={{ marginTop: spacing.sm, display: 'flex', justifyContent: 'center' }}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onShowLess}
+      {sortedMemories.length <= visibleCount &&
+        visibleCount > INITIAL_VISIBLE_COUNT && (
+          <div
             style={{
-              border: `1px solid ${colors.borderSecondary}40`,
-              color: colors.textPrimary,
+              marginTop: spacing.sm,
+              display: "flex",
+              justifyContent: "center",
             }}
           >
-            Show Less
-          </Button>
-        </div>
-      )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onShowLess}
+              style={{
+                border: `1px solid ${colors.borderSecondary}40`,
+                color: colors.textPrimary,
+              }}
+            >
+              Show Less
+            </Button>
+          </div>
+        )}
 
       <ConfirmDialog
         isOpen={!!memoryToDelete}
         title="Delete Note"
-        message={`Delete this note from ${memoryToDelete?.author || 'Unknown'}?`}
+        message={`Delete this note from ${memoryToDelete?.author || "Unknown"}?`}
         confirmText="Delete note"
         onConfirm={confirmDeleteMemory}
         onCancel={() => setMemoryToDelete(null)}

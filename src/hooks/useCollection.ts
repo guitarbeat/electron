@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { pollingManager, usePolling } from '@/services/polling';
-import { mutateScope, readScope, retryScopeSync } from '@/services/state';
-import type { StateScope, StateScopeDataMap } from '@/services/state/stateTypes';
-import { areDeeplyEqual } from '@/utils';
-import { User } from '@/shared/types';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { pollingManager, usePolling } from "@/services/polling";
+import { mutateScope, readScope, retryScopeSync } from "@/services/state";
+import type {
+  StateScope,
+  StateScopeDataMap,
+} from "@/services/state/stateTypes";
+import { areDeeplyEqual } from "@/utils";
+import { User } from "@/shared/types";
 
 interface CollectionOptions {
   pollingInterval?: number;
@@ -15,12 +18,12 @@ type CollectionScope = {
 }[StateScope];
 
 const getCollectionItemId = (item: unknown): string | undefined => {
-  if (typeof item !== 'object' || item === null || !('id' in item)) {
+  if (typeof item !== "object" || item === null || !("id" in item)) {
     return undefined;
   }
 
   const { id } = item as { id: unknown };
-  return typeof id === 'string' ? id : undefined;
+  return typeof id === "string" ? id : undefined;
 };
 
 const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
@@ -34,7 +37,7 @@ const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
 export const useCollection = <T>(
   scope: CollectionScope,
   currentUser: User | null | undefined,
-  options: CollectionOptions = {}
+  options: CollectionOptions = {},
 ) => {
   const { pollingInterval = 15000, isPaused = false } = options;
 
@@ -79,7 +82,7 @@ export const useCollection = <T>(
   const performMutation = useCallback(
     async (op: string, payload: unknown, optimisticData: T[]) => {
       if (!currentUser) {
-        throw new Error('Profile required');
+        throw new Error("Profile required");
       }
 
       setIsSubmitting(true);
@@ -96,7 +99,7 @@ export const useCollection = <T>(
         if (nextSnapshot.degraded) {
           throw new Error(
             nextSnapshot.warning ??
-              'Change was kept locally because shared sync is unavailable. Retry sync when you are back online.'
+              "Change was kept locally because shared sync is unavailable. Retry sync when you are back online.",
           );
         }
         return true;
@@ -105,7 +108,7 @@ export const useCollection = <T>(
         setIsSubmitting(false);
       }
     },
-    [currentUser, scope]
+    [currentUser, scope],
   );
 
   const retrySync = useCallback(async () => {

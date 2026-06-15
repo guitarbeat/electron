@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 
 const prefersReducedMotion = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * Cinematic card drop-in entrance — mirrors the hero's Phase 1 technique.
@@ -31,13 +31,15 @@ export function useCinematicEntrance(
       const container = containerRef.current;
       if (!container || hasAnimated.current) return;
 
-      const targets = Array.from(container.querySelectorAll<HTMLElement>(selector));
+      const targets = Array.from(
+        container.querySelectorAll<HTMLElement>(selector),
+      );
       if (targets.length === 0) return false; // signal: not ready yet
 
       hasAnimated.current = true;
 
       if (prefersReducedMotion()) {
-        gsap.set(targets, { clearProps: 'all' });
+        gsap.set(targets, { clearProps: "all" });
         return true;
       }
 
@@ -47,8 +49,8 @@ export function useCinematicEntrance(
         autoAlpha: 0,
         scale: 0.91,
         rotationX: -18,
-        transformOrigin: '50% 100%',
-        filter: 'blur(12px)',
+        transformOrigin: "50% 100%",
+        filter: "blur(12px)",
       });
 
       gsap.to(targets, {
@@ -56,15 +58,15 @@ export function useCinematicEntrance(
         autoAlpha: 1,
         scale: 1,
         rotationX: 0,
-        filter: 'blur(0px)',
-        ease: 'expo.out',
+        filter: "blur(0px)",
+        ease: "expo.out",
         duration: 1.05,
         delay,
         stagger: {
           amount: Math.min(0.65, targets.length * 0.08),
-          ease: 'power1.in',
+          ease: "power1.in",
         },
-        clearProps: 'filter,rotationX,scale',
+        clearProps: "filter,rotationX,scale",
         overwrite: true,
       });
 
@@ -88,7 +90,7 @@ export function useCinematicEntrance(
       // Safety: if animation never fired, ensure elements are visible
       if (!hasAnimated.current) {
         const stuck = container.querySelectorAll<HTMLElement>(selector);
-        if (stuck.length > 0) gsap.set(stuck, { clearProps: 'all' });
+        if (stuck.length > 0) gsap.set(stuck, { clearProps: "all" });
       }
     };
   }, [ready, containerRef, selector, delay]);

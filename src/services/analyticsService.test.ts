@@ -1,9 +1,13 @@
-import { test, mock } from 'node:test';
-import assert from 'node:assert/strict';
-import { removeStoredJson, readStoredJson, writeStoredJson } from './storageClient.ts';
-import { getMetricCount, trackMetric } from './analyticsService.ts';
+import { test, mock } from "node:test";
+import assert from "node:assert/strict";
+import {
+  removeStoredJson,
+  readStoredJson,
+  writeStoredJson,
+} from "./storageClient.ts";
+import { getMetricCount, trackMetric } from "./analyticsService.ts";
 
-test('removeStoredJson handles window.localStorage.removeItem throwing error', () => {
+test("removeStoredJson handles window.localStorage.removeItem throwing error", () => {
   const originalWindow = global.window;
 
   const mockWarn = mock.method(console, "warn", () => {});
@@ -207,8 +211,8 @@ test("writeStoredJson calls window.localStorage.setItem successfully", () => {
       label: "testLabel",
     });
     assert.deepEqual(result, { ok: true });
-    assert.equal(storedKey, 'testKey');
-    assert.equal(storedValue, 'v1:eyJvayI6dHJ1ZX0=');
+    assert.equal(storedKey, "testKey");
+    assert.equal(storedValue, "v1:eyJvayI6dHJ1ZX0=");
     assert.equal(mockWarn.mock.calls.length, 0);
   } finally {
     global.window = originalWindow;
@@ -220,7 +224,7 @@ test("trackMetric increments metric successfully", () => {
   const originalWindow = global.window;
 
   const storage: Record<string, string> = {
-    'movieList.analyticsMetrics': 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6MX0='
+    "movieList.analyticsMetrics": "v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6MX0=",
   };
 
   global.window = {
@@ -235,11 +239,20 @@ test("trackMetric increments metric successfully", () => {
   try {
     const result = trackMetric("suggestion_submitted");
     assert.deepEqual(result, { suggestion_submitted: 2 });
-    assert.equal(storage['movieList.analyticsMetrics'], 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Mn0=');
+    assert.equal(
+      storage["movieList.analyticsMetrics"],
+      "v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Mn0=",
+    );
 
-    const result2 = trackMetric('suggestion_accepted');
-    assert.deepEqual(result2, { suggestion_submitted: 2, suggestion_accepted: 1 });
-    assert.equal(storage['movieList.analyticsMetrics'], 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Miwic3VnZ2VzdGlvbl9hY2NlcHRlZCI6MX0=');
+    const result2 = trackMetric("suggestion_accepted");
+    assert.deepEqual(result2, {
+      suggestion_submitted: 2,
+      suggestion_accepted: 1,
+    });
+    assert.equal(
+      storage["movieList.analyticsMetrics"],
+      "v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6Miwic3VnZ2VzdGlvbl9hY2NlcHRlZCI6MX0=",
+    );
   } finally {
     global.window = originalWindow;
   }
@@ -249,7 +262,7 @@ test("getMetricCount retrieves metric successfully", () => {
   const originalWindow = global.window;
 
   const storage: Record<string, string> = {
-    'movieList.analyticsMetrics': 'v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6NX0='
+    "movieList.analyticsMetrics": "v1:eyJzdWdnZXN0aW9uX3N1Ym1pdHRlZCI6NX0=",
   };
 
   global.window = {

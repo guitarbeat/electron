@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { consoleError } from '../../utils/shared.ts';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { consoleError } from "../../utils/shared.ts";
 
 type Listener<T> = (data: T | undefined, error: unknown | null) => void;
 interface PollingOptions {
@@ -28,7 +28,7 @@ class PollingManager {
     fetchFn: () => Promise<T>,
     interval: number,
     listener: Listener<T>,
-    options: PollingOptions = {}
+    options: PollingOptions = {},
   ) {
     if (!this.subscribers.has(key)) {
       this.subscribers.set(key, new Set());
@@ -128,11 +128,14 @@ class PollingManager {
 
         // Validation check similar to original hook
         if (data === undefined || (!allowNull && data === null)) {
-          throw new Error('Fetched data is null or undefined');
+          throw new Error("Fetched data is null or undefined");
         }
 
         // Check if this response is stale before processing
-        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== currentFetchFn) {
+        if (
+          !this.subscribers.has(key) ||
+          this.fetchFns.get(key) !== currentFetchFn
+        ) {
           return; // Silently ignore stale response
         }
 
@@ -143,7 +146,10 @@ class PollingManager {
         consoleError(`Polling failed for ${key}:`, e);
 
         // Check if this error response is stale before processing
-        if (!this.subscribers.has(key) || this.fetchFns.get(key) !== currentFetchFn) {
+        if (
+          !this.subscribers.has(key) ||
+          this.fetchFns.get(key) !== currentFetchFn
+        ) {
           return; // Silently ignore stale error
         }
 
@@ -209,7 +215,7 @@ export const usePolling = <T>(
   fetchFn: () => Promise<T>,
   interval: number | null,
   equalityFn?: (prev: T | undefined, next: T) => boolean,
-  options: { isPaused?: boolean; key?: string; allowNull?: boolean } = {}
+  options: { isPaused?: boolean; key?: string; allowNull?: boolean } = {},
 ) => {
   const { isPaused = false, key, allowNull = false } = options;
 
@@ -225,7 +231,9 @@ export const usePolling = <T>(
     if (key) {
       const cachedError = pollingManager.getError(key);
       if (cachedError) {
-        return cachedError instanceof Error ? cachedError : new Error(String(cachedError));
+        return cachedError instanceof Error
+          ? cachedError
+          : new Error(String(cachedError));
       }
     }
     return null;
@@ -234,7 +242,8 @@ export const usePolling = <T>(
   const [isLoading, setIsLoading] = useState(() => {
     if (key) {
       return (
-        pollingManager.getData(key) === undefined && pollingManager.getError(key) === undefined
+        pollingManager.getData(key) === undefined &&
+        pollingManager.getError(key) === undefined
       );
     }
     return true;
@@ -256,31 +265,37 @@ export const usePolling = <T>(
     savedEqualityFn.current = equalityFn;
   }, [equalityFn]);
 
-  const executeLocal = useCallback(async (isInitialLoad: boolean) => {
-    if (isInitialLoad && !dataRef.current) {
-      setIsLoading(true);
-    }
-    setError(null);
-    try {
-      const result = await savedFetchFn.current();
-
-      if (result === undefined || (!allowNull && result === null)) {
-        throw new Error('Fetched data is null or undefined');
+  const executeLocal = useCallback(
+    async (isInitialLoad: boolean) => {
+      if (isInitialLoad && !dataRef.current) {
+        setIsLoading(true);
       }
+      setError(null);
+      try {
+        const result = await savedFetchFn.current();
 
-      setData((prevData) => {
-        if (savedEqualityFn.current && savedEqualityFn.current(prevData, result)) {
-          return prevData;
+        if (result === undefined || (!allowNull && result === null)) {
+          throw new Error("Fetched data is null or undefined");
         }
-        return result;
-      });
-    } catch (e) {
-      consoleError(`Polling execution failed${key ? ` for ${key}` : ''}:`, e);
-      setError(e instanceof Error ? e : new Error(String(e)));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [allowNull, key]);
+
+        setData((prevData) => {
+          if (
+            savedEqualityFn.current &&
+            savedEqualityFn.current(prevData, result)
+          ) {
+            return prevData;
+          }
+          return result;
+        });
+      } catch (e) {
+        consoleError(`Polling execution failed${key ? ` for ${key}` : ""}:`, e);
+        setError(e instanceof Error ? e : new Error(String(e)));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [allowNull, key],
+  );
 
   useEffect(() => {
     if (isPaused) {
@@ -296,7 +311,11 @@ export const usePolling = <T>(
         interval,
         (newData, newError) => {
           if (newError) {
-            setError(newError instanceof Error ? newError : new Error(String(newError)));
+            setError(
+              newError instanceof Error
+                ? newError
+                : new Error(String(newError)),
+            );
             setIsLoading(false);
           } else {
             setError(null);
@@ -313,7 +332,7 @@ export const usePolling = <T>(
             setIsLoading(false);
           }
         },
-        { allowNull }
+        { allowNull },
       );
 
       return unsubscribe;

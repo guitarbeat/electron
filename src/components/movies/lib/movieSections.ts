@@ -1,24 +1,27 @@
-import type { Movie, MovieSuggestion } from '@/shared/types';
-import { buildCollectionSections, type CollectionSections } from '../../../utils/workspace.ts';
+import type { Movie, MovieSuggestion } from "@/shared/types";
+import {
+  buildCollectionSections,
+  type CollectionSections,
+} from "../../../utils/workspace.ts";
 
-export type MovieSortOrder = 'recent' | 'alpha' | 'rating';
+export type MovieSortOrder = "recent" | "alpha" | "rating";
 
 export type MovieSections = CollectionSections<Movie, MovieSuggestion>;
 
 function sortMovies(movies: Movie[], sortOrder: MovieSortOrder): Movie[] {
   const sorted = [...movies];
   switch (sortOrder) {
-    case 'alpha':
+    case "alpha":
       return sorted.sort((a, b) =>
-        a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
+        a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
       );
-    case 'rating':
+    case "rating":
       return sorted.sort((a, b) => {
-        const ra = parseFloat(a.imdbRating ?? '0') || 0;
-        const rb = parseFloat(b.imdbRating ?? '0') || 0;
+        const ra = parseFloat(a.imdbRating ?? "0") || 0;
+        const rb = parseFloat(b.imdbRating ?? "0") || 0;
         return rb - ra;
       });
-    case 'recent':
+    case "recent":
     default:
       return sorted.sort(
         (a, b) =>
@@ -30,7 +33,7 @@ function sortMovies(movies: Movie[], sortOrder: MovieSortOrder): Movie[] {
 export const buildMovieSections = (
   movies: Movie[],
   pendingSuggestions: MovieSuggestion[],
-  sortOrder: MovieSortOrder = 'recent',
+  sortOrder: MovieSortOrder = "recent",
 ): MovieSections => {
   const sorted = sortMovies(movies, sortOrder);
   return buildCollectionSections(

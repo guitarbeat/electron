@@ -1,18 +1,18 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import sessionHandler from '../../api/session.ts';
-import readHandler from '../../api/state/[scope].ts';
-import { createSharedStateMemoryMock } from './test/sharedStateMock.ts';
+import sessionHandler from "../../api/session.ts";
+import readHandler from "../../api/state/[scope].ts";
+import { createSharedStateMemoryMock } from "./test/sharedStateMock.ts";
 
-test('reading a missing placeSuggestions scope bootstraps the default shared-state row once', async () => {
+test("reading a missing placeSuggestions scope bootstraps the default shared-state row once", async () => {
   const mock = createSharedStateMemoryMock({
-    'movielist.json': '[]',
+    "movielist.json": "[]",
   });
 
   try {
     const response = await readHandler(
-      new Request('https://example.com/api/state/placeSuggestions')
+      new Request("https://example.com/api/state/placeSuggestions"),
     );
 
     assert.equal(response.status, 200);
@@ -25,20 +25,20 @@ test('reading a missing placeSuggestions scope bootstraps the default shared-sta
     assert.deepEqual(payload.data, []);
     assert.equal(payload.degraded, false);
     assert.equal(mock.patchBodies.length, 1);
-    assert.equal(mock.getFile('placesuggestions.json'), '[]');
+    assert.equal(mock.getFile("placesuggestions.json"), "[]");
   } finally {
     mock.dispose();
   }
 });
 
-test('reading an existing placeSuggestions scope does not rewrite shared-state store', async () => {
+test("reading an existing placeSuggestions scope does not rewrite shared-state store", async () => {
   const mock = createSharedStateMemoryMock({
-    'placesuggestions.json': '[]',
+    "placesuggestions.json": "[]",
   });
 
   try {
     const response = await readHandler(
-      new Request('https://example.com/api/state/placeSuggestions')
+      new Request("https://example.com/api/state/placeSuggestions"),
     );
 
     assert.equal(response.status, 200);
@@ -48,23 +48,25 @@ test('reading an existing placeSuggestions scope does not rewrite shared-state s
   }
 });
 
-test('missing pins.json reports both users as missing PINs and bootstraps the key', async () => {
+test("missing pins.json reports both users as missing PINs and bootstraps the key", async () => {
   const mock = createSharedStateMemoryMock({
-    'movielist.json': '[]',
+    "movielist.json": "[]",
   });
 
   try {
-    const response = await sessionHandler(new Request('https://example.com/api/session'));
+    const response = await sessionHandler(
+      new Request("https://example.com/api/session"),
+    );
 
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), {
       hasAccess: true,
       currentUser: null,
       pinProtectedUsers: [],
-      usersMissingPins: ['Aaron', 'Electra'],
+      usersMissingPins: ["Aaron", "Electra"],
     });
     assert.equal(mock.patchBodies.length, 1);
-    assert.equal(mock.getFile('pins.json'), '{}');
+    assert.equal(mock.getFile("pins.json"), "{}");
   } finally {
     mock.dispose();
   }

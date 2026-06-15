@@ -1,10 +1,10 @@
-import type { Movie, SharedMemory } from '@/shared/types';
-import { normalizeMovieTitle } from '@/utils/shared';
+import type { Movie, SharedMemory } from "@/shared/types";
+import { normalizeMovieTitle } from "@/utils/shared";
 
 export const INITIAL_VISIBLE_COUNT = 6;
-export const ALL_MOVIES_FILTER = 'all';
+export const ALL_MOVIES_FILTER = "all";
 
-export type MemorySortMode = 'newest' | 'oldest';
+export type MemorySortMode = "newest" | "oldest";
 export const MEMORY_MENTION_REGEX = /(@Aaron|@Electra)\b/gi;
 
 interface StickyNoteTheme {
@@ -24,40 +24,44 @@ interface MovieMemorySummary {
 
 const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
   {
-    background: 'linear-gradient(165deg, #fff4a6 0%, #f9e07a 72%, #efd46a 100%)',
-    border: '#d0b45b',
-    heading: '#4b3810',
-    text: '#44330f',
-    meta: '#6a5523',
-    signature: '#7a3f00',
-    pin: '#e45858',
+    background:
+      "linear-gradient(165deg, #fff4a6 0%, #f9e07a 72%, #efd46a 100%)",
+    border: "#d0b45b",
+    heading: "#4b3810",
+    text: "#44330f",
+    meta: "#6a5523",
+    signature: "#7a3f00",
+    pin: "#e45858",
   },
   {
-    background: 'linear-gradient(165deg, #b7f5ff 0%, #98e4f5 70%, #7ed2e8 100%)',
-    border: '#72bccf',
-    heading: '#12394a',
-    text: '#113341',
-    meta: '#2c5160',
-    signature: '#115073',
-    pin: '#f56f42',
+    background:
+      "linear-gradient(165deg, #b7f5ff 0%, #98e4f5 70%, #7ed2e8 100%)",
+    border: "#72bccf",
+    heading: "#12394a",
+    text: "#113341",
+    meta: "#2c5160",
+    signature: "#115073",
+    pin: "#f56f42",
   },
   {
-    background: 'linear-gradient(165deg, #ffd3b2 0%, #ffbf96 74%, #f8ad84 100%)',
-    border: '#dd9367',
-    heading: '#5e2c10',
-    text: '#4e2a12',
-    meta: '#754220',
-    signature: '#8a3412',
-    pin: '#47906f',
+    background:
+      "linear-gradient(165deg, #ffd3b2 0%, #ffbf96 74%, #f8ad84 100%)",
+    border: "#dd9367",
+    heading: "#5e2c10",
+    text: "#4e2a12",
+    meta: "#754220",
+    signature: "#8a3412",
+    pin: "#47906f",
   },
   {
-    background: 'linear-gradient(165deg, #dcf8c5 0%, #c8ebaa 73%, #b2d78f 100%)',
-    border: '#95b572',
-    heading: '#2e4b1e',
-    text: '#2d461d',
-    meta: '#496838',
-    signature: '#3f6a1f',
-    pin: '#4168d6',
+    background:
+      "linear-gradient(165deg, #dcf8c5 0%, #c8ebaa 73%, #b2d78f 100%)",
+    border: "#95b572",
+    heading: "#2e4b1e",
+    text: "#2d461d",
+    meta: "#496838",
+    signature: "#3f6a1f",
+    pin: "#4168d6",
   },
 ];
 
@@ -93,7 +97,7 @@ export const getStickyNoteRotation = (memory: SharedMemory): number => {
 
 export const buildMovieMemorySummaries = (
   movies: Movie[],
-  memories: SharedMemory[]
+  memories: SharedMemory[],
 ): Map<string, MovieMemorySummary> => {
   const groupedByKey = new Map<string, SharedMemory[]>();
 
@@ -117,7 +121,7 @@ export const buildMovieMemorySummaries = (
       });
     });
 
-    const allMemories = sortMemories(Array.from(merged.values()), 'newest');
+    const allMemories = sortMemories(Array.from(merged.values()), "newest");
 
     if (allMemories.length > 0) {
       summaries.set(movie.id, {
@@ -132,7 +136,7 @@ export const buildMovieMemorySummaries = (
 
 export const sortMemories = (
   memories: SharedMemory[],
-  sortMode: MemorySortMode
+  sortMode: MemorySortMode,
 ): SharedMemory[] => {
   return [...memories].sort((a, b) => {
     if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
@@ -142,7 +146,7 @@ export const sortMemories = (
     const aTime = new Date(a.createdAt).getTime();
     const bTime = new Date(b.createdAt).getTime();
 
-    if (sortMode === 'oldest') {
+    if (sortMode === "oldest") {
       return aTime - bTime;
     } else {
       return bTime - aTime;
@@ -150,4 +154,5 @@ export const sortMemories = (
   });
 };
 
-export const canCreateMemory = (currentUser: string | null): boolean => Boolean(currentUser);
+export const canCreateMemory = (currentUser: string | null): boolean =>
+  Boolean(currentUser);

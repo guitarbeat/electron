@@ -1,22 +1,24 @@
-
-import React from 'react';
-import { useCardTilt } from '@/hooks/useCardTilt';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage, consoleError } from '@/utils';
-import Card from '@/ui/Card';
+import React from "react";
+import { useCardTilt } from "@/hooks/useCardTilt";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import type { Movie, SharedMemory, User } from "@/shared/types";
+import { executeAction, getErrorMessage, consoleError } from "@/utils";
+import Card from "@/ui/Card";
 import {
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
-} from '@/ui/MediaCard';
-import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from '@/common/Icons';
-import { getMovieActionState, type MovieActionState } from './lib/movieActionState';
-import MovieTitleEditModal from './MovieTitleEditModal';
-import MovieDetailsModal from './MovieDetailsModal';
-import MediaPoster from '@/ui/MediaPoster';
-import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
-import MediaCardWatcherStack from '@/ui/MediaCardWatcherStack';
+} from "@/ui/MediaCard";
+import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from "@/common/Icons";
+import {
+  getMovieActionState,
+  type MovieActionState,
+} from "./lib/movieActionState";
+import MovieTitleEditModal from "./MovieTitleEditModal";
+import MovieDetailsModal from "./MovieDetailsModal";
+import MediaPoster from "@/ui/MediaPoster";
+import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
+import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
 
 export interface MovieTransitionOrigin {
   top: number;
@@ -72,7 +74,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         currentUser,
         memoriesCount: memories.length,
       }),
-    [currentUser, memories.length, movie]
+    [currentUser, memories.length, movie],
   );
   const handleOpenDetails = () => {
     const rect =
@@ -188,7 +190,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
       </div>
 
       {onRename ? (
-// ...
+        // ...
         <MovieTitleEditModal
           movie={movie}
           isOpen={isTitleEditorOpen}
@@ -216,8 +218,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 export default MovieCard;
-
-
 
 interface MovieActionsProps {
   movie: Movie;

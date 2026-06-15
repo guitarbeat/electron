@@ -1,8 +1,8 @@
-import { useCallback, useEffect } from 'react';
-import { useAppSession, useUser } from '@/app/useProviders';
-import { mutateScope } from '@/services/state';
-import { getErrorMessage, readApiErrorMessage, consoleError } from '@/utils';
-import type { User } from '../shared/types.ts';
+import { useCallback, useEffect } from "react";
+import { useAppSession, useUser } from "@/app/useProviders";
+import { mutateScope } from "@/services/state";
+import { getErrorMessage, readApiErrorMessage, consoleError } from "@/utils";
+import type { User } from "../shared/types.ts";
 
 const PINS_POLL_INTERVAL = 30000;
 
@@ -30,12 +30,12 @@ export const usePins = (isPaused: boolean = false) => {
 
   const userHasPin = useCallback(
     (user: User): boolean => pinProtectedUsers.includes(user),
-    [pinProtectedUsers]
+    [pinProtectedUsers],
   );
 
   const userNeedsPin = useCallback(
     (user: User): boolean => usersMissingPins.includes(user),
-    [usersMissingPins]
+    [usersMissingPins],
   );
 
   const setUserPin = useCallback(
@@ -45,22 +45,23 @@ export const usePins = (isPaused: boolean = false) => {
       }
 
       try {
-        await mutateScope('pins', {
-          op: 'set_pin',
+        await mutateScope("pins", {
+          op: "set_pin",
           payload: { pin },
           optimisticData: {
-            Aaron: user === 'Aaron' || pinProtectedUsers.includes('Aaron'),
-            Electra: user === 'Electra' || pinProtectedUsers.includes('Electra'),
+            Aaron: user === "Aaron" || pinProtectedUsers.includes("Aaron"),
+            Electra:
+              user === "Electra" || pinProtectedUsers.includes("Electra"),
           },
         });
         await refreshSession();
         return true;
       } catch (error) {
-        consoleError('Error setting PIN:', error);
+        consoleError("Error setting PIN:", error);
         return false;
       }
     },
-    [currentUser, hasAccess, pinProtectedUsers, refreshSession]
+    [currentUser, hasAccess, pinProtectedUsers, refreshSession],
   );
 
   const verifyUserPin = useCallback(
@@ -70,12 +71,12 @@ export const usePins = (isPaused: boolean = false) => {
       }
 
       try {
-        const response = await fetch('/api/session/profile', {
-          method: 'POST',
-          credentials: 'include',
-          cache: 'no-store',
+        const response = await fetch("/api/session/profile", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ user, pin }),
         });
@@ -86,27 +87,27 @@ export const usePins = (isPaused: boolean = false) => {
 
         if (!response.ok) {
           throw new Error(
-            await readApiErrorMessage(response, 'Failed to verify PIN.')
+            await readApiErrorMessage(response, "Failed to verify PIN."),
           );
         }
 
         await refreshSession();
         return true;
       } catch (error) {
-        consoleError('PIN verification failed:', error);
+        consoleError("PIN verification failed:", error);
         throw new Error(
-          getErrorMessage(error, 'Profile login is unavailable right now.'),
-          { cause: error }
+          getErrorMessage(error, "Profile login is unavailable right now."),
+          { cause: error },
         );
       }
     },
-    [hasAccess, refreshSession]
+    [hasAccess, refreshSession],
   );
 
   return {
     pins: {
-      Aaron: pinProtectedUsers.includes('Aaron'),
-      Electra: pinProtectedUsers.includes('Electra'),
+      Aaron: pinProtectedUsers.includes("Aaron"),
+      Electra: pinProtectedUsers.includes("Electra"),
     },
     usersMissingPins,
     isLoading: isSessionLoading,

@@ -4,26 +4,26 @@
  * Provides quiz data with polling and mutation support
  */
 
-import { useState, useCallback } from 'react';
-import { usePolling } from '@/services/polling';
-import { QuizQuestion, QuizCharacter } from '@/components/quiz/lib/types';
-import { areDeeplyEqual, consoleError } from '@/utils';
-import { mutateScope, readScope, retryScopeSync } from '@/services/state';
-import type { QuizData } from '@/services/state/stateTypes';
+import { useState, useCallback } from "react";
+import { usePolling } from "@/services/polling";
+import { QuizQuestion, QuizCharacter } from "@/components/quiz/lib/types";
+import { areDeeplyEqual, consoleError } from "@/utils";
+import { mutateScope, readScope, retryScopeSync } from "@/services/state";
+import type { QuizData } from "@/services/state/stateTypes";
 
 const POLLING_INTERVAL = 30000;
 
-export type { QuizData } from '@/services/state/stateTypes';
+export type { QuizData } from "@/services/state/stateTypes";
 
 export const useQuiz = (isPaused: boolean = false) => {
-  const readQuiz = useCallback(() => readScope('quiz'), []);
+  const readQuiz = useCallback(() => readScope("quiz"), []);
   const {
     data: snapshot,
     error,
     isLoading,
     refresh,
   } = usePolling(readQuiz, POLLING_INTERVAL, areDeeplyEqual, {
-    key: 'quiz',
+    key: "quiz",
     isPaused,
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -37,27 +37,27 @@ export const useQuiz = (isPaused: boolean = false) => {
       setIsSaving(true);
       try {
         const updatedData = mutationFn(quizData);
-        await mutateScope('quiz', {
-          op: 'replace_quiz',
+        await mutateScope("quiz", {
+          op: "replace_quiz",
           payload: { quizData: updatedData },
           optimisticData: updatedData,
         });
         refresh();
       } catch (err) {
-        consoleError('Quiz mutation failed:', err);
+        consoleError("Quiz mutation failed:", err);
         throw err;
       } finally {
         setIsSaving(false);
       }
     },
-    [quizData, refresh]
+    [quizData, refresh],
   );
 
   const updateQuestions = useCallback(
     async (questions: QuizQuestion[]) => {
       await performMutation((data) => ({ ...data, questions }));
     },
-    [performMutation]
+    [performMutation],
   );
 
   const addQuestion = useCallback(
@@ -67,17 +67,19 @@ export const useQuiz = (isPaused: boolean = false) => {
         questions: [...data.questions, question],
       }));
     },
-    [performMutation]
+    [performMutation],
   );
 
   const updateQuestion = useCallback(
     async (questionId: string, updatedQuestion: QuizQuestion) => {
       await performMutation((data) => ({
         ...data,
-        questions: data.questions.map((q) => (q.id === questionId ? updatedQuestion : q)),
+        questions: data.questions.map((q) =>
+          q.id === questionId ? updatedQuestion : q,
+        ),
       }));
     },
-    [performMutation]
+    [performMutation],
   );
 
   const deleteQuestion = useCallback(
@@ -87,17 +89,20 @@ export const useQuiz = (isPaused: boolean = false) => {
         questions: data.questions.filter((q) => q.id !== questionId),
       }));
     },
-    [performMutation]
+    [performMutation],
   );
 
   const updateCharacterDescription = useCallback(
     async (character: QuizCharacter, description: string) => {
       await performMutation((data) => ({
         ...data,
-        characterDescriptions: { ...data.characterDescriptions, [character]: description },
+        characterDescriptions: {
+          ...data.characterDescriptions,
+          [character]: description,
+        },
       }));
     },
-    [performMutation]
+    [performMutation],
   );
 
   const updateNeitherDescription = useCallback(
@@ -107,7 +112,7 @@ export const useQuiz = (isPaused: boolean = false) => {
         neitherDescription: description,
       }));
     },
-    [performMutation]
+    [performMutation],
   );
 
   const saveAllData = useCallback(
@@ -116,8 +121,8 @@ export const useQuiz = (isPaused: boolean = false) => {
 
       setIsSaving(true);
       try {
-        await mutateScope('quiz', {
-          op: 'replace_quiz',
+        await mutateScope("quiz", {
+          op: "replace_quiz",
           payload: { quizData: data },
           optimisticData: data,
         });
@@ -126,11 +131,11 @@ export const useQuiz = (isPaused: boolean = false) => {
         setIsSaving(false);
       }
     },
-    [refresh]
+    [refresh],
   );
 
   const retrySync = useCallback(async () => {
-    await retryScopeSync('quiz');
+    await retryScopeSync("quiz");
     refresh();
   }, [refresh]);
 

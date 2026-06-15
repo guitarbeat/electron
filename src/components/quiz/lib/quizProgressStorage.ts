@@ -1,6 +1,6 @@
-import type { QuizAnswer } from './types';
+import type { QuizAnswer } from "./types";
 
-const QUIZ_PROGRESS_STORAGE_KEY = 'quiz-flow-progress';
+const QUIZ_PROGRESS_STORAGE_KEY = "quiz-flow-progress";
 
 export interface SavedQuizProgress {
   questionSignature: string;
@@ -13,9 +13,9 @@ export const buildQuizProgressStorageKey = (sessionKey: string) =>
 
 export const readSavedQuizProgress = (
   storageKey: string,
-  questionSignature: string
+  questionSignature: string,
 ): SavedQuizProgress | null => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
@@ -28,7 +28,7 @@ export const readSavedQuizProgress = (
     const parsed = JSON.parse(raw) as Partial<SavedQuizProgress>;
     if (
       parsed.questionSignature !== questionSignature ||
-      typeof parsed.currentQuestionIndex !== 'number' ||
+      typeof parsed.currentQuestionIndex !== "number" ||
       !Array.isArray(parsed.answers)
     ) {
       window.sessionStorage.removeItem(storageKey);
@@ -46,8 +46,11 @@ export const readSavedQuizProgress = (
   }
 };
 
-export const writeSavedQuizProgress = (storageKey: string, progress: SavedQuizProgress) => {
-  if (typeof window === 'undefined') {
+export const writeSavedQuizProgress = (
+  storageKey: string,
+  progress: SavedQuizProgress,
+) => {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -55,7 +58,7 @@ export const writeSavedQuizProgress = (storageKey: string, progress: SavedQuizPr
 };
 
 export const clearSavedQuizProgress = (storageKey: string) => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 

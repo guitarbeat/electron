@@ -1,17 +1,17 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import { areDeeplyEqual } from '../utils/index.ts';
+import { areDeeplyEqual } from "../utils/index.ts";
 
 type Item = { id: string; title: string };
 
 const getCollectionItemId = (item: unknown): string | undefined => {
-  if (typeof item !== 'object' || item === null || !('id' in item)) {
+  if (typeof item !== "object" || item === null || !("id" in item)) {
     return undefined;
   }
 
   const { id } = item as { id: unknown };
-  return typeof id === 'string' ? id : undefined;
+  return typeof id === "string" ? id : undefined;
 };
 
 const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
@@ -22,22 +22,22 @@ const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
   });
 };
 
-test('hasLocalOnlyRows detects optimistic rows missing from stale polls', () => {
+test("hasLocalOnlyRows detects optimistic rows missing from stale polls", () => {
   const current: Item[] = [
-    { id: 'existing', title: 'Heat' },
-    { id: 'new-local', title: 'New Movie' },
+    { id: "existing", title: "Heat" },
+    { id: "new-local", title: "New Movie" },
   ];
-  const polled: Item[] = [{ id: 'existing', title: 'Heat' }];
+  const polled: Item[] = [{ id: "existing", title: "Heat" }];
 
   assert.equal(hasLocalOnlyRows(current, polled), true);
   assert.equal(hasLocalOnlyRows(polled, polled), false);
 });
 
-test('areDeeplyEqual treats distinct movie lists as different', () => {
-  const left: Item[] = [{ id: 'a', title: 'A' }];
+test("areDeeplyEqual treats distinct movie lists as different", () => {
+  const left: Item[] = [{ id: "a", title: "A" }];
   const right: Item[] = [
-    { id: 'a', title: 'A' },
-    { id: 'b', title: 'B' },
+    { id: "a", title: "A" },
+    { id: "b", title: "B" },
   ];
 
   assert.equal(areDeeplyEqual(left, right), false);

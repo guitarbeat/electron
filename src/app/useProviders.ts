@@ -1,11 +1,15 @@
-import { useContext } from 'react';
-import type { ThemeContextValue, ToastContextType, UserContextType } from './providerContexts';
-import { ThemeContext, ToastContext, UserContext } from './providerContexts';
+import { useContext } from "react";
+import type {
+  ThemeContextValue,
+  ToastContextType,
+  UserContextType,
+} from "./providerContexts";
+import { ThemeContext, ToastContext, UserContext } from "./providerContexts";
 
 export const useTheme = (): ThemeContextValue => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
+    throw new Error("useTheme must be used within ThemeProvider");
   }
   return context;
 };
@@ -19,7 +23,7 @@ export const useThemeColors = () => {
 export const useToast = (): ToastContextType => {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
+    throw new Error("useToast must be used within a ToastProvider");
   }
   return context;
 };
@@ -27,14 +31,18 @@ export const useToast = (): ToastContextType => {
 export const useUser = (): UserContextType => {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };
 
 export const useAppSession = (): Pick<
   UserContextType,
-  'hasAccess' | 'pinProtectedUsers' | 'usersMissingPins' | 'isSessionLoading' | 'refreshSession'
+  | "hasAccess"
+  | "pinProtectedUsers"
+  | "usersMissingPins"
+  | "isSessionLoading"
+  | "refreshSession"
 > => {
   const context = useUser();
   return {

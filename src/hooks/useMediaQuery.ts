@@ -1,22 +1,22 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from "react";
 
 export const mediaBreakpoints = {
-  sm: '(max-width: 640px)',
-  md: '(max-width: 768px)',
-  lg: '(max-width: 1024px)',
-  xl: '(max-width: 1280px)',
+  sm: "(max-width: 640px)",
+  md: "(max-width: 768px)",
+  lg: "(max-width: 1024px)",
+  xl: "(max-width: 1280px)",
 } as const;
 
 export const useMediaQuery = (query: string): boolean => {
   const subscribe = useCallback(
     (callback: () => void) => {
       const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener('change', callback);
+      matchMedia.addEventListener("change", callback);
       return () => {
-        matchMedia.removeEventListener('change', callback);
+        matchMedia.removeEventListener("change", callback);
       };
     },
-    [query]
+    [query],
   );
 
   const getSnapshot = () => window.matchMedia(query).matches;
@@ -24,4 +24,3 @@ export const useMediaQuery = (query: string): boolean => {
 
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 };
-

@@ -1,10 +1,10 @@
-import type { FC } from 'react';
-import { useState, useRef, useEffect } from 'react';
-import type { MainTab } from '@/shared/types';
-import { useAppHeaderSlot } from '@/app/AppHeaderContext';
-import AppNavStrip from '@/ui/AppNavStrip';
-import ProfileMenu from '@/ui/ProfileMenu';
-import './AppHeader.css';
+import type { FC } from "react";
+import { useState, useRef, useEffect } from "react";
+import type { MainTab } from "@/shared/types";
+import { useAppHeaderSlot } from "@/app/AppHeaderContext";
+import AppNavStrip from "@/ui/AppNavStrip";
+import ProfileMenu from "@/ui/ProfileMenu";
+import "./AppHeader.css";
 
 interface AppHeaderProps {
   activeTab: MainTab;
@@ -46,7 +46,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   return (
     <header
       ref={headerRef}
-      className={`app-header app-header--${activeTab}${isMenuOpen ? ' is-profile-menu-open' : ''}${slot?.hasSearch ? ' app-header--has-search' : ''}`}
+      className={`app-header app-header--${activeTab}${isMenuOpen ? " is-profile-menu-open" : ""}${slot?.hasSearch ? " app-header--has-search" : ""}`}
       role="banner"
     >
       <div className="app-header__left">
@@ -63,7 +63,7 @@ const AppHeader: FC<AppHeaderProps> = ({
 
       <div
         ref={centerRef}
-        className={`app-header__center${slot?.hasSearch ? ' app-header__center--search' : ''}`}
+        className={`app-header__center${slot?.hasSearch ? " app-header__center--search" : ""}`}
       />
 
       <div className="app-header__right">

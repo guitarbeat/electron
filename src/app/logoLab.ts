@@ -2,12 +2,12 @@ import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   isElectronMarkVariant,
   type ElectronMarkVariant,
-} from '../branding/ElectronMarkData.ts';
+} from "../branding/ElectronMarkData.ts";
 
-export const LOGO_LAB_QUERY_PARAM = 'logo-lab';
-export const LOGO_VARIANT_QUERY_PARAM = 'logo-variant';
+export const LOGO_LAB_QUERY_PARAM = "logo-lab";
+export const LOGO_VARIANT_QUERY_PARAM = "logo-variant";
 
-const FALSEY_QUERY_VALUES = new Set(['0', 'false', 'no', 'off']);
+const FALSEY_QUERY_VALUES = new Set(["0", "false", "no", "off"]);
 
 export const isLogoLabEnabled = (search: string) => {
   const params = new URLSearchParams(search);
@@ -20,8 +20,12 @@ export const isLogoLabEnabled = (search: string) => {
   return !FALSEY_QUERY_VALUES.has(value.toLowerCase());
 };
 
-export const getRequestedLogoVariant = (search: string): ElectronMarkVariant => {
+export const getRequestedLogoVariant = (
+  search: string,
+): ElectronMarkVariant => {
   const params = new URLSearchParams(search);
   const requested = params.get(LOGO_VARIANT_QUERY_PARAM);
-  return isElectronMarkVariant(requested) ? requested : DEFAULT_ELECTRON_MARK_VARIANT;
+  return isElectronMarkVariant(requested)
+    ? requested
+    : DEFAULT_ELECTRON_MARK_VARIANT;
 };

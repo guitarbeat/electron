@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { colors } from '@/theme/tokens';
+import React, { useEffect, useState } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { colors } from "@/theme/tokens";
 
 interface ConfettiProps {
   isActive: boolean;
@@ -25,7 +25,7 @@ const CONFETTI_COLORS = [
   colors.tertiary, // Purple
   colors.yellow, // Yellow
   colors.success, // Green
-  '#fff', // White
+  "#fff", // White
 ];
 
 /**
@@ -39,7 +39,9 @@ const Confetti: React.FC<ConfettiProps> = ({
 }) => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [isVisible, setIsVisible] = useState(false);
-  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -48,15 +50,19 @@ const Confetti: React.FC<ConfettiProps> = ({
 
     if (isActive) {
       // Generate particles
-      const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100, // Random horizontal position (%)
-        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-        delay: Math.random() * 0.5, // Stagger start
-        rotation: Math.random() * 360,
-        scale: 0.5 + Math.random() * 0.5,
-        isRounded: Math.random() > 0.5,
-      }));
+      const newParticles: Particle[] = Array.from(
+        { length: particleCount },
+        (_, i) => ({
+          id: i,
+          x: Math.random() * 100, // Random horizontal position (%)
+          color:
+            CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+          delay: Math.random() * 0.5, // Stagger start
+          rotation: Math.random() * 360,
+          scale: 0.5 + Math.random() * 0.5,
+          isRounded: Math.random() > 0.5,
+        }),
+      );
 
       const startTimer = setTimeout(() => {
         setParticles(newParticles);
@@ -84,11 +90,11 @@ const Confetti: React.FC<ConfettiProps> = ({
     <div
       aria-hidden="true"
       style={{
-        position: 'fixed',
+        position: "fixed",
         inset: 0,
-        pointerEvents: 'none',
+        pointerEvents: "none",
         zIndex: 9999,
-        overflow: 'hidden',
+        overflow: "hidden",
       }}
     >
       {particles.map((particle) => (
@@ -104,7 +110,7 @@ const Confetti: React.FC<ConfettiProps> = ({
             className="confetti-inner"
             style={{
               backgroundColor: particle.color,
-              borderRadius: particle.isRounded ? '50%' : '2px',
+              borderRadius: particle.isRounded ? "50%" : "2px",
               transform: `scale(${particle.scale}) rotate(${particle.rotation}deg)`,
               animationDelay: `${particle.delay}s`,
               boxShadow: `0 0 6px ${particle.color}`,

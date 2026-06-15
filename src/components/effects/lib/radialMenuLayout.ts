@@ -30,12 +30,16 @@ export const RADIAL_MENU_MOBILE_METRICS: RadialMenuMetrics = {
   toggleOffset: 80,
 };
 
-export const getRadialMenuMetricsForWidth = (width: number): RadialMenuMetrics =>
-  width <= MOBILE_BREAKPOINT ? RADIAL_MENU_MOBILE_METRICS : RADIAL_MENU_DESKTOP_METRICS;
+export const getRadialMenuMetricsForWidth = (
+  width: number,
+): RadialMenuMetrics =>
+  width <= MOBILE_BREAKPOINT
+    ? RADIAL_MENU_MOBILE_METRICS
+    : RADIAL_MENU_DESKTOP_METRICS;
 
 export const getDockedPositionForViewport = (
   viewport: RadialMenuViewport,
-  metrics: RadialMenuMetrics
+  metrics: RadialMenuMetrics,
 ) => {
   const offsetLeft = viewport.offsetLeft ?? 0;
   const offsetTop = viewport.offsetTop ?? 0;
@@ -63,7 +67,7 @@ export const getDockedPositionForViewport = (
 export const clampPositionToViewport = (
   position: { x: number; y: number },
   viewport: RadialMenuViewport,
-  metrics: RadialMenuMetrics
+  metrics: RadialMenuMetrics,
 ) => {
   const offsetLeft = viewport.offsetLeft ?? 0;
   const offsetTop = viewport.offsetTop ?? 0;
@@ -73,7 +77,12 @@ export const clampPositionToViewport = (
   const insetBottom = viewport.insetBottom ?? 0;
   const chromeTop = viewport.chromeTop ?? 0;
 
-  const minX = offsetLeft + insetLeft + metrics.safeMargin - metrics.toggleOffset + metrics.fanRadius;
+  const minX =
+    offsetLeft +
+    insetLeft +
+    metrics.safeMargin -
+    metrics.toggleOffset +
+    metrics.fanRadius;
   const maxX =
     offsetLeft +
     viewport.width -
@@ -82,7 +91,11 @@ export const clampPositionToViewport = (
     metrics.safeMargin -
     insetRight;
   const minY =
-    offsetTop + Math.max(insetTop, chromeTop) + metrics.safeMargin - metrics.toggleOffset + metrics.fanRadius;
+    offsetTop +
+    Math.max(insetTop, chromeTop) +
+    metrics.safeMargin -
+    metrics.toggleOffset +
+    metrics.fanRadius;
   const maxY =
     offsetTop +
     viewport.height -

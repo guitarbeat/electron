@@ -1,9 +1,9 @@
-import React from 'react';
-import type { MovieSuggestion } from '@/shared/types';
-import { fetchOmdbMetadata } from '@/services/metadata/omdb';
-import MediaPoster from '@/ui/MediaPoster';
-import BaseSuggestionCard from '@/components/common/BaseSuggestionCard';
-import MediaCardMetadata from '@/ui/MediaCardMetadata';
+import React from "react";
+import type { MovieSuggestion } from "@/shared/types";
+import { fetchOmdbMetadata } from "@/services/metadata/omdb";
+import MediaPoster from "@/ui/MediaPoster";
+import BaseSuggestionCard from "@/components/common/BaseSuggestionCard";
+import MediaCardMetadata from "@/ui/MediaCardMetadata";
 
 interface SuggestionCardProps {
   suggestion: MovieSuggestion;
@@ -22,14 +22,21 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   disableActions = false,
   isProcessing = false,
 }) => {
-  const [posterUrl, setPosterUrl] = React.useState<string | undefined>(undefined);
+  const [posterUrl, setPosterUrl] = React.useState<string | undefined>(
+    undefined,
+  );
   const [year, setYear] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
 
-    fetchOmdbMetadata(suggestion.title, suggestion.type, suggestion.imdbID, controller.signal)
+    fetchOmdbMetadata(
+      suggestion.title,
+      suggestion.type,
+      suggestion.imdbID,
+      controller.signal,
+    )
       .then((meta) => {
         if (cancelled) return;
         setPosterUrl(meta.poster);
@@ -66,10 +73,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       }
       details={
         year ? (
-          <MediaCardMetadata
-            items={[year]}
-            className="movie-metadata"
-          />
+          <MediaCardMetadata items={[year]} className="movie-metadata" />
         ) : undefined
       }
     />

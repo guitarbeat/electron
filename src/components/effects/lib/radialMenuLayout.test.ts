@@ -1,14 +1,14 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import test from "node:test";
+import assert from "node:assert/strict";
 
 import {
   MOBILE_BREAKPOINT,
   clampPositionToViewport,
   getDockedPositionForViewport,
   getRadialMenuMetricsForWidth,
-} from './radialMenuLayout.ts';
+} from "./radialMenuLayout.ts";
 
-test('uses compact radial-menu geometry through the CSS mobile breakpoint', () => {
+test("uses compact radial-menu geometry through the CSS mobile breakpoint", () => {
   const compactMetrics = getRadialMenuMetricsForWidth(MOBILE_BREAKPOINT);
   const tabletMetrics = getRadialMenuMetricsForWidth(700);
   const desktopMetrics = getRadialMenuMetricsForWidth(1024);
@@ -18,7 +18,7 @@ test('uses compact radial-menu geometry through the CSS mobile breakpoint', () =
   assert.equal(desktopMetrics.toggleOffset, 100);
 });
 
-test('docked position keeps the menu inside the viewport with safe-area insets', () => {
+test("docked position keeps the menu inside the viewport with safe-area insets", () => {
   const metrics = getRadialMenuMetricsForWidth(700);
   const docked = getDockedPositionForViewport(
     {
@@ -27,7 +27,7 @@ test('docked position keeps the menu inside the viewport with safe-area insets',
       insetRight: 18,
       insetBottom: 24,
     },
-    metrics
+    metrics,
   );
 
   assert.deepEqual(docked, {
@@ -36,7 +36,7 @@ test('docked position keeps the menu inside the viewport with safe-area insets',
   });
 });
 
-test('clamping matches compact geometry instead of desktop offsets', () => {
+test("clamping matches compact geometry instead of desktop offsets", () => {
   const metrics = getRadialMenuMetricsForWidth(700);
   const clamped = clampPositionToViewport(
     { x: -999, y: -999 },
@@ -46,7 +46,7 @@ test('clamping matches compact geometry instead of desktop offsets', () => {
       insetLeft: 12,
       insetTop: 8,
     },
-    metrics
+    metrics,
   );
 
   assert.deepEqual(clamped, {

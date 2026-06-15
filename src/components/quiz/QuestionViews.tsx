@@ -1,10 +1,10 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from "react";
 import type {
   AgreeDisagreeQuestion as AgreeDisagreeQuestionType,
   ImageChoiceQuestion as ImageChoiceQuestionType,
   MultipleChoiceQuestion as MultipleChoiceQuestionType,
   XYAxisQuestion as XYAxisQuestionType,
-} from './lib/types';
+} from "./lib/types";
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;
@@ -12,11 +12,9 @@ interface MultipleChoiceQuestionViewProps {
   onSelect: (index: number) => void;
 }
 
-export const MultipleChoiceQuestionView: React.FC<MultipleChoiceQuestionViewProps> = ({
-  question,
-  selectedIndex,
-  onSelect,
-}) => {
+export const MultipleChoiceQuestionView: React.FC<
+  MultipleChoiceQuestionViewProps
+> = ({ question, selectedIndex, onSelect }) => {
   return (
     <div>
       <div className="quiz-retro-question-text">{question.question}</div>
@@ -24,11 +22,11 @@ export const MultipleChoiceQuestionView: React.FC<MultipleChoiceQuestionViewProp
         {question.options.map((option, index) => (
           <button
             key={index}
-            className={`quiz-retro-option${selectedIndex === index ? ' quiz-retro-option--selected' : ''}`}
+            className={`quiz-retro-option${selectedIndex === index ? " quiz-retro-option--selected" : ""}`}
             onClick={() => onSelect(index)}
             aria-pressed={selectedIndex === index}
           >
-            {selectedIndex === index ? '✅ ' : '◻ '}
+            {selectedIndex === index ? "✅ " : "◻ "}
             {option.text}
           </button>
         ))}
@@ -39,41 +37,63 @@ export const MultipleChoiceQuestionView: React.FC<MultipleChoiceQuestionViewProp
 
 interface AgreeDisagreeQuestionViewProps {
   question: AgreeDisagreeQuestionType;
-  selectedValue: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree' | null;
+  selectedValue:
+    | "stronglyDisagree"
+    | "disagree"
+    | "neutral"
+    | "agree"
+    | "stronglyAgree"
+    | null;
   onSelect: (
-    value: 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree'
+    value:
+      | "stronglyDisagree"
+      | "disagree"
+      | "neutral"
+      | "agree"
+      | "stronglyAgree",
   ) => void;
 }
 
-export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps> = ({
-  question,
-  selectedValue,
-  onSelect,
-}) => {
+export const AgreeDisagreeQuestionView: React.FC<
+  AgreeDisagreeQuestionViewProps
+> = ({ question, selectedValue, onSelect }) => {
   const getNumericValue = (val: string | null) => {
     switch (val) {
-      case 'stronglyDisagree': return 0;
-      case 'disagree': return 25;
-      case 'neutral': return 50;
-      case 'agree': return 75;
-      case 'stronglyAgree': return 100;
-      default: return 50;
+      case "stronglyDisagree":
+        return 0;
+      case "disagree":
+        return 25;
+      case "neutral":
+        return 50;
+      case "agree":
+        return 75;
+      case "stronglyAgree":
+        return 100;
+      default:
+        return 50;
     }
   };
 
   const getSymbolicValue = (val: number) => {
-    if (val <= 20) return 'stronglyDisagree';
-    if (val <= 40) return 'disagree';
-    if (val <= 60) return 'neutral';
-    if (val <= 80) return 'agree';
-    return 'stronglyAgree';
+    if (val <= 20) return "stronglyDisagree";
+    if (val <= 40) return "disagree";
+    if (val <= 60) return "neutral";
+    if (val <= 80) return "agree";
+    return "stronglyAgree";
   };
 
   const sliderValue = getNumericValue(selectedValue);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
-    onSelect(getSymbolicValue(val) as 'stronglyDisagree' | 'disagree' | 'neutral' | 'agree' | 'stronglyAgree');
+    onSelect(
+      getSymbolicValue(val) as
+        | "stronglyDisagree"
+        | "disagree"
+        | "neutral"
+        | "agree"
+        | "stronglyAgree",
+    );
   };
 
   return (
@@ -94,13 +114,15 @@ export const AgreeDisagreeQuestionView: React.FC<AgreeDisagreeQuestionViewProps>
           aria-label="Agree/Disagree scale"
         />
         <div className="quiz-retro-slider-value">
-          {sliderValue <= 20 && '😤 STRONGLY DISAGREE!!!'}
-          {sliderValue > 20 && sliderValue <= 40 && '🙁 DISAGREE!'}
-          {sliderValue > 40 && sliderValue <= 60 && '😐 NEUTRAL...'}
-          {sliderValue > 60 && sliderValue <= 80 && '😊 AGREE!'}
-          {sliderValue > 80 && '🤩 STRONGLY AGREE!!!'}
+          {sliderValue <= 20 && "😤 STRONGLY DISAGREE!!!"}
+          {sliderValue > 20 && sliderValue <= 40 && "🙁 DISAGREE!"}
+          {sliderValue > 40 && sliderValue <= 60 && "😐 NEUTRAL..."}
+          {sliderValue > 60 && sliderValue <= 80 && "😊 AGREE!"}
+          {sliderValue > 80 && "🤩 STRONGLY AGREE!!!"}
         </div>
-        <div className="quiz-retro-slider-hint">DRAG THE SLIDER TO ANSWER!!!</div>
+        <div className="quiz-retro-slider-hint">
+          DRAG THE SLIDER TO ANSWER!!!
+        </div>
       </div>
     </div>
   );
@@ -112,11 +134,9 @@ interface ImageChoiceQuestionViewProps {
   onSelect: (index: number) => void;
 }
 
-export const ImageChoiceQuestionView: React.FC<ImageChoiceQuestionViewProps> = ({
-  question,
-  selectedIndex,
-  onSelect,
-}) => {
+export const ImageChoiceQuestionView: React.FC<
+  ImageChoiceQuestionViewProps
+> = ({ question, selectedIndex, onSelect }) => {
   return (
     <div>
       <div className="quiz-retro-question-text">{question.question}</div>
@@ -125,14 +145,14 @@ export const ImageChoiceQuestionView: React.FC<ImageChoiceQuestionViewProps> = (
         style={{
           gridTemplateColumns:
             question.options.length === 2
-              ? 'repeat(2, 1fr)'
-              : 'repeat(auto-fit, minmax(160px, 1fr))',
+              ? "repeat(2, 1fr)"
+              : "repeat(auto-fit, minmax(160px, 1fr))",
         }}
       >
         {question.options.map((option, index) => (
           <button
             key={index}
-            className={`quiz-retro-img-option${selectedIndex === index ? ' quiz-retro-img-option--selected' : ''}`}
+            className={`quiz-retro-img-option${selectedIndex === index ? " quiz-retro-img-option--selected" : ""}`}
             onClick={() => onSelect(index)}
             aria-pressed={selectedIndex === index}
             aria-label={option.alt}
@@ -140,7 +160,12 @@ export const ImageChoiceQuestionView: React.FC<ImageChoiceQuestionViewProps> = (
             <img
               src={option.imageUrl}
               alt={option.alt}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
             />
             {selectedIndex === index && (
               <div className="quiz-retro-img-checkmark">✓</div>
@@ -215,31 +240,46 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
     const newPos = { ...current };
 
     switch (e.key) {
-      case 'ArrowLeft': newPos.x = Math.max(-1, current.x - step); break;
-      case 'ArrowRight': newPos.x = Math.min(1, current.x + step); break;
-      case 'ArrowUp': newPos.y = Math.min(1, current.y + step); break;
-      case 'ArrowDown': newPos.y = Math.max(-1, current.y - step); break;
-      default: return;
+      case "ArrowLeft":
+        newPos.x = Math.max(-1, current.x - step);
+        break;
+      case "ArrowRight":
+        newPos.x = Math.min(1, current.x + step);
+        break;
+      case "ArrowUp":
+        newPos.y = Math.min(1, current.y + step);
+        break;
+      case "ArrowDown":
+        newPos.y = Math.max(-1, current.y - step);
+        break;
+      default:
+        return;
     }
 
     e.preventDefault();
     onSelect(newPos);
   };
 
-  const markerLeft = selectedPosition ? ((selectedPosition.x + 1) / 2) * 100 : 50;
-  const markerTop = selectedPosition ? ((1 - selectedPosition.y) / 2) * 100 : 50;
+  const markerLeft = selectedPosition
+    ? ((selectedPosition.x + 1) / 2) * 100
+    : 50;
+  const markerTop = selectedPosition
+    ? ((1 - selectedPosition.y) / 2) * 100
+    : 50;
 
   return (
     <div>
       <div className="quiz-retro-question-text">{question.question}</div>
-      <div style={{ position: 'relative', maxWidth: '380px', margin: '0 auto' }}>
+      <div
+        style={{ position: "relative", maxWidth: "380px", margin: "0 auto" }}
+      >
         <div className="quiz-retro-xy-label" style={{ marginBottom: 4 }}>
           {question.yAxis.topLabel}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <div
             className="quiz-retro-xy-label"
-            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
           >
             {question.xAxis.leftLabel}
           </div>
@@ -257,7 +297,7 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
             onTouchEnd={handleTouchEnd}
             onKeyDown={handleKeyDown}
             className="quiz-retro-xy-grid"
-            style={{ flex: 1, aspectRatio: '1' }}
+            style={{ flex: 1, aspectRatio: "1" }}
           >
             <div className="quiz-retro-xy-axis-h" />
             <div className="quiz-retro-xy-axis-v" />
@@ -267,14 +307,14 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
                 style={{
                   left: `${markerLeft}%`,
                   top: `${markerTop}%`,
-                  transition: isDragging ? 'none' : 'all 0.15s ease-out',
+                  transition: isDragging ? "none" : "all 0.15s ease-out",
                 }}
               />
             )}
           </div>
           <div
             className="quiz-retro-xy-label"
-            style={{ writingMode: 'vertical-rl' }}
+            style={{ writingMode: "vertical-rl" }}
           >
             {question.xAxis.rightLabel}
           </div>
@@ -286,16 +326,17 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
       {selectedPosition && (
         <div
           style={{
-            textAlign: 'center',
+            textAlign: "center",
             marginTop: 6,
-            fontSize: '9px',
-            color: '#888888',
+            fontSize: "9px",
+            color: "#888888",
             fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
           }}
           role="status"
           aria-live="polite"
         >
-          Position: ({selectedPosition.x.toFixed(2)}, {selectedPosition.y.toFixed(2)})
+          Position: ({selectedPosition.x.toFixed(2)},{" "}
+          {selectedPosition.y.toFixed(2)})
         </div>
       )}
     </div>

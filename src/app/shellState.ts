@@ -1,4 +1,4 @@
-import type { MainTab } from '@/shared/types';
+import type { MainTab } from "@/shared/types";
 
 export interface WorkspaceMeta {
   eyebrow: string;
@@ -8,15 +8,16 @@ export interface WorkspaceMeta {
 
 const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
   movies: {
-    eyebrow: 'Movies',
-    title: 'Movies',
-    icon: '🎬',
+    eyebrow: "Movies",
+    title: "Movies",
+    icon: "🎬",
   },
   places: {
-    eyebrow: 'Dates',
-    title: 'Date Ideas',
-    icon: '📍',
+    eyebrow: "Dates",
+    title: "Date Ideas",
+    icon: "📍",
   },
 };
 
-export const getWorkspaceMeta = (activeTab: MainTab): WorkspaceMeta => WORKSPACE_META[activeTab];
+export const getWorkspaceMeta = (activeTab: MainTab): WorkspaceMeta =>
+  WORKSPACE_META[activeTab];

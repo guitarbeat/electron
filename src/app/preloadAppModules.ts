@@ -10,20 +10,19 @@ export const preloadAppModules = (): Promise<void> => {
   }
 
   preloadPromise = Promise.allSettled([
-    import('@/app/AppWorkspaceShell'),
-    import('@/app/CohesionAudit'),
-    import('@/app/QuizFlowModalContent'),
-    import('@/branding/ElectronLogoLab'),
-    import('@/components/effects/moire/Moire'),
-    import('@/components/effects/RadialMenu'),
-    import('@/components/effects/RetroEffects'),
-    import('@/components/messages/MessageBoard'),
-    import('@/components/places/PlacesList'),
-    import('@/components/quiz/QuizEditor'),
-    import('@/components/spin-match/SpinSwipeGame'),
-    import('@/components/spin-wheel/SpinWheelGame'),
+    import("@/app/AppWorkspaceShell"),
+    import("@/app/CohesionAudit"),
+    import("@/app/QuizFlowModalContent"),
+    import("@/branding/ElectronLogoLab"),
+    import("@/components/effects/moire/Moire"),
+    import("@/components/effects/RadialMenu"),
+    import("@/components/effects/RetroEffects"),
+    import("@/components/messages/MessageBoard"),
+    import("@/components/places/PlacesList"),
+    import("@/components/quiz/QuizEditor"),
+    import("@/components/spin-match/SpinSwipeGame"),
+    import("@/components/spin-wheel/SpinWheelGame"),
   ]).then(() => undefined);
 
   return preloadPromise;
 };
-

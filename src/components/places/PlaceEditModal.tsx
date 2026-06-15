@@ -1,41 +1,45 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
-import type { Place } from '@/shared/types';
-import { Modal } from '@/ui/ModalSystem';
-import { useMediaQuery, mediaBreakpoints } from '@/hooks/useMediaQuery';
-import { colors, radius, spacing, typography, motion } from '@/theme/tokens';
+import React, { useEffect, useId, useRef, useState } from "react";
+import type { Place } from "@/shared/types";
+import { Modal } from "@/ui/ModalSystem";
+import { useMediaQuery, mediaBreakpoints } from "@/hooks/useMediaQuery";
+import { colors, radius, spacing, typography, motion } from "@/theme/tokens";
 
 const CATEGORIES = [
-  '',
-  'Restaurant',
-  'Cafe',
-  'Bar',
-  'Park',
-  'Museum',
-  'Theater',
-  'Shop',
-  'Hotel',
-  'Beach',
-  'Landmark',
-  'Nature',
-  'Other',
+  "",
+  "Restaurant",
+  "Cafe",
+  "Bar",
+  "Park",
+  "Museum",
+  "Theater",
+  "Shop",
+  "Hotel",
+  "Beach",
+  "Landmark",
+  "Nature",
+  "Other",
 ];
 
 interface PlaceEditModalProps {
   place: Place;
   onSave: (
     id: string,
-    updates: Partial<Pick<Place, 'name' | 'notes' | 'category'>>
+    updates: Partial<Pick<Place, "name" | "notes" | "category">>,
   ) => Promise<void>;
   onClose: () => void;
 }
 
-const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose }) => {
+const PlaceEditModal: React.FC<PlaceEditModalProps> = ({
+  place,
+  onSave,
+  onClose,
+}) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const [name, setName] = useState(place.name);
-  const [notes, setNotes] = useState(place.notes ?? '');
-  const [category, setCategory] = useState(place.category ?? '');
+  const [notes, setNotes] = useState(place.notes ?? "");
+  const [category, setCategory] = useState(place.category ?? "");
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const nameInputId = useId();
   const categoryInputId = useId();
@@ -43,9 +47,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
 
   useEffect(() => {
     setName(place.name);
-    setNotes(place.notes ?? '');
-    setCategory(place.category ?? '');
-    setError('');
+    setNotes(place.notes ?? "");
+    setCategory(place.category ?? "");
+    setError("");
 
     const focusTimer = window.setTimeout(() => {
       nameRef.current?.focus();
@@ -56,24 +60,24 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
   }, [place.category, place.id, place.name, place.notes]);
 
   const inputStyle: React.CSSProperties = {
-    width: '100%',
-    boxSizing: 'border-box',
-    background: 'rgba(255,255,255,0.04)',
+    width: "100%",
+    boxSizing: "border-box",
+    background: "rgba(255,255,255,0.04)",
     border: `1px solid ${colors.border}`,
     borderRadius: radius.md,
     color: colors.textPrimary,
-    fontFamily: typography.fontFamily.heading.join(', '),
+    fontFamily: typography.fontFamily.heading.join(", "),
     fontSize: typography.fontSize.sm,
     padding: `${spacing.sm} ${spacing.md}`,
-    outline: 'none',
+    outline: "none",
     transition: `border-color ${motion.duration.fast}`,
   };
 
   const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontFamily: typography.fontFamily.heading.join(', '),
+    display: "block",
+    fontFamily: typography.fontFamily.heading.join(", "),
     fontSize: typography.fontSize.xs,
-    letterSpacing: '0.08em',
+    letterSpacing: "0.08em",
     color: colors.textTertiary,
     marginBottom: spacing.xs,
   };
@@ -82,12 +86,12 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
     event.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('Name is required.');
+      setError("Name is required.");
       return;
     }
 
     setIsSaving(true);
-    setError('');
+    setError("");
 
     try {
       await onSave(place.id, {
@@ -97,7 +101,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
       });
       onClose();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Failed to save.');
+      setError(
+        submitError instanceof Error ? submitError.message : "Failed to save.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -112,33 +118,35 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
       maxWidth={420}
       closeDisabled={isSaving}
       closeDisabledLabel="Saving place"
-      variant={isMobile ? 'bottom-sheet' : 'centered'}
+      variant={isMobile ? "bottom-sheet" : "centered"}
     >
       <form
         onSubmit={handleSubmit}
         style={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           gap: spacing.md,
           padding: spacing.xl,
         }}
-        >
+      >
         <div>
-          <label htmlFor={nameInputId} style={labelStyle}>Name *</label>
+          <label htmlFor={nameInputId} style={labelStyle}>
+            Name *
+          </label>
           <input
             id={nameInputId}
             ref={nameRef}
             value={name}
             onChange={(event) => {
               setName(event.target.value);
-              setError('');
+              setError("");
             }}
             placeholder="Place name"
             required
             disabled={isSaving}
             style={{
               ...inputStyle,
-              borderColor: error ? 'rgba(220,80,60,0.7)' : colors.border,
+              borderColor: error ? "rgba(220,80,60,0.7)" : colors.border,
             }}
           />
           {error ? (
@@ -146,7 +154,7 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
               style={{
                 margin: `${spacing.xs} 0 0`,
                 fontSize: typography.fontSize.xs,
-                color: '#f87171',
+                color: "#f87171",
               }}
             >
               {error}
@@ -155,7 +163,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
         </div>
 
         <div>
-          <label htmlFor={categoryInputId} style={labelStyle}>Category</label>
+          <label htmlFor={categoryInputId} style={labelStyle}>
+            Category
+          </label>
           <select
             id={categoryInputId}
             value={category}
@@ -163,25 +173,31 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
             disabled={isSaving}
             style={{
               ...inputStyle,
-              cursor: isSaving ? 'not-allowed' : 'pointer',
-              appearance: 'none',
+              cursor: isSaving ? "not-allowed" : "pointer",
+              appearance: "none",
               backgroundImage:
-                'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23888\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 12px center',
-              paddingRight: '32px',
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 12px center",
+              paddingRight: "32px",
             }}
           >
             {CATEGORIES.map((entry) => (
-              <option key={entry} value={entry} style={{ background: '#1a0e08' }}>
-                {entry === '' ? 'No category' : entry}
+              <option
+                key={entry}
+                value={entry}
+                style={{ background: "#1a0e08" }}
+              >
+                {entry === "" ? "No category" : entry}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label htmlFor={notesInputId} style={labelStyle}>Notes</label>
+          <label htmlFor={notesInputId} style={labelStyle}>
+            Notes
+          </label>
           <textarea
             id={notesInputId}
             value={notes}
@@ -191,8 +207,8 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
             disabled={isSaving}
             style={{
               ...inputStyle,
-              resize: 'vertical',
-              minHeight: '72px',
+              resize: "vertical",
+              minHeight: "72px",
               lineHeight: typography.lineHeight.relaxed,
             }}
           />
@@ -200,9 +216,9 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
 
         <div
           style={{
-            display: 'flex',
+            display: "flex",
             gap: spacing.sm,
-            justifyContent: 'flex-end',
+            justifyContent: "flex-end",
             paddingTop: spacing.xs,
           }}
         >
@@ -212,13 +228,13 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
             disabled={isSaving}
             style={{
               padding: `${spacing.sm} ${spacing.md}`,
-              background: 'transparent',
+              background: "transparent",
               color: colors.textSecondary,
               border: `1px solid ${colors.border}`,
               borderRadius: radius.md,
-              fontFamily: typography.fontFamily.heading.join(', '),
+              fontFamily: typography.fontFamily.heading.join(", "),
               fontSize: typography.fontSize.sm,
-              cursor: isSaving ? 'not-allowed' : 'pointer',
+              cursor: isSaving ? "not-allowed" : "pointer",
             }}
           >
             Cancel
@@ -228,17 +244,18 @@ const PlaceEditModal: React.FC<PlaceEditModalProps> = ({ place, onSave, onClose 
             disabled={isSaving || !name.trim()}
             style={{
               padding: `${spacing.sm} ${spacing.lg}`,
-              background: name.trim() && !isSaving ? colors.accent : colors.border,
-              color: name.trim() && !isSaving ? '#fff' : colors.textTertiary,
-              border: 'none',
+              background:
+                name.trim() && !isSaving ? colors.accent : colors.border,
+              color: name.trim() && !isSaving ? "#fff" : colors.textTertiary,
+              border: "none",
               borderRadius: radius.md,
-              fontFamily: typography.fontFamily.heading.join(', '),
+              fontFamily: typography.fontFamily.heading.join(", "),
               fontSize: typography.fontSize.sm,
-              cursor: name.trim() && !isSaving ? 'pointer' : 'not-allowed',
+              cursor: name.trim() && !isSaving ? "pointer" : "not-allowed",
               transition: `all ${motion.duration.fast}`,
             }}
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </form>

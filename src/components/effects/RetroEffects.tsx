@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useMediaQuery, mediaBreakpoints } from '@/hooks/useMediaQuery';
+import React, { useEffect, useState, useRef } from "react";
+import { useMediaQuery, mediaBreakpoints } from "@/hooks/useMediaQuery";
 
 interface RetroEffectsProps {
   cursorTrailEnabled: boolean;
@@ -30,12 +30,14 @@ const RetroEffects: React.FC<RetroEffectsProps> = ({ cursorTrailEnabled }) => {
       setTrailParticles((prev) => [...prev.slice(-15), newParticle]);
 
       setTimeout(() => {
-        setTrailParticles((prev) => prev.filter((particle) => particle.id !== newParticle.id));
+        setTrailParticles((prev) =>
+          prev.filter((particle) => particle.id !== newParticle.id),
+        );
       }, 800);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [cursorTrailEnabled, isMobile]);
 
   return (

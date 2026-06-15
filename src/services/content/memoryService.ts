@@ -1,20 +1,21 @@
-import type { SharedMemory } from '@/shared/types';
-import { mutateScope, readScope } from '../state/index.ts';
-import { cloneMemories } from '../state/stateSchemas.ts';
-import { sanitizeInput } from '../../utils/shared.ts';
+import type { SharedMemory } from "@/shared/types";
+import { mutateScope, readScope } from "../state/index.ts";
+import { cloneMemories } from "../state/stateSchemas.ts";
+import { sanitizeInput } from "../../utils/shared.ts";
 
 const sortMemories = (memories: SharedMemory[]): SharedMemory[] =>
   [...memories].sort(
     (left, right) =>
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
   );
 
 export const getMemories = async (): Promise<SharedMemory[]> => {
-  const snapshot = await readScope('memories');
+  const snapshot = await readScope("memories");
   return sortMemories(snapshot.data);
 };
 
-const getOptimisticMemories = async (): Promise<SharedMemory[]> => cloneMemories(await getMemories());
+const getOptimisticMemories = async (): Promise<SharedMemory[]> =>
+  cloneMemories(await getMemories());
 
 export const addMemory = async (
   movieId: string | undefined,
@@ -22,7 +23,7 @@ export const addMemory = async (
   author: string,
   note: string,
   createdAt?: string,
-  imageUrl?: string
+  imageUrl?: string,
 ): Promise<SharedMemory> => {
   const memories = await getOptimisticMemories();
   const newMemory: SharedMemory = {
@@ -35,8 +36,8 @@ export const addMemory = async (
     imageUrl: imageUrl ? sanitizeInput(imageUrl) : undefined,
   };
 
-  await mutateScope('memories', {
-    op: 'add_memory',
+  await mutateScope("memories", {
+    op: "add_memory",
     payload: {
       id: newMemory.id,
       movieId: newMemory.movieId,
@@ -59,19 +60,21 @@ export const updateMemory = async (
     note?: string;
     movieId?: string;
     movieTitle?: string;
-  }
+  },
 ): Promise<SharedMemory> => {
   const memories = await getOptimisticMemories();
   const memoryIndex = findMemoryIndex(memories, memoryId);
 
   if (memoryIndex < 0) {
-    throw new Error('Memory not found');
+    throw new Error("Memory not found");
   }
 
   const nextMemory: SharedMemory = {
     ...memories[memoryIndex],
     ...updates,
-    note: updates.note ? sanitizeInput(updates.note) : memories[memoryIndex].note,
+    note: updates.note
+      ? sanitizeInput(updates.note)
+      : memories[memoryIndex].note,
     movieTitle: updates.movieTitle
       ? sanitizeInput(updates.movieTitle)
       : memories[memoryIndex].movieTitle,
@@ -79,11 +82,11 @@ export const updateMemory = async (
   };
 
   const nextMemories = memories.map((memory) =>
-    memory.id === memoryId ? nextMemory : memory
+    memory.id === memoryId ? nextMemory : memory,
   );
 
-  await mutateScope('memories', {
-    op: 'update_memory',
+  await mutateScope("memories", {
+    op: "update_memory",
     payload: {
       memoryId,
       updates,
@@ -102,7 +105,7 @@ export const updateMemoriesBatch = async (
       movieId?: string;
       movieTitle?: string;
     };
-  }>
+  }>,
 ): Promise<SharedMemory[]> => {
   const memories = await getOptimisticMemories();
 
@@ -116,13 +119,15 @@ export const updateMemoriesBatch = async (
       ...memory,
       ...upd,
       note: upd.note ? sanitizeInput(upd.note) : memory.note,
-      movieTitle: upd.movieTitle ? sanitizeInput(upd.movieTitle) : memory.movieTitle,
+      movieTitle: upd.movieTitle
+        ? sanitizeInput(upd.movieTitle)
+        : memory.movieTitle,
       updatedAt: new Date().toISOString(),
     };
   });
 
-  await mutateScope('memories', {
-    op: 'update_memories_batch',
+  await mutateScope("memories", {
+    op: "update_memories_batch",
     payload: { updates },
     optimisticData: nextMemories,
   });
@@ -135,22 +140,24 @@ export const deleteMemory = async (memoryId: string): Promise<void> => {
   const nextMemories = memories.filter((memory) => memory.id !== memoryId);
 
   if (nextMemories.length === memories.length) {
-    throw new Error('Memory not found');
+    throw new Error("Memory not found");
   }
 
-  await mutateScope('memories', {
-    op: 'delete_memory',
+  await mutateScope("memories", {
+    op: "delete_memory",
     payload: { memoryId },
     optimisticData: nextMemories,
   });
 };
 
-export const toggleMemoryPin = async (memoryId: string): Promise<SharedMemory> => {
+export const toggleMemoryPin = async (
+  memoryId: string,
+): Promise<SharedMemory> => {
   const memories = await getOptimisticMemories();
   const memoryIndex = findMemoryIndex(memories, memoryId);
 
   if (memoryIndex < 0) {
-    throw new Error('Memory not found');
+    throw new Error("Memory not found");
   }
 
   const nextMemory: SharedMemory = {
@@ -159,11 +166,11 @@ export const toggleMemoryPin = async (memoryId: string): Promise<SharedMemory> =
     updatedAt: new Date().toISOString(),
   };
 
-  await mutateScope('memories', {
-    op: 'toggle_memory_pin',
+  await mutateScope("memories", {
+    op: "toggle_memory_pin",
     payload: { memoryId },
     optimisticData: memories.map((memory) =>
-      memory.id === memoryId ? nextMemory : memory
+      memory.id === memoryId ? nextMemory : memory,
     ),
   });
 

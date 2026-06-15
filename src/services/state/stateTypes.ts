@@ -1,4 +1,7 @@
-import type { QuizCharacter, QuizQuestion } from '../../components/quiz/lib/types.ts';
+import type {
+  QuizCharacter,
+  QuizQuestion,
+} from "../../components/quiz/lib/types.ts";
 import type {
   MatchmakerGame,
   Message,
@@ -8,20 +11,20 @@ import type {
   PlaceSuggestion,
   SharedMemory,
   User,
-} from '../../shared/types.ts';
+} from "../../shared/types.ts";
 
 export const STATE_SCOPES = [
-  'movies',
-  'messages',
-  'memories',
-  'places',
-  'suggestions',
-  'placeSuggestions',
-  'quiz',
-  'matchmaker',
-  'pins',
-  'spinHistory',
-  'dailySpin',
+  "movies",
+  "messages",
+  "memories",
+  "places",
+  "suggestions",
+  "placeSuggestions",
+  "quiz",
+  "matchmaker",
+  "pins",
+  "spinHistory",
+  "dailySpin",
 ] as const;
 
 export type StateScope = (typeof STATE_SCOPES)[number];
@@ -116,12 +119,12 @@ export interface SessionState {
 }
 
 export type StateClientErrorCode =
-  | 'unauthorized'
-  | 'forbidden'
-  | 'conflict'
-  | 'invalid'
-  | 'server'
-  | 'network';
+  | "unauthorized"
+  | "forbidden"
+  | "conflict"
+  | "invalid"
+  | "server"
+  | "network";
 
 export class StateClientError extends Error {
   status: number;
@@ -134,10 +137,10 @@ export class StateClientError extends Error {
     message: string,
     status: number,
     code: StateClientErrorCode,
-    conflict?: ConflictResponse
+    conflict?: ConflictResponse,
   ) {
     super(message);
-    this.name = 'StateClientError';
+    this.name = "StateClientError";
     this.status = status;
     this.code = code;
     this.conflict = conflict;

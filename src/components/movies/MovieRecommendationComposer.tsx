@@ -1,13 +1,13 @@
-import React from 'react';
-import Card from '@/ui/Card';
-import Button from '@/ui/Button';
-import { Input, Textarea } from '@/ui/FormFields';
-import { colors, radius, spacing, typography } from '@/theme/tokens';
-import type { User } from '@/shared/types';
+import React from "react";
+import Card from "@/ui/Card";
+import Button from "@/ui/Button";
+import { Input, Textarea } from "@/ui/FormFields";
+import { colors, radius, spacing, typography } from "@/theme/tokens";
+import type { User } from "@/shared/types";
 import {
   MAX_GUEST_SUGGESTER_NAME_LENGTH,
   MAX_RECOMMENDATION_REASON_LENGTH,
-} from './lib/movieConstants';
+} from "./lib/movieConstants";
 
 interface MovieRecommendationComposerProps {
   currentUser: User | null;
@@ -22,7 +22,9 @@ interface MovieRecommendationComposerProps {
   onCancel: () => void;
 }
 
-const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = ({
+const MovieRecommendationComposer: React.FC<
+  MovieRecommendationComposerProps
+> = ({
   currentUser,
   movieTitle,
   guestName,
@@ -40,24 +42,31 @@ const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = 
     <Card
       variant="default"
       style={{
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         gap: spacing.md,
         padding: spacing.lg,
         border: `1px solid ${colors.borderSubtle}`,
-        background:
-          `radial-gradient(circle at top right, ${colors.accentMuted} 0%, transparent 54%), linear-gradient(180deg, ${colors.surface2}, ${colors.surface1})`,
+        background: `radial-gradient(circle at top right, ${colors.accentMuted} 0%, transparent 54%), linear-gradient(180deg, ${colors.surface2}, ${colors.surface1})`,
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-        <p style={{ margin: 0, ...typography.presets.eyebrow, color: colors.accentLight }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: spacing.xs }}
+      >
+        <p
+          style={{
+            margin: 0,
+            ...typography.presets.eyebrow,
+            color: colors.accentLight,
+          }}
+        >
           Recommendation
         </p>
         <h3
           style={{
             margin: 0,
             color: colors.textPrimary,
-            fontFamily: typography.fontFamily.heading.join(', '),
+            fontFamily: typography.fontFamily.heading.join(", "),
             fontSize: typography.fontSize.lg,
             lineHeight: typography.lineHeight.snug,
           }}
@@ -74,7 +83,7 @@ const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = 
         >
           {currentUser
             ? `Send this to Suggestions as ${currentUser}.`
-            : 'Guests can send titles to Suggestions too. Add your name if you want credit.'}
+            : "Guests can send titles to Suggestions too. Add your name if you want credit."}
         </p>
       </div>
 
@@ -83,7 +92,9 @@ const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = 
           label="Your Name (Optional)"
           value={guestName}
           onChange={(event) =>
-            onGuestNameChange(event.target.value.slice(0, MAX_GUEST_SUGGESTER_NAME_LENGTH))
+            onGuestNameChange(
+              event.target.value.slice(0, MAX_GUEST_SUGGESTER_NAME_LENGTH),
+            )
           }
           placeholder="Guest"
           maxLength={MAX_GUEST_SUGGESTER_NAME_LENGTH}
@@ -94,21 +105,23 @@ const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = 
         label="Why This One? (Optional)"
         value={reason}
         onChange={(event) =>
-          onReasonChange(event.target.value.slice(0, MAX_RECOMMENDATION_REASON_LENGTH))
+          onReasonChange(
+            event.target.value.slice(0, MAX_RECOMMENDATION_REASON_LENGTH),
+          )
         }
         placeholder="A quick reason, vibe, or inside joke."
         maxLength={MAX_RECOMMENDATION_REASON_LENGTH}
         rows={3}
-        style={{ minHeight: '88px' }}
+        style={{ minHeight: "88px" }}
       />
 
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           gap: spacing.sm,
-          flexWrap: 'wrap',
+          flexWrap: "wrap",
         }}
       >
         <span
@@ -120,8 +133,14 @@ const MovieRecommendationComposer: React.FC<MovieRecommendationComposerProps> = 
           {remainingChars} characters left
         </span>
 
-        <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
-          <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isSubmitting}>
+        <div style={{ display: "flex", gap: spacing.xs, flexWrap: "wrap" }}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
           <Button

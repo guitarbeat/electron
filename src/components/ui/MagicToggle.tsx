@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
-import './MagicToggle.css';
+import { useRef, useEffect, useState } from "react";
+import "./MagicToggle.css";
 
 export interface MagicToggleOption<T extends string> {
   value: T;
@@ -28,7 +28,7 @@ function MagicToggle<T extends string>({
     const activeIndex = options.findIndex((opt) => opt.value === activeValue);
     if (activeIndex === -1) return;
 
-    const buttons = containerRef.current.querySelectorAll('.magic-toggle__btn');
+    const buttons = containerRef.current.querySelectorAll(".magic-toggle__btn");
     const activeButton = buttons[activeIndex] as HTMLButtonElement | undefined;
 
     if (activeButton) {
@@ -60,7 +60,7 @@ function MagicToggle<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={`magic-toggle__btn ${isActive ? 'is-active' : ''}`}
+            className={`magic-toggle__btn ${isActive ? "is-active" : ""}`}
             onClick={() => onChange(option.value)}
             aria-pressed={isActive}
           >

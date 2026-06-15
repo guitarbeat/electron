@@ -1,15 +1,14 @@
-import { useCallback } from 'react';
-import { Place, User } from '@/shared/types';
-import {
-  sanitizeInput,
-  validateAndThrow,
-  validatePlace,
-} from '@/utils';
-import { useCollection } from '../useCollection';
+import { useCallback } from "react";
+import { Place, User } from "@/shared/types";
+import { sanitizeInput, validateAndThrow, validatePlace } from "@/utils";
+import { useCollection } from "../useCollection";
 
 const POLLING_INTERVAL = 15000;
 
-export const usePlaces = (currentUser: User | null, isPaused: boolean = false) => {
+export const usePlaces = (
+  currentUser: User | null,
+  isPaused: boolean = false,
+) => {
   const {
     data: places,
     isLoading,
@@ -21,14 +20,17 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
     refresh,
     retrySync,
     performMutation,
-  } = useCollection<Place>('places', currentUser, { pollingInterval: POLLING_INTERVAL, isPaused });
+  } = useCollection<Place>("places", currentUser, {
+    pollingInterval: POLLING_INTERVAL,
+    isPaused,
+  });
 
   const addPlace = useCallback(
     async (name: string, notes?: string, lat?: number, lng?: number) => {
-      validateAndThrow(validatePlace, { name, notes: notes || '' });
+      validateAndThrow(validatePlace, { name, notes: notes || "" });
 
       const trimmed = sanitizeInput(name.trim());
-      if (!trimmed) throw new Error('Place name cannot be empty');
+      if (!trimmed) throw new Error("Place name cannot be empty");
 
       const place: Place = {
         id: crypto.randomUUID(),
@@ -36,11 +38,11 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
         addedBy: currentUser ?? undefined,
         notes: notes?.trim() || undefined,
         createdAt: new Date().toISOString(),
-        ...(typeof lat === 'number' && typeof lng === 'number' && { lat, lng }),
+        ...(typeof lat === "number" && typeof lng === "number" && { lat, lng }),
       };
 
       await performMutation(
-        'add_place',
+        "add_place",
         {
           id: place.id,
           name: place.name,
@@ -48,27 +50,27 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
           lat: place.lat,
           lng: place.lng,
         },
-        [...places, place]
+        [...places, place],
       );
     },
-    [currentUser, performMutation, places]
+    [currentUser, performMutation, places],
   );
 
   const removePlace = useCallback(
     async (id: string) => {
       await performMutation(
-        'remove_place',
+        "remove_place",
         { placeId: id },
-        places.filter((p) => p.id !== id)
+        places.filter((p) => p.id !== id),
       );
     },
-    [performMutation, places]
+    [performMutation, places],
   );
 
   const restorePlace = useCallback(
     async (place: Place) => {
       await performMutation(
-        'add_place',
+        "add_place",
         {
           id: place.id,
           name: place.name,
@@ -76,50 +78,55 @@ export const usePlaces = (currentUser: User | null, isPaused: boolean = false) =
           lat: place.lat,
           lng: place.lng,
         },
-        [...places, place]
+        [...places, place],
       );
     },
-    [performMutation, places]
+    [performMutation, places],
   );
 
   const updatePlace = useCallback(
-    async (id: string, updates: Partial<Pick<Place, 'name' | 'notes' | 'lat' | 'lng' | 'category'>>) => {
+    async (
+      id: string,
+      updates: Partial<
+        Pick<Place, "name" | "notes" | "lat" | "lng" | "category">
+      >,
+    ) => {
       if (updates.name !== undefined || updates.notes !== undefined) {
         validateAndThrow(validatePlace, {
-          name: updates.name ?? places.find((p) => p.id === id)?.name ?? '',
-          notes: updates.notes ?? '',
+          name: updates.name ?? places.find((p) => p.id === id)?.name ?? "",
+          notes: updates.notes ?? "",
         });
       }
       await performMutation(
-        'update_place',
+        "update_place",
         { placeId: id, updates },
-        places.map((p) => (p.id === id ? { ...p, ...updates } : p))
+        places.map((p) => (p.id === id ? { ...p, ...updates } : p)),
       );
     },
-    [performMutation, places]
+    [performMutation, places],
   );
 
   const markVisited = useCallback(
     async (id: string) => {
       const visitedAt = new Date().toISOString();
       await performMutation(
-        'mark_visited',
+        "mark_visited",
         { placeId: id },
-        places.map((p) => (p.id === id ? { ...p, visitedAt } : p))
+        places.map((p) => (p.id === id ? { ...p, visitedAt } : p)),
       );
     },
-    [performMutation, places]
+    [performMutation, places],
   );
 
   const markUnvisited = useCallback(
     async (id: string) => {
       await performMutation(
-        'mark_unvisited',
+        "mark_unvisited",
         { placeId: id },
-        places.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p))
+        places.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p)),
       );
     },
-    [performMutation, places]
+    [performMutation, places],
   );
 
   return {
