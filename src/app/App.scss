@@ -10474,17 +10474,23 @@ body.grabbing * {
   font-family: var(--font-heading);
   font-size: clamp(0.78rem, 0.68rem + 0.35vw, 0.96rem);
   font-weight: var(--font-weight-bold);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-accent) 70%, var(--color-secondary) 30%);
+  color: color-mix(in srgb, var(--color-accent) 80%, var(--color-secondary) 20%);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 45%, transparent);
 
   &::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(to right, color-mix(in srgb, var(--color-accent) 35%, transparent), transparent);
-    opacity: 1;
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-accent) 65%, transparent),
+      color-mix(in srgb, var(--color-accent) 18%, transparent) 40%,
+      transparent
+    );
     border-radius: 1px;
+    filter: blur(0.5px);
   }
 
   @media (max-width: 640px) {

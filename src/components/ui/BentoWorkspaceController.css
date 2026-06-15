@@ -7,11 +7,20 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: var(--color-surface-raised, rgba(12, 18, 52, 0.72));
-  border: 1px solid rgba(148, 163, 200, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
+    var(--color-surface-raised, rgba(12, 18, 52, 0.82));
+  border: 1px solid rgba(148, 163, 200, 0.22);
+  border-top-color: rgba(200, 215, 255, 0.14);
   border-radius: 1rem;
   overflow: visible;
   position: relative;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 24px 48px rgba(2, 4, 18, 0.36),
+    0 8px 16px rgba(2, 4, 18, 0.2);
 }
 
 /* ── Zones ────────────────────────────────────────────────────────── */
@@ -26,11 +35,27 @@
   background: linear-gradient(
     to right,
     transparent,
-    rgba(148, 163, 200, 0.18) 20%,
-    rgba(148, 163, 200, 0.18) 80%,
+    rgba(200, 215, 255, 0.22) 20%,
+    rgba(200, 215, 255, 0.22) 80%,
     transparent
   );
   flex-shrink: 0;
+  position: relative;
+}
+
+.bento-ctrl__sep::after {
+  content: '';
+  position: absolute;
+  inset: -1px 15% -1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(244, 114, 182, 0.18) 30%,
+    rgba(244, 114, 182, 0.18) 70%,
+    transparent
+  );
+  filter: blur(3px);
+  pointer-events: none;
 }
 
 .bento-ctrl__stats {
@@ -50,7 +75,7 @@
 
 .bento-ctrl__sort-label {
   font-family: 'Papyrus', serif;
-  font-size: 0.59rem;
+  font-size: 0.625rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--color-text-tertiary, rgba(148, 163, 200, 0.45));
@@ -66,8 +91,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.625rem;
-  background: rgba(148, 163, 200, 0.05);
-  border: 1px solid rgba(148, 163, 200, 0.13);
+  background:
+    linear-gradient(135deg, rgba(200, 215, 255, 0.06) 0%, rgba(200, 215, 255, 0.02) 100%);
+  border: 1px solid rgba(148, 163, 200, 0.16);
+  border-top-color: rgba(200, 215, 255, 0.12);
   border-radius: 0.625rem;
   cursor: pointer;
   transition:
@@ -80,6 +107,9 @@
   min-width: 0;
   position: relative;
   overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 6px rgba(2, 4, 18, 0.18);
 }
 
 .bento-stat-tile::before {
@@ -115,25 +145,41 @@
   transition-duration: 0.08s;
 }
 
+.bento-stat-tile:focus-visible {
+  outline: 2px solid var(--color-accent, #f472b6);
+  outline-offset: 2px;
+}
+
 /* Tone: incoming */
 .bento-stat-tile--incoming {
-  border-color: rgba(244, 114, 182, 0.2);
+  background:
+    linear-gradient(135deg, rgba(244, 114, 182, 0.13) 0%, rgba(244, 114, 182, 0.04) 100%);
+  border-color: rgba(244, 114, 182, 0.24);
+  border-top-color: rgba(244, 114, 182, 0.18);
 }
 .bento-stat-tile--incoming:hover {
+  background:
+    linear-gradient(135deg, rgba(244, 114, 182, 0.2) 0%, rgba(244, 114, 182, 0.08) 100%);
   border-color: rgba(244, 114, 182, 0.42);
   box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 5px 18px rgba(244, 114, 182, 0.18),
     0 1px 4px rgba(0, 0, 0, 0.28);
 }
 
 /* Tone: completed / visited */
 .bento-stat-tile--completed {
-  border-color: rgba(125, 211, 252, 0.16);
+  background:
+    linear-gradient(135deg, rgba(125, 211, 252, 0.1) 0%, rgba(125, 211, 252, 0.03) 100%);
+  border-color: rgba(125, 211, 252, 0.2);
+  border-top-color: rgba(125, 211, 252, 0.15);
 }
 .bento-stat-tile--completed:hover {
-  background: rgba(125, 211, 252, 0.07);
-  border-color: rgba(125, 211, 252, 0.34);
+  background:
+    linear-gradient(135deg, rgba(125, 211, 252, 0.16) 0%, rgba(125, 211, 252, 0.07) 100%);
+  border-color: rgba(125, 211, 252, 0.36);
   box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 5px 18px rgba(125, 211, 252, 0.14),
     0 1px 4px rgba(0, 0, 0, 0.28);
 }
@@ -167,15 +213,21 @@
   color: var(--color-accent, #f472b6);
   animation: bento-count-tick 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   display: block;
+  text-shadow:
+    0 0 14px rgba(244, 114, 182, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .bento-stat-tile--completed .bento-stat-tile__count {
   color: #7dd3fc;
+  text-shadow:
+    0 0 14px rgba(125, 211, 252, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .bento-stat-tile__label {
   font-family: 'Papyrus', serif;
-  font-size: 0.575rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--color-text-tertiary, rgba(148, 163, 200, 0.52));
@@ -218,15 +270,27 @@
 }
 
 .bento-sort-chip.is-active {
-  background: rgba(244, 114, 182, 0.15);
-  border-color: rgba(244, 114, 182, 0.5);
-  color: #f9bfe0;
-  box-shadow: 0 2px 10px rgba(244, 114, 182, 0.2);
+  background:
+    linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(244, 114, 182, 0.1) 100%);
+  border-color: rgba(244, 114, 182, 0.55);
+  border-top-color: rgba(244, 114, 182, 0.35);
+  color: #fce7f3;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 2px 12px rgba(244, 114, 182, 0.28),
+    0 0 0 0.5px rgba(244, 114, 182, 0.2);
+  text-shadow: 0 0 10px rgba(244, 114, 182, 0.45);
 }
 
 .bento-sort-chip.is-active:hover {
-  background: rgba(244, 114, 182, 0.22);
+  background:
+    linear-gradient(135deg, rgba(244, 114, 182, 0.3) 0%, rgba(244, 114, 182, 0.14) 100%);
   transform: translateY(-1px);
+}
+
+.bento-sort-chip:focus-visible {
+  outline: 2px solid var(--color-accent, #f472b6);
+  outline-offset: 2px;
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────── */
@@ -266,7 +330,7 @@
   }
 
   .bento-stat-tile__label {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
 
   /* Sort chips: min 36px touch target */

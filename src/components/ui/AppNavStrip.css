@@ -2,7 +2,7 @@
 
 .ans {
   /* ── token scale ──────────────────────────────────────── */
-  --ans-accent:      var(--color-accent, #f472b6);
+  --ans-accent:      #f472b6;
   --ans-fg:          rgba(200, 215, 255, 0.65);
   --ans-fg-active:   rgba(230, 240, 255, 0.97);
   --ans-bg:          color-mix(in srgb, var(--ans-accent)  9%, rgba(255, 255, 255, 0.04));
