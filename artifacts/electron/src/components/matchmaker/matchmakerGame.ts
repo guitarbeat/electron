@@ -185,11 +185,10 @@ export const undoMatchmakerSwipe = (
       ? (game.aaronSwipeOrder ?? [])
       : (game.electraSwipeOrder ?? []);
 
-  // Fall back to pool-order search for games that predate swipe order tracking
-  let lastSwipedId;
-  if (swipeOrder.length > 0) {
-    lastSwipedId = swipeOrder[swipeOrder.length - 1];
-  } else {
+  let lastSwipedId =
+    swipeOrder.length > 0 ? swipeOrder[swipeOrder.length - 1] : undefined;
+
+  if (!lastSwipedId) {
     const swipedSet = new Set(getUserSwipedIds(game, user));
     lastSwipedId = [...game.moviePool]
       .reverse()
