@@ -1,8 +1,8 @@
-import React from 'react';
-import BaseSuggestionCard from '@/components/common/BaseSuggestionCard';
-import { getPlaceIcon } from '@/components/places/lib/placeMeta';
-import type { PlaceSuggestion } from '@/shared/types';
-import { colors, typography } from '@/theme/tokens';
+import React from "react";
+import BaseSuggestionCard from "@/components/common/BaseSuggestionCard";
+import { getPlaceIcon } from "@/components/places/lib/placeMeta";
+import type { PlaceSuggestion } from "@/shared/types";
+import { colors, typography } from "@/theme/tokens";
 
 interface PlaceSuggestionCardProps {
   suggestion: PlaceSuggestion;
@@ -40,9 +40,9 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
             style={{
               ...typography.presets.caption,
               color: colors.textTertiary,
-              fontSize: '10px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              fontSize: "10px",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
             }}
           >
             {suggestion.category}

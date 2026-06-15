@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
-import { CollectionGrid } from '@/ui/CollectionLayout';
-import PlaceCard from './PlaceCard.tsx';
-import type { Place } from '../../shared/types.ts';
-import PlacesEmptyState from './PlacesEmptyState.tsx';
+import React, { memo } from "react";
+import { CollectionGrid } from "@/ui/CollectionLayout";
+import PlaceCard from "./PlaceCard.tsx";
+import type { Place } from "../../shared/types.ts";
+import PlacesEmptyState from "./PlacesEmptyState.tsx";
 
 interface PlacesGridProps {
   places: Place[];
@@ -11,7 +11,10 @@ interface PlacesGridProps {
   isSubmitting: boolean;
   activeCardId: string | null;
   onCardTap: (place: Place) => void;
-  onCardKeyDown: (event: React.KeyboardEvent<HTMLDivElement>, place: Place) => void;
+  onCardKeyDown: (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    place: Place,
+  ) => void;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;

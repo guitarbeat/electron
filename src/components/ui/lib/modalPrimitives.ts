@@ -1,18 +1,18 @@
-import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { colors, radius, spacing, zIndex } from '@/theme/tokens';
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
+import { colors, radius, spacing, zIndex } from "@/theme/tokens";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export const trapFocusOnTab = (
   event: KeyboardEvent | ReactKeyboardEvent,
-  container: HTMLElement | null
+  container: HTMLElement | null,
 ): void => {
-  if (event.key !== 'Tab' || !container) return;
+  if (event.key !== "Tab" || !container) return;
 
   const focusableNodes = Array.from(
-    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-  ).filter((node) => !node.hasAttribute('disabled'));
+    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+  ).filter((node) => !node.hasAttribute("disabled"));
 
   if (!focusableNodes.length) {
     event.preventDefault();
@@ -43,30 +43,30 @@ export const isFocusWithin = (container: HTMLElement | null): boolean => {
 
 export const getModalOverlayStyle = (
   backgroundColor: string = colors.overlay,
-  alignItems: CSSProperties['alignItems'] = 'center',
-  padding: CSSProperties['padding'] = spacing.md
+  alignItems: CSSProperties["alignItems"] = "center",
+  padding: CSSProperties["padding"] = spacing.md,
 ): CSSProperties => ({
-  position: 'fixed',
+  position: "fixed",
   inset: 0,
   backgroundColor,
-  backdropFilter: 'blur(4px)',
-  display: 'flex',
-  justifyContent: 'center',
+  backdropFilter: "blur(4px)",
+  display: "flex",
+  justifyContent: "center",
   alignItems,
   zIndex: zIndex.modal,
   padding,
 });
 
 export const getModalCloseButtonStyle = (): CSSProperties => ({
-  position: 'absolute',
+  position: "absolute",
   top: spacing.sm,
   right: spacing.sm,
-  width: '34px',
-  height: '34px',
+  width: "34px",
+  height: "34px",
   borderRadius: radius.full,
   border: `1px solid ${colors.borderSubtle}`,
   background: colors.surface2,
   color: colors.textPrimary,
-  cursor: 'pointer',
+  cursor: "pointer",
   lineHeight: 1,
 });

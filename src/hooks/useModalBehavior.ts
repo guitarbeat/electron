@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef, type RefObject } from 'react';
-import { isFocusWithin, trapFocusOnTab } from '@/components/ui/lib/modalPrimitives';
-import { useAudio } from './useAudio';
+import { useCallback, useEffect, useRef, type RefObject } from "react";
+import {
+  isFocusWithin,
+  trapFocusOnTab,
+} from "@/components/ui/lib/modalPrimitives";
+import { useAudio } from "./useAudio";
 
 export interface UseModalBehaviorOptions {
   isOpen: boolean;
@@ -40,7 +43,7 @@ export const useModalBehavior = ({
 
     previousFocusRef.current = document.activeElement as HTMLElement;
     const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     const focusTimer = window.setTimeout(() => {
       if (closeDisabled) {
@@ -52,7 +55,7 @@ export const useModalBehavior = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isFocusWithin(containerRef.current)) return;
-      if (event.key === 'Escape' && !closeDisabled) {
+      if (event.key === "Escape" && !closeDisabled) {
         event.preventDefault();
         onClose();
         return;
@@ -60,11 +63,11 @@ export const useModalBehavior = ({
       trapFocusOnTab(event, containerRef.current);
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.clearTimeout(focusTimer);
       document.body.style.overflow = prevOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, closeDisabled, onClose, containerRef, initialFocusRef]);
 

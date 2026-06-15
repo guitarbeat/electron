@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { Message, User } from '@/shared/types';
-import { spacing, typography } from '@/theme/tokens';
-import MessageBubble from './MessageBubble';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import type { Message, User } from "@/shared/types";
+import { spacing, typography } from "@/theme/tokens";
+import MessageBubble from "./MessageBubble";
 
 interface MessageListProps {
   messages: Message[];
@@ -36,10 +36,10 @@ const MessageList: React.FC<MessageListProps> = ({
       setShowScrollToBottom(!isNearBottom);
     };
 
-    container.addEventListener('scroll', checkScrollPosition);
+    container.addEventListener("scroll", checkScrollPosition);
     checkScrollPosition();
 
-    return () => container.removeEventListener('scroll', checkScrollPosition);
+    return () => container.removeEventListener("scroll", checkScrollPosition);
   }, [messages]);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ const MessageList: React.FC<MessageListProps> = ({
             if (el) {
               el.scrollTo({
                 top: el.scrollHeight,
-                behavior: 'smooth',
+                behavior: "smooth",
               });
             }
           }, 50);
@@ -83,15 +83,15 @@ const MessageList: React.FC<MessageListProps> = ({
     if (container) {
       container.scrollTo({
         top: container.scrollHeight,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
       return;
     }
 
     endRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'nearest',
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
     });
   };
 
@@ -102,29 +102,29 @@ const MessageList: React.FC<MessageListProps> = ({
         const showSenderName = !previous || previous.author !== message.author;
         return { message, showSenderName };
       }),
-    [messages]
+    [messages],
   );
 
   return (
     <div
       style={{
-        position: 'relative',
+        position: "relative",
         flex: 1,
         minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div
         ref={containerRef}
         style={{
           flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
+          overflowY: "auto",
+          overflowX: "hidden",
           padding: spacing.md,
           minHeight: 0,
-          backgroundColor: '#ffffff',
-          WebkitOverflowScrolling: 'touch',
+          backgroundColor: "#ffffff",
+          WebkitOverflowScrolling: "touch",
         }}
         className="ios-message-list"
       >
@@ -139,157 +139,167 @@ const MessageList: React.FC<MessageListProps> = ({
           }
         `}</style>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          opacity: isSubmitting ? 0.72 : 1,
-          pointerEvents: isSubmitting ? 'none' : 'auto',
-          transition: 'opacity 0.2s ease',
-          minHeight: '100%',
-        }}
-        role="log"
-        aria-label="Messages"
-        aria-live="polite"
-        aria-atomic="false"
-      >
-        {isLoading && messages.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                style={{
-                  padding: `${spacing.sm} ${spacing.md}`,
-                  height: '40px',
-                  background: '#e5e5ea',
-                  borderRadius: '18px',
-                  opacity: 0.45,
-                  maxWidth: '60%',
-                  marginLeft: item % 2 === 0 ? 'auto' : 0,
-                }}
-              />
-            ))}
-          </div>
-        ) : null}
-
-        {error ? (
-          <div
-            role="alert"
-            style={{
-              textAlign: 'center',
-              padding: spacing.lg,
-              color: '#ff3b30',
-              backgroundColor: 'rgba(255, 59, 48, 0.1)',
-              borderRadius: '12px',
-            }}
-          >
-            <p
-              style={{
-                margin: 0,
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
-              }}
-            >
-              Couldn&apos;t load messages right now. Try again in a few seconds.
-            </p>
-          </div>
-        ) : null}
-
-        {!error && messages.length === 0 && !isLoading ? (
-          <div
-            role="status"
-            style={{
-              textAlign: 'center',
-              padding: spacing['2xl'],
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-            }}
-          >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "2px",
+            opacity: isSubmitting ? 0.72 : 1,
+            pointerEvents: isSubmitting ? "none" : "auto",
+            transition: "opacity 0.2s ease",
+            minHeight: "100%",
+          }}
+          role="log"
+          aria-label="Messages"
+          aria-live="polite"
+          aria-atomic="false"
+        >
+          {isLoading && messages.length === 0 ? (
             <div
               style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                backgroundColor: '#007aff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: spacing.md,
-                color: '#ffffff',
-                fontSize: '1.6rem',
+                display: "flex",
+                flexDirection: "column",
+                gap: spacing.xs,
               }}
             >
-              <span aria-hidden="true">💬</span>
+              {[1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    padding: `${spacing.sm} ${spacing.md}`,
+                    height: "40px",
+                    background: "#e5e5ea",
+                    borderRadius: "18px",
+                    opacity: 0.45,
+                    maxWidth: "60%",
+                    marginLeft: item % 2 === 0 ? "auto" : 0,
+                  }}
+                />
+              ))}
             </div>
-            <p
+          ) : null}
+
+          {error ? (
+            <div
+              role="alert"
               style={{
-                fontFamily: typography.fontFamily.heading.join(', '),
-                fontSize: typography.fontSize.lg,
-                margin: 0,
-                color: '#000000',
+                textAlign: "center",
+                padding: spacing.lg,
+                color: "#ff3b30",
+                backgroundColor: "rgba(255, 59, 48, 0.1)",
+                borderRadius: "12px",
               }}
             >
-              No messages yet
-            </p>
-          </div>
-        ) : null}
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+                }}
+              >
+                Couldn&apos;t load messages right now. Try again in a few
+                seconds.
+              </p>
+            </div>
+          ) : null}
 
-        {groupedMessages.map(({ message, showSenderName }) => (
-          <MessageBubble
-            key={message.id}
-            message={message}
-            currentUser={currentUser}
-            showSenderName={showSenderName}
-            canDelete={Boolean(currentUser && message.author === currentUser)}
-            onDelete={onDelete}
-          />
-        ))}
-        <div ref={endRef} aria-hidden="true" />
+          {!error && messages.length === 0 && !isLoading ? (
+            <div
+              role="status"
+              style={{
+                textAlign: "center",
+                padding: spacing["2xl"],
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+              }}
+            >
+              <div
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  backgroundColor: "#007aff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: spacing.md,
+                  color: "#ffffff",
+                  fontSize: "1.6rem",
+                }}
+              >
+                <span aria-hidden="true">💬</span>
+              </div>
+              <p
+                style={{
+                  fontFamily: typography.fontFamily.heading.join(", "),
+                  fontSize: typography.fontSize.lg,
+                  margin: 0,
+                  color: "#000000",
+                }}
+              >
+                No messages yet
+              </p>
+            </div>
+          ) : null}
+
+          {groupedMessages.map(({ message, showSenderName }) => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              currentUser={currentUser}
+              showSenderName={showSenderName}
+              canDelete={Boolean(currentUser && message.author === currentUser)}
+              onDelete={onDelete}
+            />
+          ))}
+          <div ref={endRef} aria-hidden="true" />
+        </div>
       </div>
-    </div>
 
-    {showScrollToBottom ? (
-      <div
-        style={{
-          position: 'absolute',
-          bottom: spacing.md,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 10,
-          pointerEvents: 'auto',
-        }}
-      >
-        <button
-          type="button"
-          onClick={scrollToBottom}
-          aria-label="Scroll to latest messages"
+      {showScrollToBottom ? (
+        <div
           style={{
-            width: '44px',
-            height: '44px',
-            border: 'none',
-            borderRadius: '999px',
-            background: 'rgba(0, 0, 0, 0.55)',
-            color: '#ffffff',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+            position: "absolute",
+            bottom: spacing.md,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 10,
+            pointerEvents: "auto",
           }}
         >
-          <span aria-hidden="true" style={{ fontSize: '20px', lineHeight: 1 }}>
-            ↓
-          </span>
-        </button>
-      </div>
-    ) : null}
-  </div>
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            aria-label="Scroll to latest messages"
+            style={{
+              width: "44px",
+              height: "44px",
+              border: "none",
+              borderRadius: "999px",
+              background: "rgba(0, 0, 0, 0.55)",
+              color: "#ffffff",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{ fontSize: "20px", lineHeight: 1 }}
+            >
+              ↓
+            </span>
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 };
 

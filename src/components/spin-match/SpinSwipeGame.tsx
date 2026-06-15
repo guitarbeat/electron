@@ -749,7 +749,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
       </div>
     </div>
   );
-}
+};
 
 function ProgressBar({
   current,

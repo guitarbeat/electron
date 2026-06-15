@@ -1,17 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Button from '@/ui/Button';
-import { useMovies } from '@/hooks/movies/useMovies';
-import { useUser } from '@/app/useProviders';
-import { colors, spacing } from '@/theme/tokens';
-import type { Movie } from '@/shared/types';
-import MovieDetailsModal from '@/components/movies/MovieDetailsModal';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Button from "@/ui/Button";
+import { useMovies } from "@/hooks/movies/useMovies";
+import { useUser } from "@/app/useProviders";
+import { colors, spacing } from "@/theme/tokens";
+import type { Movie } from "@/shared/types";
+import MovieDetailsModal from "@/components/movies/MovieDetailsModal";
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
   getSpinCandidates,
   getSpinPool,
   type SpinMode,
-} from './lib/spinWheelEngine.ts';
+} from "./lib/spinWheelEngine.ts";
 
 interface SpinWheelGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
@@ -25,8 +25,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
   const [modalMovie, setModalMovie] = useState<Movie | null>(null);
   const [isTogglingWatched, setIsTogglingWatched] = useState(false);
-  const [mode, setMode] = useState<SpinMode>('all');
-  const [selectedPoolIdSet, setSelectedPoolIdSet] = useState<Set<string>>(new Set());
+  const [mode, setMode] = useState<SpinMode>("all");
+  const [selectedPoolIdSet, setSelectedPoolIdSet] = useState<Set<string>>(
+    new Set(),
+  );
   const spinTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -48,15 +50,21 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   }, [onSpinningChange]);
 
   useEffect(() => {
-    if (selectedMovieId && !movies.some((movie) => movie.id === selectedMovieId)) {
+    if (
+      selectedMovieId &&
+      !movies.some((movie) => movie.id === selectedMovieId)
+    ) {
       setSelectedMovieId(null);
     }
   }, [movies, selectedMovieId]);
 
-  const candidates = useMemo(() => getSpinCandidates(movies, mode), [mode, movies]);
+  const candidates = useMemo(
+    () => getSpinCandidates(movies, mode),
+    [mode, movies],
+  );
   const spinPool = useMemo(
     () => getSpinPool(movies, mode, selectedPoolIdSet),
-    [mode, movies, selectedPoolIdSet]
+    [mode, movies, selectedPoolIdSet],
   );
   const isSubsetActive = selectedPoolIdSet.size > 0;
 
@@ -75,10 +83,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
   const selectedMovie = useMemo(
     () => movies.find((movie) => movie.id === selectedMovieId) || null,
-    [movies, selectedMovieId]
+    [movies, selectedMovieId],
   );
 
-  const gradient = useMemo(() => buildSpinWheelGradient(spinPool.length), [spinPool.length]);
+  const gradient = useMemo(
+    () => buildSpinWheelGradient(spinPool.length),
+    [spinPool.length],
+  );
   const segmentAngle = spinPool.length > 0 ? 360 / spinPool.length : 0;
   const candidatePreviewMovies = useMemo(() => candidates, [candidates]);
 
@@ -131,7 +142,11 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const renderPoster = (movie: Movie, className: string, clickable = true) => {
     const isActuallyClickable = clickable && !isSpinning;
     const posterContent = movie.posterUrl ? (
-      <img src={movie.posterUrl} alt={`${movie.title} poster`} className={className} />
+      <img
+        src={movie.posterUrl}
+        alt={`${movie.title} poster`}
+        className={className}
+      />
     ) : (
       <div className={`${className} ${className}--fallback`}>
         <span>{movie.title.slice(0, 2).toUpperCase()}</span>
@@ -147,12 +162,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           handleOpenDetails(movie);
         }}
         className={`${className}-click-wrapper`}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: "pointer" }}
         title={`Click for more details about "${movie.title}"`}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             handleOpenDetails(movie);
           }
@@ -165,57 +180,69 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
   const selectedMovieStatus =
     selectedMovie?.watchedBy.length === 2
-      ? 'Watched by both'
+      ? "Watched by both"
       : selectedMovie?.watchedBy.length === 1
         ? `Watched by ${selectedMovie.watchedBy[0]}`
-        : 'Unwatched';
-
+        : "Unwatched";
 
   const emptyStateMessage = isLoading
-    ? 'Loading movies...'
+    ? "Loading movies..."
     : movies.length === 0
-      ? 'Add movies to spin the wheel.'
+      ? "Add movies to spin the wheel."
       : null;
 
-  const triggerLabel = isSpinning ? '...' : spinPool.length === 0 ? 'Wait' : 'Spin';
+  const triggerLabel = isSpinning
+    ? "..."
+    : spinPool.length === 0
+      ? "Wait"
+      : "Spin";
 
   return (
-    <div className="spin-wheel-shell" style={{ padding: spacing.md, color: colors.textPrimary }}>
+    <div
+      className="spin-wheel-shell"
+      style={{ padding: spacing.md, color: colors.textPrimary }}
+    >
       <div className="spin-wheel-summary">
         <div className="spin-wheel-summary__item">
           <span className="spin-wheel-summary__label">Pool</span>
-          <strong className="spin-wheel-summary__value">{mode === 'queue' ? 'Queue Only' : 'All Movies'}</strong>
+          <strong className="spin-wheel-summary__value">
+            {mode === "queue" ? "Queue Only" : "All Movies"}
+          </strong>
         </div>
         <div className="spin-wheel-summary__item">
           <span className="spin-wheel-summary__label">Candidates</span>
           <strong className="spin-wheel-summary__value">
-            {spinPool.length} title{spinPool.length === 1 ? '' : 's'}
+            {spinPool.length} title{spinPool.length === 1 ? "" : "s"}
           </strong>
         </div>
         <div className="spin-wheel-summary__item">
           <span className="spin-wheel-summary__label">State</span>
           <strong className="spin-wheel-summary__value">
-            {isSpinning ? 'Locked In' : selectedMovie ? 'Winner Ready' : 'Idle'}
+            {isSpinning ? "Locked In" : selectedMovie ? "Winner Ready" : "Idle"}
           </strong>
         </div>
       </div>
 
-      <div className="spin-wheel-mode-bar" role="group" aria-label="Spin wheel pool">
+      <div
+        className="spin-wheel-mode-bar"
+        role="group"
+        aria-label="Spin wheel pool"
+      >
         <button
           type="button"
-          className={`spin-wheel-mode-pill ${mode === 'queue' ? 'spin-wheel-mode-pill--active' : ''}`}
-          onClick={() => setMode('queue')}
+          className={`spin-wheel-mode-pill ${mode === "queue" ? "spin-wheel-mode-pill--active" : ""}`}
+          onClick={() => setMode("queue")}
           disabled={isSpinning || isLoading}
-          aria-pressed={mode === 'queue'}
+          aria-pressed={mode === "queue"}
         >
           Queue
         </button>
         <button
           type="button"
-          className={`spin-wheel-mode-pill ${mode === 'all' ? 'spin-wheel-mode-pill--active' : ''}`}
-          onClick={() => setMode('all')}
+          className={`spin-wheel-mode-pill ${mode === "all" ? "spin-wheel-mode-pill--active" : ""}`}
+          onClick={() => setMode("all")}
           disabled={isSpinning || isLoading}
-          aria-pressed={mode === 'all'}
+          aria-pressed={mode === "all"}
         >
           All Movies
         </button>
@@ -223,19 +250,19 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
       <div className="spin-wheel-stage">
         <div
-          className={`spin-wheel-wrapper ${isSpinning ? 'spin-wheel-wrapper--spinning' : ''} ${
-            selectedMovie ? 'spin-wheel-wrapper--result' : ''
+          className={`spin-wheel-wrapper ${isSpinning ? "spin-wheel-wrapper--spinning" : ""} ${
+            selectedMovie ? "spin-wheel-wrapper--result" : ""
           }`}
         >
           <div className="spin-marker" />
           <div className="spin-wheel-container">
-          <div
-            className="spin-wheel-rotor"
-            style={{
-              transform: `rotate(${rotation}deg)`,
+            <div
+              className="spin-wheel-rotor"
+              style={{
+                transform: `rotate(${rotation}deg)`,
                 transition: isSpinning
-                  ? 'transform 4.2s cubic-bezier(0.12, 0.85, 0.18, 1)'
-                  : 'transform 0.4s ease',
+                  ? "transform 4.2s cubic-bezier(0.12, 0.85, 0.18, 1)"
+                  : "transform 0.4s ease",
               }}
             >
               <div className="spin-wheel" style={{ background: gradient }} />
@@ -250,18 +277,20 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                     className="spin-wheel-segment"
                     style={
                       {
-                        '--segment-angle': `${angle}deg`,
-                        '--segment-count': `${Math.max(spinPool.length, 1)}`,
+                        "--segment-angle": `${angle}deg`,
+                        "--segment-count": `${Math.max(spinPool.length, 1)}`,
                       } as React.CSSProperties
                     }
                   >
                     <div
                       className={`spin-wheel-segment__content ${
-                        isFlipped ? 'spin-wheel-segment__content--flipped' : ''
+                        isFlipped ? "spin-wheel-segment__content--flipped" : ""
                       }`}
                     >
-                      {renderPoster(movie, 'spin-wheel-segment__poster')}
-                      <span className="spin-wheel-segment__title">{movie.title}</span>
+                      {renderPoster(movie, "spin-wheel-segment__poster")}
+                      <span className="spin-wheel-segment__title">
+                        {movie.title}
+                      </span>
                     </div>
                   </div>
                 );
@@ -276,11 +305,21 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                 className="spin-wheel-trigger"
                 onClick={handleSpin}
                 disabled={isSpinning || isLoading || spinPool.length === 0}
-                aria-label={isSpinning ? 'Spinning' : emptyStateMessage ?? 'Spin the wheel'}
+                aria-label={
+                  isSpinning
+                    ? "Spinning"
+                    : (emptyStateMessage ?? "Spin the wheel")
+                }
               >
-                <span className="spin-wheel-trigger__label">{triggerLabel}</span>
+                <span className="spin-wheel-trigger__label">
+                  {triggerLabel}
+                </span>
                 <span className="spin-wheel-trigger__subtext">
-                  {isSpinning ? 'Locked' : emptyStateMessage ? 'Load' : 'Launch'}
+                  {isSpinning
+                    ? "Locked"
+                    : emptyStateMessage
+                      ? "Load"
+                      : "Launch"}
                 </span>
               </button>
             ) : null}
@@ -288,50 +327,65 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         </div>
 
         <div className="spin-wheel-panel">
-          {selectedMovie ? (() => {
-            const isWatchedByCurrentUser = currentUser ? selectedMovie.watchedBy.includes(currentUser) : false;
-            return (
-              <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
-              <p className="spin-wheel-panel__eyebrow">Tonight&apos;s Pick</p>
-              <h3 className="current-movie-title current-movie-title--result">{selectedMovie.title}</h3>
-              <p className="spin-wheel-panel__meta">
-                {selectedMovie.year || 'Unknown year'} {selectedMovie.genre ? `· ${selectedMovie.genre}` : ''}
-              </p>
-              <p className="spin-wheel-panel__status">{selectedMovieStatus}</p>
-              {renderPoster(selectedMovie, 'spin-wheel-panel__poster')}
-              {selectedMovie.plot ? <p className="spin-wheel-panel__copy">{selectedMovie.plot}</p> : null}
-              {currentUser ? (
-                <Button
-                  variant={isWatchedByCurrentUser ? 'danger' : 'primary'}
-                  size="sm"
-                  isLoading={isTogglingWatched}
-                  disabled={isTogglingWatched}
-                  onClick={toggleWatchedForCurrentUser}
-                  className={`spin-result-action ${
-                    isWatchedByCurrentUser
-                      ? 'spin-result-action--undo'
-                      : 'spin-result-action--mark'
-                  }`}
-                >
-                  {isWatchedByCurrentUser
-                    ? `Undo watched for ${currentUser}`
-                    : `Mark watched by ${currentUser}`}
-                </Button>
-              ) : null}
-            </div>
-            );
-          })() : (
+          {selectedMovie ? (
+            (() => {
+              const isWatchedByCurrentUser = currentUser
+                ? selectedMovie.watchedBy.includes(currentUser)
+                : false;
+              return (
+                <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
+                  <p className="spin-wheel-panel__eyebrow">
+                    Tonight&apos;s Pick
+                  </p>
+                  <h3 className="current-movie-title current-movie-title--result">
+                    {selectedMovie.title}
+                  </h3>
+                  <p className="spin-wheel-panel__meta">
+                    {selectedMovie.year || "Unknown year"}{" "}
+                    {selectedMovie.genre ? `· ${selectedMovie.genre}` : ""}
+                  </p>
+                  <p className="spin-wheel-panel__status">
+                    {selectedMovieStatus}
+                  </p>
+                  {renderPoster(selectedMovie, "spin-wheel-panel__poster")}
+                  {selectedMovie.plot ? (
+                    <p className="spin-wheel-panel__copy">
+                      {selectedMovie.plot}
+                    </p>
+                  ) : null}
+                  {currentUser ? (
+                    <Button
+                      variant={isWatchedByCurrentUser ? "danger" : "primary"}
+                      size="sm"
+                      isLoading={isTogglingWatched}
+                      disabled={isTogglingWatched}
+                      onClick={toggleWatchedForCurrentUser}
+                      className={`spin-result-action ${
+                        isWatchedByCurrentUser
+                          ? "spin-result-action--undo"
+                          : "spin-result-action--mark"
+                      }`}
+                    >
+                      {isWatchedByCurrentUser
+                        ? `Undo watched for ${currentUser}`
+                        : `Mark watched by ${currentUser}`}
+                    </Button>
+                  ) : null}
+                </div>
+              );
+            })()
+          ) : (
             <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
               <p className="spin-wheel-panel__eyebrow">
-                {isSpinning ? 'Spinning Now' : 'Wheel Loaded'}
+                {isSpinning ? "Spinning Now" : "Wheel Loaded"}
               </p>
               <h3 className="spin-wheel-panel__title">
-                {emptyStateMessage ? 'Wheel Offline' : 'Movie Night Roulette'}
+                {emptyStateMessage ? "Wheel Offline" : "Movie Night Roulette"}
               </h3>
               <p className="spin-wheel-panel__copy">
                 {emptyStateMessage ??
                   `The wheel is loaded with ${spinPool.length} ${
-                    mode === 'queue' ? 'queue' : 'total'
+                    mode === "queue" ? "queue" : "total"
                   } titles. Tap the center button and let it decide.`}
               </p>
 
@@ -340,12 +394,12 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                   className="spin-wheel-preview-strip"
                   aria-label="Candidate preview"
                   style={{
-                    display: 'grid',
-                    gridAutoFlow: 'column',
-                    gridAutoColumns: '4.5rem',
-                    gap: '0.5rem',
-                    overflowX: 'auto',
-                    paddingBottom: '0.15rem',
+                    display: "grid",
+                    gridAutoFlow: "column",
+                    gridAutoColumns: "4.5rem",
+                    gap: "0.5rem",
+                    overflowX: "auto",
+                    paddingBottom: "0.15rem",
                   }}
                 >
                   {candidatePreviewMovies.map((movie) => {
@@ -360,29 +414,36 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                         aria-label={movie.title}
                         aria-pressed={isSelected}
                         title={movie.title}
-                      style={{
-                        appearance: 'none',
-                        border: 'none',
-                        padding: 0,
-                        background: 'transparent',
-                        cursor: 'pointer',
+                        style={{
+                          appearance: "none",
+                          border: "none",
+                          padding: 0,
+                          background: "transparent",
+                          cursor: "pointer",
                           opacity: isSelected || !isSubsetActive ? 1 : 0.5,
-                        transform: isSelected ? 'translateY(-2px) scale(1.02)' : 'scale(0.98)',
-                        transition: 'transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease',
-                      }}
+                          transform: isSelected
+                            ? "translateY(-2px) scale(1.02)"
+                            : "scale(0.98)",
+                          transition:
+                            "transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease",
+                        }}
                       >
                         <div
                           style={{
-                            width: '4.5rem',
-                            aspectRatio: '2 / 3',
+                            width: "4.5rem",
+                            aspectRatio: "2 / 3",
                             borderRadius: 12,
-                            overflow: 'hidden',
+                            overflow: "hidden",
                             boxShadow: isSelected
-                              ? '0 0 0 2px var(--color-accent), 0 14px 24px rgba(0,0,0,0.35)'
-                              : '0 10px 18px rgba(0,0,0,0.25)',
+                              ? "0 0 0 2px var(--color-accent), 0 14px 24px rgba(0,0,0,0.35)"
+                              : "0 10px 18px rgba(0,0,0,0.25)",
                           }}
                         >
-                          {renderPoster(movie, 'spin-wheel-preview-strip__poster', false)}
+                          {renderPoster(
+                            movie,
+                            "spin-wheel-preview-strip__poster",
+                            false,
+                          )}
                         </div>
                       </button>
                     );
@@ -401,16 +462,15 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               className="spin-wheel-action"
               title={
                 isSpinning
-                  ? 'Cannot clear while spinning'
+                  ? "Cannot clear while spinning"
                   : !selectedMovieId
-                  ? 'No result to clear'
-                  : 'Clear current result'
+                    ? "No result to clear"
+                    : "Clear current result"
               }
             >
               Clear Result
             </Button>
           </div>
-
         </div>
       </div>
 

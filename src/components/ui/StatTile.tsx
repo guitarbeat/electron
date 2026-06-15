@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import './StatTile.css';
+import React, { useCallback } from "react";
+import "./StatTile.css";
 
 export interface BentoStatTileConfig {
   id: string;
@@ -7,7 +7,7 @@ export interface BentoStatTileConfig {
   count: number;
   icon: string;
   sectionId: string;
-  tone?: 'default' | 'incoming' | 'completed';
+  tone?: "default" | "incoming" | "completed";
 }
 
 interface StatTileProps {
@@ -18,14 +18,14 @@ const StatTile: React.FC<StatTileProps> = ({ tile }) => {
   const handleClick = useCallback(() => {
     const el = document.getElementById(tile.sectionId);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [tile.sectionId]);
 
   return (
     <button
       type="button"
-      className={`bento-stat-tile bento-stat-tile--${tile.tone ?? 'default'}`}
+      className={`bento-stat-tile bento-stat-tile--${tile.tone ?? "default"}`}
       onClick={handleClick}
       aria-label={`${tile.count} ${tile.label} — tap to jump to section`}
     >

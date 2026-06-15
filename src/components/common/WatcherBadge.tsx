@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 import { USER_PHOTOS } from "./WatcherBadgeConstants.ts";
 
 interface WatcherBadgePhotoProps {

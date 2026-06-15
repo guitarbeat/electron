@@ -1,9 +1,9 @@
-import React, { type FC } from 'react';
+import React, { type FC } from "react";
 
-import type { MainTab } from '@/shared/types';
-import MoviesView from '@/components/movies/MoviesView';
+import type { MainTab } from "@/shared/types";
+import MoviesView from "@/components/movies/MoviesView";
 
-const PlacesList = React.lazy(() => import('@/components/places/PlacesList'));
+const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
 const PlacesTabFallback: FC = () => (
   <div
@@ -14,18 +14,20 @@ const PlacesTabFallback: FC = () => (
   >
     <div
       style={{
-        padding: '2rem 1rem',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.75rem',
+        padding: "2rem 1rem",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "0.75rem",
         opacity: 0.65,
-        color: 'var(--color-text-secondary)',
-        fontFamily: 'var(--font-interface)',
-        fontSize: '0.9rem',
+        color: "var(--color-text-secondary)",
+        fontFamily: "var(--font-interface)",
+        fontSize: "0.9rem",
       }}
     >
-      <span style={{ fontSize: '1.75rem', lineHeight: 1 }} aria-hidden="true">🗺️</span>
+      <span style={{ fontSize: "1.75rem", lineHeight: 1 }} aria-hidden="true">
+        🗺️
+      </span>
       <span>Loading places…</span>
     </div>
   </div>
@@ -43,16 +45,18 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   return (
     <main
       id="main-content"
-      className={`workspace-stage workspace-stage--simplified${isMobile ? ' workspace-stage--mobile-shell' : ''}`}
+      className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
       tabIndex={-1}
-      style={{ position: 'relative', overflow: 'hidden' }}
+      style={{ position: "relative", overflow: "hidden" }}
     >
       <section
         className={`workspace-surface workspace-surface--${activeTab}`}
-        style={{ position: 'relative', zIndex: 1, minWidth: 0 }}
-        aria-label={activeTab === 'movies' ? 'Movies workspace' : 'Places workspace'}
+        style={{ position: "relative", zIndex: 1, minWidth: 0 }}
+        aria-label={
+          activeTab === "movies" ? "Movies workspace" : "Places workspace"
+        }
       >
-        {activeTab === 'movies' ? (
+        {activeTab === "movies" ? (
           <MoviesView isMobile={isMobile} />
         ) : (
           <React.Suspense fallback={<PlacesTabFallback />}>

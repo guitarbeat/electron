@@ -1,31 +1,33 @@
-import React from 'react';
+import React from "react";
 
 interface CardActionRailProps {
   primary?: React.ReactNode;
   secondary?: React.ReactNode;
   cluster?: React.ReactNode;
   className?: string;
-  variant?: 'glass' | 'default' | 'external';
+  variant?: "glass" | "default" | "external";
 }
 
 export const CardActionRail: React.FC<CardActionRailProps> = ({
   primary,
   secondary,
   cluster,
-  className = '',
-  variant = 'glass',
+  className = "",
+  variant = "glass",
 }) => {
-  if (variant === 'external') {
+  if (variant === "external") {
     return (
       <div className={`workspace-card-rail-external ${className}`.trim()}>
         <div className="workspace-card-rail-external__primary">{primary}</div>
-        <div className="workspace-card-rail-external__secondary">{secondary}</div>
+        <div className="workspace-card-rail-external__secondary">
+          {secondary}
+        </div>
         <div className="workspace-card-rail-external__secondary">{cluster}</div>
       </div>
     );
   }
 
-  if (variant === 'default') {
+  if (variant === "default") {
     return (
       <div className={`workspace-card-actions ${className}`.trim()}>
         {primary && (
@@ -37,9 +39,7 @@ export const CardActionRail: React.FC<CardActionRailProps> = ({
           <div className="workspace-card-actions__row workspace-card-actions__row--secondary">
             {secondary}
             {cluster && (
-              <div className="workspace-card-actions__cluster">
-                {cluster}
-              </div>
+              <div className="workspace-card-actions__cluster">{cluster}</div>
             )}
           </div>
         )}
@@ -48,7 +48,9 @@ export const CardActionRail: React.FC<CardActionRailProps> = ({
   }
 
   return (
-    <div className={`workspace-card-rail workspace-card-rail--glass ${className}`.trim()}>
+    <div
+      className={`workspace-card-rail workspace-card-rail--glass ${className}`.trim()}
+    >
       <div className="workspace-card-rail__inner">
         <div className="workspace-card-rail__side">{secondary}</div>
         <div className="workspace-card-rail__center">{primary}</div>
@@ -59,8 +61,8 @@ export const CardActionRail: React.FC<CardActionRailProps> = ({
 };
 
 export interface CardActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'glass' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "ghost" | "glass" | "outline";
+  size?: "sm" | "md" | "lg";
   isCompact?: boolean;
   isExpansive?: boolean;
   isCircle?: boolean;
@@ -69,32 +71,34 @@ export interface CardActionButtonProps extends React.ButtonHTMLAttributes<HTMLBu
 }
 
 export const CardActionButton: React.FC<CardActionButtonProps> = ({
-  variant = 'secondary',
-  size = 'md',
+  variant = "secondary",
+  size = "md",
   isCompact = false,
   isExpansive = false,
   isCircle = false,
   leftIcon,
-  className = '',
+  className = "",
   children,
   ...props
 }) => {
   const classes = [
-    'workspace-card-action',
+    "workspace-card-action",
     `workspace-card-action--${variant}`,
     `workspace-card-action--size-${size}`,
-    isCompact && 'workspace-card-action--compact',
-    isExpansive && 'workspace-card-action--expansive',
-    isCircle && 'workspace-card-action--circle',
+    isCompact && "workspace-card-action--compact",
+    isExpansive && "workspace-card-action--expansive",
+    isCircle && "workspace-card-action--circle",
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return (
     <button type="button" className={classes} {...props}>
       {leftIcon}
-      {children && <span className="workspace-card-action__text">{children}</span>}
+      {children && (
+        <span className="workspace-card-action__text">{children}</span>
+      )}
     </button>
   );
 };

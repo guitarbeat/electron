@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
-import { CheckIcon, EditIcon, TrashIcon } from '@/common/Icons';
-import MediaCard from '@/ui/MediaCard';
-import type { Place } from '@/shared/types';
-import { radius } from '@/theme/tokens';
+import React, { useState } from "react";
+import { CheckIcon, EditIcon, TrashIcon } from "@/common/Icons";
+import MediaCard from "@/ui/MediaCard";
+import type { Place } from "@/shared/types";
+import { radius } from "@/theme/tokens";
 import {
   MediaCardCover,
   MediaCardInfo,
@@ -12,12 +11,12 @@ import {
   MediaCardSubtext,
   MediaCardTitle,
   MediaCardStatusBadge,
-} from '@/ui/MediaCard';
-import { getPlaceMeta } from './lib/placeMeta';
-import WatcherBadge from '@/common/WatcherBadge';
-import { CardActionRail, CardActionButton } from '@/ui/CardActionRail';
-import MediaCardMetadata from '@/ui/MediaCardMetadata';
-import { useCardTilt } from '@/hooks/useCardTilt';
+} from "@/ui/MediaCard";
+import { getPlaceMeta } from "./lib/placeMeta";
+import WatcherBadge from "@/common/WatcherBadge";
+import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
+import MediaCardMetadata from "@/ui/MediaCardMetadata";
+import { useCardTilt } from "@/hooks/useCardTilt";
 
 interface PlaceCardProps {
   place: Place;
@@ -216,8 +215,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
                       disabled={isSubmitting || isActionLoading}
                       leftIcon={<CheckIcon />}
                       className={`place-item-action-btn${isVisited ? " place-item-action-btn--unmark" : " place-item-action-btn--visit"}`}
-                      aria-label={isVisited ? "Mark as unvisited" : "Mark as visited"}
-                      title={isVisited ? "Mark as unvisited" : "Mark as visited"}
+                      aria-label={
+                        isVisited ? "Mark as unvisited" : "Mark as visited"
+                      }
+                      title={
+                        isVisited ? "Mark as unvisited" : "Mark as visited"
+                      }
                     />
                   }
                   secondary={

@@ -1,113 +1,122 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { createValidator, validateAndThrow } from './validation.ts';
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { createValidator, validateAndThrow } from "./validation.ts";
 
-test('createValidator', async (t) => {
-  await t.test('validates valid data successfully', () => {
+test("createValidator", async (t) => {
+  await t.test("validates valid data successfully", () => {
     const validator = createValidator({
       name: { required: true, maxLength: 50 },
-      age: { custom: (val) => Number.isNaN(Number(val)) ? 'Must be a number' : null }
+      age: {
+        custom: (val) =>
+          Number.isNaN(Number(val)) ? "Must be a number" : null,
+      },
     });
 
-    const result = validator({ name: 'John Doe', age: '30' });
+    const result = validator({ name: "John Doe", age: "30" });
     assert.equal(result.isValid, true);
     assert.deepEqual(result.errors, {});
     assert.deepEqual(result.fieldErrors, []);
   });
 
-  await t.test('enforces required rule', () => {
+  await t.test("enforces required rule", () => {
     const validator = createValidator({
-      name: { required: true, message: 'Name is mandatory' },
-      optional: { required: false }
+      name: { required: true, message: "Name is mandatory" },
+      optional: { required: false },
     });
 
-    const result = validator({ optional: 'present' });
+    const result = validator({ optional: "present" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { name: 'Name is mandatory' });
-    assert.deepEqual(result.fieldErrors, ['Name is mandatory']);
+    assert.deepEqual(result.errors, { name: "Name is mandatory" });
+    assert.deepEqual(result.fieldErrors, ["Name is mandatory"]);
   });
 
-  await t.test('enforces maxLength rule', () => {
+  await t.test("enforces maxLength rule", () => {
     const validator = createValidator({
-      code: { maxLength: 3 }
+      code: { maxLength: 3 },
     });
 
-    const result = validator({ code: 'ABCD' });
+    const result = validator({ code: "ABCD" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { code: 'code exceeds maximum length of 3 characters' });
+    assert.deepEqual(result.errors, {
+      code: "code exceeds maximum length of 3 characters",
+    });
   });
 
-  await t.test('enforces minLength rule', () => {
+  await t.test("enforces minLength rule", () => {
     const validator = createValidator({
-      pin: { minLength: 4 }
+      pin: { minLength: 4 },
     });
 
-    const result = validator({ pin: '123' });
+    const result = validator({ pin: "123" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { pin: 'pin must be at least 4 characters' });
+    assert.deepEqual(result.errors, {
+      pin: "pin must be at least 4 characters",
+    });
   });
 
-  await t.test('enforces pattern rule', () => {
+  await t.test("enforces pattern rule", () => {
     const validator = createValidator({
-      email: { pattern: /^[^@]+@[^@]+\.[^@]+$/ }
+      email: { pattern: /^[^@]+@[^@]+\.[^@]+$/ },
     });
 
-    const result = validator({ email: 'invalid-email' });
+    const result = validator({ email: "invalid-email" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { email: 'email format is invalid' });
+    assert.deepEqual(result.errors, { email: "email format is invalid" });
   });
 
-  await t.test('enforces custom rule', () => {
+  await t.test("enforces custom rule", () => {
     const validator = createValidator({
-      username: { custom: (val) => val === 'admin' ? 'Reserved username' : null }
+      username: {
+        custom: (val) => (val === "admin" ? "Reserved username" : null),
+      },
     });
 
-    const result = validator({ username: 'admin' });
+    const result = validator({ username: "admin" });
     assert.equal(result.isValid, false);
-    assert.deepEqual(result.errors, { username: 'Reserved username' });
+    assert.deepEqual(result.errors, { username: "Reserved username" });
   });
 
-  await t.test('trims whitespace before validation', () => {
+  await t.test("trims whitespace before validation", () => {
     const validator = createValidator({
       name: { required: true },
-      code: { maxLength: 3 }
+      code: { maxLength: 3 },
     });
 
-    const resultEmpty = validator({ name: '   ' });
+    const resultEmpty = validator({ name: "   " });
     assert.equal(resultEmpty.isValid, false);
-    assert.equal(resultEmpty.errors.name, 'name is required');
+    assert.equal(resultEmpty.errors.name, "name is required");
 
-    const resultLength = validator({ name: 'Valid', code: '  AB  ' });
+    const resultLength = validator({ name: "Valid", code: "  AB  " });
     assert.equal(resultLength.isValid, true);
   });
 
-  await t.test('ignores missing non-required fields', () => {
+  await t.test("ignores missing non-required fields", () => {
     const validator = createValidator({
-      bio: { maxLength: 10 } // Not required
+      bio: { maxLength: 10 }, // Not required
     });
 
     const result = validator({}); // Missing
     assert.equal(result.isValid, true);
 
-    const resultEmpty = validator({ bio: '' }); // Empty
+    const resultEmpty = validator({ bio: "" }); // Empty
     assert.equal(resultEmpty.isValid, true);
   });
 
-  await t.test('coerces non-string values to string', () => {
+  await t.test("coerces non-string values to string", () => {
     const validator = createValidator({
-      count: { minLength: 2 }
+      count: { minLength: 2 },
     });
 
     // Number 5 will be coerced to "5", which is 1 char (less than minLength 2)
     const result = validator({ count: 5 });
     assert.equal(result.isValid, false);
-    assert.equal(result.errors.count, 'count must be at least 2 characters');
+    assert.equal(result.errors.count, "count must be at least 2 characters");
   });
 
-  await t.test('accumulates multiple errors across different fields', () => {
+  await t.test("accumulates multiple errors across different fields", () => {
     const validator = createValidator({
       name: { required: true },
-      age: { required: true }
+      age: { required: true },
     });
 
     const result = validator({});
@@ -117,25 +126,25 @@ test('createValidator', async (t) => {
   });
 });
 
-test('validateAndThrow', async (t) => {
-  await t.test('returns result successfully when valid', () => {
+test("validateAndThrow", async (t) => {
+  await t.test("returns result successfully when valid", () => {
     const validator = createValidator({
-      name: { required: true }
+      name: { required: true },
     });
 
-    const result = validateAndThrow(validator, { name: 'John' });
+    const result = validateAndThrow(validator, { name: "John" });
     assert.equal(result.isValid, true);
     assert.deepEqual(result.errors, {});
   });
 
-  await t.test('throws error when validation fails', () => {
+  await t.test("throws error when validation fails", () => {
     const validator = createValidator({
-      name: { required: true, message: 'Name is missing' }
+      name: { required: true, message: "Name is missing" },
     });
 
     assert.throws(
       () => validateAndThrow(validator, {}),
-      (err) => err instanceof Error && err.message === 'Name is missing'
+      (err) => err instanceof Error && err.message === "Name is missing",
     );
   });
 });

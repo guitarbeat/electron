@@ -172,7 +172,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
 
     // Pre-compute map for O(1) lookups to avoid O(N^2) complexity in the loop
     const prevMoviesMap = new Map(
-      previousMoviesRef.current.map((movie) => [movie.id, movie])
+      previousMoviesRef.current.map((movie) => [movie.id, movie]),
     );
 
     movies.forEach((movie) => {

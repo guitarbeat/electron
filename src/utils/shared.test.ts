@@ -15,13 +15,19 @@ test("clamp", async (t) => {
     assert.equal(clamp(15, 0, 10), 10);
   });
 
-  await t.test("returns the min value when the value is equal to the min", () => {
-    assert.equal(clamp(0, 0, 10), 0);
-  });
+  await t.test(
+    "returns the min value when the value is equal to the min",
+    () => {
+      assert.equal(clamp(0, 0, 10), 0);
+    },
+  );
 
-  await t.test("returns the max value when the value is equal to the max", () => {
-    assert.equal(clamp(10, 0, 10), 10);
-  });
+  await t.test(
+    "returns the max value when the value is equal to the max",
+    () => {
+      assert.equal(clamp(10, 0, 10), 10);
+    },
+  );
 
   await t.test("works correctly with negative ranges", () => {
     assert.equal(clamp(-15, -20, -10), -15);
@@ -53,20 +59,23 @@ test("deepClone", async (t) => {
     assert.notStrictEqual(cloned.a, obj.a);
   });
 
-  await t.test("falls back to JSON methods when structuredClone is unavailable", () => {
-    const originalStructuredClone = globalThis.structuredClone;
-    globalThis.structuredClone = undefined as typeof structuredClone;
+  await t.test(
+    "falls back to JSON methods when structuredClone is unavailable",
+    () => {
+      const originalStructuredClone = globalThis.structuredClone;
+      globalThis.structuredClone = undefined as typeof structuredClone;
 
-    try {
-      const obj = { a: { b: 2 } };
-      const cloned = deepClone(obj);
-      assert.deepEqual(cloned, obj);
-      assert.notStrictEqual(cloned, obj);
-      assert.notStrictEqual(cloned.a, obj.a);
-    } finally {
-      globalThis.structuredClone = originalStructuredClone;
-    }
-  });
+      try {
+        const obj = { a: { b: 2 } };
+        const cloned = deepClone(obj);
+        assert.deepEqual(cloned, obj);
+        assert.notStrictEqual(cloned, obj);
+        assert.notStrictEqual(cloned.a, obj.a);
+      } finally {
+        globalThis.structuredClone = originalStructuredClone;
+      }
+    },
+  );
 });
 
 test("isValidUrl", async (t) => {
@@ -133,7 +142,7 @@ test("sanitizeInput", async (t) => {
 
     assert.equal(
       sanitizeInput("<script>alert('XSS & \"injection\"')</script>"),
-      "&lt;script&gt;alert(&#x27;XSS &amp; &quot;injection&quot;&#x27;)&lt;/script&gt;"
+      "&lt;script&gt;alert(&#x27;XSS &amp; &quot;injection&quot;&#x27;)&lt;/script&gt;",
     );
   });
 

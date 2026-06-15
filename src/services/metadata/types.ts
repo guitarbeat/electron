@@ -2,7 +2,7 @@ export interface MovieAutocompleteResult {
   title: string;
   year?: string;
   imdbID?: string;
-  type: 'movie' | 'series';
+  type: "movie" | "series";
   poster?: string;
 }
 
@@ -11,7 +11,7 @@ export interface OmdbSearchResult {
     Title: string;
     Year: string;
     imdbID: string;
-    Type: 'movie' | 'series';
+    Type: "movie" | "series";
     Poster: string;
   }>;
 }
@@ -21,7 +21,7 @@ export interface MovieMetadata {
   year?: string;
   imdbID?: string;
   imdbRating?: string;
-  type: 'movie' | 'series';
+  type: "movie" | "series";
   poster?: string;
   plot?: string;
   director?: string;

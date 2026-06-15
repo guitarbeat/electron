@@ -1,32 +1,33 @@
-import { readStoredJson, writeStoredJson } from './storageClient.ts';
+import { readStoredJson, writeStoredJson } from "./storageClient.ts";
 
 // ---------------------------------------------------------------------------
 // Analytics metrics
 // ---------------------------------------------------------------------------
 
-export type AnalyticsMetric =
-  | 'suggestion_submitted'
-  | 'suggestion_accepted';
+export type AnalyticsMetric = "suggestion_submitted" | "suggestion_accepted";
 
 type AnalyticsMetrics = Partial<Record<AnalyticsMetric, number>>;
 
-const ANALYTICS_STORAGE_KEY = 'movieList.analyticsMetrics';
+const ANALYTICS_STORAGE_KEY = "movieList.analyticsMetrics";
 
-const cloneAnalyticsMetrics = (metrics: AnalyticsMetrics): AnalyticsMetrics => ({
+const cloneAnalyticsMetrics = (
+  metrics: AnalyticsMetrics,
+): AnalyticsMetrics => ({
   ...metrics,
 });
 
 const isAnalyticsMetric = (value: string): value is AnalyticsMetric =>
-  value === 'suggestion_submitted' ||
-  value === 'suggestion_accepted';
+  value === "suggestion_submitted" || value === "suggestion_accepted";
 
-const isAnalyticsMetricsRecord = (value: unknown): value is AnalyticsMetrics => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+const isAnalyticsMetricsRecord = (
+  value: unknown,
+): value is AnalyticsMetrics => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
     return false;
   }
 
   return Object.entries(value as Record<string, unknown>).every(
-    ([metric, count]) => isAnalyticsMetric(metric) && typeof count === 'number'
+    ([metric, count]) => isAnalyticsMetric(metric) && typeof count === "number",
   );
 };
 
@@ -35,7 +36,7 @@ const readAnalyticsMetrics = (): AnalyticsMetrics =>
     storageKey: ANALYTICS_STORAGE_KEY,
     validate: isAnalyticsMetricsRecord,
     clone: cloneAnalyticsMetrics,
-    label: 'local analytics metrics',
+    label: "local analytics metrics",
   }) ?? {};
 
 export const trackMetric = (metric: AnalyticsMetric): AnalyticsMetrics => {
@@ -49,7 +50,7 @@ export const trackMetric = (metric: AnalyticsMetric): AnalyticsMetrics => {
     storageKey: ANALYTICS_STORAGE_KEY,
     value: nextMetrics,
     clone: cloneAnalyticsMetrics,
-    label: 'local analytics metrics',
+    label: "local analytics metrics",
   });
 };
 

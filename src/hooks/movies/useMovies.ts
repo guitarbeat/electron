@@ -1,17 +1,17 @@
-import { useEffect, useCallback, useMemo, useRef } from 'react';
-import type { Movie, User } from '@/shared/types';
+import { useEffect, useCallback, useMemo, useRef } from "react";
+import type { Movie, User } from "@/shared/types";
 import {
   fetchOmdbMetadata as fetchMovieMetadata,
   MovieMetadata,
   type MovieAutocompleteResult,
-} from '@/services/metadata';
+} from "@/services/metadata";
 import {
   concurrentMap,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
   sanitizeInput,
-} from '@/utils';
-import { useCollection } from '../useCollection';
+} from "@/utils";
+import { useCollection } from "../useCollection";
 
 const POLLING_INTERVAL = 15000;
 
@@ -23,7 +23,8 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   if (plot) result.plot = sanitizeInput(plot);
   if (imdbRating) result.imdbRating = imdbRating;
   if (runtime) result.runtime = runtime;
-  if (genre && Array.isArray(genre)) result.genre = sanitizeInput(genre.join(', '));
+  if (genre && Array.isArray(genre))
+    result.genre = sanitizeInput(genre.join(", "));
   if (director) result.director = sanitizeInput(director);
   return result;
 };
@@ -31,10 +32,12 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
 const validateMovieTitle = (title: string): string => {
   const cleanTitle = sanitizeInput(title);
   if (!cleanTitle) {
-    throw new Error('Movie title cannot be empty');
+    throw new Error("Movie title cannot be empty");
   }
   if (cleanTitle.length > MAX_MOVIE_TITLE_LENGTH) {
-    throw new Error(`Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`);
+    throw new Error(
+      `Movie title exceeds maximum length of ${MAX_MOVIE_TITLE_LENGTH} characters`,
+    );
   }
   return cleanTitle;
 };
@@ -56,7 +59,10 @@ const sortMovies = (movies: Movie[]): Movie[] =>
     return 0;
   });
 
-export const useMovies = (currentUser: User | null, isPaused: boolean = false) => {
+export const useMovies = (
+  currentUser: User | null,
+  isPaused: boolean = false,
+) => {
   const {
     data: movies,
     isLoading,
@@ -68,7 +74,10 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     refresh,
     retrySync,
     performMutation,
-  } = useCollection<Movie>('movies', currentUser, { pollingInterval: POLLING_INTERVAL, isPaused });
+  } = useCollection<Movie>("movies", currentUser, {
+    pollingInterval: POLLING_INTERVAL,
+    isPaused,
+  });
 
   const hasAutoSyncedRef = useRef(false);
   const isRefreshingMetadataRef = useRef(false);
@@ -80,7 +89,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       movieId: string,
       op: string,
       payload: unknown,
-      buildOptimistic: (current: Movie[]) => Movie[]
+      buildOptimistic: (current: Movie[]) => Movie[],
     ): Promise<boolean> => {
       const current = moviesRef.current;
       if (!current.some((m) => m.id === movieId)) {
@@ -89,7 +98,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       await performMutation(op, payload, buildOptimistic(current));
       return true;
     },
-    [performMutation]
+    [performMutation],
   );
 
   const updateMovieMetadata = useCallback(
@@ -102,27 +111,27 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
       return performMutationIfMoviePresent(
         movie.id,
-        'update_metadata',
+        "update_metadata",
         {
           movieId: movie.id,
           metadata: safeMetadata,
         },
         (current) =>
           current.map((entry) =>
-            entry.id === movie.id ? { ...entry, ...safeMetadata } : entry
-          )
+            entry.id === movie.id ? { ...entry, ...safeMetadata } : entry,
+          ),
       );
     },
-    [performMutationIfMoviePresent]
+    [performMutationIfMoviePresent],
   );
 
   const addMovie = useCallback(
     async (
       title: string,
-      selectedResult?: Pick<MovieAutocompleteResult, 'imdbID' | 'type'>
+      selectedResult?: Pick<MovieAutocompleteResult, "imdbID" | "type">,
     ) => {
       if (!currentUser) {
-        throw new Error('Profile required');
+        throw new Error("Profile required");
       }
 
       const cleanTitle = validateMovieTitle(title);
@@ -136,12 +145,12 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       };
 
       await performMutation(
-        'add_movie',
+        "add_movie",
         {
           id: newMovie.id,
           title: newMovie.title,
         },
-        [...movies, newMovie]
+        [...movies, newMovie],
       );
 
       void (async () => {
@@ -149,7 +158,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           const metadata = await fetchMovieMetadata(
             cleanTitle,
             selectedResult?.type,
-            selectedResult?.imdbID
+            selectedResult?.imdbID,
           );
           const safeMetadata = extractSafeMetadata(metadata);
           if (Object.keys(safeMetadata).length === 0) {
@@ -158,50 +167,52 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
           await performMutationIfMoviePresent(
             newMovie.id,
-            'update_metadata',
+            "update_metadata",
             {
               movieId: newMovie.id,
               metadata: safeMetadata,
             },
             (current) =>
               current.map((entry) =>
-                entry.id === newMovie.id ? { ...entry, ...safeMetadata } : entry
-              )
+                entry.id === newMovie.id
+                  ? { ...entry, ...safeMetadata }
+                  : entry,
+              ),
           );
         } catch (metadataError) {
-          console.warn('Metadata enrichment failed:', metadataError);
+          console.warn("Metadata enrichment failed:", metadataError);
         }
       })();
 
       return newMovie;
     },
-    [currentUser, movies, performMutation, performMutationIfMoviePresent]
+    [currentUser, movies, performMutation, performMutationIfMoviePresent],
   );
 
   const renameMovie = useCallback(
     async (movieId: string, title: string) => {
       if (!currentUser) {
-        throw new Error('Profile required');
+        throw new Error("Profile required");
       }
 
       const currentMovie = movies.find((entry) => entry.id === movieId);
       if (!currentMovie) {
-        throw new Error('Movie not found');
+        throw new Error("Movie not found");
       }
 
       const cleanTitle = validateMovieTitle(title);
 
       const optimisticMovies = movies.map((movie) =>
-        movie.id === movieId ? { ...movie, title: cleanTitle } : movie
+        movie.id === movieId ? { ...movie, title: cleanTitle } : movie,
       );
 
       await performMutation(
-        'rename_movie',
+        "rename_movie",
         {
           movieId,
           title: cleanTitle,
         },
-        optimisticMovies
+        optimisticMovies,
       );
 
       void (async () => {
@@ -214,7 +225,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
           await performMutationIfMoviePresent(
             movieId,
-            'update_metadata',
+            "update_metadata",
             {
               movieId,
               metadata: safeMetadata,
@@ -226,25 +237,25 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
                       ...movie,
                       ...safeMetadata,
                     }
-                  : movie
-              )
+                  : movie,
+              ),
           );
         } catch (metadataError) {
-          console.warn('Metadata refresh failed after rename:', metadataError);
+          console.warn("Metadata refresh failed after rename:", metadataError);
         }
       })();
     },
-    [currentUser, movies, performMutation, performMutationIfMoviePresent]
+    [currentUser, movies, performMutation, performMutationIfMoviePresent],
   );
 
   const toggleWatched = useCallback(
     async (movieId: string) => {
       if (!currentUser) {
-        throw new Error('Profile required');
+        throw new Error("Profile required");
       }
 
       await performMutation(
-        'toggle_watched',
+        "toggle_watched",
         { movieId },
         movies.map((movie) => {
           if (movie.id !== movieId) {
@@ -257,32 +268,28 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
               ? movie.watchedBy.filter((user) => user !== currentUser)
               : [...movie.watchedBy, currentUser],
           };
-        })
+        }),
       );
     },
-    [currentUser, movies, performMutation]
+    [currentUser, movies, performMutation],
   );
 
   const deleteMovie = useCallback(
     async (movieId: string) => {
       await performMutation(
-        'delete_movie',
+        "delete_movie",
         { movieId },
-        movies.filter((movie) => movie.id !== movieId)
+        movies.filter((movie) => movie.id !== movieId),
       );
     },
-    [movies, performMutation]
+    [movies, performMutation],
   );
 
   const restoreMovie = useCallback(
     async (movie: Movie) => {
-      await performMutation(
-        'restore_movie',
-        { movie },
-        [...movies, movie]
-      );
+      await performMutation("restore_movie", { movie }, [...movies, movie]);
     },
-    [movies, performMutation]
+    [movies, performMutation],
   );
 
   const manualMetadataUpdate = useCallback(
@@ -294,7 +301,7 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
 
       return updateMovieMetadata(movie, searchTerm);
     },
-    [movies, updateMovieMetadata]
+    [movies, updateMovieMetadata],
   );
 
   const refreshAllMetadata = useCallback(async () => {
@@ -318,12 +325,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
       const validUpdates = refreshed.filter(
         (update) =>
           Object.keys(update.metadata).length > 0 &&
-          moviesRef.current.some((m) => m.id === update.movieId)
+          moviesRef.current.some((m) => m.id === update.movieId),
       );
 
       for (const update of validUpdates) {
         optimisticMovies = optimisticMovies.map((movie) =>
-          movie.id === update.movieId ? { ...movie, ...update.metadata } : movie
+          movie.id === update.movieId
+            ? { ...movie, ...update.metadata }
+            : movie,
         );
       }
 
@@ -331,11 +340,11 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
         validUpdates.map((update) =>
           performMutationIfMoviePresent(
             update.movieId,
-            'update_metadata',
+            "update_metadata",
             { movieId: update.movieId, metadata: update.metadata },
-            () => optimisticMovies
-          )
-        )
+            () => optimisticMovies,
+          ),
+        ),
       );
 
       refresh();
@@ -343,14 +352,27 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
     } finally {
       isRefreshingMetadataRef.current = false;
     }
-  }, [currentUser, isSubmitting, movies, performMutationIfMoviePresent, refresh]);
+  }, [
+    currentUser,
+    isSubmitting,
+    movies,
+    performMutationIfMoviePresent,
+    refresh,
+  ]);
 
   const autoSyncMetadata = useCallback(async () => {
-    if (!currentUser || hasAutoSyncedRef.current || movies.length === 0 || isSubmitting) {
+    if (
+      !currentUser ||
+      hasAutoSyncedRef.current ||
+      movies.length === 0 ||
+      isSubmitting
+    ) {
       return;
     }
 
-    const moviesMissingMetadata = movies.filter((m) => !m.posterUrl || !m.plot || !m.year);
+    const moviesMissingMetadata = movies.filter(
+      (m) => !m.posterUrl || !m.plot || !m.year,
+    );
     if (moviesMissingMetadata.length === 0) {
       hasAutoSyncedRef.current = true;
       return;
@@ -373,7 +395,12 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
   }, [currentUser, isSubmitting, movies, updateMovieMetadata]);
 
   useEffect(() => {
-    if (currentUser && !isLoading && movies.length > 0 && !hasAutoSyncedRef.current) {
+    if (
+      currentUser &&
+      !isLoading &&
+      movies.length > 0 &&
+      !hasAutoSyncedRef.current
+    ) {
       void autoSyncMetadata();
     }
   }, [autoSyncMetadata, currentUser, isLoading, movies]);

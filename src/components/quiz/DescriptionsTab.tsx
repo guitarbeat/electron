@@ -1,7 +1,7 @@
-import React from 'react';
-import { QuizCharacter, CHARACTERS } from '@/shared/types';
-import Card from '@/ui/Card';
-import { Textarea } from '@/ui/FormFields';
+import React from "react";
+import { QuizCharacter, CHARACTERS } from "@/shared/types";
+import Card from "@/ui/Card";
+import { Textarea } from "@/ui/FormFields";
 
 // Descriptions Tab Component
 interface DescriptionsTabProps {
@@ -18,28 +18,37 @@ const DescriptionsTab: React.FC<DescriptionsTabProps> = ({
   onUpdateNeither,
 }) => {
   const completedProfiles =
-    CHARACTERS.filter((character) => characterDescriptions[character].trim().length > 0).length +
-    Number(neitherDescription.trim().length > 0);
+    CHARACTERS.filter(
+      (character) => characterDescriptions[character].trim().length > 0,
+    ).length + Number(neitherDescription.trim().length > 0);
   const totalProfiles = CHARACTERS.length + 1;
-  const countWords = (value: string) => value.trim().split(/\s+/).filter(Boolean).length;
+  const countWords = (value: string) =>
+    value.trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <div className="quiz-editor__descriptions">
       <div className="quiz-editor__description-overview">
         <p className="quiz-editor__section-eyebrow">Result Writing</p>
-        <h2 className="quiz-editor__section-title">Give every ending a distinct voice.</h2>
+        <h2 className="quiz-editor__section-title">
+          Give every ending a distinct voice.
+        </h2>
         <p className="quiz-editor__description-overview-copy">
-          Each profile should feel specific enough that the player instantly recognizes why they
-          landed there.
+          Each profile should feel specific enough that the player instantly
+          recognizes why they landed there.
         </p>
         <p className="quiz-editor__stat-detail">
-          {completedProfiles} of {totalProfiles} result descriptions currently have copy.
+          {completedProfiles} of {totalProfiles} result descriptions currently
+          have copy.
         </p>
       </div>
 
       <div className="quiz-editor__description-grid">
         {CHARACTERS.map((char) => (
-          <Card key={char} variant="default" className="quiz-editor__description-card">
+          <Card
+            key={char}
+            variant="default"
+            className="quiz-editor__description-card"
+          >
             <div className="quiz-editor__description-header">
               <div>
                 <p className="quiz-editor__section-eyebrow">Character Result</p>
@@ -53,10 +62,13 @@ const DescriptionsTab: React.FC<DescriptionsTabProps> = ({
             <Textarea
               value={characterDescriptions[char]}
               onChange={(e) =>
-                onUpdateDescriptions({ ...characterDescriptions, [char]: e.target.value })
+                onUpdateDescriptions({
+                  ...characterDescriptions,
+                  [char]: e.target.value,
+                })
               }
               rows={6}
-              style={{ textAlign: 'left' }}
+              style={{ textAlign: "left" }}
             />
           </Card>
         ))}
@@ -79,7 +91,7 @@ const DescriptionsTab: React.FC<DescriptionsTabProps> = ({
             value={neitherDescription}
             onChange={(e) => onUpdateNeither(e.target.value)}
             rows={5}
-            style={{ textAlign: 'left' }}
+            style={{ textAlign: "left" }}
           />
         </Card>
       </div>

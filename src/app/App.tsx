@@ -1,27 +1,36 @@
-import React, { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
-import { buildFeatureModals } from '@/app/buildMinigameModals';
-import { preloadAppModules } from '@/app/preloadAppModules';
-import { readQuizCompletionState, writeQuizCompletionState } from '@/app/quizCompletionStorage';
-import { getRequestedLogoVariant, isLogoLabEnabled } from '@/app/logoLab';
-import { PwaInstallProvider } from '@/app/PwaInstallProvider';
-import { ThemeProvider, ToastProvider, UserProvider } from '@/app/providers';
-import { useAppSession, useUser, useTheme } from '@/app/useProviders';
-import { usePwaRuntime } from '@/hooks/usePwaRuntime';
-import AppHeader from '@/app/AppHeader';
-import { AppHeaderSlotProvider } from '@/app/AppHeaderSlot';
-import LoadingScreen from '@/app/LoadingScreen';
-import WorkspaceErrorBoundary from '@/app/WorkspaceErrorBoundary';
-import AppWorkspaceShell from '@/app/AppWorkspaceShell';
-import VignetteOverlay from '@/components/effects/VignetteOverlay';
-import { useAudio } from '@/hooks/useAudio';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import type { MainTab } from '@/shared/types';
+import React, {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { buildFeatureModals } from "@/app/buildMinigameModals";
+import { preloadAppModules } from "@/app/preloadAppModules";
+import {
+  readQuizCompletionState,
+  writeQuizCompletionState,
+} from "@/app/quizCompletionStorage";
+import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
+import { PwaInstallProvider } from "@/app/PwaInstallProvider";
+import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
+import { useAppSession, useUser, useTheme } from "@/app/useProviders";
+import { usePwaRuntime } from "@/hooks/usePwaRuntime";
+import AppHeader from "@/app/AppHeader";
+import { AppHeaderSlotProvider } from "@/app/AppHeaderSlot";
+import LoadingScreen from "@/app/LoadingScreen";
+import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
+import AppWorkspaceShell from "@/app/AppWorkspaceShell";
+import VignetteOverlay from "@/components/effects/VignetteOverlay";
+import { useAudio } from "@/hooks/useAudio";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import type { MainTab } from "@/shared/types";
 
-import MinigameModal from '@/ui/MinigameModal';
-import { Analytics } from '@vercel/analytics/react';
-import './App.scss';
-import './y2k-skin.scss';
-import './workspace-polish.scss';
+import MinigameModal from "@/ui/MinigameModal";
+import { Analytics } from "@vercel/analytics/react";
+import "./App.scss";
+import "./y2k-skin.scss";
+import "./workspace-polish.scss";
 
 const MagicComponent = React.lazy(
   () =>
@@ -51,10 +60,10 @@ const modalBodyStyle = {
   overflowY: "auto",
 } satisfies React.CSSProperties;
 const isCohesionAuditRoute =
-  typeof window !== 'undefined' && window.location.pathname.replace(/\/$/, '') === '/cohesion';
-const APP_VIEW_STATE_KEY = 'electron.appViewState.v1';
+  typeof window !== "undefined" &&
+  window.location.pathname.replace(/\/$/, "") === "/cohesion";
+const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
 const BOOT_SCREEN_MIN_MS = 600;
-
 
 /** True once at module load — avoids creating a canvas on every render. */
 const webGLAvailable: boolean = (() => {
@@ -134,7 +143,16 @@ const readStoredAppViewState = (): StoredAppViewState | null => {
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
-  const { isOnline, isStandalone, canInstallApp, hasUpdateReady, outboxStatus, handleApplyUpdate, handleRetryPendingSync, handleInstallApp } = usePwaRuntime();
+  const {
+    isOnline,
+    isStandalone,
+    canInstallApp,
+    hasUpdateReady,
+    outboxStatus,
+    handleApplyUpdate,
+    handleRetryPendingSync,
+    handleInstallApp,
+  } = usePwaRuntime();
   const { playSwitch } = useAudio();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const prefersReducedMotion = useMediaQuery(
@@ -258,7 +276,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {
       setQuizCompleted(completed);
@@ -332,7 +349,6 @@ const App: React.FC = () => {
     setShowSpinWheel(true);
   }, []);
 
-
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
@@ -370,9 +386,7 @@ const App: React.FC = () => {
   if (isCohesionAuditRoute) {
     return (
       <ThemeProvider>
-
-          <CohesionAudit />
-
+        <CohesionAudit />
       </ThemeProvider>
     );
   }
@@ -380,17 +394,14 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider>
-
-          <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
 
         <div className="app-shell app-shell--viewport bg-main">
-
-            {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
+          {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
 
           <VignetteOverlay />
 
-            <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
-
+          <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
       </ThemeProvider>
     );
@@ -410,22 +421,18 @@ const App: React.FC = () => {
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
       <div className="app-shell app-shell--viewport bg-main">
-
-          {!prefersReducedMotion ? <ThemedMoire /> : null}
+        {!prefersReducedMotion ? <ThemedMoire /> : null}
 
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
 
-
-
-          <RadialMenu
-            onOpenMessages={() => setShowMessages(true)}
-            onOpenQuiz={openQuizExperience}
-            onOpenSpin={openSpinMatch}
-          />
-
+        <RadialMenu
+          onOpenMessages={() => setShowMessages(true)}
+          onOpenQuiz={openQuizExperience}
+          onOpenSpin={openSpinMatch}
+        />
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div
@@ -479,7 +486,6 @@ const App: React.FC = () => {
             </div>
           </MinigameModal>
         ))}
-
       </div>
       <Analytics />
     </ThemeProvider>

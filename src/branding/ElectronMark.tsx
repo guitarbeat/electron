@@ -1,11 +1,11 @@
-import React, { useId } from 'react';
-import DOMPurify from 'isomorphic-dompurify';
+import React, { useId } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   getElectronMarkSvgMarkup,
   type ElectronMarkPalette,
   type ElectronMarkVariant,
-} from './ElectronMarkData';
+} from "./ElectronMarkData";
 
 export interface ElectronMarkProps {
   variant?: ElectronMarkVariant;
@@ -26,7 +26,7 @@ const ElectronMark: React.FC<ElectronMarkProps> = ({
   palette,
   style,
 }) => {
-  const idPrefix = useId().replaceAll(':', '');
+  const idPrefix = useId().replaceAll(":", "");
   const markup = getElectronMarkSvgMarkup(variant, {
     size,
     title,
@@ -35,17 +35,17 @@ const ElectronMark: React.FC<ElectronMarkProps> = ({
     idPrefix,
   });
 
-  const resolvedSize = typeof size === 'number' ? `${size}px` : size;
+  const resolvedSize = typeof size === "number" ? `${size}px` : size;
 
   return (
     <span
       className={className}
       style={{
-        display: 'inline-flex',
+        display: "inline-flex",
         width: resolvedSize,
         height: resolvedSize,
         lineHeight: 0,
-        flex: '0 0 auto',
+        flex: "0 0 auto",
         ...style,
       }}
       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markup) }}

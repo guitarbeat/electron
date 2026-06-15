@@ -1,16 +1,23 @@
-import React, { useEffect, useId, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import Card from './Card';
-import Button from './Button';
-import { colors, spacing, typography, zIndex, motion, shadows } from '@/theme/tokens';
+import React, { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
+import Card from "./Card";
+import Button from "./Button";
+import {
+  colors,
+  spacing,
+  typography,
+  zIndex,
+  motion,
+  shadows,
+} from "@/theme/tokens";
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
-} from './lib/modalPrimitives';
-import { useAudio } from '@/hooks/useAudio';
-import { CrossIcon } from '@/common/Icons';
+} from "./lib/modalPrimitives";
+import { useAudio } from "@/hooks/useAudio";
+import { CrossIcon } from "@/common/Icons";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -20,7 +27,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  variant?: 'danger' | 'primary';
+  variant?: "danger" | "primary";
   isLoading?: boolean;
 }
 
@@ -28,11 +35,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   onConfirm,
   onCancel,
-  variant = 'danger',
+  variant = "danger",
   isLoading = false,
 }) => {
   const { playPop, playClick } = useAudio();
@@ -50,8 +57,9 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     }
 
     previousFocusedElement.current = document.activeElement as HTMLElement;
-    hadModalOpenClassRef.current = document.body.classList.contains('modal-open');
-    document.body.classList.add('modal-open');
+    hadModalOpenClassRef.current =
+      document.body.classList.contains("modal-open");
+    document.body.classList.add("modal-open");
 
     const initialFocusTimer = window.setTimeout(() => {
       confirmButtonRef.current?.focus();
@@ -62,7 +70,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         return;
       }
 
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.preventDefault();
         onCancel();
         return;
@@ -71,14 +79,14 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       trapFocusOnTab(event, dialogRef.current);
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.clearTimeout(initialFocusTimer);
       if (!hadModalOpenClassRef.current) {
-        document.body.classList.remove('modal-open');
+        document.body.classList.remove("modal-open");
       }
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onCancel]);
 
@@ -110,8 +118,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         aria-labelledby={titleId}
         aria-describedby={messageId}
         style={{
-          width: '100%',
-          maxWidth: '420px',
+          width: "100%",
+          maxWidth: "420px",
           animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
         }}
       >
@@ -119,8 +127,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           variant="elevated"
           style={{
             padding: spacing.xl,
-            position: 'relative',
-            border: `1px solid ${variant === 'danger' ? colors.error : colors.accent}40`,
+            position: "relative",
+            border: `1px solid ${variant === "danger" ? colors.error : colors.accent}40`,
             boxShadow: shadows.floating,
           }}
         >
@@ -130,15 +138,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             aria-label="Close dialog"
             style={{
               ...getModalCloseButtonStyle(),
-              width: '32px',
-              height: '32px',
+              width: "32px",
+              height: "32px",
               transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.surface3)}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.surface2)}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = colors.surface3)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = colors.surface2)
+            }
           >
             <CrossIcon size={14} />
           </button>
@@ -168,7 +180,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           >
             {message}
           </p>
-          <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'flex-end' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: spacing.md,
+              justifyContent: "flex-end",
+            }}
+          >
             <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
               {cancelText}
             </Button>
@@ -184,7 +202,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </Card>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 

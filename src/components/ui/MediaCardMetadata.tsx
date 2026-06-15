@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface MediaCardMetadataProps {
   items: (string | number | undefined | null)[];
@@ -11,7 +11,7 @@ export const MediaCardMetadata: React.FC<MediaCardMetadataProps> = ({
   items,
   chips = [],
   badge,
-  className = '',
+  className = "",
 }) => {
   const filteredItems = items.filter(Boolean);
 
@@ -20,12 +20,17 @@ export const MediaCardMetadata: React.FC<MediaCardMetadataProps> = ({
       <div className="media-card-metadata__row">
         {filteredItems.map((item, index) => (
           <React.Fragment key={`${item}-${index}`}>
-            {index > 0 ? <span className="media-card-metadata__separator">&bull;</span> : null}
+            {index > 0 ? (
+              <span className="media-card-metadata__separator">&bull;</span>
+            ) : null}
             <span className="media-card-metadata__item">{item}</span>
           </React.Fragment>
         ))}
         {badge && (
-          <span className="media-card-metadata__badge" aria-label={`Badge: ${badge}`}>
+          <span
+            className="media-card-metadata__badge"
+            aria-label={`Badge: ${badge}`}
+          >
             {badge}
           </span>
         )}

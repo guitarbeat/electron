@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CrossIcon, MessageIcon, QuickActionsIcon } from '@/common/Icons';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { CrossIcon, MessageIcon, QuickActionsIcon } from "@/common/Icons";
 import {
   clampPositionToViewport,
   getDockedPositionForViewport,
   getRadialMenuMetricsForWidth,
   MOBILE_BREAKPOINT,
-} from '@/components/effects/lib/radialMenuLayout';
-import './RadialMenu.css';
+} from "@/components/effects/lib/radialMenuLayout";
+import "./RadialMenu.css";
 
 interface RadialMenuProps {
   onOpenMessages?: () => void;
@@ -15,7 +15,16 @@ interface RadialMenuProps {
 }
 
 const QuizIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
     <path d="M12 17h.01" />
@@ -23,39 +32,51 @@ const QuizIcon = () => (
 );
 
 const SpinIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="2" x2="12" y2="12" />
     <line x1="12" y1="12" x2="20" y2="16" />
   </svg>
 );
 
-const STORAGE_KEY = 'radialMenu.position';
-const DISCOVERED_KEY = 'radialMenu.discovered';
+const STORAGE_KEY = "radialMenu.position";
+const DISCOVERED_KEY = "radialMenu.discovered";
 const ITEM_COUNT = 3;
 const DESKTOP_CHROME_CLEARANCE_TOP = 92;
 
 const isMobileViewport = (): boolean =>
-  typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
+  typeof window !== "undefined" && window.innerWidth <= MOBILE_BREAKPOINT;
 
 const isStandaloneDisplayMode = (): boolean =>
-  typeof window !== 'undefined' &&
-  (window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+  typeof window !== "undefined" &&
+  (window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true);
 
 const shouldUseDockedLayout = (): boolean =>
-  typeof window !== 'undefined' &&
+  typeof window !== "undefined" &&
   (isStandaloneDisplayMode() ||
-    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia("(pointer: coarse)").matches ||
     isMobileViewport());
 
-const getSafeAreaInset = (edge: 'top' | 'right' | 'bottom' | 'left'): number => {
-  if (typeof window === 'undefined') {
+const getSafeAreaInset = (
+  edge: "top" | "right" | "bottom" | "left",
+): number => {
+  if (typeof window === "undefined") {
     return 0;
   }
 
   const value = getComputedStyle(document.documentElement).getPropertyValue(
-    `--radial-safe-${edge}`
+    `--radial-safe-${edge}`,
   );
   const parsed = parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -70,10 +91,10 @@ const getViewportBox = () => {
     offsetLeft: visualViewport?.offsetLeft ?? 0,
     offsetTop: visualViewport?.offsetTop ?? 0,
     chromeTop: isMobileViewport() ? 0 : DESKTOP_CHROME_CLEARANCE_TOP,
-    insetTop: getSafeAreaInset('top'),
-    insetRight: getSafeAreaInset('right'),
-    insetBottom: getSafeAreaInset('bottom'),
-    insetLeft: getSafeAreaInset('left'),
+    insetTop: getSafeAreaInset("top"),
+    insetRight: getSafeAreaInset("right"),
+    insetBottom: getSafeAreaInset("bottom"),
+    insetLeft: getSafeAreaInset("left"),
   };
 };
 
@@ -84,12 +105,13 @@ const getDockedPosition = () => {
 };
 
 const readStoredPosition = (): { x: number; y: number } | null => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { x?: unknown; y?: unknown };
-    if (typeof parsed.x !== 'number' || typeof parsed.y !== 'number') return null;
+    if (typeof parsed.x !== "number" || typeof parsed.y !== "number")
+      return null;
     return { x: parsed.x, y: parsed.y };
   } catch {
     return null;
@@ -97,13 +119,16 @@ const readStoredPosition = (): { x: number; y: number } | null => {
 };
 
 const clampToViewport = (pos: { x: number; y: number }) => {
-  if (typeof window === 'undefined') return pos;
+  if (typeof window === "undefined") return pos;
   return clampPositionToViewport(pos, getViewportBox(), getMenuMetrics());
 };
 
 // Pick the quadrant with the most space so the fan opens inward, not off-screen.
-const getFanQuadrant = (pos: { x: number; y: number }): 'tl' | 'tr' | 'bl' | 'br' => {
-  if (typeof window === 'undefined') return 'tl';
+const getFanQuadrant = (pos: {
+  x: number;
+  y: number;
+}): "tl" | "tr" | "bl" | "br" => {
+  if (typeof window === "undefined") return "tl";
   const viewport = getViewportBox();
   const { toggleOffset } = getMenuMetrics();
   const centerX = pos.x + toggleOffset;
@@ -113,14 +138,14 @@ const getFanQuadrant = (pos: { x: number; y: number }): 'tl' | 'tr' | 'bl' | 'br
   const isRight = centerX > midpointX;
   const isBottom = centerY > midpointY;
   // Fan into the opposite (more-space) quadrant.
-  if (isBottom && isRight) return 'tl';
-  if (isBottom && !isRight) return 'tr';
-  if (!isBottom && isRight) return 'bl';
-  return 'br';
+  if (isBottom && isRight) return "tl";
+  if (isBottom && !isRight) return "tr";
+  if (!isBottom && isRight) return "bl";
+  return "br";
 };
 
 const getInitialMenuPosition = () => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return { x: 0, y: 0 };
   }
 
@@ -129,12 +154,12 @@ const getInitialMenuPosition = () => {
 };
 
 const getInitialDiscoveryState = () => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return true;
   }
 
   try {
-    return window.localStorage.getItem(DISCOVERED_KEY) === '1';
+    return window.localStorage.getItem(DISCOVERED_KEY) === "1";
   } catch {
     return false;
   }
@@ -165,7 +190,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     setHasDiscovered((prev) => {
       if (!prev) {
         try {
-          window.localStorage.setItem(DISCOVERED_KEY, '1');
+          window.localStorage.setItem(DISCOVERED_KEY, "1");
         } catch {
           // Ignore quota / privacy-mode failures.
         }
@@ -192,7 +217,11 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!toggleRef.current?.contains(e.target as Node) || shouldUseDockedLayout()) return;
+      if (
+        !toggleRef.current?.contains(e.target as Node) ||
+        shouldUseDockedLayout()
+      )
+        return;
 
       e.preventDefault();
       e.stopPropagation();
@@ -204,7 +233,11 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (dragStartTimeRef.current === 0 || dragPointerIdRef.current !== e.pointerId) return;
+      if (
+        dragStartTimeRef.current === 0 ||
+        dragPointerIdRef.current !== e.pointerId
+      )
+        return;
 
       const deltaX = e.clientX - dragStartPosRef.current.x;
       const deltaY = e.clientY - dragStartPosRef.current.y;
@@ -225,7 +258,10 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     };
 
     const handlePointerUp = (e: PointerEvent) => {
-      if (dragPointerIdRef.current !== null && dragPointerIdRef.current !== e.pointerId) {
+      if (
+        dragPointerIdRef.current !== null &&
+        dragPointerIdRef.current !== e.pointerId
+      ) {
         return;
       }
 
@@ -239,8 +275,8 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
         if (wasDragging && menuRef.current) {
           // Clamp final position to keep the fan on-screen.
-          const left = parseFloat(menuRef.current.style.left || '0');
-          const top = parseFloat(menuRef.current.style.top || '0');
+          const left = parseFloat(menuRef.current.style.left || "0");
+          const top = parseFloat(menuRef.current.style.top || "0");
           const clamped = clampToViewport({ x: left, y: top });
           menuRef.current.style.left = `${clamped.x}px`;
           menuRef.current.style.top = `${clamped.y}px`;
@@ -250,10 +286,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
             // Persist final position so it survives reloads (desktop only —
             // docked layouts always snap back to the bottom-right).
             try {
-              window.localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(clamped)
-              );
+              window.localStorage.setItem(STORAGE_KEY, JSON.stringify(clamped));
             } catch {
               // Ignore quota / privacy-mode failures.
             }
@@ -281,39 +314,39 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       // Re-dock in compact/standalone layouts so the toggle stays in the corner
       // across rotations and dynamic viewport changes.
       setMenuPos((prev) =>
-        shouldUseDockedLayout() ? getDockedPosition() : clampToViewport(prev)
+        shouldUseDockedLayout() ? getDockedPosition() : clampToViewport(prev),
       );
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         closeMenu();
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    window.visualViewport?.addEventListener('resize', handleResize);
-    window.visualViewport?.addEventListener('scroll', handleResize);
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+    window.visualViewport?.addEventListener("resize", handleResize);
+    window.visualViewport?.addEventListener("scroll", handleResize);
+    window.addEventListener("keydown", handleKeyDown);
 
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('pointerup', handlePointerUp);
-    document.addEventListener('pointercancel', handlePointerUp);
-    document.addEventListener('pointerdown', handlePointerDownOutside);
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("pointerup", handlePointerUp);
+    document.addEventListener("pointercancel", handlePointerUp);
+    document.addEventListener("pointerdown", handlePointerDownOutside);
 
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('pointermove', handlePointerMove);
-      document.removeEventListener('pointerup', handlePointerUp);
-      document.removeEventListener('pointercancel', handlePointerUp);
-      document.removeEventListener('pointerdown', handlePointerDownOutside);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      window.visualViewport?.removeEventListener('resize', handleResize);
-      window.visualViewport?.removeEventListener('scroll', handleResize);
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+      document.removeEventListener("pointercancel", handlePointerUp);
+      document.removeEventListener("pointerdown", handlePointerDownOutside);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      window.visualViewport?.removeEventListener("resize", handleResize);
+      window.visualViewport?.removeEventListener("scroll", handleResize);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [closeMenu, toggleMenu]);
 
@@ -325,25 +358,25 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const menuItems = [
     {
       index: 0,
-      colorClass: 'teal',
-      label: 'Messages',
-      description: 'Chat, notes, and check-ins',
+      colorClass: "teal",
+      label: "Messages",
+      description: "Chat, notes, and check-ins",
       onClick: () => handleMenuItemClick(onOpenMessages),
-      icon: <MessageIcon size={20} style={{ color: 'white' }} />,
+      icon: <MessageIcon size={20} style={{ color: "white" }} />,
     },
     {
       index: 1,
-      colorClass: 'violet',
-      label: 'Quiz',
-      description: 'Run the couple compatibility quiz',
+      colorClass: "violet",
+      label: "Quiz",
+      description: "Run the couple compatibility quiz",
       onClick: () => handleMenuItemClick(onOpenQuiz),
       icon: <QuizIcon />,
     },
     {
       index: 2,
-      colorClass: 'amber',
-      label: 'Spin',
-      description: 'Launch the movie picker wheel',
+      colorClass: "amber",
+      label: "Spin",
+      description: "Launch the movie picker wheel",
       onClick: () => handleMenuItemClick(onOpenSpin),
       icon: <SpinIcon />,
     },
@@ -354,22 +387,22 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className={`menu menu--fan-${fanQuadrant} ${isActive ? 'active' : ''}`}
+      className={`menu menu--fan-${fanQuadrant} ${isActive ? "active" : ""}`}
       style={{
         left: `${menuPos.x}px`,
         top: `${menuPos.y}px`,
-        ['--item-count' as string]: ITEM_COUNT,
+        ["--item-count" as string]: ITEM_COUNT,
       }}
     >
       <button
         ref={toggleRef}
         type="button"
-        className={`toggle ${isActive ? 'toggle--active' : ''} ${!hasDiscovered ? 'discover-pulse' : ''}`}
-        aria-label={isActive ? 'Close quick actions' : 'Open quick actions'}
+        className={`toggle ${isActive ? "toggle--active" : ""} ${!hasDiscovered ? "discover-pulse" : ""}`}
+        aria-label={isActive ? "Close quick actions" : "Open quick actions"}
         aria-expanded={isActive}
         aria-haspopup="menu"
         onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
+          if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             toggleMenu();
           }
@@ -385,7 +418,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         >
           <span className="menu-context-bubble__eyebrow">Quick action</span>
           <span className="menu-context-bubble__title-row">
-            <span className="menu-context-bubble__icon">{highlightedItem.icon}</span>
+            <span className="menu-context-bubble__icon">
+              {highlightedItem.icon}
+            </span>
             <span className="menu-context-bubble__title-copy">
               <strong>{highlightedItem.label}</strong>
               <span>{highlightedItem.description}</span>
@@ -398,7 +433,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         {menuItems.map((item) => (
           <li
             key={item.index}
-            style={{ '--i': item.index } as React.CSSProperties}
+            style={{ "--i": item.index } as React.CSSProperties}
             className={`${item.colorClass} round-button`}
           >
             <button

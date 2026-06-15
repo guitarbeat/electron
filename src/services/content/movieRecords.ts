@@ -1,8 +1,8 @@
-import type { Movie } from '../../shared/types.ts';
-import { isUser, isValidUrl, sanitizeInput } from '../../utils/shared.ts';
+import type { Movie } from "../../shared/types.ts";
+import { isUser, isValidUrl, sanitizeInput } from "../../utils/shared.ts";
 
 const normalizeRequiredString = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -11,7 +11,7 @@ const normalizeRequiredString = (value: unknown): string | null => {
 };
 
 const normalizeOptionalString = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
 
@@ -20,7 +20,7 @@ const normalizeOptionalString = (value: unknown): string | undefined => {
 };
 
 const normalizeCreatedAt = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -28,7 +28,7 @@ const normalizeCreatedAt = (value: unknown): string | null => {
 };
 
 const normalizePosterUrl = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return undefined;
   }
 
@@ -39,8 +39,8 @@ const normalizePosterUrl = (value: unknown): string | undefined => {
 
   try {
     const parsed = new URL(normalized);
-    if (parsed.protocol === 'http:') {
-      parsed.protocol = 'https:';
+    if (parsed.protocol === "http:") {
+      parsed.protocol = "https:";
     }
     return parsed.toString();
   } catch {
@@ -55,7 +55,7 @@ export const cloneMovies = (movies: Movie[]): Movie[] =>
   }));
 
 export const normalizeMovieRecord = (value: unknown): Movie | null => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return null;
   }
 

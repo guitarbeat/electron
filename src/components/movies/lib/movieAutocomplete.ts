@@ -1,4 +1,4 @@
-import type { MovieAutocompleteResult } from '@/services/metadata';
+import type { MovieAutocompleteResult } from "@/services/metadata";
 
 export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
 export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 220;
@@ -8,7 +8,7 @@ export const normalizeMovieAutocompleteQuery = (value: string): string =>
 
 export const shouldFetchMovieAutocomplete = (
   query: string,
-  selectedResult: MovieAutocompleteResult | null
+  selectedResult: MovieAutocompleteResult | null,
 ): boolean => {
   const normalizedQuery = normalizeMovieAutocompleteQuery(query);
   if (normalizedQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
@@ -19,25 +19,30 @@ export const shouldFetchMovieAutocomplete = (
     return true;
   }
 
-  return normalizeMovieAutocompleteQuery(selectedResult.title) !== normalizedQuery;
+  return (
+    normalizeMovieAutocompleteQuery(selectedResult.title) !== normalizedQuery
+  );
 };
 
 export const shouldClearSelectedMovieResult = (
   query: string,
-  selectedResult: MovieAutocompleteResult | null
+  selectedResult: MovieAutocompleteResult | null,
 ): boolean => {
   if (!selectedResult) {
     return false;
   }
 
-  return normalizeMovieAutocompleteQuery(query) !== normalizeMovieAutocompleteQuery(selectedResult.title);
+  return (
+    normalizeMovieAutocompleteQuery(query) !==
+    normalizeMovieAutocompleteQuery(selectedResult.title)
+  );
 };
 
 export const hasStoredMovieAutocompleteFeedback = (
   query: string,
   cachedQuery: string,
   resultCount: number,
-  error: string | null
+  error: string | null,
 ): boolean => {
   const normalizedQuery = normalizeMovieAutocompleteQuery(query);
   if (normalizedQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
@@ -49,7 +54,7 @@ export const hasStoredMovieAutocompleteFeedback = (
 
 export const getMovieAutocompleteEnterSelectionIndex = (
   activeIndex: number,
-  resultCount: number
+  resultCount: number,
 ): number => {
   if (resultCount <= 0) {
     return -1;
@@ -64,14 +69,14 @@ export const getMovieAutocompleteEnterSelectionIndex = (
 
 export const getNextMovieAutocompleteIndex = (
   currentIndex: number,
-  direction: 'next' | 'previous',
-  resultCount: number
+  direction: "next" | "previous",
+  resultCount: number,
 ): number => {
   if (resultCount <= 0) {
     return -1;
   }
 
-  if (direction === 'next') {
+  if (direction === "next") {
     if (currentIndex < 0 || currentIndex >= resultCount - 1) {
       return 0;
     }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface MediaPosterProps {
   title: string;
@@ -15,10 +15,10 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   posterUrl,
   year,
   id,
-  className = '',
+  className = "",
 }) => {
   const [hasImageError, setHasImageError] = React.useState(() =>
-    posterUrl ? brokenUrls.has(posterUrl) : false
+    posterUrl ? brokenUrls.has(posterUrl) : false,
   );
   const [isLoaded, setIsLoaded] = React.useState(false);
   const [hasCatError, setHasCatError] = React.useState(false);
@@ -38,20 +38,22 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   };
 
   const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
-  const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(id || title || 'cat')}`;
+  const catUrl = `https://cataas.com/cat?width=300&height=450&_id=${encodeURIComponent(id || title || "cat")}`;
 
   return (
-    <div className={`movie-poster-wrap ${className} ${isLoaded ? 'is-loaded' : 'is-loading'}`}>
+    <div
+      className={`movie-poster-wrap ${className} ${isLoaded ? "is-loaded" : "is-loading"}`}
+    >
       {!isLoaded && shouldShowPoster && (
         <div className="movie-poster-skeleton skeleton" />
       )}
-      
+
       {shouldShowPoster ? (
         <img
           src={posterUrl}
           alt={`${title} poster`}
           loading="lazy"
-          className={`movie-poster ${isLoaded ? 'is-loaded' : ''}`}
+          className={`movie-poster ${isLoaded ? "is-loaded" : ""}`}
           onLoad={() => setIsLoaded(true)}
           onError={handleImageError}
         />
@@ -61,7 +63,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
             src={catUrl}
             alt={`A cat representing ${title}`}
             loading="lazy"
-            className={`movie-poster movie-poster--cat-fallback ${isLoaded ? 'is-loaded' : ''}`}
+            className={`movie-poster movie-poster--cat-fallback ${isLoaded ? "is-loaded" : ""}`}
             onLoad={() => setIsLoaded(true)}
             onError={() => {
               setHasCatError(true);
@@ -76,7 +78,9 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
             <h3 className="movie-poster-fallback__title">{title}</h3>
-            {year ? <span className="movie-poster-fallback__year">{year}</span> : null}
+            {year ? (
+              <span className="movie-poster-fallback__year">{year}</span>
+            ) : null}
           </div>
         </div>
       )}

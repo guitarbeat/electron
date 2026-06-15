@@ -4,10 +4,9 @@ import chroma from "chroma-js"; // Import the chroma-js library from the specifi
 import * as ogl from "ogl";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
-import { debounce, throttle } from '@/utils';
+import { debounce, throttle } from "@/utils";
 import RippleEffect from "./RippleEffect";
 import "./Moire.css";
-
 
 interface MagicComponentProps {
   isVisible?: boolean;
@@ -30,7 +29,10 @@ function MagicComponent({
   color2: color2Prop = "#7dd3fc",
 }: MagicComponentProps) {
   const containerRef = useRef(null);
-  const colorsRef = useRef<{ c1: InstanceType<typeof ogl.Color> | null; c2: InstanceType<typeof ogl.Color> | null }>({ c1: null, c2: null });
+  const colorsRef = useRef<{
+    c1: InstanceType<typeof ogl.Color> | null;
+    c2: InstanceType<typeof ogl.Color> | null;
+  }>({ c1: null, c2: null });
   const colorPropsRef = useRef({
     color1: color1Prop,
     color2: color2Prop,
@@ -50,13 +52,13 @@ function MagicComponent({
     const [r2, g2, b2] = hexToRgb(color2Prop);
     if (colorsRef.current.c1) colorsRef.current.c1.set([r1, g1, b1]);
     if (colorsRef.current.c2) colorsRef.current.c2.set([r2, g2, b2]);
-    if (typeof document !== 'undefined') {
+    if (typeof document !== "undefined") {
       const root = document.documentElement;
-      root.style.setProperty('--moire-color-1', color1Prop);
-      root.style.setProperty('--moire-color-2', color2Prop);
+      root.style.setProperty("--moire-color-1", color1Prop);
+      root.style.setProperty("--moire-color-2", color2Prop);
       // A blended mid-tone the UI can use as a unifying accent
-      const mid = chroma.mix(color1Prop, color2Prop, 0.5, 'lab').hex();
-      root.style.setProperty('--moire-accent', mid);
+      const mid = chroma.mix(color1Prop, color2Prop, 0.5, "lab").hex();
+      root.style.setProperty("--moire-accent", mid);
     }
   }, [color1Prop, color2Prop]);
 

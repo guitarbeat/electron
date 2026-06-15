@@ -5,20 +5,20 @@
  * Sub-components merged into quiz/QuizEditor scope.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuiz } from '@/hooks/useQuiz';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { useToast } from '@/app/useProviders';
-import type { QuizData } from '@/hooks/useQuiz';
-import { CHARACTERS, QuizQuestion } from './lib/types';
-import QuestionsTab from './QuestionsTab';
-import DescriptionsTab from './DescriptionsTab';
-import SyncBanner from '@/components/ui/SyncBanner';
-import Button from '@/ui/Button';
-import { spacing, colors } from '@/theme/tokens';
-import { ArrowLeftIcon, EyeIcon } from '@/common/Icons';
-import './retro-ad.css';
-import './QuizEditor.css';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useQuiz } from "@/hooks/useQuiz";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useToast } from "@/app/useProviders";
+import type { QuizData } from "@/hooks/useQuiz";
+import { CHARACTERS, QuizQuestion } from "./lib/types";
+import QuestionsTab from "./QuestionsTab";
+import DescriptionsTab from "./DescriptionsTab";
+import SyncBanner from "@/components/ui/SyncBanner";
+import Button from "@/ui/Button";
+import { spacing, colors } from "@/theme/tokens";
+import { ArrowLeftIcon, EyeIcon } from "@/common/Icons";
+import "./retro-ad.css";
+import "./QuizEditor.css";
 
 interface UseUndoRedoReturn<T> {
   state: T;
@@ -39,28 +39,25 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
   const [future, setFuture] = useState<T[]>([]);
   const isUndoRedoRef = useRef(false);
 
-  const setState = useCallback(
-    (newState: T) => {
-      if (isUndoRedoRef.current) {
-        isUndoRedoRef.current = false;
-        setStateInternal(newState);
-        return;
-      }
+  const setState = useCallback((newState: T) => {
+    if (isUndoRedoRef.current) {
+      isUndoRedoRef.current = false;
+      setStateInternal(newState);
+      return;
+    }
 
-      setStateInternal((prevState) => {
-        setPast((prevPast) => {
-          const newPast = [...prevPast, prevState];
-          if (newPast.length > MAX_HISTORY_SIZE) {
-            return newPast.slice(newPast.length - MAX_HISTORY_SIZE);
-          }
-          return newPast;
-        });
-        setFuture([]);
-        return newState;
+    setStateInternal((prevState) => {
+      setPast((prevPast) => {
+        const newPast = [...prevPast, prevState];
+        if (newPast.length > MAX_HISTORY_SIZE) {
+          return newPast.slice(newPast.length - MAX_HISTORY_SIZE);
+        }
+        return newPast;
       });
-    },
-    []
-  );
+      setFuture([]);
+      return newState;
+    });
+  }, []);
 
   const undo = useCallback(() => {
     setPast((prevPast) => {
@@ -112,7 +109,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+      if ((event.ctrlKey || event.metaKey) && event.key === "z") {
         if (event.shiftKey) {
           event.preventDefault();
           redo();
@@ -120,14 +117,14 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
           event.preventDefault();
           undo();
         }
-      } else if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+      } else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
         event.preventDefault();
         redo();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [undo, redo]);
 
   return {
@@ -172,11 +169,17 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
     reset: resetHistory,
   } = useUndoRedo<QuizData | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'questions' | 'descriptions'>('questions');
-  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
+  const [activeTab, setActiveTab] = useState<"questions" | "descriptions">(
+    "questions",
+  );
+  const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(
+    null,
+  );
   const [showPreview, setShowPreview] = useState(!isMobile);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set());
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
+    new Set(),
+  );
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -195,8 +198,11 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
       refresh();
     } catch (error) {
       showToast({
-        message: error instanceof Error ? error.message : 'Failed to save quiz changes.',
-        type: 'error',
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to save quiz changes.",
+        type: "error",
       });
     }
   };
@@ -210,11 +216,13 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   // Export quiz data as JSON
   const handleExport = () => {
     if (!localData) return;
-    const blob = new Blob([JSON.stringify(localData, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(localData, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `quiz-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `quiz-export-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -230,41 +238,51 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         const imported = JSON.parse(event.target?.result as string) as QuizData;
         // Basic validation
         if (!imported.questions || !Array.isArray(imported.questions)) {
-          showToast({ message: 'Invalid quiz data format.', type: 'error' });
+          showToast({ message: "Invalid quiz data format.", type: "error" });
           return;
         }
         setLocalData(imported);
         setHasChanges(true);
       } catch {
-        showToast({ message: 'Failed to parse JSON file.', type: 'error' });
+        showToast({ message: "Failed to parse JSON file.", type: "error" });
       }
     };
     reader.readAsText(file);
-    e.target.value = ''; // Reset input
+    e.target.value = ""; // Reset input
   };
 
   if (isLoading || !localData) {
     return (
-      <div style={{ textAlign: 'center', padding: spacing['2xl'], color: colors.textSecondary }}>
+      <div
+        style={{
+          textAlign: "center",
+          padding: spacing["2xl"],
+          color: colors.textSecondary,
+        }}
+      >
         Loading quiz data...
       </div>
     );
   }
 
   const completedDescriptions =
-    CHARACTERS.filter((character) => localData.characterDescriptions[character].trim().length > 0)
-      .length + Number(localData.neitherDescription.trim().length > 0);
+    CHARACTERS.filter(
+      (character) =>
+        localData.characterDescriptions[character].trim().length > 0,
+    ).length + Number(localData.neitherDescription.trim().length > 0);
   const descriptionCoverage = Math.round(
-    (completedDescriptions / (CHARACTERS.length + 1)) * 100
+    (completedDescriptions / (CHARACTERS.length + 1)) * 100,
   );
-  const questionFormatCount = new Set(localData.questions.map((question) => question.type)).size;
+  const questionFormatCount = new Set(
+    localData.questions.map((question) => question.type),
+  ).size;
 
   return (
     <div className="quiz-editor-shell">
       <div className="quiz-retro-marquee-bar quiz-editor__marquee">
         <span className="quiz-retro-marquee-inner">
-          ★★★ EDIT MODE ACTIVATED!!! REORDER QUESTIONS!!! TUNE SCORES!!! REWRITE RESULTS!!!
-          ★★★
+          ★★★ EDIT MODE ACTIVATED!!! REORDER QUESTIONS!!! TUNE SCORES!!! REWRITE
+          RESULTS!!! ★★★
         </span>
       </div>
 
@@ -290,20 +308,22 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
             <div className="quiz-editor__hero-copy">
               <p className="quiz-editor__eyebrow">Personality Quiz Studio</p>
               <div className="quiz-editor__hero-title-row">
-                <h1 className="quiz-editor__hero-title">Edit the quiz flow, scoring, and results.</h1>
+                <h1 className="quiz-editor__hero-title">
+                  Edit the quiz flow, scoring, and results.
+                </h1>
                 <span
                   className={`quiz-editor__status-pill ${
                     hasChanges
-                      ? 'quiz-editor__status-pill--dirty'
-                      : 'quiz-editor__status-pill--clean'
+                      ? "quiz-editor__status-pill--dirty"
+                      : "quiz-editor__status-pill--clean"
                   }`}
                 >
-                  {hasChanges ? 'Unsaved changes' : 'Working copy ready'}
+                  {hasChanges ? "Unsaved changes" : "Working copy ready"}
                 </span>
               </div>
               <p className="quiz-editor__hero-description">
-                Manage question order, tune character weighting, and rewrite each result profile
-                from one workspace.
+                Manage question order, tune character weighting, and rewrite
+                each result profile from one workspace.
               </p>
             </div>
 
@@ -349,12 +369,12 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
               <div className="quiz-editor__hero-action-row quiz-editor__hero-action-row--save">
                 {!isMobile && (
                   <Button
-                    variant={showPreview ? 'secondary' : 'ghost'}
+                    variant={showPreview ? "secondary" : "ghost"}
                     size="sm"
                     onClick={() => setShowPreview(!showPreview)}
                     leftIcon={<EyeIcon size={16} />}
                   >
-                    {showPreview ? 'Hide preview' : 'Show preview'}
+                    {showPreview ? "Hide preview" : "Show preview"}
                   </Button>
                 )}
 
@@ -374,7 +394,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
 
           <div className="quiz-editor__hero-stats">
             <div className="quiz-editor__stat">
-              <p className="quiz-editor__stat-value">{localData.questions.length}</p>
+              <p className="quiz-editor__stat-value">
+                {localData.questions.length}
+              </p>
               <p className="quiz-editor__stat-label">Questions in flow</p>
               <p className="quiz-editor__stat-detail">
                 {questionFormatCount} scoring formats in active use
@@ -385,17 +407,20 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
               <p className="quiz-editor__stat-value">{descriptionCoverage}%</p>
               <p className="quiz-editor__stat-label">Results copy coverage</p>
               <p className="quiz-editor__stat-detail">
-                {completedDescriptions} of {CHARACTERS.length + 1} endings currently filled
+                {completedDescriptions} of {CHARACTERS.length + 1} endings
+                currently filled
               </p>
             </div>
 
             <div className="quiz-editor__stat">
-              <p className="quiz-editor__stat-value">{showPreview && !isMobile ? 'On' : 'Focus'}</p>
+              <p className="quiz-editor__stat-value">
+                {showPreview && !isMobile ? "On" : "Focus"}
+              </p>
               <p className="quiz-editor__stat-label">Editing mode</p>
               <p className="quiz-editor__stat-detail">
                 {showPreview && !isMobile
-                  ? 'Preview stays visible beside the composer'
-                  : 'Workspace is prioritizing editing space'}
+                  ? "Preview stays visible beside the composer"
+                  : "Workspace is prioritizing editing space"}
               </p>
             </div>
           </div>
@@ -409,8 +434,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
             onRetry={() => void retrySync()}
             label={
               isSyncBlocked
-                ? 'Quiz changes conflicted with a newer shared version. Refresh and retry.'
-                : syncWarning || 'Quiz edits are being kept locally until shared sync recovers.'
+                ? "Quiz changes conflicted with a newer shared version. Refresh and retry."
+                : syncWarning ||
+                  "Quiz edits are being kept locally until shared sync recovers."
             }
           />
         </div>
@@ -418,9 +444,9 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
 
       <div className="quiz-editor__tabs">
         <button
-          onClick={() => setActiveTab('questions')}
+          onClick={() => setActiveTab("questions")}
           className={`quiz-editor__tab ${
-            activeTab === 'questions' ? 'quiz-editor__tab--active' : ''
+            activeTab === "questions" ? "quiz-editor__tab--active" : ""
           }`}
         >
           <span className="quiz-editor__tab-label">Questions</span>
@@ -429,19 +455,20 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
           </span>
         </button>
         <button
-          onClick={() => setActiveTab('descriptions')}
+          onClick={() => setActiveTab("descriptions")}
           className={`quiz-editor__tab ${
-            activeTab === 'descriptions' ? 'quiz-editor__tab--active' : ''
+            activeTab === "descriptions" ? "quiz-editor__tab--active" : ""
           }`}
         >
           <span className="quiz-editor__tab-label">Results Copy</span>
           <span className="quiz-editor__tab-meta">
-            {completedDescriptions} of {CHARACTERS.length + 1} result profiles ready
+            {completedDescriptions} of {CHARACTERS.length + 1} result profiles
+            ready
           </span>
         </button>
       </div>
 
-      {activeTab === 'questions' && (
+      {activeTab === "questions" && (
         <QuestionsTab
           questions={localData.questions}
           editingQuestion={editingQuestion}
@@ -459,21 +486,26 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
         />
       )}
 
-      {activeTab === 'descriptions' && (
+      {activeTab === "descriptions" && (
         <DescriptionsTab
           characterDescriptions={localData.characterDescriptions}
           neitherDescription={localData.neitherDescription}
           onUpdateDescriptions={(characterDescriptions) =>
             updateLocalData({ characterDescriptions })
           }
-          onUpdateNeither={(neitherDescription) => updateLocalData({ neitherDescription })}
+          onUpdateNeither={(neitherDescription) =>
+            updateLocalData({ neitherDescription })
+          }
         />
       )}
 
       <div className="quiz-retro-marquee-bar quiz-editor__marquee quiz-editor__marquee--bottom">
-        <span className="quiz-retro-marquee-inner" style={{ animationDelay: '-7s' }}>
-          ★★★ LIVE QUIZ STYLE SYNCHRONIZED!!! PREVIEW THE PLAYER EXPERIENCE BESIDE YOUR EDITS!!!
-          ★★★
+        <span
+          className="quiz-retro-marquee-inner"
+          style={{ animationDelay: "-7s" }}
+        >
+          ★★★ LIVE QUIZ STYLE SYNCHRONIZED!!! PREVIEW THE PLAYER EXPERIENCE
+          BESIDE YOUR EDITS!!! ★★★
         </span>
       </div>
     </div>

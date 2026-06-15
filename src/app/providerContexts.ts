@@ -1,17 +1,17 @@
-import { createContext } from 'react';
-import type { User } from '@/shared/types';
-import type { AppThemeDefinition, ThemeName } from '@/theme/themes';
+import { createContext } from "react";
+import type { User } from "@/shared/types";
+import type { AppThemeDefinition, ThemeName } from "@/theme/themes";
 
 export interface ThemeContextValue {
   currentTheme: ThemeName;
   theme: AppThemeDefinition;
   /** @deprecated Use `theme.tokens` */
-  themeTokens: AppThemeDefinition['tokens'];
+  themeTokens: AppThemeDefinition["tokens"];
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-type ToastType = 'success' | 'error' | 'info';
+type ToastType = "success" | "error" | "info";
 
 export interface ToastInput {
   message: string;
@@ -29,7 +29,9 @@ export interface ToastContextType {
   clearToasts: () => void;
 }
 
-export const ToastContext = createContext<ToastContextType | undefined>(undefined);
+export const ToastContext = createContext<ToastContextType | undefined>(
+  undefined,
+);
 
 export interface UserContextType {
   hasAccess: boolean;
@@ -41,4 +43,6 @@ export interface UserContextType {
   refreshSession: () => Promise<void>;
 }
 
-export const UserContext = createContext<UserContextType | undefined>(undefined);
+export const UserContext = createContext<UserContextType | undefined>(
+  undefined,
+);

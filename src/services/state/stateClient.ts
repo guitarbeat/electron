@@ -2,8 +2,12 @@ import {
   decodeStorageData,
   deepClone,
   encodeStorageData,
-} from '../../utils/shared.ts';
-import { cloneMatchmakerGame, cloneQuizData, defaultQuizData } from './stateSchemas.ts';
+} from "../../utils/shared.ts";
+import {
+  cloneMatchmakerGame,
+  cloneQuizData,
+  defaultQuizData,
+} from "./stateSchemas.ts";
 import {
   STATE_SCOPES,
   StateClientError,
@@ -14,7 +18,7 @@ import {
   type StateEnvelope,
   type StateScope,
   type StateScopeDataMap,
-} from './stateTypes.ts';
+} from "./stateTypes.ts";
 import {
   isMockMode,
   mockMovies,
@@ -28,19 +32,20 @@ import {
   mockPins,
   mockSpinHistory,
   mockDailySpin,
-} from './mockData.ts';
+} from "./mockData.ts";
 
-const SNAPSHOT_PREFIX = 'movieList.scopeSnapshot.';
-const OUTBOX_PREFIX = 'movieList.scopeOutbox.';
-const SESSION_INVALID_EVENT = 'movie-watch-session-invalid';
-const OUTBOX_STATUS_EVENT = 'movie-watch-outbox-status';
+const SNAPSHOT_PREFIX = "movieList.scopeSnapshot.";
+const OUTBOX_PREFIX = "movieList.scopeOutbox.";
+const SESSION_INVALID_EVENT = "movie-watch-session-invalid";
+const OUTBOX_STATUS_EVENT = "movie-watch-outbox-status";
 
 /** Shown when fetch to /api/state fails (offline, dev server down, CORS). */
 export const SYNC_WARNING_CLIENT_NETWORK =
-  'Could not reach the app sync API. Check that the dev server is running, or try again when back online.';
+  "Could not reach the app sync API. Check that the dev server is running, or try again when back online.";
 
 /** Shown when local mutations are queued and not yet applied on the server. */
-export const SYNC_WARNING_OUTBOX = 'Some changes are waiting to sync to the server.';
+export const SYNC_WARNING_OUTBOX =
+  "Some changes are waiting to sync to the server.";
 
 interface StoredSnapshot<T> {
   data: T;
@@ -58,34 +63,34 @@ const replayLocks = new Map<StateScope, Promise<ScopeSnapshot<unknown>>>();
  */
 const degradedReadScopes = new Set<StateScope>();
 
-const isBrowser = (): boolean => typeof window !== 'undefined';
+const isBrowser = (): boolean => typeof window !== "undefined";
 
 const snapshotKey = (scope: StateScope) => `${SNAPSHOT_PREFIX}${scope}`;
 const outboxKey = (scope: StateScope) => `${OUTBOX_PREFIX}${scope}`;
 
 const getDefaultScopeData = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): StateScopeDataMap[TScope] => {
   switch (scope) {
-    case 'movies':
-    case 'messages':
-    case 'memories':
-    case 'places':
-    case 'suggestions':
-    case 'placeSuggestions':
+    case "movies":
+    case "messages":
+    case "memories":
+    case "places":
+    case "suggestions":
+    case "placeSuggestions":
       return [] as unknown as StateScopeDataMap[TScope];
-    case 'quiz':
+    case "quiz":
       return cloneQuizData(defaultQuizData) as StateScopeDataMap[TScope];
-    case 'matchmaker':
+    case "matchmaker":
       return cloneMatchmakerGame(null) as StateScopeDataMap[TScope];
-    case 'pins':
+    case "pins":
       return {
         Aaron: false,
         Electra: false,
       } as StateScopeDataMap[TScope];
-    case 'spinHistory':
+    case "spinHistory":
       return [] as unknown as StateScopeDataMap[TScope];
-    case 'dailySpin':
+    case "dailySpin":
       return null as unknown as StateScopeDataMap[TScope];
     default:
       return [] as unknown as StateScopeDataMap[TScope];
@@ -93,30 +98,30 @@ const getDefaultScopeData = <TScope extends StateScope>(
 };
 
 const getMockScopeData = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): StateScopeDataMap[TScope] => {
   switch (scope) {
-    case 'movies':
+    case "movies":
       return deepClone(mockMovies) as StateScopeDataMap[TScope];
-    case 'messages':
+    case "messages":
       return deepClone(mockMessages) as StateScopeDataMap[TScope];
-    case 'memories':
+    case "memories":
       return deepClone(mockMemories) as StateScopeDataMap[TScope];
-    case 'places':
+    case "places":
       return deepClone(mockPlaces) as StateScopeDataMap[TScope];
-    case 'suggestions':
+    case "suggestions":
       return deepClone(mockSuggestions) as StateScopeDataMap[TScope];
-    case 'placeSuggestions':
+    case "placeSuggestions":
       return deepClone(mockPlaceSuggestions) as StateScopeDataMap[TScope];
-    case 'quiz':
+    case "quiz":
       return deepClone(mockQuizData) as StateScopeDataMap[TScope];
-    case 'matchmaker':
+    case "matchmaker":
       return deepClone(mockMatchmakerGame) as StateScopeDataMap[TScope];
-    case 'pins':
+    case "pins":
       return deepClone(mockPins) as StateScopeDataMap[TScope];
-    case 'spinHistory':
+    case "spinHistory":
       return deepClone(mockSpinHistory) as StateScopeDataMap[TScope];
-    case 'dailySpin':
+    case "dailySpin":
       return deepClone(mockDailySpin) as StateScopeDataMap[TScope];
     default:
       return getDefaultScopeData(scope);
@@ -127,7 +132,7 @@ const getMockScopeData = <TScope extends StateScope>(
 const mockStateStore = new Map<StateScope, unknown>();
 
 const getMockState = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): StateScopeDataMap[TScope] => {
   if (!mockStateStore.has(scope)) {
     mockStateStore.set(scope, getMockScopeData(scope));
@@ -137,7 +142,7 @@ const getMockState = <TScope extends StateScope>(
 
 const setMockState = <TScope extends StateScope>(
   scope: TScope,
-  data: StateScopeDataMap[TScope]
+  data: StateScopeDataMap[TScope],
 ): void => {
   mockStateStore.set(scope, deepClone(data));
 };
@@ -183,13 +188,13 @@ const removeJson = (key: string): void => {
 };
 
 const readSnapshot = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): StoredSnapshot<StateScopeDataMap[TScope]> | null =>
   readJson<StoredSnapshot<StateScopeDataMap[TScope]>>(snapshotKey(scope));
 
 const writeSnapshot = <TScope extends StateScope>(
   scope: TScope,
-  snapshot: StoredSnapshot<StateScopeDataMap[TScope]>
+  snapshot: StoredSnapshot<StateScopeDataMap[TScope]>,
 ): void => {
   writeJson(snapshotKey(scope), snapshot);
 };
@@ -229,7 +234,10 @@ const getOutboxStatusSummaryInternal = (): OutboxStatusSummary => {
   });
 
   return {
-    pendingCount: pendingScopes.reduce<number>((total, entry) => total + entry.pendingCount, 0),
+    pendingCount: pendingScopes.reduce<number>(
+      (total, entry) => total + entry.pendingCount,
+      0,
+    ),
     blockedCount: pendingScopes.filter((entry) => entry.blocked).length,
     pendingScopes,
     lastDegradedSince: pendingScopes
@@ -247,7 +255,7 @@ const emitOutboxStatus = (): void => {
   window.dispatchEvent(
     new CustomEvent<OutboxStatusSummary>(OUTBOX_STATUS_EVENT, {
       detail: getOutboxStatusSummaryInternal(),
-    })
+    }),
   );
 };
 
@@ -276,24 +284,28 @@ const parseJsonResponse = async <T>(response: Response): Promise<T> => {
   try {
     return (await response.json()) as T;
   } catch {
-    throw new StateClientError('Invalid JSON response.', response.status, 'server');
+    throw new StateClientError(
+      "Invalid JSON response.",
+      response.status,
+      "server",
+    );
   }
 };
 
 const fetchStateFromServer = async <TScope extends StateScope>(
   scope: TScope,
-  snapshot?: StoredSnapshot<StateScopeDataMap[TScope]> | null
+  snapshot?: StoredSnapshot<StateScopeDataMap[TScope]> | null,
 ): Promise<Response> => {
   const headers = new Headers();
   if (snapshot?.version && !snapshot.degraded && !snapshot.warning) {
-    headers.set('If-None-Match', `"${snapshot.version}"`);
+    headers.set("If-None-Match", `"${snapshot.version}"`);
   }
 
   return fetch(buildStateUrl(scope), {
-    method: 'GET',
+    method: "GET",
     headers,
-    credentials: 'include',
-    cache: 'no-store',
+    credentials: "include",
+    cache: "no-store",
   });
 };
 
@@ -303,20 +315,20 @@ const postMutation = async <TScope extends StateScope>(
     baseVersion: string;
     op: string;
     payload: unknown;
-  }
+  },
 ): Promise<Response> =>
   fetch(buildStateUrl(scope, true), {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
-    credentials: 'include',
-    cache: 'no-store',
+    credentials: "include",
+    cache: "no-store",
     body: JSON.stringify(body),
   });
 
 const readOptimisticSnapshot = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => {
   const snapshot = readSnapshot(scope);
   const outbox = readOutbox(scope);
@@ -324,10 +336,11 @@ const readOptimisticSnapshot = <TScope extends StateScope>(
 
   return {
     data: snapshot?.data ?? deepClone(getDefaultScopeData(scope)),
-    version: outbox?.lastKnownVersion ?? snapshot?.version ?? '',
+    version: outbox?.lastKnownVersion ?? snapshot?.version ?? "",
     degraded: hasPending || Boolean(snapshot?.degraded),
     blocked: outbox?.blocked,
-    warning: snapshot?.warning ?? (hasPending ? SYNC_WARNING_OUTBOX : undefined),
+    warning:
+      snapshot?.warning ?? (hasPending ? SYNC_WARNING_OUTBOX : undefined),
   };
 };
 
@@ -336,7 +349,7 @@ const queueMutation = <TScope extends StateScope>(
   op: string,
   payload: unknown,
   optimisticData: StateScopeDataMap[TScope],
-  currentVersion: string
+  currentVersion: string,
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => {
   const existing = readOutbox(scope);
   const storedSnapshot = readSnapshot(scope);
@@ -367,7 +380,7 @@ const queueMutation = <TScope extends StateScope>(
 
 const replayOutbox = async <TScope extends StateScope>(
   scope: TScope,
-  base: StateEnvelope<StateScopeDataMap[TScope]>
+  base: StateEnvelope<StateScopeDataMap[TScope]>,
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
   const existingLock = replayLocks.get(scope);
   if (existingLock) {
@@ -420,7 +433,8 @@ const replayOutbox = async <TScope extends StateScope>(
           let conflictVersion = latestVersion;
           let conflictData = latestData;
           try {
-            const conflict = await parseJsonResponse<ConflictResponse>(response);
+            const conflict =
+              await parseJsonResponse<ConflictResponse>(response);
             conflictVersion = conflict.currentVersion;
             conflictData = conflict.currentData as StateScopeDataMap[TScope];
           } catch {
@@ -469,7 +483,8 @@ const replayOutbox = async <TScope extends StateScope>(
               version: latestVersion,
               degraded: true,
               blocked: true,
-              warning: 'A change could not be saved after multiple attempts. Refresh to retry.',
+              warning:
+                "A change could not be saved after multiple attempts. Refresh to retry.",
             };
           }
           writeOutbox(scope, {
@@ -488,9 +503,10 @@ const replayOutbox = async <TScope extends StateScope>(
           };
         }
 
-        const parsed = await parseJsonResponse<
-          MutationResponse<StateScopeDataMap[TScope]>
-        >(response);
+        const parsed =
+          await parseJsonResponse<MutationResponse<StateScopeDataMap[TScope]>>(
+            response,
+          );
         latestVersion = parsed.version;
         latestData = parsed.data;
         outbox = {
@@ -539,13 +555,13 @@ const replayOutbox = async <TScope extends StateScope>(
 };
 
 export const readScope = async <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
   // Return mock data immediately in mock mode - no API calls
   if (isMockMode()) {
     return {
       data: getMockState(scope),
-      version: 'mock-version',
+      version: "mock-version",
       degraded: false,
       blocked: false,
       warning: undefined,
@@ -567,12 +583,16 @@ export const readScope = async <TScope extends StateScope>(
             ...stored,
             version: outbox?.lastKnownVersion || stored.version,
           }
-        : null
+        : null,
     );
 
     if (response.status === 401 || response.status === 403) {
       notifySessionInvalid();
-      throw new StateClientError('Unauthorized.', response.status, 'unauthorized');
+      throw new StateClientError(
+        "Unauthorized.",
+        response.status,
+        "unauthorized",
+      );
     }
 
     if (response.status === 304 && stored) {
@@ -595,10 +615,17 @@ export const readScope = async <TScope extends StateScope>(
     }
 
     if (!response.ok) {
-      throw new StateClientError('State request failed.', response.status, 'server');
+      throw new StateClientError(
+        "State request failed.",
+        response.status,
+        "server",
+      );
     }
 
-    const parsed = await parseJsonResponse<StateEnvelope<StateScopeDataMap[TScope]>>(response);
+    const parsed =
+      await parseJsonResponse<StateEnvelope<StateScopeDataMap[TScope]>>(
+        response,
+      );
 
     if (outbox?.pendingOps.length) {
       return replayOutbox(scope, parsed);
@@ -643,7 +670,7 @@ export const readScope = async <TScope extends StateScope>(
 
     return {
       data: deepClone(getDefaultScopeData(scope)),
-      version: '',
+      version: "",
       degraded: true,
       blocked: outbox?.blocked,
       warning: SYNC_WARNING_CLIENT_NETWORK,
@@ -652,7 +679,7 @@ export const readScope = async <TScope extends StateScope>(
 };
 
 export const retryScopeSync = async <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
   const outbox = readOutbox(scope);
   if (outbox) {
@@ -671,14 +698,14 @@ export const mutateScope = async <TScope extends StateScope>(
     op: string;
     payload: unknown;
     optimisticData: StateScopeDataMap[TScope];
-  }
+  },
 ): Promise<ScopeSnapshot<StateScopeDataMap[TScope]>> => {
   // In mock mode, just update the in-memory store and return success
   if (isMockMode()) {
     setMockState(scope, options.optimisticData);
     return {
       data: options.optimisticData,
-      version: 'mock-version',
+      version: "mock-version",
       degraded: false,
       blocked: false,
       warning: undefined,
@@ -688,14 +715,15 @@ export const mutateScope = async <TScope extends StateScope>(
   const outbox = readOutbox(scope);
   if (outbox?.blocked) {
     throw new StateClientError(
-      'Sync is blocked for this section. Refresh and retry.',
+      "Sync is blocked for this section. Refresh and retry.",
       409,
-      'conflict'
+      "conflict",
     );
   }
 
   const latestSnapshot = await readScope(scope);
-  const currentVersion = readOutbox(scope)?.lastKnownVersion || latestSnapshot.version;
+  const currentVersion =
+    readOutbox(scope)?.lastKnownVersion || latestSnapshot.version;
 
   try {
     const response = await postMutation(scope, {
@@ -706,12 +734,16 @@ export const mutateScope = async <TScope extends StateScope>(
 
     if (response.status === 401 || response.status === 403) {
       notifySessionInvalid();
-      throw new StateClientError('Unauthorized.', response.status, 'unauthorized');
+      throw new StateClientError(
+        "Unauthorized.",
+        response.status,
+        "unauthorized",
+      );
     }
 
     if (response.status === 409) {
       const conflict = await parseJsonResponse<ConflictResponse>(response);
-      throw new StateClientError(conflict.conflict, 409, 'conflict', conflict);
+      throw new StateClientError(conflict.conflict, 409, "conflict", conflict);
     }
 
     if (response.status >= 500) {
@@ -720,17 +752,22 @@ export const mutateScope = async <TScope extends StateScope>(
         options.op,
         options.payload,
         options.optimisticData,
-        currentVersion
+        currentVersion,
       );
     }
 
     if (!response.ok) {
-      throw new StateClientError('Mutation failed.', response.status, 'invalid');
+      throw new StateClientError(
+        "Mutation failed.",
+        response.status,
+        "invalid",
+      );
     }
 
-    const parsed = await parseJsonResponse<
-      MutationResponse<StateScopeDataMap[TScope]>
-    >(response);
+    const parsed =
+      await parseJsonResponse<MutationResponse<StateScopeDataMap[TScope]>>(
+        response,
+      );
     clearOutbox(scope);
     writeSnapshot(scope, {
       data: parsed.data,
@@ -747,7 +784,11 @@ export const mutateScope = async <TScope extends StateScope>(
     };
   } catch (error) {
     if (error instanceof StateClientError) {
-      if (error.code === 'unauthorized' || error.code === 'conflict' || error.code === 'invalid') {
+      if (
+        error.code === "unauthorized" ||
+        error.code === "conflict" ||
+        error.code === "invalid"
+      ) {
         throw error;
       }
 
@@ -756,7 +797,7 @@ export const mutateScope = async <TScope extends StateScope>(
         options.op,
         options.payload,
         options.optimisticData,
-        currentVersion
+        currentVersion,
       );
     }
 
@@ -765,18 +806,19 @@ export const mutateScope = async <TScope extends StateScope>(
       options.op,
       options.payload,
       options.optimisticData,
-      currentVersion
+      currentVersion,
     );
   }
 };
 
 export const getStoredScopeSnapshot = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): ScopeSnapshot<StateScopeDataMap[TScope]> => readOptimisticSnapshot(scope);
 
 export const sessionInvalidationEvent = SESSION_INVALID_EVENT;
 export const syncOutboxStatusEvent = OUTBOX_STATUS_EVENT;
-export const getOutboxStatusSummary = (): OutboxStatusSummary => getOutboxStatusSummaryInternal();
+export const getOutboxStatusSummary = (): OutboxStatusSummary =>
+  getOutboxStatusSummaryInternal();
 
 export const flushPendingSync = async (): Promise<OutboxStatusSummary> => {
   const summary = getOutboxStatusSummaryInternal();
@@ -787,19 +829,24 @@ export const flushPendingSync = async (): Promise<OutboxStatusSummary> => {
   // the tab regained focus.
   const pendingScopeSet = new Set(summary.pendingScopes.map((e) => e.scope));
   const degradedOnlyScopes = [...degradedReadScopes].filter(
-    (s) => !pendingScopeSet.has(s)
+    (s) => !pendingScopeSet.has(s),
   );
 
-  const allScopesToRetry = [...summary.pendingScopes.map((e) => e.scope), ...degradedOnlyScopes];
+  const allScopesToRetry = [
+    ...summary.pendingScopes.map((e) => e.scope),
+    ...degradedOnlyScopes,
+  ];
 
   if (allScopesToRetry.length === 0) {
     return summary;
   }
 
-  await Promise.allSettled(allScopesToRetry.map((scope) => retryScopeSync(scope)));
+  await Promise.allSettled(
+    allScopesToRetry.map((scope) => retryScopeSync(scope)),
+  );
 
   return getOutboxStatusSummaryInternal();
 };
 
 // Re-export isMockMode for components to check
-export { isMockMode } from './mockData.ts';
+export { isMockMode } from "./mockData.ts";

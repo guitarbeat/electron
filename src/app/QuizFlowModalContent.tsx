@@ -1,7 +1,7 @@
-import type { FC } from 'react';
-import QuizFlow from '@/components/quiz/QuizFlow';
-import { useQuiz } from '@/hooks/useQuiz';
-import type { User } from '@/shared/types';
+import type { FC } from "react";
+import QuizFlow from "@/components/quiz/QuizFlow";
+import { useQuiz } from "@/hooks/useQuiz";
+import type { User } from "@/shared/types";
 
 interface QuizFlowModalContentProps {
   currentUser: User | null;
@@ -26,8 +26,8 @@ const QuizFlowModalContent: FC<QuizFlowModalContentProps> = ({
 
   return (
     <QuizFlow
-      key={`${currentUser ?? 'guest'}-${quizCompleted ? 'completed' : 'fresh'}`}
-      sessionKey={currentUser ?? 'guest'}
+      key={`${currentUser ?? "guest"}-${quizCompleted ? "completed" : "fresh"}`}
+      sessionKey={currentUser ?? "guest"}
       quizData={quizData}
       onComplete={onComplete}
       onRetake={onRetake}

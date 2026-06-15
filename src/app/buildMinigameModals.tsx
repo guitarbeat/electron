@@ -1,14 +1,14 @@
-import { type CSSProperties, type ReactNode } from 'react';
-import LazyBoundary from '@/app/LazyBoundary';
+import { type CSSProperties, type ReactNode } from "react";
+import LazyBoundary from "@/app/LazyBoundary";
 import {
   MessageBoardPanel,
   QuizEditorPanel,
   QuizFlowModalPanel,
   SpinSwipeGamePanel,
   SpinWheelGamePanel,
-} from '@/app/lazyFeaturePanels';
-import type { User } from '@/shared/types';
-import { spacing } from '@/theme/tokens';
+} from "@/app/lazyFeaturePanels";
+import type { User } from "@/shared/types";
+import { spacing } from "@/theme/tokens";
 
 export interface AppModalConfig {
   key: string;
@@ -27,12 +27,12 @@ export interface AppModalConfig {
 const scrollContentStyle: CSSProperties = {
   flex: 1,
   minHeight: 0,
-  overflowY: 'auto',
+  overflowY: "auto",
 };
 
 const paddedScrollContentStyle: CSSProperties = {
   flex: 1,
-  overflowY: 'auto',
+  overflowY: "auto",
   padding: spacing.lg,
 };
 
@@ -59,7 +59,9 @@ export interface BuildFeatureModalsParams {
   onQuizRetake: () => void;
 }
 
-export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalConfig[] {
+export function buildFeatureModals(
+  params: BuildFeatureModalsParams,
+): AppModalConfig[] {
   const {
     showMessages,
     showQuizEditor,
@@ -81,62 +83,62 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
 
   return [
     {
-      key: 'messages',
-      title: 'Messages · Conversation',
+      key: "messages",
+      title: "Messages · Conversation",
       isOpen: showMessages,
       onClose: () => setShowMessages(false),
-      ariaLabel: 'Shared messages',
+      ariaLabel: "Shared messages",
       maxWidth: 820,
       maxHeight: 920,
       contentStyle: scrollContentStyle,
-      content: renderSuspended(<MessageBoardPanel />, 'Loading messages'),
+      content: renderSuspended(<MessageBoardPanel />, "Loading messages"),
     },
     {
-      key: 'quiz-editor',
+      key: "quiz-editor",
       isOpen: showQuizEditor,
       onClose: () => setShowQuizEditor(false),
-      title: 'Quiz · Personality',
-      ariaLabel: 'Personality quiz',
+      title: "Quiz · Personality",
+      ariaLabel: "Personality quiz",
       maxWidth: 1200,
       maxHeight: 900,
       content: renderSuspended(
         <QuizEditorPanel onClose={() => setShowQuizEditor(false)} />,
-        'Loading quiz editor'
+        "Loading quiz editor",
       ),
     },
     {
-      key: 'spin-match',
+      key: "spin-match",
       isOpen: showSpinWheel,
       onClose: () => setShowSpinWheel(false),
-      title: 'Spin · Match Game',
-      ariaLabel: 'Choose a subset of movies, then spin the wheel',
+      title: "Spin · Match Game",
+      ariaLabel: "Choose a subset of movies, then spin the wheel",
       maxWidth: 520,
       maxHeight: 820,
       closeDisabled: isSpinWheelLocked,
-      closeDisabledLabel: 'Finish the current spin before closing.',
+      closeDisabledLabel: "Finish the current spin before closing.",
       content: renderSuspended(
         <SpinSwipeGamePanel onSpinningChange={setIsSpinWheelLocked} />,
-        'Loading spin match'
+        "Loading spin match",
       ),
-      contentStyle: { flex: 1, overflowY: 'auto' },
+      contentStyle: { flex: 1, overflowY: "auto" },
     },
     {
-      key: 'spin-wheel-only',
+      key: "spin-wheel-only",
       isOpen: showSpinWheelOnly,
       onClose: () => setShowSpinWheelOnly(false),
-      title: 'Spin · Wheel Picker',
-      ariaLabel: 'Spin the wheel to pick a movie',
+      title: "Spin · Wheel Picker",
+      ariaLabel: "Spin the wheel to pick a movie",
       maxWidth: 520,
       maxHeight: 700,
-      content: renderSuspended(<SpinWheelGamePanel />, 'Loading spin wheel'),
-      contentStyle: { flex: 1, overflowY: 'auto' },
+      content: renderSuspended(<SpinWheelGamePanel />, "Loading spin wheel"),
+      contentStyle: { flex: 1, overflowY: "auto" },
     },
     {
-      key: 'quiz-flow',
+      key: "quiz-flow",
       isOpen: showQuizFlow,
       onClose: () => setShowQuizFlow(false),
-      title: quizCompleted ? 'Quiz · Retake Flow' : 'Quiz · Start Flow',
-      ariaLabel: 'Quiz experience',
+      title: quizCompleted ? "Quiz · Retake Flow" : "Quiz · Start Flow",
+      ariaLabel: "Quiz experience",
       maxWidth: 920,
       maxHeight: 900,
       contentStyle: paddedScrollContentStyle,
@@ -151,7 +153,7 @@ export function buildFeatureModals(params: BuildFeatureModalsParams): AppModalCo
             setShowQuizEditor(true);
           }}
         />,
-        'Loading quiz'
+        "Loading quiz",
       ),
     },
   ];

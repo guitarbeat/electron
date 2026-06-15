@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 
 export interface PwaInstallContextValue {
   canInstall: boolean;
@@ -6,4 +6,6 @@ export interface PwaInstallContextValue {
   openInstallDialog: () => void;
 }
 
-export const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
+export const PwaInstallContext = createContext<PwaInstallContextValue | null>(
+  null,
+);
