@@ -466,7 +466,6 @@ function ResultScreen({
   );
 }
 
-
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
@@ -549,8 +548,10 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     const velocity = dragVelocity.current;
     dragVelocity.current = 0;
     setDragX(0);
-    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD) advance(true);
-    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD) advance(false);
+    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD)
+      advance(true);
+    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD)
+      advance(false);
   };
 
   const handleSpin = useCallback(() => {
@@ -619,23 +620,6 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   return (
     <div className="spin-game-wrapper">
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '0.85rem',
-        padding: '0.75rem 1rem 1rem',
-        userSelect: 'none',
-        position: 'relative'
-      }}
-    >
-      <ProgressBar
-        current={currentIndex}
-        total={candidates.length}
-        kept={kept.length}
-      />
-
       <div
         style={{
           display: "flex",
@@ -655,95 +639,113 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
         <div
           style={{
-            position: "relative",
-            width: "100%",
-            height: 330,
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
             alignItems: "center",
+            gap: "0.85rem",
+            padding: "0.75rem 1rem 1rem",
+            userSelect: "none",
+            position: "relative",
           }}
         >
-          {isDone ? (
-            <DoneCard kept={kept.length} onReset={handleReset} />
-          ) : (
-            <>
-              {nextMovie && (
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    width: 220,
-                    height: 310,
-                    borderRadius: 16,
-                    background: nextMovie.posterUrl
-                      ? `url(${nextMovie.posterUrl}) center / cover`
-                      : "var(--color-surface-2)",
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-                    transform: "scale(0.93) translateY(12px)",
-                    opacity: 0.55,
-                  }}
-                />
-              )}
+          <ProgressBar
+            current={currentIndex}
+            total={candidates.length}
+            kept={kept.length}
+          />
 
-              {currentMovie && (
-                <MovieCard
-                  movie={currentMovie}
-                  dragX={dragX}
-                  isDragging={isDragging}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onDetailsClick={setModalMovie}
-                />
-              )}
-            </>
-          )}
-        </div>
-
-        {!isDone && (
-          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            <ActionButton
-              color="#ef4444"
-              onClick={() => advance(false)}
-              label="Skip"
-              icon="❌"
-            />
-            <ActionButton
-              color="#22c55e"
-              onClick={() => advance(true)}
-              label="Keep"
-              icon="✅"
-            />
-          </div>
-        )}
-
-        {kept.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setPhase("spin")}
+          <div
             style={{
-              padding: "0.7rem 1.7rem",
-              background: "var(--color-accent)",
-              border: "none",
-              borderRadius: 999,
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              fontSize: "0.88rem",
-              letterSpacing: "0.03em",
+              position: "relative",
+              width: "100%",
+              height: 330,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            🎰 Spin
-          </button>
-        )}
+            {isDone ? (
+              <DoneCard kept={kept.length} onReset={handleReset} />
+            ) : (
+              <>
+                {nextMovie && (
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      width: 220,
+                      height: 310,
+                      borderRadius: 16,
+                      background: nextMovie.posterUrl
+                        ? `url(${nextMovie.posterUrl}) center / cover`
+                        : "var(--color-surface-2)",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                      transform: "scale(0.93) translateY(12px)",
+                      opacity: 0.55,
+                    }}
+                  />
+                )}
 
-        {modalMovie && (
-          <MovieDetailsModal
-            movie={modalMovie}
-            isOpen={!!modalMovie}
-            onClose={() => setModalMovie(null)}
-          />
-        )}
+                {currentMovie && (
+                  <MovieCard
+                    movie={currentMovie}
+                    dragX={dragX}
+                    isDragging={isDragging}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onDetailsClick={setModalMovie}
+                  />
+                )}
+              </>
+            )}
+          </div>
+
+          {!isDone && (
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+              <ActionButton
+                color="#ef4444"
+                onClick={() => advance(false)}
+                label="Skip"
+                icon="❌"
+              />
+              <ActionButton
+                color="#22c55e"
+                onClick={() => advance(true)}
+                label="Keep"
+                icon="✅"
+              />
+            </div>
+          )}
+
+          {kept.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setPhase("spin")}
+              style={{
+                padding: "0.7rem 1.7rem",
+                background: "var(--color-accent)",
+                border: "none",
+                borderRadius: 999,
+                color: "#fff",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontSize: "0.88rem",
+                letterSpacing: "0.03em",
+              }}
+            >
+              🎰 Spin
+            </button>
+          )}
+
+          {modalMovie && (
+            <MovieDetailsModal
+              movie={modalMovie}
+              isOpen={!!modalMovie}
+              onClose={() => setModalMovie(null)}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

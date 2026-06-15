@@ -1,5 +1,4 @@
 import React, { type FC } from 'react';
-import LazyBoundary from '@/app/LazyBoundary';
 import type { MainTab } from '@/shared/types';
 import MoviesView from '@/components/movies/MoviesView';
 
