@@ -321,11 +321,14 @@ export const useMovies = (currentUser: User | null, isPaused: boolean = false) =
           moviesRef.current.some((m) => m.id === update.movieId)
       );
 
+      const updateMap = new Map();
       for (const update of validUpdates) {
-        optimisticMovies = optimisticMovies.map((movie) =>
-          movie.id === update.movieId ? { ...movie, ...update.metadata } : movie
-        );
+        updateMap.set(update.movieId, update.metadata);
       }
+      optimisticMovies = optimisticMovies.map((movie) => {
+        const metadata = updateMap.get(movie.id);
+        return metadata ? { ...movie, ...metadata } : movie;
+      });
 
       await Promise.all(
         validUpdates.map((update) =>
