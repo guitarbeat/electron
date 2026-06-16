@@ -47,7 +47,4 @@ channel = "stable-25_05"
 
 [userenv]
 
-[userenv.shared]
-POSTGRES_URL = "postgresql://neondb_owner:npg_NHSO0ZVXlC7e@ep-still-dawn-amq5bybq-pooler.c-5.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require"
-OMDB_API_KEY = "3850ae42"
-VITE_OMDB_API_KEY = "3850ae42"
+# Set DATABASE_URL, OMDB_API_KEY, and VITE_OMDB_API_KEY via Replit Secrets (Tools → Secrets).

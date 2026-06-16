@@ -51,6 +51,8 @@ Thumbs.db
 .agents/scratch/
 .agents/sessions/
 .canvas/
+.jules/
+.junie/
 
 # Build and framework caches
 .next/

@@ -1,17 +1,27 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "strict": true,
     "incremental": false,
-    "noImplicitReturns": false,
-    "useDefineForClassFields": false,
+    "isolatedModules": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": [
-      "node",
-      "vite/client",
-      "dom-chromium-installation-events",
-      "web-app-manifest"
-    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": false,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "skipLibCheck": true,
+    "target": "es2022",
+    "useDefineForClassFields": false,
     "moduleDetection": "force",
     "jsx": "react-jsx",
     "rewriteRelativeImportExtensions": true,
@@ -33,7 +43,16 @@
       "@/utils/*": ["./src/utils/*"]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": [
+      "node",
+      "vite/client",
+      "dom-chromium-installation-events",
+      "web-app-manifest"
+    ],
+    "customConditions": ["workspace"]
   },
   "include": ["src", "vite.config.ts", "api"],
   "exclude": ["supabase/functions", "dist", "node_modules"]
