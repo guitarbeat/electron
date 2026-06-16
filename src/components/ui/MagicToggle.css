@@ -71,3 +71,11 @@
 .theme-y2k .magic-toggle__btn.is-active {
   color: #8a5c1e;
 }
+.magic-toggle__btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.magic-toggle__btn.is-empty {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
