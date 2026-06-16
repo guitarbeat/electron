@@ -32,16 +32,28 @@ const buildAutocompleteSuggestions = (
     return [];
   }
 
-  return [...new Set(titles)]
-    .map((title) => sanitizeInput(title))
-    .filter((title) => title && title.toLowerCase().includes(normalizedQuery))
-    .slice(0, 6)
-    .map((title, index) => ({
-      title,
-      type: "movie" as const,
-      imdbID: `suggestion-${index}-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      poster: undefined,
-    }));
+  const results: MovieAutocompleteResult[] = [];
+  const seenTitles = new Set<string>();
+
+  for (const rawTitle of titles) {
+    if (results.length >= 6) break;
+
+    const title = sanitizeInput(rawTitle);
+    if (!title || seenTitles.has(title)) continue;
+
+    seenTitles.add(title);
+
+    if (title.toLowerCase().includes(normalizedQuery)) {
+      results.push({
+        title,
+        type: "movie" as const,
+        imdbID: `suggestion-${results.length}-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+        poster: undefined,
+      });
+    }
+  }
+
+  return results;
 };
 interface UseMoviesWorkspaceProps {
   currentUser: User | null;
