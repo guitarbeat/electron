@@ -23,17 +23,5 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Add deslop skill
-        run: npx -y skills add https://github.com/cursor/plugins --skill deslop -y
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm check-types
-
-      - name: Test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+      - name: Verify
+        run: pnpm verify
