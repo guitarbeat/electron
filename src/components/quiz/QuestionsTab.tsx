@@ -364,6 +364,7 @@ const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   <div
                     className="quiz-editor__question-summary"
                     role="button"
+                    aria-label={isExpanded ? "Collapse question summary" : "Expand question summary"}
                     tabIndex={0}
                     onClick={() => toggleExpand(q.id)}
                     onKeyDown={(event) => {
