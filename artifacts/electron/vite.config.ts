@@ -65,7 +65,7 @@ export default defineConfig({
       "@/ui": resolveFromRoot("components/ui"),
       "@/utils": resolveFromRoot("utils"),
       "@": path.resolve(import.meta.dirname, "src"),
-      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "@assets": path.resolve(import.meta.dirname, "..", "..", ".agents/scratch/attached_assets"),
     },
     dedupe: ["react", "react-dom"],
     extensionAlias: {
