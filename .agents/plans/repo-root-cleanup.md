@@ -191,5 +191,7 @@ Consolidate all AI-agent configuration under `.agents/`, remove duplicate skills
 | `.agents/` consolidated | Done |
 | Caches deleted locally | Done |
 | `.gitignore` updated | Done |
-| ~457 files staged | Pending review + commit |
-| `pnpm verify` | Not run post-cleanup |
+| Agent consolidation commit (`f9b572f3`) | Done |
+| Root clutter commit (`faa83213`) | Done |
+| Docs alignment commit (`6e7c13a5`) | Done |
+| `pnpm verify` | Fails on pre-existing TS errors in `src/` (unrelated WIP) |

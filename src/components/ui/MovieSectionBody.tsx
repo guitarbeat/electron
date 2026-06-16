@@ -6,7 +6,7 @@ import type {
   User,
 } from "@/shared/types";
 import { MovieCardSkeleton } from "@/ui/Skeleton";
-import { CollectionEmptyState, CollectionGrid } from "@/ui/CollectionLayout";
+import { CollectionEmptyState, CollectionGrid, CollectionSection } from "@/ui/CollectionLayout";
 import Button from "@/ui/Button";
 import { spacing } from "@/theme/tokens";
 import SuggestionCard from "@/components/movies/SuggestionCard";
@@ -52,6 +52,7 @@ interface Props {
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
+  sectionIds?: MovieSectionIds;
 }
 
 const SK_MOBILE = ["m1", "m2", "m3", "m4"];
@@ -74,6 +75,7 @@ const MovieSectionBody: React.FC<Props> = ({
   onDeleteRequest,
   onToggleError,
   actions,
+  sectionIds,
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
   const isEmpty = (arr: unknown[]) => arr.length === 0;

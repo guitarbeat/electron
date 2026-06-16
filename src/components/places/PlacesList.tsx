@@ -18,7 +18,6 @@ import { MovieCardSkeleton } from "@/ui/Skeleton";
 import SyncBanner from "../ui/SyncBanner.tsx";
 import type { Place, PlaceSuggestion } from "../../shared/types.ts";
 import type { PlacesMapHandle } from "./PlacesMap.tsx";
-import PlaceCard from "./PlaceCard.tsx";
 import PlaceSuggestionCard from "./PlaceSuggestionCard.tsx";
 import PlaceEditModal from "./PlaceEditModal.tsx";
 import PlacesTopControls, {
@@ -35,6 +34,7 @@ import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import { createPortal } from "react-dom";
 import {
   type BentoStatTileConfig,
+  type BentoSortChipConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
@@ -45,7 +45,7 @@ const PLACE_SECTION_IDS = {
   completed: "places-section-visited",
 };
 
-const PLACE_SORTS: MagicToggleOption<PlaceSortOrder>[] = [
+const PLACE_SORTS: BentoSortChipConfig[] = [
   { value: "recent", label: "🕐 Recent" },
   { value: "alpha", label: "A→Z" },
 ];

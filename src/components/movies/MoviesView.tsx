@@ -25,6 +25,7 @@ import MoviesTopControls, {
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import BentoWorkspaceController, {
+  type BentoSortChipConfig,
   type BentoStatTileConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
@@ -87,12 +88,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
-    toggleWatched,
-    renameMovie,
-    addMemory,
-    updateMemory,
-    deleteMemoryRecord,
-    toggleMemoryPin,
   } = useMoviesWorkspace({ currentUser, isPaused });
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();

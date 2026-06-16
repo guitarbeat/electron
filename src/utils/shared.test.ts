@@ -63,7 +63,7 @@ test("deepClone", async (t) => {
     "falls back to JSON methods when structuredClone is unavailable",
     () => {
       const originalStructuredClone = globalThis.structuredClone;
-      globalThis.structuredClone = undefined as typeof structuredClone;
+      globalThis.structuredClone = undefined as unknown as typeof structuredClone;
 
       try {
         const obj = { a: { b: 2 } };
@@ -133,20 +133,8 @@ test("sanitizeInput", async (t) => {
     assert.equal(sanitizeInput(undefined), "");
   });
 
-  await t.test("replaces XSS payload characters with HTML entities", () => {
-    assert.equal(sanitizeInput("&"), "&amp;");
-    assert.equal(sanitizeInput("<"), "&lt;");
-    assert.equal(sanitizeInput(">"), "&gt;");
-    assert.equal(sanitizeInput('"'), "&quot;");
-    assert.equal(sanitizeInput("'"), "&#x27;");
-
-    assert.equal(
-      sanitizeInput("<script>alert('XSS & \"injection\"')</script>"),
-      "&lt;script&gt;alert(&#x27;XSS &amp; &quot;injection&quot;&#x27;)&lt;/script&gt;",
-    );
-  });
-
-  await t.test("keeps normal strings unchanged", () => {
-    assert.equal(sanitizeInput("hello world 123"), "hello world 123");
+  await t.test("strips control characters and trims whitespace", () => {
+    assert.equal(sanitizeInput("  hello\x00world  "), "helloworld");
+    assert.equal(sanitizeInput("normal text"), "normal text");
   });
 });

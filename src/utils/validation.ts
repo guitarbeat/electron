@@ -55,7 +55,7 @@ export const createValidator = (rules: ValidationRules) => {
         return;
       }
 
-      // eslint-disable-next-line no-control-regex
+      // Control-char stripping is intentional for input sanitization.
       const cleanValue = value
         .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "")
         .trim();

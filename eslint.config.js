@@ -6,10 +6,10 @@ import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
-const reactHooksRecommended = reactHooks.configs.flat.recommended;
+const reactHooksRecommended = reactHooks.configs.recommended.rules;
 
 export default tseslint.config(
-  { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next'] },
+  { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next', 'lib/**'] },
   {
     extends: [
       js.configs.recommended,
@@ -23,7 +23,7 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -33,11 +33,11 @@ export default tseslint.config(
       },
     },
     plugins: {
-      ...reactHooksRecommended.plugins,
+      'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
     rules: {
-      ...reactHooksRecommended.rules,
+      ...reactHooksRecommended,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -51,6 +51,12 @@ export default tseslint.config(
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'no-empty': 'off',
+    },
+  },
+  {
+    files: ['src/utils/shared.ts', 'src/utils/validation.ts'],
+    rules: {
+      'no-control-regex': 'off',
     },
   },
 );

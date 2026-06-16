@@ -77,7 +77,7 @@ test("getElectronMarkSvgMarkup renders orbit-a variant", () => {
 });
 
 test("getElectronMarkSvgMarkup handles invalid variant gracefully", () => {
-  const markup = getElectronMarkSvgMarkup("invalid-variant" as any);
+  const markup = getElectronMarkSvgMarkup("invalid-variant" as never);
   assert.match(markup, /M21 16V48/); // defaults to pulse-ae path
 });
 

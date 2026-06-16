@@ -56,10 +56,13 @@ Thumbs.db
 .vercel/
 .turbo/
 .vite/
+dist-ssr
 
 # Replit
 .cache/
 .local/
+
+# Secrets and local env (never commit)
 .env*
 env.txt
 .neon

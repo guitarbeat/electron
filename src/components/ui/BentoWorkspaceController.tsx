@@ -2,7 +2,6 @@ import React from "react";
 import StatTile, { type BentoStatTileConfig } from "./StatTile";
 import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
 import "./BentoWorkspaceController.css";
-import { MagicToggle } from "./MagicToggle";
 
 export type SortOrder = "recent" | "alpha" | "rating";
 
