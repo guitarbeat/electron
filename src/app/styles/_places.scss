@@ -1,0 +1,17 @@
+/* Places feature — cards, layout, logo lab */
+
+@use '../../theme/breakpoints' as *;
+@use 'place-card';
+@use 'places-chrome';
+@use 'electron-logo-lab';
+
+.places-map-card--height {
+  height: 340px;
+}
+
+@include breakpoint-down('lg') {
+  .places-map-card--height {
+    height: min(38vh, 260px);
+    min-height: 200px;
+  }
+}

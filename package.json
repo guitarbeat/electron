@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "test": "node scripts/run-node-tests.mjs",
     "bootstrap:state": "node scripts/bootstrap-shared-state.mjs",
+    "scss:prune:check": "node scripts/prune-dead-scss.mjs --file src/app/styles",
     "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build"
   },
   "private": true,

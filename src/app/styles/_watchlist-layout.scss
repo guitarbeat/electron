@@ -1,0 +1,169 @@
+/* Watchlist layout — header, content grid, empty state */
+
+@use '../../theme/breakpoints' as *;
+.watchlist-header {
+  margin-bottom: 0.85rem;
+}
+
+.watchlist-title {
+  margin: 0;
+  font-family: var(--type-title-sm-family);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-dense);
+  color: var(--color-text-primary);
+}
+
+.watchlist-subtitle {
+  margin: 0.3rem 0 0;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--color-text-secondary) 86%, transparent);
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-sm-line-height);
+}
+
+/* Content Grid — always at least 2 columns, even on the smallest phones */
+.watchlist-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(clamp(9rem, 40vw, 12.2rem), calc(50% - 0.5rem)), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .watchlist-content {
+    gap: 0.65rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .watchlist-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .watchlist-content > .movie-item-card {
+    max-width: min(100%, 18rem);
+    justify-self: center;
+  }
+}
+
+.watchlist-content > .movie-item-card {
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+}
+
+.watchlist-content > .watchlist-empty-state,
+.watchlist-content > .watchlist-error {
+  grid-column: 1 / -1;
+}
+
+/* Empty State */
+.watchlist-empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: clamp(2.5rem, 8vh, 5rem) 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.watchlist-empty-state::before {
+  animation: gentle-float 4s ease-in-out infinite;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .watchlist-empty-state::before {
+    animation: none;
+  }
+}
+
+.watchlist-empty-state__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 200, 0.18);
+  background: rgba(148, 163, 200, 0.06);
+  font-family: var(--type-eyebrow-family);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-secondary) 82%, var(--color-accent-light) 18%);
+}
+
+.watchlist-empty-state__title {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.18rem + 0.8vw, 2rem);
+  line-height: 1.12;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--color-text-primary) 94%, white 6%);
+  text-wrap: balance;
+}
+
+.watchlist-empty-state p {
+  margin: 0;
+  max-width: 28ch;
+  font-family: var(--type-body-md-family);
+  font-size: clamp(0.96rem, 0.9rem + 0.15vw, 1.04rem);
+  line-height: 1.55;
+  text-wrap: pretty;
+  color: color-mix(in srgb, var(--color-text-secondary) 84%, transparent);
+}
+
+.watchlist-empty-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 0.15rem;
+}
+
+.watchlist-empty-state__actions .ui-button {
+  min-width: min(100%, 13.5rem);
+}
+
+@media (max-width: 640px) {
+  .watchlist-empty-state__actions {
+    width: 100%;
+  }
+
+  .watchlist-empty-state__actions .ui-button {
+    width: 100%;
+  }
+}
+
+.watchlist-empty-state p + .watchlist-empty-state__actions {
+  margin-top: 0.35rem;
+}
+
+.watchlist-empty-state::before {
+  content: '🎬';
+  font-size: 2.5rem;
+  opacity: 0.55;
+  filter: grayscale(0.3);
+}
+
+@include breakpoint-down('lg') {
+  .collection-grid.watchlist-content {
+    --collection-grid-min-column-width: clamp(8.5rem, 42vw, 12rem);
+    gap: 0.65rem;
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%       { transform: translateY(-6px) rotate(2deg); }
+}

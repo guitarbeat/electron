@@ -12,18 +12,6 @@ const LoadingScreen: React.FC = () => (
     aria-live="polite"
     aria-label="Loading"
   >
-    <div className="session-loading-screen__panel">
-      <p className="session-loading-screen__eyebrow">Electron</p>
-      <h1 className="session-loading-screen__title">Loading your watchlist</h1>
-      <p className="session-loading-screen__subtitle">
-        Preparing the app and restoring your session.
-      </p>
-      <div className="session-loading-screen__dots" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-    </div>
     <FishTankSection />
   </div>
 );
