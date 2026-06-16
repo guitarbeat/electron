@@ -36,8 +36,10 @@ const debugSession = (...args: unknown[]) => {
 
 import { getAppTheme, type ThemeName } from '@/theme/themes';
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [themeName] = useState<ThemeName>('movies');
+export const ThemeProvider: React.FC<{
+  children: ReactNode;
+  themeName?: ThemeName;
+}> = ({ children, themeName = "movies" }) => {
   const theme = useMemo(() => getAppTheme(themeName), [themeName]);
 
   useEffect(() => {

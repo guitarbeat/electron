@@ -21,6 +21,7 @@ import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import AppWorkspaceShell from "@/app/AppWorkspaceShell";
 import VignetteOverlay from "@/components/effects/VignetteOverlay";
+import FishTankSection from "@/components/effects/FishTankSection";
 import { useAudio } from "@/hooks/useAudio";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { MainTab } from "@/shared/types";
@@ -415,14 +416,14 @@ const App: React.FC = () => {
 
   if (isSessionLoading || !isBootReady) {
     return (
-      <ThemeProvider>
+      <ThemeProvider themeName={activeTab}>
         <LoadingScreen />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider>
+    <ThemeProvider themeName={activeTab}>
       <React.Suspense fallback={null}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
@@ -469,6 +470,7 @@ const App: React.FC = () => {
                   activeTab={activeTab}
                 />
               </WorkspaceErrorBoundary>
+              <FishTankSection />
             </div>
           </div>
         </div>

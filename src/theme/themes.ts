@@ -151,6 +151,9 @@ const buildCssVars = (
     gradientMetalPill: string;
     y2kGlintA: string;
     y2kGlintB: string;
+    chromeHighlightTop: string;
+    chromeShadowSoft: string;
+    chromeShadow: string;
     moire1: string;
     moire2: string;
     moireAccent: string;
@@ -208,6 +211,22 @@ const buildCssVars = (
   "--texture-fiber-strength": "0.03",
   "--texture-vignette-strength": "0.38",
   "--chrome-surface": extras.panelSurface,
+  "--chrome-radius-sm": "0.9rem",
+  "--chrome-radius": "1.3rem",
+  "--chrome-radius-lg": "1.85rem",
+  "--chrome-pill-radius": "999px",
+  "--chrome-border-color": semantic.border,
+  "--chrome-highlight-top": extras.chromeHighlightTop,
+  "--chrome-shadow-soft": extras.chromeShadowSoft,
+  "--chrome-shadow": extras.chromeShadow,
+  "--chrome-blur": "blur(40px) saturate(2)",
+  "--shadow-card":
+    "0 16px 26px rgba(2, 4, 18, 0.24), inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 6%, transparent)",
+  "--shadow-elevated":
+    "0 22px 38px rgba(2, 4, 18, 0.38), inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 9%, transparent)",
+  "--shadow-floating": extras.glowStrong,
+  "--focus-ring": `color-mix(in srgb, ${semantic.accent} 70%, transparent)`,
+  "--font-display": "'Papyrus', 'Marker Felt', serif",
   ...(extras.waxAccent ? { "--wax-accent": extras.waxAccent } : {}),
 });
 
@@ -275,6 +294,12 @@ export const moviesThemeDefinition: AppThemeDefinition = {
       "linear-gradient(180deg, #fdf4ff 0%, #fce7f3 38%, #f472b6 100%)",
     y2kGlintA: "rgba(252, 231, 243, 0.18)",
     y2kGlintB: "rgba(186, 230, 253, 0.12)",
+    chromeHighlightTop:
+      "linear-gradient(180deg, rgba(238, 242, 255, 0.2) 0%, rgba(238, 242, 255, 0.08) 14%, transparent 58%)",
+    chromeShadowSoft:
+      "0 18px 36px rgba(2, 4, 18, 0.36), inset 0 1px 0 rgba(238, 242, 255, 0.05)",
+    chromeShadow:
+      "0 28px 52px rgba(2, 4, 18, 0.44), inset 0 1px 0 rgba(238, 242, 255, 0.07)",
     moire1: "#ff6eb4",
     moire2: "#7dd3fc",
     moireAccent: "#f472b6",
@@ -351,6 +376,12 @@ export const placesThemeDefinition: AppThemeDefinition = {
       "linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 38%, #2dd4bf 100%)",
     y2kGlintA: "rgba(204, 251, 241, 0.18)",
     y2kGlintB: "rgba(196, 181, 253, 0.12)",
+    chromeHighlightTop:
+      "linear-gradient(180deg, rgba(236, 254, 255, 0.2) 0%, rgba(236, 254, 255, 0.08) 14%, transparent 58%)",
+    chromeShadowSoft:
+      "0 18px 36px rgba(2, 4, 20, 0.36), inset 0 1px 0 rgba(236, 254, 255, 0.05)",
+    chromeShadow:
+      "0 28px 52px rgba(2, 4, 20, 0.44), inset 0 1px 0 rgba(236, 254, 255, 0.07)",
     moire1: "#2dd4bf",
     moire2: "#a78bfa",
     moireAccent: "#2dd4bf",

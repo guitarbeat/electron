@@ -125,7 +125,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
           <Card
             ref={cardRef}
             variant="default"
-            className="movie-item-card"
+            className="movie-item-card chroma-card"
+            data-added-by={movie.addedBy}
             style={{
               padding: 0,
               marginBottom: "0.75rem",

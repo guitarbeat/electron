@@ -1,14 +1,14 @@
 /* AppNavStrip — unified brand + nav tabs + PWA status chip */
 
 .ans {
-  /* ── token scale ──────────────────────────────────────── */
-  --ans-accent:      #f472b6;
-  --ans-fg:          rgba(200, 215, 255, 0.65);
-  --ans-fg-active:   rgba(230, 240, 255, 0.97);
-  --ans-bg:          color-mix(in srgb, var(--ans-accent)  9%, rgba(255, 255, 255, 0.04));
-  --ans-bg-active:   color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 255, 255, 0.08));
-  --ans-border:      color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 236, 206, 0.08));
-  --ans-sep:         color-mix(in srgb, var(--ans-accent) 15%, rgba(255, 236, 206, 0.06));
+  /* ── token scale (inherits active theme from applyTheme) ── */
+  --ans-accent: var(--color-accent);
+  --ans-fg: var(--color-text-secondary);
+  --ans-fg-active: var(--color-text-primary);
+  --ans-bg: color-mix(in srgb, var(--ans-accent) 9%, rgba(255, 255, 255, 0.04));
+  --ans-bg-active: color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 255, 255, 0.08));
+  --ans-border: color-mix(in srgb, var(--ans-accent) 22%, var(--color-border-subtle));
+  --ans-sep: color-mix(in srgb, var(--ans-accent) 15%, var(--color-border-subtle));
   --ans-h:           2.75rem;
   --ans-r:           999px;
   --ans-pad:         0.28rem;
@@ -42,7 +42,7 @@
   white-space: nowrap;
   user-select: none;
   color: transparent;
-  background: var(--gradient-primary, linear-gradient(135deg, #f472b6 0%, #7dd3fc 100%));
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   background-clip: text;
 }

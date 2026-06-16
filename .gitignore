@@ -69,4 +69,3 @@ dist-ssr
 .env*
 env.txt
 .neon
-.vercel

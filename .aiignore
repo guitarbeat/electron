@@ -1,0 +1,26 @@
+# AI context exclusions — mirrors .gitignore cache/backup patterns
+
+node_modules/
+dist/
+dist-ssr/
+.next/
+.vercel/
+.turbo/
+.vite/
+.cache/
+.local/
+
+.migration-backup/
+.paintress/
+.agents/scratch/
+.agents/sessions/
+.canvas/
+.jules/
+.junie/
+
+.env*
+env.txt
+.neon
+
+coverage/
+*.tsbuildinfo

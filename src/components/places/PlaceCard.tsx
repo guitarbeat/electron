@@ -137,7 +137,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       >
         <MediaCard
           variant={isVisited ? "visited" : "default"}
-          className={`place-item-card${isVisited ? " place-item-card--visited" : ""}`}
+          className={`place-item-card chroma-card${isVisited ? " place-item-card--visited" : ""}`}
           hover={false}
         >
           <div className="card-tilt-sheen" aria-hidden="true" />

@@ -50,6 +50,8 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>() {
         "--sheen-y",
         `${(((dy + 1) / 2) * 100).toFixed(1)}%`,
       );
+      el.style.setProperty("--mouse-x", `${clientX - r.left}px`);
+      el.style.setProperty("--mouse-y", `${clientY - r.top}px`);
     });
   }, []);
 
@@ -61,6 +63,8 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>() {
     el.style.transform = "";
     el.style.removeProperty("--sheen-x");
     el.style.removeProperty("--sheen-y");
+    el.style.removeProperty("--mouse-x");
+    el.style.removeProperty("--mouse-y");
   }, []);
 
   return { ref, onMouseEnter, onMouseMove, onMouseLeave };

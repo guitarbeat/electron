@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { CollectionGrid } from "@/ui/CollectionLayout";
+import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import PlaceCard from "./PlaceCard.tsx";
 import type { Place } from "../../shared/types.ts";
 import PlacesEmptyState from "./PlacesEmptyState.tsx";
@@ -35,7 +35,7 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
   onEdit,
 }) => {
   return (
-    <CollectionGrid
+    <ChromaCollectionGrid
       className="watchlist-content places-grid"
       minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
     >
@@ -68,7 +68,7 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
       ) : (
         <PlacesEmptyState hint={emptyStateHint} />
       )}
-    </CollectionGrid>
+    </ChromaCollectionGrid>
   );
 };
 

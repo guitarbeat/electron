@@ -98,54 +98,60 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPin, setIsSavingPin] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const settingsTriggerRef = useRef<HTMLButtonElement>(null);
 
   const isDisabled = isLoading || isVerifying;
   const pinMode = currentUser && userHasPin(currentUser) ? "change" : "set";
 
-  const toggle = useCallback(
+  const toggleSettings = useCallback(
     (next: boolean) => {
-      setIsOpen(next);
+      setIsSettingsOpen(next);
       onOpenChange?.(next);
     },
     [onOpenChange],
   );
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isSettingsOpen) return;
     const handler = (e: PointerEvent) => {
       if (
-        menuRef.current &&
-        triggerRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        !triggerRef.current.contains(e.target as Node)
-      )
-        toggle(false);
+        pickerRef.current &&
+        !pickerRef.current.contains(e.target as Node)
+      ) {
+        toggleSettings(false);
+      }
     };
     document.addEventListener("pointerdown", handler);
     return () => document.removeEventListener("pointerdown", handler);
-  }, [isOpen, toggle]);
+  }, [isSettingsOpen, toggleSettings]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        toggle(false);
-        triggerRef.current?.focus();
+      if (e.key === "Escape" && isSettingsOpen) {
+        toggleSettings(false);
+        settingsTriggerRef.current?.focus();
       }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [isOpen, toggle]);
+  }, [isSettingsOpen, toggleSettings]);
+
+  useEffect(() => {
+    if (!currentUser) {
+      toggleSettings(false);
+    }
+  }, [currentUser, toggleSettings]);
 
   const handleLogout = () => {
     if (isDisabled) return;
     setSelectionError(null);
     void (async () => {
       try {
-        if (await setCurrentUser(null)) toggle(false);
+        if (await setCurrentUser(null)) toggleSettings(false);
       } catch (err) {
         setSelectionError(
           getErrorMessage(err, "Unable to update the profile session."),
@@ -168,7 +174,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     void (async () => {
       try {
         if (await setCurrentUser(profile)) {
-          toggle(false);
+          toggleSettings(false);
           if (userNeedsPin(profile)) setPinSettingsUser(profile);
         }
       } catch (err) {
@@ -186,7 +192,7 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
     try {
       const ok = await setCurrentUser(pendingUser, pin);
       if (ok) {
-        toggle(false);
+        toggleSettings(false);
         setPendingUser(null);
       }
       return ok;
@@ -233,106 +239,100 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`app-header__profile-trigger${currentUser ? " is-logged-in" : ""}${isOpen ? " is-open" : ""}`}
-        onClick={() => toggle(!isOpen)}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        aria-label={currentUser ? `Profile: ${currentUser}` : "Select profile"}
-        disabled={isDisabled}
-      >
-        <UserAvatar user={currentUser} />
-        {currentUser ? (
-          <span className="app-header__profile-name">{currentUser}</span>
-        ) : (
-          <span className="app-header__profile-name">Sign in</span>
-        )}
-        <ChevronIcon />
-      </button>
-
-      {isOpen && (
+      <div className="app-header__profile-picker" ref={pickerRef}>
         <div
-          ref={menuRef}
-          className="app-header__profile-menu"
-          role="menu"
-          aria-label="Profile selection"
+          className="app-header__profile-list app-header__profile-list--inline"
+          role="group"
+          aria-label="Select profile"
         >
-          <div className="app-header__menu-section">
-            <span className="app-header__menu-label">Switch profile</span>
-            <div className="app-header__profile-list" role="group">
-              {([...USER_OPTIONS] as User[]).map((profile) => {
-                const isActive = currentUser === profile;
-                const hasPin = userHasPin(profile);
-                return (
+          {([...USER_OPTIONS] as User[]).map((profile) => {
+            const isActive = currentUser === profile;
+            const hasPin = userHasPin(profile);
+            return (
+              <button
+                key={profile}
+                type="button"
+                className={`app-header__profile-option app-header__profile-option--inline${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
+                onClick={() => selectProfile(profile)}
+                disabled={isDisabled}
+                aria-pressed={isActive}
+                aria-label={
+                  isActive
+                    ? `${profile} (active) — tap again to log out`
+                    : hasPin
+                      ? `Sign in as ${profile} (PIN protected)`
+                      : `Sign in as ${profile}`
+                }
+              >
+                <span className="app-header__option-avatar">
+                  <UserAvatar user={profile} />
+                </span>
+                <span className="app-header__option-name">{profile}</span>
+                {hasPin && <LockIcon size={12} />}
+              </button>
+            );
+          })}
+        </div>
+
+        {currentUser && (
+          <>
+            <button
+              ref={settingsTriggerRef}
+              type="button"
+              className={`app-header__profile-settings${isSettingsOpen ? " is-open" : ""}`}
+              onClick={() => toggleSettings(!isSettingsOpen)}
+              aria-expanded={isSettingsOpen}
+              aria-haspopup="menu"
+              aria-label="Profile settings"
+              disabled={isDisabled}
+            >
+              <ChevronIcon />
+            </button>
+
+            {isSettingsOpen && (
+              <div
+                ref={menuRef}
+                className="app-header__profile-menu"
+                role="menu"
+                aria-label="Profile settings"
+              >
+                <div className="app-header__menu-section app-header__menu-section--actions">
                   <button
-                    key={profile}
                     type="button"
                     role="menuitem"
-                    className={`app-header__profile-option${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
-                    onClick={() => selectProfile(profile)}
-                    disabled={isDisabled}
-                    aria-label={
-                      isActive
-                        ? `${profile} (active) - click to log out`
-                        : hasPin
-                          ? `Select ${profile} (PIN protected)`
-                          : `Select ${profile}`
-                    }
+                    className="app-header__menu-action"
+                    onClick={openPinSettings}
+                    disabled={isDisabled || isSavingPin}
                   >
-                    <span className="app-header__option-avatar">
-                      <UserAvatar user={profile} />
-                    </span>
-                    <span className="app-header__option-name">{profile}</span>
-                    {isActive && (
-                      <span className="app-header__option-badge app-header__option-badge--active">
-                        Active
-                      </span>
-                    )}
-                    {hasPin && !isActive && <LockIcon />}
+                    <LockIcon size={16} />
+                    {userNeedsPin(currentUser)
+                      ? "Finish PIN Setup"
+                      : userHasPin(currentUser)
+                        ? "Change PIN"
+                        : "Set PIN"}
                   </button>
-                );
-              })}
-            </div>
-          </div>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="app-header__menu-action app-header__menu-action--logout"
+                    onClick={handleLogout}
+                    disabled={isDisabled}
+                  >
+                    <LogoutIcon />
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
-          {currentUser && (
-            <div className="app-header__menu-section app-header__menu-section--actions">
-              <button
-                type="button"
-                role="menuitem"
-                className="app-header__menu-action"
-                onClick={openPinSettings}
-                disabled={isDisabled || isSavingPin}
-              >
-                <LockIcon size={16} />
-                {userNeedsPin(currentUser)
-                  ? "Finish PIN Setup"
-                  : userHasPin(currentUser)
-                    ? "Change PIN"
-                    : "Set PIN"}
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                className="app-header__menu-action app-header__menu-action--logout"
-                onClick={handleLogout}
-                disabled={isDisabled}
-              >
-                <LogoutIcon />
-                Log out
-              </button>
-            </div>
-          )}
-
-          {selectionError && (
-            <p className="app-header__menu-error" role="alert">
-              {selectionError}
-            </p>
-          )}
-        </div>
-      )}
+        {selectionError && (
+          <p className="app-header__picker-error" role="alert">
+            {selectionError}
+          </p>
+        )}
+      </div>
 
       {pendingUser && (
         <PinDialog

@@ -12,6 +12,7 @@ interface SuggestionCardProps {
   canRespond?: boolean;
   disableActions?: boolean;
   isProcessing?: boolean;
+  className?: string;
 }
 
 const SuggestionCard: React.FC<SuggestionCardProps> = ({
@@ -21,6 +22,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   canRespond = true,
   disableActions = false,
   isProcessing = false,
+  className,
 }) => {
   const [posterUrl, setPosterUrl] = React.useState<string | undefined>(
     undefined,
@@ -62,7 +64,9 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       canRespond={canRespond}
       disableActions={disableActions}
       isProcessing={isProcessing}
-      className="movie-item-card suggestion-item-card"
+      className={["movie-item-card suggestion-item-card", className]
+        .filter(Boolean)
+        .join(" ")}
       media={
         <MediaPoster
           title={suggestion.title}

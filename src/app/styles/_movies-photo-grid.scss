@@ -39,3 +39,14 @@
     gap: 6px;
   }
 }
+
+/* Poster grid: lighter chroma desaturation so posters stay vivid */
+.app-workspace-stack--movies .chroma-grid-root .chroma-overlay,
+.app-workspace-stack--movies .chroma-grid-root .chroma-fade {
+  backdrop-filter: grayscale(0.55) brightness(0.9);
+  -webkit-backdrop-filter: grayscale(0.55) brightness(0.9);
+}
+
+.app-workspace-stack--movies .chroma-grid-root {
+  --r: 220px;
+}

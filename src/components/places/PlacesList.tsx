@@ -11,9 +11,9 @@ import { usePlaces } from "@/hooks/places";
 import ConfirmDialog from "@/ui/ConfirmDialog";
 import {
   CollectionEmptyState,
-  CollectionGrid,
   CollectionSection,
 } from "@/ui/CollectionLayout";
+import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import { MovieCardSkeleton } from "@/ui/Skeleton";
 import SyncBanner from "../ui/SyncBanner.tsx";
 import type { Place, PlaceSuggestion } from "../../shared/types.ts";
@@ -367,7 +367,7 @@ const PlacesList: React.FC = () => {
         )}
 
         {isLoading && allPlaces.length === 0 && (
-          <CollectionGrid
+          <ChromaCollectionGrid
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
           >
@@ -403,7 +403,7 @@ const PlacesList: React.FC = () => {
                 ))}
               </div>
             </div>
-          </CollectionGrid>
+          </ChromaCollectionGrid>
         )}
 
         {allPlaces.length > 0 && (
@@ -425,7 +425,7 @@ const PlacesList: React.FC = () => {
             tone="incoming"
             id={PLACE_SECTION_IDS.incoming}
           >
-            <CollectionGrid
+            <ChromaCollectionGrid
               className="watchlist-content places-grid"
               minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
             >
@@ -442,7 +442,7 @@ const PlacesList: React.FC = () => {
                   isProcessing={processingSuggestionId === suggestion.id}
                 />
               ))}
-            </CollectionGrid>
+            </ChromaCollectionGrid>
           </CollectionSection>
         )}
 
@@ -487,12 +487,12 @@ const PlacesList: React.FC = () => {
         )}
 
         {showEmptyState && (
-          <CollectionGrid
+          <ChromaCollectionGrid
             className="watchlist-content places-grid"
             minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
           >
             <PlacesEmptyState hint="Add a restaurant, café, park, or anywhere else you'd like to visit together." />
-          </CollectionGrid>
+          </ChromaCollectionGrid>
         )}
 
         {placeToDelete && (

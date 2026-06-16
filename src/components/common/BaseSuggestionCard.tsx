@@ -48,7 +48,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
     return (
       <Card
         variant="default"
-        className={`suggestion-item-card suggestion-item-card--media ${className}`.trim()}
+        className={`suggestion-item-card suggestion-item-card--media chroma-card ${className}`.trim()}
         style={{
           padding: 0,
           display: "flex",
@@ -136,7 +136,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
   return (
     <Card
       variant="default"
-      className={`suggestion-item-card ${className}`.trim()}
+      className={`suggestion-item-card chroma-card ${className}`.trim()}
       style={{
         padding: spacing.md,
         display: "flex",

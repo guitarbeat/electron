@@ -6,10 +6,13 @@ import type {
   User,
 } from "@/shared/types";
 import { MovieCardSkeleton } from "@/ui/Skeleton";
-import { CollectionEmptyState, CollectionGrid, CollectionSection } from "@/ui/CollectionLayout";
+import { CollectionEmptyState, CollectionSection } from "@/ui/CollectionLayout";
+import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import Button from "@/ui/Button";
 import { spacing } from "@/theme/tokens";
-import SuggestionCard from "@/components/movies/SuggestionCard";
+import SuggestionStack, {
+  SuggestionStackSkeleton,
+} from "@/components/movies/SuggestionStack";
 import MovieCard from "@/components/movies/MovieCard";
 import MovieDeckStack from "@/components/movies/MovieDeckStack";
 import type { MovieSections } from "@/components/movies/lib/movieSections";
@@ -90,7 +93,7 @@ const MovieSectionBody: React.FC<Props> = ({
     sections.completed.length === 0;
 
   const movieGrid = (movies: Movie[], emptyLabel: string) => (
-    <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
+    <ChromaCollectionGrid className="watchlist-content" minColumnWidth={GRID}>
       {movies.length > 0 ? (
         movies.map((movie) => (
           <MovieCard
@@ -146,7 +149,7 @@ const MovieSectionBody: React.FC<Props> = ({
           </span>
         </CollectionEmptyState>
       )}
-    </CollectionGrid>
+    </ChromaCollectionGrid>
   );
 
   const renderMovies = (movies: Movie[], emptyLabel: string) => {
@@ -160,7 +163,7 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
     return (
-      <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
+      <ChromaCollectionGrid className="watchlist-content" minColumnWidth={GRID}>
         <div
           style={{
             gridColumn: "1 / -1",
@@ -193,7 +196,7 @@ const MovieSectionBody: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      </CollectionGrid>
+      </ChromaCollectionGrid>
     );
   }
 
@@ -205,7 +208,7 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── All-empty CTA ─────────────────────────────────────────────────────────
   if (isQueueEmpty && sections.completed.length === 0) {
     return (
-      <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
+      <ChromaCollectionGrid className="watchlist-content" minColumnWidth={GRID}>
         <CollectionEmptyState
           padding={isMobile ? spacing.lg : spacing["3xl"]}
           className={`watchlist-empty-queue-state${isMobile ? " collection-empty-state--tight" : ""}`}
@@ -233,7 +236,7 @@ const MovieSectionBody: React.FC<Props> = ({
             Add a movie
           </Button>
         </CollectionEmptyState>
-      </CollectionGrid>
+      </ChromaCollectionGrid>
     );
   }
 
@@ -253,25 +256,15 @@ const MovieSectionBody: React.FC<Props> = ({
           id={sectionIds?.incoming}
         >
           {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-            <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
-              {sk.slice(0, 4).map((key) => (
-                <MovieCardSkeleton key={key} />
-              ))}
-            </CollectionGrid>
+            <SuggestionStackSkeleton />
           ) : (
-            <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
-              {sections.suggestions.map((suggestion) => (
-                <SuggestionCard
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  onAccept={() => void onAcceptSuggestion(suggestion)}
-                  onReject={() => void onRejectSuggestion(suggestion)}
-                  canRespond={Boolean(currentUser)}
-                  disableActions={!currentUser}
-                  isProcessing={processingSuggestionId === suggestion.id}
-                />
-              ))}
-            </CollectionGrid>
+            <SuggestionStack
+              suggestions={sections.suggestions}
+              currentUser={currentUser}
+              processingSuggestionId={processingSuggestionId}
+              onAccept={onAcceptSuggestion}
+              onReject={onRejectSuggestion}
+            />
           )}
         </CollectionSection>
       )}

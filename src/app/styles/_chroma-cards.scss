@@ -1,0 +1,104 @@
+/*
+ * Per-card Chroma styling — gradient shells + cursor spotlight (React Bits ChromaGrid).
+ */
+
+.chroma-card {
+  --card-border: var(--color-accent);
+  --card-gradient: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-accent) 28%, var(--color-surface-2)) 0%,
+    color-mix(in srgb, var(--color-surface-0) 92%, black) 100%
+  );
+  --spotlight-color: color-mix(in srgb, var(--color-text-primary) 22%, transparent);
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chroma-card[data-added-by="Aaron"] {
+  --card-border: var(--color-secondary);
+  --card-gradient: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-secondary) 28%, var(--color-surface-2)) 0%,
+    color-mix(in srgb, var(--color-surface-0) 92%, black) 100%
+  );
+}
+
+.chroma-card[data-added-by="Electra"] {
+  --card-border: var(--color-accent);
+}
+
+.movie-item-container--watched .chroma-card,
+.place-item-card--visited.chroma-card {
+  --card-border: var(--color-secondary);
+  --card-gradient: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-secondary) 22%, var(--color-surface-2)) 0%,
+    color-mix(in srgb, var(--color-surface-0) 94%, black) 100%
+  );
+}
+
+.chroma-card .card-tilt-wrap {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+.chroma-card .card-tilt-wrap .chroma-card::before,
+.movie-item-container .card-tilt-wrap::before {
+  content: none;
+}
+
+/* Per-card spotlight tracks via --mouse-x/y on .card-tilt-wrap */
+.card-tilt-wrap:has(.chroma-card) {
+  border-radius: inherit;
+}
+
+.card-tilt-wrap:has(.chroma-card)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--mouse-x) var(--mouse-y),
+    color-mix(in srgb, var(--color-text-primary) 18%, transparent),
+    transparent 68%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  z-index: 5;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-tilt-wrap:has(.chroma-card):hover::after {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chroma-card:hover {
+    border-color: color-mix(in srgb, var(--card-border) 55%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--card-border) 35%, transparent),
+      0 18px 36px color-mix(in srgb, var(--card-border) 12%, transparent);
+  }
+}
+
+
+/* Photo-mode movie grid: keep posters clean; spotlight only on hover */
+.app-workspace-stack--movies .watchlist-content .chroma-card {
+  background: transparent;
+}
+
+.app-workspace-stack--movies .watchlist-content .chroma-card:hover {
+  background: transparent;
+}
+
+.suggestion-item-card.chroma-card {
+  background: var(--card-gradient);
+}
+
+.place-item-card.chroma-card {
+  background: var(--card-gradient);
+}

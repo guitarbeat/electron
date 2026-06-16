@@ -1,0 +1,93 @@
+.session-loading-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 0.75rem + 1vw, 1.75rem);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+}
+
+.session-loading-screen__panel {
+  width: min(30rem, 100%);
+  text-align: center;
+  padding: clamp(1.5rem, 3vw, 2.2rem);
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  background: color-mix(in srgb, var(--color-surface-0) 95%, transparent);
+  box-shadow: var(--shadow-elevated);
+}
+
+.session-loading-screen__eyebrow {
+  margin: 0;
+  font-family: var(--type-eyebrow-family, var(--font-interface));
+  font-size: clamp(0.68rem, 0.64rem + 0.22vw, 0.8rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.session-loading-screen__title {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 1.5rem + 1.3vw, 2.7rem);
+  letter-spacing: 0.04em;
+  color: var(--color-text-primary);
+  text-shadow: 0 0.6rem 1.2rem color-mix(in srgb, var(--color-background) 30%, transparent);
+}
+
+.session-loading-screen__subtitle {
+  margin: 0.7rem auto 0;
+  max-width: 24ch;
+  font-family: var(--type-body-md-family, var(--font-interface));
+  font-size: clamp(0.92rem, 0.88rem + 0.25vw, 1.05rem);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.session-loading-screen__dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+
+.session-loading-screen__dots span {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: var(--color-secondary);
+  box-shadow: 0 0 0.45rem color-mix(in srgb, var(--color-secondary) 70%, transparent);
+  animation: session-loading-pulse 900ms ease-in-out infinite;
+}
+
+.session-loading-screen__dots span:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.session-loading-screen__dots span:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+@keyframes session-loading-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translateY(-0.22rem) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-loading-screen__dots span {
+    animation: none;
+    opacity: 0.8;
+  }
+}

@@ -1,63 +1,64 @@
 /*
- * Retro accents — Y2K / Win98 personality layered on the navy cohesion base.
- * Toolbar chrome and typography only; cards and grids live in _workspace-skin.
+ * Retro accents — Y2K bevel + display typography on the unified theme palette.
+ * All colors derive from applyTheme() tokens (themes.ts).
  */
 
 :root {
-  --y2k-silver: #c4a87e;
-  --y2k-silver-light: #d4bc98;
-  --y2k-silver-lighter: #e8d4b4;
-  --y2k-dark: #3a2810;
-  --y2k-mid: #7a5c34;
-  --y2k-white: #fdf5e4;
-  --y2k-navy: #3d1a00;
-  --y2k-blue-sel: #5c2c00;
-  --y2k-font: system-ui, 'Segoe UI', Tahoma, Arial, sans-serif;
-  --y2k-mono: 'Courier New', Courier, monospace;
+  --retro-bevel-face: color-mix(in srgb, var(--color-secondary) 24%, var(--color-surface-2));
+  --retro-bevel-light: color-mix(in srgb, var(--color-text-primary) 20%, var(--color-surface-3));
+  --retro-bevel-dark: color-mix(in srgb, var(--color-background) 72%, black);
+  --retro-bevel-mid: color-mix(in srgb, var(--color-border) 70%, var(--color-background));
+  --retro-bevel-ink: color-mix(in srgb, var(--color-background) 88%, black);
 }
 
-/* Section headings — warm ink accent */
 .workspace-section-heading {
-  color: #c49a60;
-  text-shadow: 0 1px 0 rgba(255, 230, 160, 0.35);
+  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-primary));
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-accent-light, var(--color-accent)) 35%, transparent);
 
   &::after {
-    background: linear-gradient(90deg, rgba(196, 154, 80, 0.6) 0%, transparent 100%);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent) 55%, transparent) 0%,
+      transparent 100%
+    );
     opacity: 0.55;
   }
 }
 
 .workspace-section-heading--incoming {
-  color: #d4a050;
+  color: color-mix(in srgb, var(--color-accent) 82%, var(--color-text-primary));
 }
 
 .workspace-section-heading--completed {
-  color: rgba(125, 211, 252, 0.92);
-  text-shadow: 0 1px 0 rgba(120, 200, 255, 0.18);
+  color: color-mix(in srgb, var(--color-secondary) 88%, var(--color-text-primary));
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-secondary) 25%, transparent);
 
   &::after {
-    background: linear-gradient(90deg, rgba(125, 211, 252, 0.55) 0%, transparent 100%);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-secondary) 55%, transparent) 0%,
+      transparent 100%
+    );
   }
 }
 
-/* Movies workspace: Win98 toolbar pushbuttons */
 .app-workspace-stack--movies {
   .watchlist-top-controls__search-button.ui-button {
-    background: var(--y2k-silver);
-    color: #000000;
-    font-family: 'Papyrus', serif;
+    background: var(--retro-bevel-face);
+    color: var(--retro-bevel-ink);
+    font-family: var(--font-display);
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     border-radius: 0;
-    border-top: 2px solid var(--y2k-white);
-    border-left: 2px solid var(--y2k-white);
-    border-right: 2px solid var(--y2k-dark);
-    border-bottom: 2px solid var(--y2k-dark);
+    border-top: 2px solid var(--retro-bevel-light);
+    border-left: 2px solid var(--retro-bevel-light);
+    border-right: 2px solid var(--retro-bevel-dark);
+    border-bottom: 2px solid var(--retro-bevel-dark);
     box-shadow:
-      inset 1px 1px 0 var(--y2k-silver-lighter),
-      inset -1px -1px 0 var(--y2k-mid);
+      inset 1px 1px 0 color-mix(in srgb, var(--retro-bevel-light) 80%, white),
+      inset -1px -1px 0 var(--retro-bevel-mid);
     min-height: 2.6rem;
     min-width: 5.5rem;
     text-shadow: none;
@@ -66,15 +67,15 @@
     -webkit-backdrop-filter: none;
 
     &:hover {
-      background: var(--y2k-silver-light);
+      background: color-mix(in srgb, var(--retro-bevel-face) 88%, var(--color-text-primary));
     }
 
     &:active {
-      border-top: 2px solid var(--y2k-dark);
-      border-left: 2px solid var(--y2k-dark);
-      border-right: 2px solid var(--y2k-white);
-      border-bottom: 2px solid var(--y2k-white);
-      box-shadow: inset 1px 1px 0 var(--y2k-mid);
+      border-top: 2px solid var(--retro-bevel-dark);
+      border-left: 2px solid var(--retro-bevel-dark);
+      border-right: 2px solid var(--retro-bevel-light);
+      border-bottom: 2px solid var(--retro-bevel-light);
+      box-shadow: inset 1px 1px 0 var(--retro-bevel-mid);
       padding-top: calc(0.4rem + 1px);
       padding-left: calc(0.75rem + 1px);
     }
@@ -82,27 +83,27 @@
 
   .watchlist-top-controls__surprise .ui-button,
   .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
-    background: var(--y2k-silver);
-    color: #000000;
-    font-family: 'Papyrus', serif;
+    background: var(--retro-bevel-face);
+    color: var(--retro-bevel-ink);
+    font-family: var(--font-display);
     font-weight: 700;
     border-radius: 0;
-    border-top: 2px solid var(--y2k-white);
-    border-left: 2px solid var(--y2k-white);
-    border-right: 2px solid var(--y2k-dark);
-    border-bottom: 2px solid var(--y2k-dark);
-    box-shadow: inset 1px 1px 0 var(--y2k-silver-lighter);
+    border-top: 2px solid var(--retro-bevel-light);
+    border-left: 2px solid var(--retro-bevel-light);
+    border-right: 2px solid var(--retro-bevel-dark);
+    border-bottom: 2px solid var(--retro-bevel-dark);
+    box-shadow: inset 1px 1px 0 color-mix(in srgb, var(--retro-bevel-light) 80%, white);
     text-shadow: none;
     transition: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 
     &:active {
-      border-top: 2px solid var(--y2k-dark);
-      border-left: 2px solid var(--y2k-dark);
-      border-right: 2px solid var(--y2k-white);
-      border-bottom: 2px solid var(--y2k-white);
-      box-shadow: inset 1px 1px 0 var(--y2k-mid);
+      border-top: 2px solid var(--retro-bevel-dark);
+      border-left: 2px solid var(--retro-bevel-dark);
+      border-right: 2px solid var(--retro-bevel-light);
+      border-bottom: 2px solid var(--retro-bevel-light);
+      box-shadow: inset 1px 1px 0 var(--retro-bevel-mid);
     }
   }
 
@@ -117,11 +118,10 @@
   }
 }
 
-/* Card metadata — Papyrus labels on poster badges */
 .movie-item-title,
 .movie-title,
 .movie-item-title-external {
-  font-family: 'Papyrus', var(--font-heading), serif;
+  font-family: var(--font-display);
   letter-spacing: 0.03em;
 }
 
@@ -129,60 +129,60 @@
 .movie-item-imdb-badge__score,
 .movie-item-genre-chip,
 .movie-category {
-  font-family: 'Papyrus', var(--font-heading), serif;
+  font-family: var(--font-display);
 }
 
 .movie-item-imdb-badge {
   border-radius: 0;
-  background: rgba(60, 30, 0, 0.88);
-  border: 1px solid rgba(196, 150, 80, 0.65);
-  border-top-color: rgba(232, 212, 160, 0.75);
-  border-left-color: rgba(232, 212, 160, 0.75);
+  background: color-mix(in srgb, var(--color-surface-3) 88%, black);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-top-color: color-mix(in srgb, var(--color-accent-light, var(--color-accent)) 55%, transparent);
+  border-left-color: color-mix(in srgb, var(--color-accent-light, var(--color-accent)) 55%, transparent);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow:
-    inset 1px 1px 0 rgba(232, 212, 160, 0.2),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 12%, transparent),
     0 2px 6px rgba(0, 0, 0, 0.5);
   padding: 0.18rem 0.4rem 0.18rem 0.28rem;
 }
 
 .movie-item-imdb-badge__score {
-  color: #f5d898;
+  color: color-mix(in srgb, var(--color-accent-light, var(--color-accent)) 80%, var(--color-text-primary));
 }
 
 .movie-item-genre-chip,
 .movie-category {
   border-radius: 0;
   font-size: 0.55rem;
-  background: rgba(80, 40, 0, 0.72);
-  border: 1px solid rgba(200, 150, 60, 0.5);
-  color: #f5d898;
+  background: color-mix(in srgb, var(--color-surface-2) 82%, black);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  color: color-mix(in srgb, var(--color-secondary) 75%, var(--color-text-primary));
   letter-spacing: 0.06em;
 }
 
 .movie-icon-action--fix {
-  color: #eadab9;
+  color: color-mix(in srgb, var(--color-accent) 55%, var(--color-text-secondary));
 }
 
 .movie-item-remove-link {
-  color: rgba(230, 160, 110, 0.68);
+  color: color-mix(in srgb, var(--color-accent) 68%, var(--color-text-secondary));
 
   &:hover:not(:disabled) {
-    color: rgba(230, 155, 100, 0.92);
+    color: var(--color-accent);
   }
 }
 
 .movie-poster-fallback {
   background:
-    radial-gradient(ellipse at 28% 22%, rgba(212, 177, 115, 0.18) 0%, transparent 54%),
-    radial-gradient(ellipse at 75% 80%, rgba(142, 159, 130, 0.14) 0%, transparent 55%),
-    linear-gradient(160deg, #2a1d14 0%, #1a120c 52%, #120d08 100%);
+    radial-gradient(ellipse at 28% 22%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 54%),
+    radial-gradient(ellipse at 75% 80%, color-mix(in srgb, var(--color-secondary) 14%, transparent) 0%, transparent 55%),
+    linear-gradient(160deg, var(--color-surface-2) 0%, var(--color-surface-0) 52%, var(--color-background) 100%);
 }
 
 .movie-item-poster-wrap,
 .movie-poster-wrap,
 .place-item-poster-wrap {
-  background: #1a120c;
+  background: var(--color-surface-0);
 }
 
 @media (max-width: 720px) {
