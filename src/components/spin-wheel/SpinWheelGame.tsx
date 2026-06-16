@@ -165,6 +165,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         style={{ cursor: "pointer" }}
         title={`Click for more details about "${movie.title}"`}
         role="button"
+        aria-label={`Open details for ${movie.title}`}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {

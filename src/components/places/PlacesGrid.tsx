@@ -47,6 +47,7 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
             onClick={() => onCardTap(place)}
             onKeyDown={(event) => onCardKeyDown(event, place)}
             role="button"
+            aria-label={`View details for ${place.name}`}
             tabIndex={0}
             style={{
               cursor: "pointer",

@@ -385,6 +385,7 @@ function ResultScreen({
             : undefined
         }
         role="button"
+        aria-label={`Open details for ${winner.title}`}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
