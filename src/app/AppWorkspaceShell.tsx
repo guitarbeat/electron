@@ -80,6 +80,10 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
           activeSortOrder={bentoConfig?.activeSortOrder ?? "recent"}
           onSortChange={bentoConfig?.onSortChange ?? (() => {})}
           ariaLabel={bentoConfig?.ariaLabel}
+          viewModes={bentoConfig?.viewModes}
+          activeViewMode={bentoConfig?.activeViewMode}
+          onViewModeChange={bentoConfig?.onViewModeChange}
+          viewModeAriaLabel={bentoConfig?.viewModeAriaLabel}
         >
           <div ref={searchSlotRef} />
         </BentoWorkspaceController>

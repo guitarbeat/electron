@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef } from "react";
 import {
   motion,
   useScroll,
@@ -8,7 +8,6 @@ import {
 } from "motion/react";
 import type { Movie } from "@/shared/types";
 
-const DECK_MAX = 5;
 const CARD_W = 240;
 const CARD_H = 360; // 2:3 ratio
 const INCREMENT_Y = 10; // px vertical offset per card in stack
@@ -242,7 +241,7 @@ interface Props {
 }
 
 const MovieDeckStack: React.FC<Props> = ({ movies }) => {
-  const deck = useMemo(() => movies.slice(0, DECK_MAX), [movies]);
+  const deck = movies;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -250,16 +249,16 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
     offset: ["start center", "end end"],
   });
 
-  // Need at least 2 cards to make a stack worth showing
   if (deck.length < 2) return null;
 
   const stackHeight = CARD_H + (deck.length - 1) * INCREMENT_Y;
+  const scrollMinHeight = `${Math.max(140, (deck.length + 1) * 42)}vh`;
 
   return (
     <div
       ref={scrollRef}
       className="movie-deck-stack-scroll"
-      style={{ position: "relative", minHeight: "140vh" }}
+      style={{ position: "relative", minHeight: scrollMinHeight }}
     >
       <div
         style={{
@@ -349,7 +348,7 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
             letterSpacing: "0.08em",
           }}
         >
-          {deck.length} of {movies.length} in queue
+          {deck.length} movies
         </p>
       </div>
     </div>

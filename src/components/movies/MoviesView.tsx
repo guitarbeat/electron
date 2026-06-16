@@ -22,6 +22,12 @@ import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
+import {
+  MOVIE_BROWSE_LAYOUTS,
+  readMovieBrowseLayout,
+  writeMovieBrowseLayout,
+  type MovieBrowseLayout,
+} from "./lib/movieBrowseLayout";
 import { groupMemoriesByMovieId } from "@/components/memories/lib/memoryUtils";
 import { getErrorMessage } from "@/utils";
 import type { MovieAutocompleteResult } from "@/services/metadata";
@@ -50,6 +56,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const { setConfig, searchPortalEl } = useBentoSlot();
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
+  const [browseLayout, setBrowseLayout] = useState<MovieBrowseLayout>(() =>
+    readMovieBrowseLayout(),
+  );
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
     useState(false);
@@ -143,6 +152,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setSortOrder(order as MovieSortOrder);
   }, []);
 
+  const handleBrowseLayoutChange = useCallback((layout: string) => {
+    const nextLayout = layout === "scroll" ? "scroll" : "grid";
+    setBrowseLayout(nextLayout);
+    writeMovieBrowseLayout(nextLayout);
+  }, []);
+
   useEffect(() => {
     setConfig({
       stats: movieStats,
@@ -150,8 +165,19 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       activeSortOrder: sortOrder,
       onSortChange: handleMovieSortChange,
       ariaLabel: "Movies workspace controls",
+      viewModes: MOVIE_BROWSE_LAYOUTS,
+      activeViewMode: browseLayout,
+      onViewModeChange: handleBrowseLayoutChange,
+      viewModeAriaLabel: "Movie browse layout",
     });
-  }, [setConfig, movieStats, sortOrder, handleMovieSortChange]);
+  }, [
+    setConfig,
+    movieStats,
+    sortOrder,
+    browseLayout,
+    handleMovieSortChange,
+    handleBrowseLayoutChange,
+  ]);
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -442,6 +468,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           togglePin: toggleMemoryPin,
         }}
         sectionIds={MOVIE_SECTION_IDS}
+        browseLayout={browseLayout}
       />
         {movieToDelete && (
           <ConfirmDialog

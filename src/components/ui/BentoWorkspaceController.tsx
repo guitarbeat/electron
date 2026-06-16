@@ -16,6 +16,10 @@ interface BentoWorkspaceControllerProps {
   activeSortOrder: SortOrder;
   onSortChange: (order: SortOrder) => void;
   ariaLabel?: string;
+  viewModes?: MagicToggleOption<string>[];
+  activeViewMode?: string;
+  onViewModeChange?: (mode: string) => void;
+  viewModeAriaLabel?: string;
 }
 
 const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
@@ -25,6 +29,10 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
   activeSortOrder,
   onSortChange,
   ariaLabel,
+  viewModes,
+  activeViewMode,
+  onViewModeChange,
+  viewModeAriaLabel,
 }) => {
   return (
     <section
@@ -59,6 +67,19 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
             onChange={onSortChange}
             ariaLabel="Sort order"
           />
+          {viewModes && viewModes.length > 0 && activeViewMode && onViewModeChange ? (
+            <>
+              <span className="bento-ctrl__sort-label" aria-hidden="true">
+                View
+              </span>
+              <MagicToggle<string>
+                options={viewModes}
+                activeValue={activeViewMode}
+                onChange={onViewModeChange}
+                ariaLabel={viewModeAriaLabel ?? "Browse view"}
+              />
+            </>
+          ) : null}
         </div>
       )}
     </section>

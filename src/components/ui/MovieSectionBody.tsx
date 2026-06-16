@@ -13,6 +13,7 @@ import SuggestionCard from "@/components/movies/SuggestionCard";
 import MovieCard from "@/components/movies/MovieCard";
 import MovieDeckStack from "@/components/movies/MovieDeckStack";
 import type { MovieSections } from "@/components/movies/lib/movieSections";
+import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -53,6 +54,7 @@ interface Props {
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
   sectionIds?: MovieSectionIds;
+  browseLayout?: MovieBrowseLayout;
 }
 
 const SK_MOBILE = ["m1", "m2", "m3", "m4"];
@@ -76,6 +78,7 @@ const MovieSectionBody: React.FC<Props> = ({
   onToggleError,
   actions,
   sectionIds,
+  browseLayout = "grid",
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
 
@@ -145,6 +148,14 @@ const MovieSectionBody: React.FC<Props> = ({
       )}
     </CollectionGrid>
   );
+
+  const renderMovies = (movies: Movie[], emptyLabel: string) => {
+    if (browseLayout === "scroll" && movies.length >= 2) {
+      return <MovieDeckStack movies={movies} />;
+    }
+
+    return movieGrid(movies, emptyLabel);
+  };
 
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
@@ -267,8 +278,7 @@ const MovieSectionBody: React.FC<Props> = ({
 
       {sections.queue.length > 0 && (
         <CollectionSection heading="Up Next" id={sectionIds?.queue}>
-          <MovieDeckStack movies={sections.queue} />
-          {movieGrid(sections.queue, "Your movie list is wide open")}
+          {renderMovies(sections.queue, "Your movie list is wide open")}
         </CollectionSection>
       )}
 
@@ -278,7 +288,7 @@ const MovieSectionBody: React.FC<Props> = ({
           tone="completed"
           id={sectionIds?.completed}
         >
-          {movieGrid(sections.completed, "No watched movies yet")}
+          {renderMovies(sections.completed, "No watched movies yet")}
         </CollectionSection>
       )}
     </div>
