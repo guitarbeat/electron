@@ -321,20 +321,21 @@ export const useMovies = (
         }
       });
 
-      let optimisticMovies = latestMovies;
+      const currentMovieIds = new Set(moviesRef.current.map((m) => m.id));
       const validUpdates = refreshed.filter(
         (update) =>
           Object.keys(update.metadata).length > 0 &&
-          moviesRef.current.some((m) => m.id === update.movieId),
+          currentMovieIds.has(update.movieId),
       );
 
-      for (const update of validUpdates) {
-        optimisticMovies = optimisticMovies.map((movie) =>
-          movie.id === update.movieId
-            ? { ...movie, ...update.metadata }
-            : movie,
-        );
-      }
+      const updatesMap = new Map(
+        validUpdates.map((update) => [update.movieId, update.metadata]),
+      );
+
+      const optimisticMovies = latestMovies.map((movie) => {
+        const metadataUpdate = updatesMap.get(movie.id);
+        return metadataUpdate ? { ...movie, ...metadataUpdate } : movie;
+      });
 
       await Promise.all(
         validUpdates.map((update) =>
