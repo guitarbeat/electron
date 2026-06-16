@@ -153,20 +153,17 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-              return 'react-vendor';
-            }
-
-            if (id.includes('node_modules/ogl')) {
-              return 'graphics-vendor';
-            }
-
+            // Only split heavy, lazily loaded deps. Avoid a separate react/vendor
+            // split — it creates circular chunks and breaks React.forwardRef at runtime.
             if (id.includes('node_modules/maplibre-gl')) {
               return 'map-vendor';
             }
 
-            if (id.includes('node_modules')) {
-              return 'vendor';
+            if (
+              id.includes('node_modules/ogl') ||
+              id.includes('node_modules/three')
+            ) {
+              return 'graphics-vendor';
             }
 
             return undefined;

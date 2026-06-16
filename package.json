@@ -16,7 +16,6 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "test": "node scripts/run-node-tests.mjs",
-    "migrate:gist": "node scripts/migrate-gist-to-neon.mjs",
     "bootstrap:state": "node scripts/bootstrap-shared-state.mjs",
     "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build"
   },
