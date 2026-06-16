@@ -184,14 +184,14 @@ Consolidate all AI-agent configuration under `.agents/`, remove duplicate skills
 - **`attached_assets/` and `bun.lock`:** Keep if Replit/YouWare still use them; otherwise remove in Task 6.
 - **`docs/AGENTS.md` vs root `AGENTS.md`:** Rename Vercel doc to `docs/VERCEL.md` to reduce agent confusion?
 
-## Current State (as of plan creation)
+## Current State
 
 | Item | Status |
 |------|--------|
 | `.agents/` consolidated | Done |
-| Caches deleted locally | Done |
-| `.gitignore` updated | Done |
-| Agent consolidation commit (`f9b572f3`) | Done |
-| Root clutter commit (`faa83213`) | Done |
-| Docs alignment commit (`6e7c13a5`) | Done |
-| `pnpm verify` | Fails on pre-existing TS errors in `src/` (unrelated WIP) |
+| Caches gitignored and removed locally | Done |
+| Docs aligned (`docs/VERCEL.md`, `.agents/README.md`) | Done |
+| `pnpm verify` passes | Done |
+| CI runs `pnpm verify` | Done |
+| Scratch historical scripts pruned | Done |
+| `git status` fast (`core.fsmonitor=false`) | Done |
