@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "types": [
+      "node",
+      "vite/client",
+      "dom-chromium-installation-events",
+      "web-app-manifest"
+    ],
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "rewriteRelativeImportExtensions": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/app/*": ["./src/app/*"],
+      "@/branding/*": ["./src/branding/*"],
+      "@/common/*": ["./src/components/common/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/effects/*": ["./src/components/effects/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/matchmaker/*": ["./src/components/matchmaker/*"],
+      "@/memories/*": ["./src/components/memories/*"],
+      "@/quiz/*": ["./src/components/quiz/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/theme/*": ["./src/theme/*"],
+      "@/ui/*": ["./src/components/ui/*"],
+      "@/utils/*": ["./src/utils/*"]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["src", "vite.config.ts", "api"],
+  "exclude": ["supabase/functions", "dist", "node_modules"]
+}

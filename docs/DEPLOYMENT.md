@@ -16,6 +16,8 @@ pnpm dev
 pnpm check-types
 pnpm build
 pnpm preview
+pnpm bootstrap:state   # seed missing Neon shared_state_files rows
+pnpm migrate:gist      # one-shot Gist → Neon import (requires GIST_ID + GITHUB_TOKEN)
 ```
 
 ## Production shape

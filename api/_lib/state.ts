@@ -65,6 +65,7 @@ import {
   shouldAttemptGistBackfill,
 } from './gistMigration.ts';
 import {
+  invalidateSharedStateCache,
   isSharedStateConfigured,
   isSharedStateWriteConfigured,
   listSharedStateFilenames,
@@ -1248,6 +1249,20 @@ export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics>
     expectedScopes: [...STATE_SCOPES],
     missingScopes: STATE_SCOPES.filter((scope) => !files.has(getScopeDefinition(scope).filename)),
   };
+};
+
+/** Ensures every scope has a row in shared_state_files (default content when missing). */
+export const bootstrapMissingScopeFiles = async (): Promise<StateScopeDiagnostics> => {
+  if (!isSharedStateConfigured()) {
+    throw new Error('DATABASE_URL is not configured.');
+  }
+
+  for (const scope of STATE_SCOPES) {
+    await readScopeStoredData(scope, { bypassCache: true });
+  }
+
+  invalidateSharedStateCache();
+  return getStateScopeDiagnostics();
 };
 
 /**

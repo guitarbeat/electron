@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.27.0",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
@@ -16,6 +16,8 @@
     "check-types": "tsc --noEmit -p tsconfig.app.json",
     "lint": "eslint .",
     "test": "node scripts/run-node-tests.mjs",
+    "migrate:gist": "node scripts/migrate-gist-to-neon.mjs",
+    "bootstrap:state": "node scripts/bootstrap-shared-state.mjs",
     "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
