@@ -1,3 +1,7 @@
+/*
+ * Workspace skin — navy cohesion, movies shell, card system, mobile polish.
+ * Loaded after App.scss via app-skin.scss. Retro toolbar accents: _retro-accents.scss.
+ */
 
 /* 44px+ touch targets on phones for the accept/reject suggestion buttons */
 @media (max-width: 640px) {
@@ -83,10 +87,6 @@
     height: 20px !important;
   }
 
-  .y2k-ticker {
-    display: none;
-  }
-
   .suggestion-item-card__profile-hint {
     display: none;
   }
@@ -149,18 +149,13 @@
 }
 
 /* ============================================================================
-   Suggestion Card — Poster style (overrides earlier Y2K silver chrome)
+   Suggestion Card — poster-forward media cards
    ============================================================================ */
 .suggestion-item-card.movie-item-card {
-  /* Strip the Y2K silver background so the poster shows through */
-  background: var(--color-surface-1, rgba(14, 22, 58, 0.82)) !important;
-  border-radius: var(--chrome-radius-sm, 0.9rem) !important;
-  border: 1px solid var(--color-border, rgba(148, 163, 200, 0.3)) !important;
-  border-top: 1px solid var(--color-border, rgba(148, 163, 200, 0.3)) !important;
-  border-left: 1px solid var(--color-border, rgba(148, 163, 200, 0.3)) !important;
-  border-right: 1px solid var(--color-border, rgba(148, 163, 200, 0.3)) !important;
-  border-bottom: 1px solid var(--color-border, rgba(148, 163, 200, 0.3)) !important;
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3)) !important;
+  background: var(--color-surface-1, rgba(14, 22, 58, 0.82));
+  border-radius: var(--chrome-radius-sm, 0.9rem);
+  border: 1px solid var(--color-border, rgba(148, 163, 200, 0.3));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3));
   overflow: hidden;
   position: relative;
 }
@@ -484,18 +479,6 @@
   color: inherit !important;
 }
 
-.app-workspace-stack--movies .y2k-ticker {
-  padding-top: 0.1rem;
-  border-top: 1px solid rgba(148, 163, 200, 0.14);
-}
-
-.app-workspace-stack--movies .y2k-ticker__text {
-  color: rgba(180, 200, 240, 0.72);
-  letter-spacing: 0.1em;
-  font-family: 'Papyrus', var(--font-display), serif;
-  text-transform: uppercase;
-}
-
 @media (max-width: 900px) {
   .app-workspace-stack--movies .watchlist-top-controls__hero {
     grid-template-columns: minmax(0, 1fr);
@@ -696,57 +679,53 @@
 
 .movie-item-card,
 .place-item-card,
-.suggestion-item-card {
+.suggestion-item-card:not(.suggestion-item-card--media) {
   border-radius: 1rem;
-  transform: none !important;
+  transform: none;
   box-shadow:
     0 16px 26px rgba(2, 4, 18, 0.24),
     inset 0 1px 0 rgba(200, 215, 255, 0.06);
 }
 
-.movie-item-card:hover,
 .movie-item-card--opening-details,
 .place-item-card:hover,
 .media-card--hover:hover {
-  transform: none !important;
+  transform: none;
   box-shadow:
     0 22px 38px rgba(2, 4, 18, 0.38),
     0 0 0 1px rgba(244, 114, 182, 0.14),
-    inset 0 1px 0 rgba(200, 215, 255, 0.09) !important;
+    inset 0 1px 0 rgba(200, 215, 255, 0.09);
 }
 
 .place-item-card:hover {
   box-shadow:
     0 22px 38px rgba(2, 4, 18, 0.38),
     0 0 0 1px color-mix(in srgb, var(--color-accent) 18%, transparent),
-    inset 0 1px 0 rgba(200, 215, 255, 0.09) !important;
+    inset 0 1px 0 rgba(200, 215, 255, 0.09);
 }
 
-.movie-item-card:active,
-.movie-item-card:hover:active,
 .place-item-card:active,
 .place-item-card:hover:active {
-  transform: none !important;
+  transform: none;
   box-shadow:
     0 8px 16px rgba(2, 4, 18, 0.2),
-    inset 0 1px 0 rgba(200, 215, 255, 0.04) !important;
+    inset 0 1px 0 rgba(200, 215, 255, 0.04);
 }
 
-.movie-item-card--highlighted {
+.movie-item-container--highlighted .movie-item-card {
   box-shadow:
     0 16px 26px rgba(2, 4, 18, 0.24),
     0 0 0 1px rgba(244, 114, 182, 0.42),
     inset 0 1px 0 rgba(200, 215, 255, 0.06);
 }
 
-.movie-item-card--watched,
-.movie-item-card--watched:hover,
+.movie-item-container--watched .movie-item-card,
 .place-item-card--visited,
 .place-item-card--visited:hover {
   box-shadow:
     0 16px 26px rgba(2, 4, 18, 0.24),
     0 0 0 1px rgba(125, 211, 252, 0.18),
-    inset 0 1px 0 rgba(200, 215, 255, 0.06) !important;
+    inset 0 1px 0 rgba(200, 215, 255, 0.06);
 }
 
 .movie-item-card:hover .movie-item-title,

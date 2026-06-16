@@ -331,13 +331,26 @@ const MoviesTopControls = React.forwardRef<
     window.setTimeout(() => setIsClicked(false), 700);
   }, []);
 
+  const handleFormSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (isBusy) return;
+      clearFocusBoundaryCheck();
+      hideAutocomplete();
+      internalSearchInputRef.current?.blur();
+      void onSubmit();
+    },
+    [clearFocusBoundaryCheck, hideAutocomplete, isBusy, onSubmit],
+  );
+
   return (
     <>
       <div className="watchlist-top-controls__stage">
-        <div
+        <form
           className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
             isAutocompleteElevated ? ' is-autocomplete-active' : ''
           }`}
+          onSubmit={handleFormSubmit}
         >
           {/* ── Search shell with motion glow ─────────────────────────────────── */}
           <motion.div
@@ -772,7 +785,7 @@ const MoviesTopControls = React.forwardRef<
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </form>
       </div>
 
       {showRecommendationComposer && hasSearchQuery && (

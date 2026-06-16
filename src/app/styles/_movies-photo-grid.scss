@@ -1,0 +1,41 @@
+/*
+ * Movies photo grid — poster-dominant layout inside the movies workspace.
+ * Scoped so places and other grids keep their default card chrome.
+ */
+
+.app-workspace-stack--movies .watchlist-content {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(clamp(7rem, 28vw, 10rem), calc(33% - 0.4rem)), 1fr)
+  );
+  gap: 7px;
+}
+
+.app-workspace-stack--movies .watchlist-content > .movie-item-container > .card-tilt-wrap > .movie-item-card,
+.app-workspace-stack--movies .watchlist-content > .movie-item-card {
+  border-radius: 10px;
+  box-shadow: none;
+  background: transparent;
+  position: relative;
+}
+
+.app-workspace-stack--movies .watchlist-content .movie-item-poster-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.app-workspace-stack--movies .watchlist-content .movie-item-watchers {
+  z-index: 7;
+}
+
+.app-workspace-stack--movies .watchlist-content > .watchlist-empty-state,
+.app-workspace-stack--movies .watchlist-content > .watchlist-error {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 380px) {
+  .app-workspace-stack--movies .watchlist-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+}

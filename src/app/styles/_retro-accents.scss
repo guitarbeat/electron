@@ -1,0 +1,215 @@
+/*
+ * Retro accents — Y2K / Win98 personality layered on the navy cohesion base.
+ * Toolbar chrome and typography only; cards and grids live in _workspace-skin.
+ */
+
+:root {
+  --y2k-silver: #c4a87e;
+  --y2k-silver-light: #d4bc98;
+  --y2k-silver-lighter: #e8d4b4;
+  --y2k-dark: #3a2810;
+  --y2k-mid: #7a5c34;
+  --y2k-white: #fdf5e4;
+  --y2k-navy: #3d1a00;
+  --y2k-blue-sel: #5c2c00;
+  --y2k-font: system-ui, 'Segoe UI', Tahoma, Arial, sans-serif;
+  --y2k-mono: 'Courier New', Courier, monospace;
+}
+
+/* Section headings — warm ink accent */
+.workspace-section-heading {
+  color: #c49a60;
+  text-shadow: 0 1px 0 rgba(255, 230, 160, 0.35);
+
+  &::after {
+    background: linear-gradient(90deg, rgba(196, 154, 80, 0.6) 0%, transparent 100%);
+    opacity: 0.55;
+  }
+}
+
+.workspace-section-heading--incoming {
+  color: #d4a050;
+}
+
+.workspace-section-heading--completed {
+  color: rgba(125, 211, 252, 0.92);
+  text-shadow: 0 1px 0 rgba(120, 200, 255, 0.18);
+
+  &::after {
+    background: linear-gradient(90deg, rgba(125, 211, 252, 0.55) 0%, transparent 100%);
+  }
+}
+
+/* Movies workspace: Win98 toolbar pushbuttons */
+.app-workspace-stack--movies {
+  .watchlist-top-controls__search-button.ui-button {
+    background: var(--y2k-silver);
+    color: #000000;
+    font-family: 'Papyrus', serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 0;
+    border-top: 2px solid var(--y2k-white);
+    border-left: 2px solid var(--y2k-white);
+    border-right: 2px solid var(--y2k-dark);
+    border-bottom: 2px solid var(--y2k-dark);
+    box-shadow:
+      inset 1px 1px 0 var(--y2k-silver-lighter),
+      inset -1px -1px 0 var(--y2k-mid);
+    min-height: 2.6rem;
+    min-width: 5.5rem;
+    text-shadow: none;
+    transition: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    &:hover {
+      background: var(--y2k-silver-light);
+    }
+
+    &:active {
+      border-top: 2px solid var(--y2k-dark);
+      border-left: 2px solid var(--y2k-dark);
+      border-right: 2px solid var(--y2k-white);
+      border-bottom: 2px solid var(--y2k-white);
+      box-shadow: inset 1px 1px 0 var(--y2k-mid);
+      padding-top: calc(0.4rem + 1px);
+      padding-left: calc(0.75rem + 1px);
+    }
+  }
+
+  .watchlist-top-controls__surprise .ui-button,
+  .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+    background: var(--y2k-silver);
+    color: #000000;
+    font-family: 'Papyrus', serif;
+    font-weight: 700;
+    border-radius: 0;
+    border-top: 2px solid var(--y2k-white);
+    border-left: 2px solid var(--y2k-white);
+    border-right: 2px solid var(--y2k-dark);
+    border-bottom: 2px solid var(--y2k-dark);
+    box-shadow: inset 1px 1px 0 var(--y2k-silver-lighter);
+    text-shadow: none;
+    transition: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    &:active {
+      border-top: 2px solid var(--y2k-dark);
+      border-left: 2px solid var(--y2k-dark);
+      border-right: 2px solid var(--y2k-white);
+      border-bottom: 2px solid var(--y2k-white);
+      box-shadow: inset 1px 1px 0 var(--y2k-mid);
+    }
+  }
+
+  .watchlist-top-controls__search-icon {
+    padding-left: 0.5rem;
+    font-size: 0.9rem;
+    filter: none;
+  }
+
+  .watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
+    filter: none;
+  }
+}
+
+/* Card metadata — Papyrus labels on poster badges */
+.movie-item-title,
+.movie-title,
+.movie-item-title-external {
+  font-family: 'Papyrus', var(--font-heading), serif;
+  letter-spacing: 0.03em;
+}
+
+.movie-meta-item,
+.movie-item-imdb-badge__score,
+.movie-item-genre-chip,
+.movie-category {
+  font-family: 'Papyrus', var(--font-heading), serif;
+}
+
+.movie-item-imdb-badge {
+  border-radius: 0;
+  background: rgba(60, 30, 0, 0.88);
+  border: 1px solid rgba(196, 150, 80, 0.65);
+  border-top-color: rgba(232, 212, 160, 0.75);
+  border-left-color: rgba(232, 212, 160, 0.75);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    inset 1px 1px 0 rgba(232, 212, 160, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  padding: 0.18rem 0.4rem 0.18rem 0.28rem;
+}
+
+.movie-item-imdb-badge__score {
+  color: #f5d898;
+}
+
+.movie-item-genre-chip,
+.movie-category {
+  border-radius: 0;
+  font-size: 0.55rem;
+  background: rgba(80, 40, 0, 0.72);
+  border: 1px solid rgba(200, 150, 60, 0.5);
+  color: #f5d898;
+  letter-spacing: 0.06em;
+}
+
+.movie-icon-action--fix {
+  color: #eadab9;
+}
+
+.movie-item-remove-link {
+  color: rgba(230, 160, 110, 0.68);
+
+  &:hover:not(:disabled) {
+    color: rgba(230, 155, 100, 0.92);
+  }
+}
+
+.movie-poster-fallback {
+  background:
+    radial-gradient(ellipse at 28% 22%, rgba(212, 177, 115, 0.18) 0%, transparent 54%),
+    radial-gradient(ellipse at 75% 80%, rgba(142, 159, 130, 0.14) 0%, transparent 55%),
+    linear-gradient(160deg, #2a1d14 0%, #1a120c 52%, #120d08 100%);
+}
+
+.movie-item-poster-wrap,
+.movie-poster-wrap,
+.place-item-poster-wrap {
+  background: #1a120c;
+}
+
+@media (max-width: 720px) {
+  .watchlist-top-controls__hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .watchlist-top-controls__hero-stats {
+    padding-top: 0.2rem;
+  }
+
+  .ui-subnav-tabs {
+    flex-wrap: nowrap;
+  }
+
+  .watchlist-top-controls__surprise {
+    min-width: 2.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-workspace-stack--movies .watchlist-top-controls__search-form {
+    border-radius: 0;
+    padding: 4px;
+  }
+
+  .app-workspace-stack--movies .watchlist-top-controls__search-button.ui-button {
+    min-height: 2.4rem;
+  }
+}
