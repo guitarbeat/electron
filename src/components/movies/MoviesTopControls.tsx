@@ -14,6 +14,7 @@ import {
 } from 'motion/react';
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
+import MagicToggle from '@/components/ui/MagicToggle';
 import { Input } from '@/ui/FormFields';
 import { PlusIcon } from '@/common/Icons';
 import {
@@ -625,39 +626,41 @@ const MoviesTopControls = React.forwardRef<
                 {!isAutocompleteLoading && autocompleteResults.length > 0 && (
                   <div
                     className="watchlist-top-controls__autocomplete-filters"
-                    role="group"
-                    aria-label="Filter by type"
                   >
-                    {(
-                      [
-                        { value: 'all', label: 'All' },
-                        { value: 'movie', label: 'Movies' },
-                        { value: 'series', label: 'TV Series' },
-                      ] as const
-                    ).map(({ value, label }) => {
-                      const count =
-                        value === 'all'
-                          ? autocompleteResults.length
-                          : autocompleteResults.filter((r) => r.type === value).length;
-                      const isDisabled = count === 0 && value !== 'all';
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          className={`watchlist-top-controls__autocomplete-filter-chip${
-                            autocompleteTypeFilter === value ? ' is-active' : ''
-                          }${count === 0 ? ' is-empty' : ''}`}
-                          disabled={isDisabled}
-                          onPointerDown={(e) => {
-                            e.preventDefault();
-                            if (!isDisabled) setAutocompleteTypeFilter(value);
-                          }}
-                        >
-                          {label}
-                          <span className="watchlist-top-controls__autocomplete-filter-count">{count}</span>
-                        </button>
-                      );
-                    })}
+                    <MagicToggle<'all' | 'movie' | 'series'>
+                      options={(
+                        [
+                          { value: 'all', label: 'All' },
+                          { value: 'movie', label: 'Movies' },
+                          { value: 'series', label: 'TV Series' },
+                        ] as const
+                      ).map(({ value, label }) => {
+                        const count =
+                          value === 'all'
+                            ? autocompleteResults.length
+                            : autocompleteResults.filter((r) => r.type === value).length;
+                        const isDisabled = count === 0 && value !== 'all';
+                        return {
+                          value,
+                          label: (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              {label}
+                              <span style={{
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                padding: '1px 6px',
+                                borderRadius: '999px',
+                                fontSize: '0.85em',
+                                opacity: count === 0 ? 0.5 : 1
+                              }}>{count}</span>
+                            </span>
+                          ),
+                          disabled: isDisabled
+                        };
+                      })}
+                      activeValue={autocompleteTypeFilter}
+                      onChange={setAutocompleteTypeFilter}
+                      ariaLabel="Filter by type"
+                    />
                   </div>
                 )}
                 {autocompleteError ? (

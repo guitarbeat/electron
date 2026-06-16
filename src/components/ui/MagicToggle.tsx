@@ -1,9 +1,10 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import "./MagicToggle.css";
 
 export interface MagicToggleOption<T extends string> {
   value: T;
-  label: string;
+  label: React.ReactNode;
+  disabled?: boolean;
 }
 
 interface MagicToggleProps<T extends string> {
@@ -60,8 +61,11 @@ function MagicToggle<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={`magic-toggle__btn ${isActive ? "is-active" : ""}`}
-            onClick={() => onChange(option.value)}
+            className={`magic-toggle__btn ${isActive ? "is-active" : ""} ${option.disabled ? "is-disabled" : ""}`} disabled={option.disabled}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              onChange(option.value);
+            }}
             aria-pressed={isActive}
           >
             {option.label}

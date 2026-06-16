@@ -650,7 +650,6 @@
   .ui-control-input-shell,
   .watchlist-top-controls__autocomplete,
   .watchlist-top-controls__autocomplete-option,
-  .watchlist-top-controls__autocomplete-filter-chip,
   .watchlist-top-controls__autocomplete-poster-image,
   .media-card,
   .media-card__overlay,
@@ -689,10 +688,6 @@
   background: linear-gradient(90deg, rgba(244, 114, 182, 0.08) 0%, rgba(200, 215, 255, 0.04) 100%);
 }
 
-.watchlist-top-controls__autocomplete-filter-chip:hover,
-.watchlist-top-controls__autocomplete-filter-chip.is-active {
-  transform: none;
-}
 
 .watchlist-top-controls__autocomplete-loading-dot {
   opacity: 0.6;

@@ -7189,73 +7189,12 @@ body.grabbing * {
   line-height: 1.4;
 }
 
-.watchlist-top-controls__autocomplete-filters {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.6rem 0.7rem 0.45rem;
-  border-bottom: 1px solid rgba(148, 163, 200, 0.1);
-  flex-shrink: 0;
-}
 
-.watchlist-top-controls__autocomplete-filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.32rem;
-  padding: 0.25rem 0.65rem;
-  border: 1px solid rgba(148, 163, 200, 0.22);
-  border-radius: 2rem;
-  background: rgba(148, 163, 200, 0.05);
-  color: color-mix(in srgb, var(--color-text-secondary) 80%, transparent);
-  font-family: var(--type-caption-family);
-  font-size: 0.72rem;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-  white-space: nowrap;
-}
 
-.watchlist-top-controls__autocomplete-filter-chip:hover {
-  background: rgba(148, 163, 200, 0.1);
-  border-color: rgba(244, 114, 182, 0.44);
-  color: var(--color-text-primary);
-}
 
-.watchlist-top-controls__autocomplete-filter-chip.is-active {
-  background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(125, 211, 252, 0.14) 100%);
-  border-color: rgba(244, 114, 182, 0.55);
-  color: color-mix(in srgb, var(--color-secondary) 90%, var(--color-text-primary) 10%);
-}
 
-.watchlist-top-controls__autocomplete-filter-chip.is-empty,
-.watchlist-top-controls__autocomplete-filter-chip:disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
-}
 
-.watchlist-top-controls__autocomplete-filter-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding: 0 0.2rem;
-  border-radius: 1rem;
-  background: rgba(148, 163, 200, 0.1);
-  font-size: 0.65rem;
-  font-weight: var(--font-weight-bold);
-  line-height: 1;
-}
 
-.watchlist-top-controls__autocomplete-filter-chip.is-active .watchlist-top-controls__autocomplete-filter-count {
-  background: rgba(244, 114, 182, 0.28);
-}
 
 .watchlist-top-controls__autocomplete-loading {
   display: flex;
@@ -11812,4 +11751,12 @@ body .app-session-bar .duo-status-card.duo-status-card--portal {
   color: var(--color-text-tertiary);
   font-size: 0.78rem;
   opacity: 0.7;
+}
+.watchlist-top-controls__autocomplete-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.7rem 0.45rem;
+  border-bottom: 1px solid rgba(148, 163, 200, 0.1);
+  flex-shrink: 0;
 }
