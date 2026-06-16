@@ -1,3 +1,7 @@
+# UI prune plan (archived)
+
+> Moved from `.agents/scratch/`. Targets `artifacts/electron/` paths — see [MEMORY.md](../memory/MEMORY.md) for canonical root `src/` layout.
+
 1. **Identify the goal:** The user wants to perform a "continuous UI prune" focusing on the front page, grouping related features, and making them more logical. They gave a specific example of grouping scattered menu items or split views, mentioning "group 3 scattered filter buttons on home view into single magic slide-toggle" and extracting it to a new component `MagicToggle`.
 2. **Current State:**
     * I've created a `MagicToggle` component in `artifacts/electron/src/components/ui/magic-toggle.tsx`.
