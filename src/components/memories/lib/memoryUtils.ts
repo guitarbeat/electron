@@ -1,5 +1,9 @@
 import type { Movie, SharedMemory } from "@/shared/types";
-import { normalizeMovieTitle } from "@/utils/shared";
+import {
+  compareCreatedAtAsc,
+  compareCreatedAtDesc,
+  normalizeMovieTitle,
+} from "@/utils";
 
 export const INITIAL_VISIBLE_COUNT = 6;
 export const ALL_MOVIES_FILTER = "all";
@@ -15,11 +19,6 @@ interface StickyNoteTheme {
   meta: string;
   signature: string;
   pin: string;
-}
-
-interface MovieMemorySummary {
-  count: number;
-  latest?: SharedMemory;
 }
 
 const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
@@ -67,11 +66,33 @@ const STICKY_NOTE_THEMES: StickyNoteTheme[] = [
 
 const STICKY_NOTE_ROTATIONS = [-2.3, 1.8, -1.2, 2.4, -0.7, 1.1, -1.8, 2.7];
 
-const getFallbackMovieKey = (movieTitle: string): string =>
-  `title:${normalizeMovieTitle(movieTitle)}`;
+export const groupMemoriesByMovieId = (
+  movies: Movie[],
+  memories: SharedMemory[],
+): Map<string, SharedMemory[]> => {
+  const movieLookupByTitle = new Map(
+    movies.map((movie) => [normalizeMovieTitle(movie.title), movie.id]),
+  );
+  const memoriesByMovieId = new Map<string, SharedMemory[]>();
 
-const getMemoryMovieKey = (memory: SharedMemory): string =>
-  memory.movieId || getFallbackMovieKey(memory.movieTitle);
+  for (const memory of memories) {
+    const targetMovieId =
+      memory.movieId ??
+      movieLookupByTitle.get(normalizeMovieTitle(memory.movieTitle));
+    if (!targetMovieId) {
+      continue;
+    }
+
+    const group = memoriesByMovieId.get(targetMovieId);
+    if (group) {
+      group.push(memory);
+    } else {
+      memoriesByMovieId.set(targetMovieId, [memory]);
+    }
+  }
+
+  return memoriesByMovieId;
+};
 
 const getMemorySeed = (memory: SharedMemory): number => {
   const source = `${memory.id}|${memory.movieTitle}|${memory.author}|${memory.createdAt}`;
@@ -95,62 +116,19 @@ export const getStickyNoteRotation = (memory: SharedMemory): number => {
   return STICKY_NOTE_ROTATIONS[seed % STICKY_NOTE_ROTATIONS.length];
 };
 
-export const buildMovieMemorySummaries = (
-  movies: Movie[],
-  memories: SharedMemory[],
-): Map<string, MovieMemorySummary> => {
-  const groupedByKey = new Map<string, SharedMemory[]>();
-
-  memories.forEach((memory) => {
-    const key = getMemoryMovieKey(memory);
-    const list = groupedByKey.get(key) || [];
-    list.push(memory);
-    groupedByKey.set(key, list);
-  });
-
-  const summaries = new Map<string, MovieMemorySummary>();
-
-  movies.forEach((movie) => {
-    const movieKeys = [movie.id, getFallbackMovieKey(movie.title)];
-    const merged = new Map<string, SharedMemory>();
-
-    movieKeys.forEach((key) => {
-      const memoriesForKey = groupedByKey.get(key) || [];
-      memoriesForKey.forEach((memory) => {
-        merged.set(memory.id, memory);
-      });
-    });
-
-    const allMemories = sortMemories(Array.from(merged.values()), "newest");
-
-    if (allMemories.length > 0) {
-      summaries.set(movie.id, {
-        count: allMemories.length,
-        latest: allMemories[0],
-      });
-    }
-  });
-
-  return summaries;
-};
-
 export const sortMemories = (
   memories: SharedMemory[],
   sortMode: MemorySortMode,
 ): SharedMemory[] => {
+  const byDate =
+    sortMode === "oldest" ? compareCreatedAtAsc : compareCreatedAtDesc;
+
   return [...memories].sort((a, b) => {
     if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
       return a.isPinned ? -1 : 1;
     }
 
-    const aTime = new Date(a.createdAt).getTime();
-    const bTime = new Date(b.createdAt).getTime();
-
-    if (sortMode === "oldest") {
-      return aTime - bTime;
-    } else {
-      return bTime - aTime;
-    }
+    return byDate(a, b);
   });
 };
 

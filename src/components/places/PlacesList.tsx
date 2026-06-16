@@ -31,6 +31,7 @@ import {
 } from "./lib/placeSections.ts";
 import { usePlaceSuggestions } from "@/hooks/places";
 import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
+import { getErrorMessage } from "@/utils";
 import { createPortal } from "react-dom";
 import {
   type BentoStatTileConfig,
@@ -271,10 +272,9 @@ const PlacesList: React.FC = () => {
       setSearchQuery("");
       showToast({ message: `"${query}" added!`, type: "success" });
     } catch (error) {
-      setSuggestionError(
-        error instanceof Error ? error.message : "Failed to add place",
-      );
-      showToast({ message: "Failed to add place", type: "error" });
+      const message = getErrorMessage(error, "Failed to add place");
+      setSuggestionError(message);
+      showToast({ message, type: "error" });
     } finally {
       setIsAdding(false);
     }
@@ -293,10 +293,9 @@ const PlacesList: React.FC = () => {
         type: "success",
       });
     } catch (error) {
-      setSuggestionError(
-        error instanceof Error ? error.message : "Failed to suggest place",
-      );
-      showToast({ message: "Failed to suggest place", type: "error" });
+      const message = getErrorMessage(error, "Failed to suggest place");
+      setSuggestionError(message);
+      showToast({ message, type: "error" });
     } finally {
       setIsSuggesting(false);
     }

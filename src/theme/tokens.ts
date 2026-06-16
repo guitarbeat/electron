@@ -5,13 +5,7 @@
  * `themes.ts` and are applied at runtime via `applyTheme()`.
  */
 
-import { moviesThemeDefinition, placesThemeDefinition } from "./themes.ts";
-
-/** @deprecated Prefer `useTheme().theme` — kept for gradual migration of inline styles. */
-export const moviesTheme = moviesThemeDefinition.tokens;
-
-/** @deprecated Prefer `useTheme().theme` */
-export const placesTheme = placesThemeDefinition.tokens;
+import { moviesThemeDefinition } from "./themes.ts";
 
 export const shellTokens = moviesThemeDefinition.shell;
 

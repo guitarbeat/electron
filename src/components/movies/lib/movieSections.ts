@@ -1,6 +1,8 @@
 import type { Movie, MovieSuggestion } from "@/shared/types";
 import {
   buildCollectionSections,
+  compareCreatedAtDesc,
+  compareStringsAlpha,
   type CollectionSections,
 } from "../../../utils/workspace.ts";
 
@@ -12,9 +14,7 @@ function sortMovies(movies: Movie[], sortOrder: MovieSortOrder): Movie[] {
   const sorted = [...movies];
   switch (sortOrder) {
     case "alpha":
-      return sorted.sort((a, b) =>
-        a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
-      );
+      return sorted.sort((a, b) => compareStringsAlpha(a.title, b.title));
     case "rating":
       return sorted.sort((a, b) => {
         const ra = parseFloat(a.imdbRating ?? "0") || 0;
@@ -23,10 +23,7 @@ function sortMovies(movies: Movie[], sortOrder: MovieSortOrder): Movie[] {
       });
     case "recent":
     default:
-      return sorted.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
+      return sorted.sort(compareCreatedAtDesc);
   }
 }
 

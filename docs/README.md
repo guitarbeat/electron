@@ -4,13 +4,10 @@ Project conventions for humans and agents live in [`DEVELOPMENT.md`](DEVELOPMENT
 
 | Doc | Contents |
 | --- | --- |
-| [Architecture](ARCHITECTURE.md) | High-level system overview, frontend/backend breakdown |
+| [Design system](DESIGN.md) | Colors, typography, components, and Y2K cinema aesthetic |
+| [Changelog](CHANGELOG.md) | Release history |
+| [Architecture](ARCHITECTURE.md) | System overview, API, persistence, site layout, shell UX |
 | [Development](DEVELOPMENT.md) | Toolchain, env vars, and recommended workflow |
-| [Deployment](DEPLOYMENT.md) | Local run, hosting (Vercel / Netlify), environment variables |
-| [History](HISTORY.md) | Timeline, regression log, path crosswalk |
+| [Deployment](DEPLOYMENT.md) | Hosting (Vercel / Netlify), env vars, health checks, Vercel best practices |
 | [Decisions](decisions/README.md) | Architecture decision records (ADRs) |
-| [Site layout](SITE_LAYOUT.md) | App shell, workspaces, modals, navigation |
-| [Consolidation Plan](CONSOLIDATION_PLAN.md) | Blueprint for service and module reorganization |
-| [Import Fixes](IMPORT_FIXES_CHECKLIST.md) | Checklist for ongoing path and type fixes |
-| [Replit](replit.md) | Replit agent notes (legacy workspace commands) |
-| [Vercel Best Practices](VERCEL.md) | Deployment guidelines for Vercel-hosted apps |
+| [Archive](archive/) | History, completed planning checklists |

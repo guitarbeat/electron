@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Spinner } from "@/common/Icons";
-import { MAX_MESSAGE_LENGTH } from "@/utils";
+import { MAX_MESSAGE_LENGTH, getErrorMessage } from "@/utils";
 import type { User } from "@/shared/types";
 import { spacing } from "@/theme/tokens";
 import { shouldSubmitMessageOnKeyDown } from "./lib/messageKeyboard";
@@ -59,9 +59,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       setContent("");
       window.setTimeout(() => textareaRef.current?.focus(), 250);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : "Failed to send message.",
-      );
+      setSubmitError(getErrorMessage(error, "Failed to send message."));
     }
   };
 

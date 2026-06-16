@@ -1,7 +1,6 @@
 import type { FC } from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import type { MainTab } from "@/shared/types";
-import { useAppHeaderSlot } from "@/app/AppHeaderContext";
 import AppNavStrip from "@/ui/AppNavStrip";
 import ProfileMenu from "@/ui/ProfileMenu";
 import "./AppHeader.css";
@@ -34,19 +33,11 @@ const AppHeader: FC<AppHeaderProps> = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
-  const centerRef = useRef<HTMLDivElement>(null);
-  const slot = useAppHeaderSlot();
-
-  useEffect(() => {
-    if (!slot) return;
-    slot.setCenterNode(centerRef.current);
-    return () => slot.setCenterNode(null);
-  }, [slot]);
 
   return (
     <header
       ref={headerRef}
-      className={`app-header app-header--${activeTab}${isMenuOpen ? " is-profile-menu-open" : ""}${slot?.hasSearch ? " app-header--has-search" : ""}`}
+      className={`app-header app-header--${activeTab}${isMenuOpen ? " is-profile-menu-open" : ""}`}
       role="banner"
     >
       <div className="app-header__left">
@@ -60,11 +51,6 @@ const AppHeader: FC<AppHeaderProps> = ({
           onRetrySync={onRetrySync}
         />
       </div>
-
-      <div
-        ref={centerRef}
-        className={`app-header__center${slot?.hasSearch ? " app-header__center--search" : ""}`}
-      />
 
       <div className="app-header__right">
         <ProfileMenu onOpenChange={setIsMenuOpen} />

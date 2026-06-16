@@ -12,9 +12,9 @@ A two-person collaborative movie watchlist and date-planning SPA titled "electro
 - Compatibility quiz (styled as a retro 1990s internet advertisement — Comic Sans, blinking marquee banners, rainbow borders, Windows 98-style progress bar)
 - Date spots/places workspace (Google Places integration)
 - Y2K / Windows 98 UI throughout: Win98 chrome navbar, silver dialog-box search bar, Win98 outset borders on movie cards, Win98 listbox autocomplete, retro button styling
-- Draggable floating action bubble for navigation (profile switching lives exclusively in this menu — no duplicate session bar)
+- Draggable floating action bubble for Messages; profile switching lives in the shell control strip (no duplicate session bar)
 
-**Profile/session UX:** Profile selection (Aaron / Electra / Guest) lives only in the action bubble quick-actions menu. A legacy `app-session-bar` header panel that created a duplicate login UI was removed; the `ActionBubble.tsx` and `ActionFanMenu.tsx` UI components are also gone (replaced by `ActionBubbleLayer.tsx`).
+**Profile/session UX:** Profile selection (Aaron / Electra / Guest) lives in the static shell control strip. Legacy `ActionBubble.tsx` / `ActionFanMenu.tsx` are gone; Messages uses a bottom-right FAB.
 
 **Persistence model:** defaults to `localStorage`; upgrades to Neon Postgres when `DATABASE_URL` is configured.
 
@@ -45,10 +45,10 @@ src/
   branding/    # Logo marks, favicon, logo lab
   components/  # Feature UI (watchlist, messages, matchmaker, spinWheel, places, quiz, effects, ui, ...)
   hooks/       # Shared React hooks (useMovies, useMessages, useMatchmaker, usePolling, ...)
-  services/    # Domain modules: state, metadata, content (messages, memories), polling
+  services/    # Domain modules: state, metadata, content, polling, analytics
   shared/      # Shared TypeScript types
   theme/       # Design tokens
-  utils/       # Shared helpers (date.ts, browser.ts, shared.ts, random.ts, styling.ts, commonUtils.ts)
+  utils/       # Shared helpers (`shared.ts`, `validation.ts`, `workspace.ts`)
 ```
 
 **State management:** No Redux/Zustand. Uses React context (`ThemeProvider`, `UserProvider`, `ToastProvider` all consolidated in `src/app/providers.tsx`) plus custom hooks that wrap a polling service. Polling hits `/api/state/:scope` endpoints on a configurable interval (15–30s).
@@ -140,14 +140,77 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 
 ### Environment Variables
 
-**Client-side (`VITE_*`):**
-- `VITE_DATABASE_URL` — local dev fallback for Neon/Postgres
-- `VITE_API_SECRET` — must match server `API_SECRET` for authorized writes
-- `VITE_OMDB_API_URL` / `VITE_OMDB_API_KEY` — OMDb override
-- `VITE_GOOGLE_PLACES_API_KEY` — maps/places features
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the canonical client and server variable list.
 
-**Server-side (Vercel/serverless):**
-- `DATABASE_URL` — Neon/Postgres storage
-- `API_SECRET` — authorizes client mutations
-- `SESSION_SIGNING_SECRET` — signs session cookies (required for PIN auth)
-- `OMDB_API_KEY` / `OMDB_API_URL` — OMDb proxy
+---
+
+## Site Layout
+
+### High-Level Structure
+
+The site is a single-page React app with two primary workspaces:
+
+- `Watchlist` mode (`queue`)
+- `Date Spots` mode (`places`)
+
+The shell focuses on: shared profile state, one quiz ritual, one workspace switcher, and the active primary panel.
+
+### Global App Shell
+
+1. `ThemeProvider` plus visual effects layer (`RetroEffects`, optional moiré background, `VignetteOverlay`)
+2. Accessibility skip link to `#main-content`
+3. Static **shell control strip** (`.shell-control-strip`) — profile/session, `ThemeToggle`, quick-action buttons
+4. Main column (`.app-workspace-stack`) — strip above `AppWorkspaceShell`; no outer picture frame
+5. Primary workspace surface
+6. Shared feature modal stack
+
+Removed from the main shell: command deck support rail.
+
+### Profiles / Session Strip
+
+Profiles live in the left side of the shell control strip: `UserSelection` (shell variant), guest vs named profile, PIN entry/settings, logout. Always visible on desktop and mobile.
+
+### Quick Actions
+
+Right side of the shell control strip:
+
+- Messages — single FAB bottom-right (no radial menu)
+- Quiz launch state visible in both workspaces
+- Notes and Spin & Match — Watchlist only
+- Background toggle (Moire ↔ Water) next to `ThemeToggle`
+
+### Main Workspace Layout
+
+**Desktop:** shell strip above one primary workspace surface; no support rail.
+
+**Mobile:** same order, single column; strip at top; no bottom nav or More sheet.
+
+### Primary Panels
+
+**Watchlist:** add/recommend input, section stack (Suggestions / Queue / Watched), memory pills, movie/suggestion cards, inline memories (no standalone memories modal), confetti on dual-watched, delete confirmation.
+
+**Date Spots:** add input, Queue / Visited sections, map preview card, place card grid, visited toggle, delete confirmation.
+
+### Modal Stack
+
+Active: Quiz Editor, Quiz Flow, Spin Wheel, Matchmaker. Pruned: standalone Memories modal.
+
+### Theming + Visual Behavior
+
+Wax/parchment styling on shell strip and workspaces; `body[data-theme]` switches movie/places palettes; optional CRT and cursor-trail effects respect saved state.
+
+### Compact Diagram
+
+```mermaid
+flowchart TD
+  App["App shell"]
+  App --> Effects["Theme + visual effects"]
+  App --> Strip["Shell control strip"]
+  Strip --> Profiles["Profiles + PIN controls"]
+  Strip --> Toggle["Theme toggle"]
+  Strip --> Actions["Contextual quick actions"]
+  App --> Surface["Primary workspace surface"]
+  Surface --> Watch["Watchlist panel"]
+  Surface --> Places["Date Spots panel"]
+  App --> Modal["Feature modal stack"]
+```

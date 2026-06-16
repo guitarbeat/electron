@@ -6,6 +6,8 @@ Single home for AI agent guidance, skills, memory, plans, scratch work, and sess
 
 | Path | Purpose |
 |------|---------|
+| [`opencode.md`](opencode.md) | OpenCode skill-driven execution model |
+| [`orchestration.md`](orchestration.md) | Personas, skills, and slash-command composition |
 | [`guidelines.md`](guidelines.md) | Project structure, commands, and conventions |
 | [`skills/`](skills/) | Workflow skills (`SKILL.md` per skill); see [`skills/README.md`](skills/README.md) for authoring |
 | [`skills-lock.json`](skills-lock.json) | Cursor plugin skill lockfile (paths point at upstream plugins, not this repo) |
@@ -13,6 +15,6 @@ Single home for AI agent guidance, skills, memory, plans, scratch work, and sess
 | [`plans/`](plans/) | Saved agent implementation plans |
 | [`scratch/`](scratch/) | One-off scripts and draft PR/submission notes (see [`scratch/README.md`](scratch/README.md)) |
 | [`sessions/`](sessions/) | Exported agent session logs (gitignored) |
-| [`agent_assets_metadata.toml`](agent_assets_metadata.toml) | Paintress export metadata pointing at root `DESIGN.md` |
+| [`agent_assets_metadata.toml`](agent_assets_metadata.toml) | Paintress export metadata pointing at [`docs/DESIGN.md`](../docs/DESIGN.md) |
 
 Root [`AGENTS.md`](../AGENTS.md) is the entry point most tools discover automatically; it references this directory.

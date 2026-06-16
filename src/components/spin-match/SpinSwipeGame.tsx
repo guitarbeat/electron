@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useMovies } from "@/hooks/movies/useMovies";
+import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/useProviders";
 import type { Movie } from "@/shared/types";
 import MovieDetailsModal from "@/components/movies/MovieDetailsModal";

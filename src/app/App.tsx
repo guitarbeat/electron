@@ -17,7 +17,6 @@ import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
 import { useAppSession, useUser, useTheme } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import AppHeader from "@/app/AppHeader";
-import { AppHeaderSlotProvider } from "@/app/AppHeaderSlot";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import AppWorkspaceShell from "@/app/AppWorkspaceShell";
@@ -43,14 +42,22 @@ const MagicComponent = React.lazy(
       }>;
     }>,
 );
-const RetroEffects = React.lazy(() =>
+const RetroEffects = React.lazy<
+  React.ComponentType<{ cursorTrailEnabled: boolean }>
+>(() =>
   import("@/components/effects/RetroEffects").catch(
-    () => ({ default: () => null }) as { default: React.FC },
+    () => ({ default: () => null }),
   ),
 );
-const RadialMenu = React.lazy(() =>
+const RadialMenu = React.lazy<
+  React.ComponentType<{
+    onOpenMessages?: () => void;
+    onOpenQuiz?: () => void;
+    onOpenSpin?: () => void;
+  }>
+>(() =>
   import("@/components/effects/RadialMenu").catch(
-    () => ({ default: () => null }) as { default: React.FC },
+    () => ({ default: () => null }),
   ),
 );
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
@@ -438,34 +445,32 @@ const App: React.FC = () => {
           <div
             className={`app-workspace-stack app-workspace-stack--${activeTab}`}
           >
-            <AppHeaderSlotProvider>
-              <div
-                className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === "movies" ? " movies-unified-shell" : ""}`}
-              >
-                <AppHeader
+            <div
+              className={`app-tab-shell app-tab-shell--${activeTab} movies-unified-shell`}
+            >
+              <AppHeader
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                pwaStatus={{
+                  isOnline,
+                  isStandalone,
+                  canInstall: canInstallApp,
+                  hasUpdateReady,
+                  pendingSyncCount: outboxStatus.pendingCount,
+                  blockedSyncCount: outboxStatus.blockedCount,
+                }}
+                onInstallApp={() => void handleInstallApp()}
+                onApplyUpdate={handleApplyUpdate}
+                onRetrySync={handleRetryPendingSync}
+                onOpenSpin={openSpinMatch}
+              />
+              <WorkspaceErrorBoundary>
+                <AppWorkspaceShell
+                  isMobile={isMobile}
                   activeTab={activeTab}
-                  onTabChange={handleTabChange}
-                  pwaStatus={{
-                    isOnline,
-                    isStandalone,
-                    canInstall: canInstallApp,
-                    hasUpdateReady,
-                    pendingSyncCount: outboxStatus.pendingCount,
-                    blockedSyncCount: outboxStatus.blockedCount,
-                  }}
-                  onInstallApp={() => void handleInstallApp()}
-                  onApplyUpdate={handleApplyUpdate}
-                  onRetrySync={handleRetryPendingSync}
-                  onOpenSpin={openSpinMatch}
                 />
-                <WorkspaceErrorBoundary>
-                  <AppWorkspaceShell
-                    isMobile={isMobile}
-                    activeTab={activeTab}
-                  />
-                </WorkspaceErrorBoundary>
-              </div>
-            </AppHeaderSlotProvider>
+              </WorkspaceErrorBoundary>
+            </div>
           </div>
         </div>
 

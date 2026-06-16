@@ -6,14 +6,12 @@ import {
 } from "../state/stateSchemas.ts";
 import type { Message } from "../../shared/types.ts";
 import { sanitizeInput } from "../../utils/shared.ts";
+import { compareCreatedAtAsc } from "../../utils/workspace.ts";
 
 export { cloneMessages, isMessageRecord, parseMessagesContent };
 
 const sortMessages = (messages: Message[]): Message[] =>
-  [...messages].sort(
-    (left, right) =>
-      new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
-  );
+  [...messages].sort(compareCreatedAtAsc);
 
 export const getMessages = async (): Promise<Message[]> => {
   const snapshot = await readScope("messages");

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Button from "@/ui/Button";
-import { useMovies } from "@/hooks/movies/useMovies";
+import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/useProviders";
 import { colors, spacing } from "@/theme/tokens";
 import type { Movie } from "@/shared/types";

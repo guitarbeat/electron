@@ -104,8 +104,6 @@ export interface MatchmakerGame {
 export interface MoviesViewProps {
   isPaused?: boolean;
   isMobile?: boolean;
-  showPlanControls?: boolean;
-  onClosePlanControls?: () => void;
 }
 
 export type { QuizCharacter } from "../components/quiz/lib/types.ts";

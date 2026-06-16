@@ -73,4 +73,26 @@ Filenames must match the server scopes (for example `movielist.json` for the wat
   Canonical project: `guitarbeats-projects / electra-and-aaron-movies`  
   Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`  
   If a local checkout is not linked, run `vercel link --project electra-and-aaron-movies` before `vercel env pull`
-- **Netlify**: `netlify.toml` builds the app; `/api/*` must target a real backend unless you add compatible functions — see `DEVELOPMENT.md`
+- **Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling Postgres (use for frequent uptime pings). `GET /api/health?deep=1` verifies shared-state rows and PIN coverage — use a slow interval only (e.g. every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
+- **Monitoring:** Use Vercel function logs and error rates for `/api/state/*`; alert on 5xx spikes or latency. External uptime tools can target `/api/health` and optionally `?deep=1` on a longer interval.
+- **Netlify**: copy [`examples/netlify.toml.example`](examples/netlify.toml.example) to the repo root as `netlify.toml`; `/api/*` must target a real backend unless you add compatible functions — see `DEVELOPMENT.md`
+
+## Vercel best practices
+
+- Treat Vercel Functions as stateless + ephemeral (no durable RAM/FS, no background daemons); use Blob or marketplace integrations for preserving state
+- Edge Functions (standalone) are deprecated; prefer Vercel Functions
+- Don't start new projects on Vercel KV/Postgres (both discontinued); use Marketplace Redis/Postgres instead
+- Store secrets in Vercel env variables, not in git or `NEXT_PUBLIC_*`
+- Provision Marketplace native integrations with `vercel integration add` (CI/agent-friendly)
+- Sync env + project settings with `vercel env pull` / `vercel pull` when you need local/offline parity
+- Use `waitUntil` for post-response work; avoid the deprecated Function `context` parameter
+- Set Function regions near your primary data source; avoid cross-region DB/service roundtrips
+- Tune Fluid Compute knobs (e.g., `maxDuration`, memory/CPU) for long I/O-heavy calls
+- Use Runtime Cache for fast **regional** caching + tag invalidation (don't treat it as global KV)
+- Use Cron Jobs for schedules; cron runs in UTC and triggers your production URL via HTTP GET
+- Use Vercel Blob for uploads/media; Edge Config for small, globally-read config
+- If Deployment Protection is enabled, use a bypass secret to access protected previews
+- Add OpenTelemetry via `@vercel/otel` on Node; don't expect OTEL support on the Edge runtime
+- Enable Web Analytics + Speed Insights early
+- Use AI Gateway for model routing (`AI_GATEWAY_API_KEY`); curl `https://ai-gateway.vercel.sh/v1/models` for current model IDs
+- For durable agent loops or untrusted code: use Workflow (pause/resume/state) + Sandbox; use Vercel MCP for secure infra access

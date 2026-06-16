@@ -1,7 +1,9 @@
-import React, { type FC } from "react";
+import React, { type FC, useCallback, useEffect, useRef, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import MoviesView from "@/components/movies/MoviesView";
+import BentoWorkspaceController from "@/components/ui/BentoWorkspaceController";
+import { BentoSlotContext, type BentoSlotConfig } from "./BentoSlotContext";
 
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
@@ -42,29 +44,63 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   isMobile,
   activeTab,
 }) => {
+  const [bentoConfig, setBentoConfig] = useState<BentoSlotConfig | null>(null);
+  const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
+    null,
+  );
+
+  const setConfig = useCallback((config: BentoSlotConfig) => {
+    setBentoConfig(config);
+  }, []);
+
+  const searchSlotRef = useCallback((el: HTMLDivElement | null) => {
+    setSearchPortalEl(el);
+  }, []);
+
+  const previousTabRef = useRef(activeTab);
+  useEffect(() => {
+    if (previousTabRef.current === activeTab) {
+      return;
+    }
+    previousTabRef.current = activeTab;
+    setBentoConfig(null);
+  }, [activeTab]);
+
   return (
-    <main
-      id="main-content"
-      className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
-      tabIndex={-1}
-      style={{ position: "relative", overflow: "hidden" }}
-    >
-      <section
-        className={`workspace-surface workspace-surface--${activeTab}`}
-        style={{ position: "relative", zIndex: 1, minWidth: 0 }}
-        aria-label={
-          activeTab === "movies" ? "Movies workspace" : "Places workspace"
-        }
+    <BentoSlotContext.Provider value={{ setConfig, searchPortalEl }}>
+      <main
+        id="main-content"
+        className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
+        tabIndex={-1}
+        style={{ position: "relative", overflow: "hidden" }}
       >
-        {activeTab === "movies" ? (
-          <MoviesView isMobile={isMobile} />
-        ) : (
-          <React.Suspense fallback={<PlacesTabFallback />}>
-            <PlacesList />
-          </React.Suspense>
-        )}
-      </section>
-    </main>
+        <BentoWorkspaceController
+          stats={bentoConfig?.stats ?? []}
+          sorts={bentoConfig?.sorts ?? []}
+          activeSortOrder={bentoConfig?.activeSortOrder ?? "recent"}
+          onSortChange={bentoConfig?.onSortChange ?? (() => {})}
+          ariaLabel={bentoConfig?.ariaLabel}
+        >
+          <div ref={searchSlotRef} />
+        </BentoWorkspaceController>
+
+        <section
+          className={`workspace-surface workspace-surface--${activeTab}`}
+          style={{ position: "relative", zIndex: 1, minWidth: 0 }}
+          aria-label={
+            activeTab === "movies" ? "Movies workspace" : "Places workspace"
+          }
+        >
+          {activeTab === "movies" ? (
+            <MoviesView isMobile={isMobile} />
+          ) : (
+            <React.Suspense fallback={<PlacesTabFallback />}>
+              <PlacesList />
+            </React.Suspense>
+          )}
+        </section>
+      </main>
+    </BentoSlotContext.Provider>
   );
 };
 

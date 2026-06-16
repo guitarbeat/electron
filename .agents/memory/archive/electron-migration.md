@@ -3,7 +3,7 @@ name: Electron App Migration
 description: How the Electron collaborative movie watchlist app was migrated into the pnpm workspace
 ---
 
-> **Historical:** describes the Replit `artifacts/` workspace layout. The app now runs from repo-root `src/` and `api/` (`pnpm dev`). See [`docs/HISTORY.md`](../../docs/HISTORY.md) and [MEMORY.md](MEMORY.md).
+> **Historical:** describes the Replit `artifacts/` workspace layout. The app now runs from repo-root `src/` and `api/` (`pnpm dev`). See [`docs/archive/HISTORY.md`](../../docs/archive/HISTORY.md) and [MEMORY.md](MEMORY.md).
 
 ## Structure (Replit-era mirror)
 - Frontend: `artifacts/electron/` — React+Vite app, previewPath `/`, port 25729

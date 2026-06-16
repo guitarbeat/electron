@@ -14,10 +14,8 @@ export interface BentoSlotConfig {
 }
 
 export interface BentoSlotContextValue {
-  config: BentoSlotConfig | null;
   setConfig: (config: BentoSlotConfig) => void;
   searchPortalEl: HTMLDivElement | null;
-  setSearchPortalEl: (el: HTMLDivElement | null) => void;
 }
 
 export const BentoSlotContext = createContext<BentoSlotContextValue | null>(

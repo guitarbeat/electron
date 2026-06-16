@@ -1211,17 +1211,6 @@ html {
   }
 }
 
-/* ── Bento sort chips: spring active feedback ───────────────────── */
-.bento-sort-chip {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.bento-sort-chip:active {
-  transform: scale(0.94);
-  transition: transform 0.1s ease;
-}
-
 /* ── Suggestion accept/reject: spring tap feedback ──────────────── */
 .suggestion-item-card__button {
   -webkit-tap-highlight-color: transparent;

@@ -4,8 +4,8 @@ import {
   removeStoredJson,
   readStoredJson,
   writeStoredJson,
-} from "./storageClient.ts";
-import { getMetricCount, trackMetric } from "./analyticsService.ts";
+} from "../storageClient.ts";
+import { getMetricCount, trackMetric } from "./index.ts";
 
 test("removeStoredJson handles window.localStorage.removeItem throwing error", () => {
   const originalWindow = global.window;

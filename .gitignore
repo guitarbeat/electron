@@ -48,6 +48,7 @@ Thumbs.db
 # Agent backups and ephemeral exports
 .migration-backup/
 .paintress/
+.agents/scratch/
 .agents/sessions/
 .canvas/
 

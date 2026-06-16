@@ -11,14 +11,15 @@ import type { MovieAutocompleteResult } from "../../services/metadata/types";
 import { usePolling } from "../../services/polling";
 import { Movie, MovieSuggestion, User } from "../../shared/types";
 import { useMovies } from "./useMovies";
-import { useSuggestions } from "../suggestions/useSuggestions";
+import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/useProviders";
 import {
   areDeeplyEqual,
+  compareCreatedAtDesc,
   normalizeMovieTitle,
   sanitizeInput,
 } from "../../utils";
-import { trackMetric } from "../../services/analyticsService";
+import { trackMetric } from "@/services/analytics";
 import { readScope, retryScopeSync } from "../../services/state";
 
 const POLLING_INTERVAL = 30000;
@@ -155,7 +156,7 @@ export const useMoviesWorkspace = ({
       if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
         return a.isPinned ? -1 : 1;
       }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return compareCreatedAtDesc(a, b);
     });
   }, [memoriesSnapshot]);
   const suggestionAutocompleteResults = useMemo(() => {

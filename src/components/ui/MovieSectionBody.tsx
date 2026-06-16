@@ -78,14 +78,13 @@ const MovieSectionBody: React.FC<Props> = ({
   sectionIds,
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
-  const isEmpty = (arr: unknown[]) => arr.length === 0;
 
   const showInitialLoading =
     isLoading &&
     isSuggestionsLoading &&
-    isEmpty(sections.queue) &&
-    isEmpty(sections.suggestions) &&
-    isEmpty(sections.completed);
+    sections.queue.length === 0 &&
+    sections.suggestions.length === 0 &&
+    sections.completed.length === 0;
 
   const movieGrid = (movies: Movie[], emptyLabel: string) => (
     <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
@@ -188,12 +187,12 @@ const MovieSectionBody: React.FC<Props> = ({
   }
 
   const isQueueEmpty =
-    isEmpty(sections.queue) &&
-    isEmpty(sections.suggestions) &&
+    sections.queue.length === 0 &&
+    sections.suggestions.length === 0 &&
     !isSuggestionsLoading;
 
   // ── All-empty CTA ─────────────────────────────────────────────────────────
-  if (isQueueEmpty && isEmpty(sections.completed)) {
+  if (isQueueEmpty && sections.completed.length === 0) {
     return (
       <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
         <CollectionEmptyState
@@ -242,7 +241,7 @@ const MovieSectionBody: React.FC<Props> = ({
           tone="incoming"
           id={sectionIds?.incoming}
         >
-          {isSuggestionsLoading && isEmpty(sections.suggestions) ? (
+          {isSuggestionsLoading && sections.suggestions.length === 0 ? (
             <CollectionGrid className="watchlist-content" minColumnWidth={GRID}>
               {sk.slice(0, 4).map((key) => (
                 <MovieCardSkeleton key={key} />

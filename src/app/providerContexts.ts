@@ -5,8 +5,6 @@ import type { AppThemeDefinition, ThemeName } from "@/theme/themes";
 export interface ThemeContextValue {
   currentTheme: ThemeName;
   theme: AppThemeDefinition;
-  /** @deprecated Use `theme.tokens` */
-  themeTokens: AppThemeDefinition["tokens"];
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);

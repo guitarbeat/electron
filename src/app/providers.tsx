@@ -48,9 +48,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     () => ({
       currentTheme: themeName,
       theme,
-      themeTokens: theme.tokens,
     }),
-    [themeName, theme]
+    [themeName, theme],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

@@ -9,7 +9,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 const reactHooksRecommended = reactHooks.configs.recommended.rules;
 
 export default tseslint.config(
-  { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next', 'lib/**'] },
+  { ignores: ['dist', 'scripts', 'docs', 'public', '.next'] },
   {
     extends: [
       js.configs.recommended,
@@ -23,7 +23,7 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.app.json'],
+        project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

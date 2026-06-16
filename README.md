@@ -26,7 +26,7 @@ Run `pnpm verify` before a Vercel deploy to execute the full local validation se
 
 ## Documentation
 
-- **[docs/README.md](docs/README.md)** — index of guides (architecture, development, deployment)
+- **[docs/README.md](docs/README.md)** — index of guides (design system, architecture, development, deployment, changelog)
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — toolchain, env vars, and workflow
 - **[AGENTS.md](AGENTS.md)** — AI agent entry point → [`.agents/README.md`](.agents/README.md) for skills, memory, and conventions
 

@@ -1,4 +1,4 @@
-import { readStoredJson, writeStoredJson } from "./storageClient.ts";
+import { readStoredJson, writeStoredJson } from "../storageClient.ts";
 
 // ---------------------------------------------------------------------------
 // Analytics metrics

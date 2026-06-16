@@ -79,28 +79,9 @@ Notes:
   `pnpm verify` (or run `pnpm lint`, `pnpm check-types`, `pnpm test`, `pnpm build` individually when narrowing failures).
 - CI (GitHub Actions): `.github/workflows/ci.yml` runs the same install, lint, typecheck, test, and build steps on pushes and pull requests to `main`/`master`.
 
-## Deployment Notes
+## Deployment
 
-### Vercel (full parity with this repo)
-
-- `vercel.json` routes `/api/*` to serverless handlers under `api/**/*.ts` and sends all other paths to `index.html` for the SPA.
-- Canonical Vercel project for this repo: `guitarbeats-projects / electra-and-aaron-movies`  
-  Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`
-- Set the same server env vars as in [Environment Variables](#environment-variables) (`DATABASE_URL`, `SESSION_SIGNING_SECRET`, OMDb/TVMaze, etc.) in the Vercel project settings.
-- If a local checkout is missing `.vercel/project.json`, run `vercel link --project electra-and-aaron-movies` before using `vercel env pull`.
-
-**Health checks:** `GET /api/health` returns `{ "ok": true, "liveness": true }` without calling Postgres (use for frequent uptime pings). `GET /api/health?deep=1` verifies shared-state rows and reads PIN coverage; use a slow interval only (for example every few minutes), not aggressive polling. After a deploy, hit liveness once to confirm `/api/*` is wired.
-
-**Monitoring:** Use Vercel’s function logs and error rates for `/api/state/*` and related handlers; alert on spikes in 5xx or latency. External uptime tools can target `/api/health` (liveness) and optionally `?deep=1` on a longer interval.
-
-### Netlify (static build only until `/api` is wired)
-
-- `netlify.toml` runs `npm run build` and publishes `dist/`. The SPA fallback `/* → /index.html` matches Vercel’s client routing.
-- **`/api/*` is not the repo handlers today**: redirects send `/api/*` to `https://your-backend-host.example.com/api/:splat` (placeholder). Shared state sync, OMDb proxy, and state routes will **not** work until you either:
-  - Point that redirect at a real deployment that implements the same routes as `api/*.ts`, or
-  - Replace it with [Netlify Functions](https://docs.netlify.com/functions/overview/) (or Edge Functions) that mirror those handlers, or
-  - Host the static app on Netlify but configure the client to call a separate API origin (and update CORS / `ALLOWED_ORIGINS` as needed).
-- Treat **“works on Vercel”** as the default for API behavior; verify Netlify explicitly before relying on shared persistence or proxies there.
+Hosting, env vars, health checks, and Vercel/Netlify notes: [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## Source-of-Truth Notes
 

@@ -11,24 +11,27 @@ import { useUser } from "@/app/useProviders";
 import type {
   Movie,
   MovieSuggestion,
-  SharedMemory,
   MoviesViewProps,
 } from "@/shared/types";
 import ConfirmDialog from "@/ui/ConfirmDialog";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
-import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
+import { useMoviesWorkspace } from "@/hooks/movies";
 import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
+import { groupMemoriesByMovieId } from "@/components/memories/lib/memoryUtils";
+import { getErrorMessage } from "@/utils";
 import type { MovieAutocompleteResult } from "@/services/metadata";
-import BentoWorkspaceController, {
+import { createPortal } from "react-dom";
+import {
   type BentoSortChipConfig,
   type BentoStatTileConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
+import { useBentoSlot } from "@/app/BentoSlotContext";
 import "./MoviesPhotoMode.css";
 
 const MOVIE_SECTION_IDS = {
@@ -45,6 +48,7 @@ const MOVIE_SORTS: BentoSortChipConfig[] = [
 
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
+  const { setConfig, searchPortalEl } = useBentoSlot();
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
@@ -89,35 +93,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
   } = useMoviesWorkspace({ currentUser, isPaused });
-  const movieMemories = useMemo(() => {
-    const memoriesByMovieId = new Map<string, SharedMemory[]>();
-    const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
-
-    movies.forEach((movie) => {
-      movieLookupByTitle.set(movie.title.trim().toLowerCase(), movie.id);
-    });
-    memories.forEach((memory) => {
-      let targetMovieId: string | undefined;
-
-      if (memory.movieId) {
-        targetMovieId = memory.movieId;
-      } else {
-        targetMovieId = movieLookupByTitle.get(
-          memory.movieTitle.trim().toLowerCase(),
-        );
-      }
-
-      if (targetMovieId) {
-        let movieGroup = memoriesByMovieId.get(targetMovieId);
-        if (!movieGroup) {
-          movieGroup = [];
-          memoriesByMovieId.set(targetMovieId, movieGroup);
-        }
-        movieGroup.push(memory);
-      }
-    });
-    return memoriesByMovieId;
-  }, [memories, movies]);
+  const movieMemories = useMemo(
+    () => groupMemoriesByMovieId(movies, memories),
+    [memories, movies],
+  );
   const sections = useMemo(
     () => buildMovieSections(movies, pendingSuggestions, sortOrder),
     [movies, pendingSuggestions, sortOrder],
@@ -159,6 +138,21 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const latestMemory = memories[0] ?? null;
   const upNextSummaryCount =
     sections.queue.length + sections.suggestions.length;
+
+  const handleMovieSortChange = useCallback((order: SortOrder) => {
+    setSortOrder(order as MovieSortOrder);
+  }, []);
+
+  useEffect(() => {
+    setConfig({
+      stats: movieStats,
+      sorts: MOVIE_SORTS,
+      activeSortOrder: sortOrder,
+      onSortChange: handleMovieSortChange,
+      ariaLabel: "Movies workspace controls",
+    });
+  }, [setConfig, movieStats, sortOrder, handleMovieSortChange]);
+
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
       previousMoviesRef.current = movies || null;
@@ -235,10 +229,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         window.requestAnimationFrame(focusSearchInput);
       } catch (error) {
         setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to send suggestion",
+          message: getErrorMessage(error, "Failed to send suggestion"),
           type: "error",
         });
       } finally {
@@ -269,7 +260,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       window.requestAnimationFrame(focusSearchInput);
     } catch (error) {
       setToast({
-        message: error instanceof Error ? error.message : "Failed to add movie",
+        message: getErrorMessage(error, "Failed to add movie"),
         type: "error",
       });
     } finally {
@@ -320,7 +311,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       window.requestAnimationFrame(focusSearchInput);
     } catch (error) {
       setSuggestionError(
-        error instanceof Error ? error.message : "Failed to add suggestion",
+        getErrorMessage(error, "Failed to add suggestion"),
       );
       setToast({ message: "Failed to add suggestion", type: "error" });
     }
@@ -349,10 +340,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         });
       } catch (error) {
         setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to accept suggestion",
+          message: getErrorMessage(error, "Failed to accept suggestion"),
           type: "error",
         });
       }
@@ -366,10 +354,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         setToast({ message: `"${suggestion.title}" rejected.`, type: "info" });
       } catch (error) {
         setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to reject suggestion",
+          message: getErrorMessage(error, "Failed to reject suggestion"),
           type: "error",
         });
       }
@@ -390,54 +375,51 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     }
   }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
   return (
-    <div className="watchlist-container places-container">
-      {isMoviesWorkspaceDegraded && (
-        <SyncBanner
-          isBlocked={isMoviesWorkspaceSyncBlocked}
-          onRetry={() => void retryMoviesWorkspaceSync()}
-          label={
-            isMoviesWorkspaceSyncBlocked
-              ? "A shared movies change conflicted with local edits. Refresh and retry."
-              : moviesWorkspaceSyncWarning ||
-                "Movie changes are being kept locally until shared sync recovers."
-          }
-        />
-      )}
-      <BentoWorkspaceController
-        stats={movieStats}
-        sorts={MOVIE_SORTS}
-        activeSortOrder={sortOrder}
-        onSortChange={(order) => setSortOrder(order as MovieSortOrder)}
-        ariaLabel="Movies workspace controls"
-      >
-        <MoviesTopControls
-          ref={moviesTopControlsRef}
-          currentUser={currentUser}
-          upNextCount={upNextSummaryCount}
-          watchedCount={sections.completed.length}
-          noteCount={memories.length}
-          latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
-          latestNoteAuthor={latestMemory?.author ?? null}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedAutocompleteResult={selectedAutocompleteResult}
-          setSelectedAutocompleteResult={setSelectedAutocompleteResult}
-          guestName={guestName}
-          setGuestName={setGuestName}
-          onSubmit={handleAddAction}
-          onRecommend={openRecommendationComposer}
-          onSubmitRecommendation={handleSubmitRecommendation}
-          onCancelRecommendation={resetRecommendationComposer}
-          recommendationReason={recommendationReason}
-          setRecommendationReason={handleRecommendationReasonChange}
-          showRecommendationComposer={isRecommendationComposerOpen}
-          isAdding={isAdding}
-          isSubmittingRecommendation={isSubmittingRecommendation}
-          suggestionError={suggestionError}
-          canRecommend={true}
-        />
-      </BentoWorkspaceController>
-      <MovieSectionBody
+    <>
+      {searchPortalEl &&
+        createPortal(
+          <MoviesTopControls
+            ref={moviesTopControlsRef}
+            currentUser={currentUser}
+            upNextCount={upNextSummaryCount}
+            watchedCount={sections.completed.length}
+            noteCount={memories.length}
+            latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+            latestNoteAuthor={latestMemory?.author ?? null}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedAutocompleteResult={selectedAutocompleteResult}
+            setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+            guestName={guestName}
+            setGuestName={setGuestName}
+            onSubmit={handleAddAction}
+            onRecommend={openRecommendationComposer}
+            onSubmitRecommendation={handleSubmitRecommendation}
+            onCancelRecommendation={resetRecommendationComposer}
+            recommendationReason={recommendationReason}
+            setRecommendationReason={handleRecommendationReasonChange}
+            showRecommendationComposer={isRecommendationComposerOpen}
+            isAdding={isAdding}
+            isSubmittingRecommendation={isSubmittingRecommendation}
+            suggestionError={suggestionError}
+            canRecommend={true}
+          />,
+          searchPortalEl,
+        )}
+      <div className="watchlist-container places-container">
+        {isMoviesWorkspaceDegraded && (
+          <SyncBanner
+            isBlocked={isMoviesWorkspaceSyncBlocked}
+            onRetry={() => void retryMoviesWorkspaceSync()}
+            label={
+              isMoviesWorkspaceSyncBlocked
+                ? "A shared movies change conflicted with local edits. Refresh and retry."
+                : moviesWorkspaceSyncWarning ||
+                  "Movie changes are being kept locally until shared sync recovers."
+            }
+          />
+        )}
+        <MovieSectionBody
         sections={sections}
         isLoading={isLoading}
         isSuggestionsLoading={isSuggestionsLoading}
@@ -461,18 +443,19 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         }}
         sectionIds={MOVIE_SECTION_IDS}
       />
-      {movieToDelete && (
-        <ConfirmDialog
-          isOpen={Boolean(movieToDelete)}
-          title="Remove Movie"
-          message={`Are you sure you want to remove "${movieToDelete.title}"?`}
-          onConfirm={confirmDelete}
-          onCancel={() => setMovieToDelete(null)}
-          confirmText="Remove"
-          variant="danger"
-        />
-      )}
-    </div>
+        {movieToDelete && (
+          <ConfirmDialog
+            isOpen={Boolean(movieToDelete)}
+            title="Remove Movie"
+            message={`Are you sure you want to remove "${movieToDelete.title}"?`}
+            onConfirm={confirmDelete}
+            onCancel={() => setMovieToDelete(null)}
+            confirmText="Remove"
+            variant="danger"
+          />
+        )}
+      </div>
+    </>
   );
 };
 export default memo(MoviesView);

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useUser } from "@/app/useProviders";
 import type { Message } from "@/shared/types";
-import { areDeeplyEqual, sanitizeInput } from "@/utils";
+import { areDeeplyEqual, compareCreatedAtAsc, sanitizeInput } from "@/utils";
 import {
   addMessage as addMessageService,
   deleteMessage as deleteMessageService,
@@ -25,12 +25,7 @@ export const useMessages = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const messages = useMemo(
-    () =>
-      [...(snapshot?.data ?? [])].sort(
-        (left, right) =>
-          new Date(left.createdAt).getTime() -
-          new Date(right.createdAt).getTime(),
-      ),
+    () => [...(snapshot?.data ?? [])].sort(compareCreatedAtAsc),
     [snapshot],
   );
 
