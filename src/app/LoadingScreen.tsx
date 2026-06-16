@@ -1,9 +1,8 @@
 import React from "react";
-import FishTankSection from "@/components/effects/FishTankSection";
 import "./LoadingScreen.css";
 
 /**
- * Full-screen loading state shown while the session is bootstrapping.
+ * Lightweight boot screen — keeps first paint fast while session/chunks warm up.
  */
 const LoadingScreen: React.FC = () => (
   <div
@@ -12,7 +11,12 @@ const LoadingScreen: React.FC = () => (
     aria-live="polite"
     aria-label="Loading"
   >
-    <FishTankSection />
+    <div className="session-loading-screen__content">
+      <span className="session-loading-screen__brand" aria-hidden="true">
+        ◈ Electron
+      </span>
+      <span className="session-loading-screen__spinner" aria-hidden="true" />
+    </div>
   </div>
 );
 

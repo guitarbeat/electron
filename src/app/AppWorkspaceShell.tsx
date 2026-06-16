@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useEffect, useRef, useState } from "react";
+import React, { type FC, useEffect, useRef, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import MoviesView from "@/components/movies/MoviesView";
@@ -49,14 +49,6 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
     null,
   );
 
-  const setConfig = useCallback((config: BentoSlotConfig) => {
-    setBentoConfig(config);
-  }, []);
-
-  const searchSlotRef = useCallback((el: HTMLDivElement | null) => {
-    setSearchPortalEl(el);
-  }, []);
-
   const previousTabRef = useRef(activeTab);
   useEffect(() => {
     if (previousTabRef.current === activeTab) {
@@ -67,7 +59,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
   }, [activeTab]);
 
   return (
-    <BentoSlotContext.Provider value={{ setConfig, searchPortalEl }}>
+    <BentoSlotContext.Provider value={{ setConfig: setBentoConfig, searchPortalEl }}>
       <main
         id="main-content"
         className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
@@ -85,7 +77,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
           onViewModeChange={bentoConfig?.onViewModeChange}
           viewModeAriaLabel={bentoConfig?.viewModeAriaLabel}
         >
-          <div ref={searchSlotRef} />
+          <div ref={setSearchPortalEl} />
         </BentoWorkspaceController>
 
         <section

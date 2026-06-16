@@ -45,12 +45,12 @@ export function useCinematicEntrance(
 
       // Set initial hidden state synchronously (before browser paints)
       gsap.set(targets, {
-        y: 110,
+        y: 72,
         autoAlpha: 0,
-        scale: 0.91,
-        rotationX: -18,
+        scale: 0.95,
+        rotationX: -10,
         transformOrigin: "50% 100%",
-        filter: "blur(12px)",
+        filter: "blur(6px)",
       });
 
       gsap.to(targets, {
@@ -59,11 +59,11 @@ export function useCinematicEntrance(
         scale: 1,
         rotationX: 0,
         filter: "blur(0px)",
-        ease: "expo.out",
-        duration: 1.05,
+        ease: "power3.out",
+        duration: 0.55,
         delay,
         stagger: {
-          amount: Math.min(0.65, targets.length * 0.08),
+          amount: Math.min(0.35, targets.length * 0.05),
           ease: "power1.in",
         },
         clearProps: "filter,rotationX,scale",

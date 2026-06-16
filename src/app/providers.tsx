@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   ReactNode,
 } from 'react';
@@ -176,6 +177,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const [pinProtectedUsers, setPinProtectedUsers] = useState<User[]>([]);
   const [usersMissingPins, setUsersMissingPins] = useState<User[]>([]);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const hasHydratedSessionRef = useRef(false);
 
   const applySessionState = useCallback((nextState: SessionState) => {
     debugSession("[session] Applying state:", {
@@ -190,9 +192,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     setUsersMissingPins(nextState.usersMissingPins);
   }, []);
 
+  const clearSessionState = useCallback(() => {
+    setHasAccess(false);
+    setCurrentUserState(null);
+    setPinProtectedUsers([]);
+    setUsersMissingPins([]);
+  }, []);
+
   const refreshSession = useCallback(async () => {
     debugSession("[session] Refreshing session…");
-    setIsSessionLoading(true);
+    const isInitialLoad = !hasHydratedSessionRef.current;
+    if (isInitialLoad) {
+      setIsSessionLoading(true);
+    }
     try {
       let response: Response;
       try {
@@ -203,10 +215,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         });
       } catch (error) {
         debugSession("[session] Refresh network error — clearing state", error);
-        setHasAccess(false);
-        setCurrentUserState(null);
-        setPinProtectedUsers([]);
-        setUsersMissingPins([]);
+        clearSessionState();
         return;
       }
 
@@ -216,10 +225,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
           response.status,
           "— clearing state",
         );
-        setHasAccess(false);
-        setCurrentUserState(null);
-        setPinProtectedUsers([]);
-        setUsersMissingPins([]);
+        clearSessionState();
         return;
       }
 
@@ -227,9 +233,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       debugSession("[session] Refresh succeeded:", session);
       applySessionState(session);
     } finally {
-      setIsSessionLoading(false);
+      if (isInitialLoad) {
+        hasHydratedSessionRef.current = true;
+        setIsSessionLoading(false);
+      }
     }
-  }, [applySessionState]);
+  }, [applySessionState, clearSessionState]);
 
   useEffect(() => {
     void refreshSession();

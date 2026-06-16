@@ -44,6 +44,15 @@ const AppNavStrip: FC<Props> = ({
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
+    if (prefersReducedMotion || !hasFinePointer) {
+      return undefined;
+    }
+
     const btns = Array.from(nav.querySelectorAll<HTMLElement>(".ans__btn"));
     const cleanups = btns.map((el) => {
       const onMove = (e: MouseEvent) => {

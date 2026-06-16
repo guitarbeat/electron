@@ -17,7 +17,6 @@ import ConfirmDialog from "@/ui/ConfirmDialog";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
 import { useMoviesWorkspace } from "@/hooks/movies";
-import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
@@ -50,7 +49,15 @@ const MOVIE_SORTS: BentoSortChipConfig[] = [
   { value: "rating", label: "★ Rating" },
 ];
 
-const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
+const resolveSearchTitle = (
+  selectedAutocompleteResult: MovieAutocompleteResult | null,
+  searchQuery: string,
+) => selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+
+const MoviesView: React.FC<MoviesViewProps> = ({
+  isPaused = false,
+  isMobile = false,
+}) => {
   const { currentUser } = useUser();
   const { setConfig, searchPortalEl } = useBentoSlot();
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
@@ -66,7 +73,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
   const {
-    isMobile,
     searchQuery,
     setSearchQuery,
     isAdding,
@@ -142,9 +148,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       sections.completed.length,
     ],
   );
-  const latestMemory = memories[0] ?? null;
-  const upNextSummaryCount =
-    sections.queue.length + sections.suggestions.length;
 
   const handleMovieSortChange = useCallback((order: SortOrder) => {
     setSortOrder(order as MovieSortOrder);
@@ -214,6 +217,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
+  const clearSearchAndRefocus = useCallback(() => {
+    setSearchQuery("");
+    setSelectedAutocompleteResult(null);
+    window.requestAnimationFrame(focusSearchInput);
+  }, [focusSearchInput, setSearchQuery, setSelectedAutocompleteResult]);
   useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
@@ -231,8 +239,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
-    const title =
-      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+    const title = resolveSearchTitle(selectedAutocompleteResult, searchQuery);
     if (!title) {
       return;
     }
@@ -244,13 +251,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           suggestedBy: guestName.trim() || undefined,
           selectedResult: selectedAutocompleteResult,
         });
-        setSearchQuery("");
-        setSelectedAutocompleteResult(null);
+        clearSearchAndRefocus();
         setToast({
           message: `"${title}" sent to suggestions as ${suggestion.suggestedBy}.`,
           type: "success",
         });
-        window.requestAnimationFrame(focusSearchInput);
       } catch (error) {
         setToast({
           message: getErrorMessage(error, "Failed to send suggestion"),
@@ -275,13 +280,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           ),
         2400,
       );
-      setSearchQuery("");
-      setSelectedAutocompleteResult(null);
+      clearSearchAndRefocus();
       setToast({
         message: `"${title}" added to movies!`,
         type: "success",
       });
-      window.requestAnimationFrame(focusSearchInput);
     } catch (error) {
       setToast({
         message: getErrorMessage(error, "Failed to add movie"),
@@ -292,16 +295,14 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     }
   }, [
     addMovie,
+    clearSearchAndRefocus,
     currentUser,
     guestName,
-    focusSearchInput,
     isAdding,
     isSubmittingRecommendation,
     searchQuery,
     selectedAutocompleteResult,
     setIsAdding,
-    setSearchQuery,
-    setSelectedAutocompleteResult,
     setSuccessMovieId,
     setToast,
     submitRecommendation,
@@ -310,8 +311,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     if (isAdding || isSubmittingRecommendation) {
       return;
     }
-    const title =
-      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+    const title = resolveSearchTitle(selectedAutocompleteResult, searchQuery);
     if (!title) {
       return;
     }
@@ -324,15 +324,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         selectedResult: selectedAutocompleteResult,
       });
       resetRecommendationComposer();
-      setSearchQuery("");
-      setSelectedAutocompleteResult(null);
+      clearSearchAndRefocus();
       setToast({
         message: currentUser
           ? `"${title}" suggested for review!`
           : `"${title}" sent to suggestions${guestName.trim() ? ` as ${guestName.trim()}` : ""}!`,
         type: "success",
       });
-      window.requestAnimationFrame(focusSearchInput);
     } catch (error) {
       setSuggestionError(
         getErrorMessage(error, "Failed to add suggestion"),
@@ -340,8 +338,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       setToast({ message: "Failed to add suggestion", type: "error" });
     }
   }, [
+    clearSearchAndRefocus,
     currentUser,
-    focusSearchInput,
     guestName,
     isAdding,
     isSubmittingRecommendation,
@@ -349,8 +347,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     resetRecommendationComposer,
     searchQuery,
     selectedAutocompleteResult,
-    setSearchQuery,
-    setSelectedAutocompleteResult,
     setToast,
     submitRecommendation,
   ]);
@@ -405,11 +401,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           <MoviesTopControls
             ref={moviesTopControlsRef}
             currentUser={currentUser}
-            upNextCount={upNextSummaryCount}
-            watchedCount={sections.completed.length}
-            noteCount={memories.length}
-            latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
-            latestNoteAuthor={latestMemory?.author ?? null}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             selectedAutocompleteResult={selectedAutocompleteResult}
@@ -426,7 +417,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             isAdding={isAdding}
             isSubmittingRecommendation={isSubmittingRecommendation}
             suggestionError={suggestionError}
-            canRecommend={true}
           />,
           searchPortalEl,
         )}

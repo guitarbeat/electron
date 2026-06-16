@@ -2,10 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "@total-typescript/ts-reset";
 import "@/shared/pwaInstallWindow";
+import { preloadCriticalAppModules } from "@/app/preloadAppModules";
 import { applyTheme } from "@/theme/applyTheme";
 import App from "./app/App";
 
 applyTheme("movies");
+void preloadCriticalAppModules();
 
 const isStandalone =
   window.matchMedia("(display-mode: standalone)").matches ||

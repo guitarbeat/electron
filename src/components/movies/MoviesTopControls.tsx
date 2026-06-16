@@ -36,11 +36,6 @@ import {
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
-  upNextCount: number;
-  watchedCount: number;
-  noteCount: number;
-  latestNoteMovieTitle?: string | null;
-  latestNoteAuthor?: string | null;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   selectedAutocompleteResult: MovieAutocompleteResult | null;
@@ -57,7 +52,6 @@ interface MoviesTopControlsProps {
   isAdding: boolean;
   isSubmittingRecommendation: boolean;
   suggestionError: string | null;
-  canRecommend: boolean;
 }
 
 export interface MoviesTopControlsHandle {
@@ -110,7 +104,6 @@ const MoviesTopControls = React.forwardRef<
   isAdding,
   isSubmittingRecommendation,
   suggestionError,
-  canRecommend,
 }, forwardedRef) => {
   const hasSearchQuery = Boolean(searchQuery.trim());
   const isBusy = isAdding || isSubmittingRecommendation;
@@ -775,7 +768,7 @@ const MoviesTopControls = React.forwardRef<
                     hideAutocomplete();
                     onRecommend();
                   }}
-                  disabled={isBusy || !canRecommend}
+                  disabled={isBusy}
                   title={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
                   aria-label={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
                   leftIcon={<PlusIcon />}

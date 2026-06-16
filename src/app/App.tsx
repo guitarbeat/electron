@@ -6,7 +6,10 @@ import React, {
   useState,
 } from "react";
 import { buildFeatureModals } from "@/app/buildMinigameModals";
-import { preloadAppModules } from "@/app/preloadAppModules";
+import {
+  preloadCriticalAppModules,
+  preloadDeferredAppModules,
+} from "@/app/preloadAppModules";
 import {
   readQuizCompletionState,
   writeQuizCompletionState,
@@ -21,7 +24,6 @@ import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import AppWorkspaceShell from "@/app/AppWorkspaceShell";
 import VignetteOverlay from "@/components/effects/VignetteOverlay";
-import FishTankSection from "@/components/effects/FishTankSection";
 import { useAudio } from "@/hooks/useAudio";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { MainTab } from "@/shared/types";
@@ -60,6 +62,9 @@ const RadialMenu = React.lazy<
     () => ({ default: () => null }),
   ),
 );
+const FishTankSection = React.lazy(
+  () => import("@/components/effects/FishTankSection"),
+);
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
 const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));
 const modalBodyStyle = {
@@ -69,8 +74,22 @@ const modalBodyStyle = {
 const isCohesionAuditRoute =
   typeof window !== "undefined" &&
   window.location.pathname.replace(/\/$/, "") === "/cohesion";
+
 const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
-const BOOT_SCREEN_MIN_MS = 600;
+
+const scheduleIdleWork = (work: () => void, timeoutMs = 2000): (() => void) => {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  if (typeof window.requestIdleCallback === "function") {
+    const idleId = window.requestIdleCallback(work, { timeout: timeoutMs });
+    return () => window.cancelIdleCallback(idleId);
+  }
+
+  const timerId = globalThis.setTimeout(work, Math.min(timeoutMs, 400));
+  return () => globalThis.clearTimeout(timerId);
+};
 
 /** True once at module load — avoids creating a canvas on every render. */
 const webGLAvailable: boolean = (() => {
@@ -91,20 +110,22 @@ const webGLAvailable: boolean = (() => {
  * Reads the active theme tokens and feeds the Moiré shader its accent colors,
  * so the background stays color-linked to the rest of the UI.
  */
-const ThemedMoire: React.FC = () => {
+const ThemedMoire: React.FC<{ enabled: boolean }> = ({ enabled }) => {
   const { theme } = useTheme();
 
-  if (!webGLAvailable) {
+  if (!enabled || !webGLAvailable) {
     return null;
   }
 
   return (
-    <MagicComponent
-      isVisible
-      opacity={0.2}
-      color1={theme.moire.color1}
-      color2={theme.moire.color2}
-    />
+    <React.Suspense fallback={null}>
+      <MagicComponent
+        isVisible
+        opacity={0.2}
+        color1={theme.moire.color1}
+        color2={theme.moire.color2}
+      />
+    </React.Suspense>
   );
 };
 
@@ -166,6 +187,7 @@ const App: React.FC = () => {
     "(prefers-reduced-motion: reduce)",
   );
   const [isBootReady, setIsBootReady] = useState(false);
+  const [showMoire, setShowMoire] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
   const [activeTab, setActiveTab] = useState<MainTab>(() => {
@@ -209,32 +231,30 @@ const App: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const startedAt = performance.now();
-    let timerId: number | undefined;
 
-    void preloadAppModules().finally(() => {
-      if (cancelled) {
-        return;
+    void preloadCriticalAppModules().finally(() => {
+      if (!cancelled) {
+        setIsBootReady(true);
       }
+    });
 
-      const remaining = Math.max(
-        0,
-        BOOT_SCREEN_MIN_MS - (performance.now() - startedAt),
-      );
-      timerId = window.setTimeout(() => {
-        if (!cancelled) {
-          setIsBootReady(true);
-        }
-      }, remaining);
+    const cancelDeferredPreload = scheduleIdleWork(() => {
+      void preloadDeferredAppModules();
     });
 
     return () => {
       cancelled = true;
-      if (timerId !== undefined) {
-        window.clearTimeout(timerId);
-      }
+      cancelDeferredPreload();
     };
   }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return undefined;
+    }
+
+    return scheduleIdleWork(() => setShowMoire(true), 1500);
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
@@ -321,6 +341,7 @@ const App: React.FC = () => {
       const transitionDocument = document as ViewTransitionCapableDocument;
       if (
         prefersReducedMotion ||
+        isMobile ||
         typeof transitionDocument.startViewTransition !== "function"
       ) {
         nextTab();
@@ -331,7 +352,7 @@ const App: React.FC = () => {
         nextTab();
       });
     },
-    [activeTab, playSwitch, prefersReducedMotion],
+    [activeTab, isMobile, playSwitch, prefersReducedMotion],
   );
 
   // Keep URL hash in sync with active tab
@@ -428,18 +449,20 @@ const App: React.FC = () => {
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
       <div className="app-shell app-shell--viewport bg-main">
-        {!prefersReducedMotion ? <ThemedMoire /> : null}
+        {!prefersReducedMotion ? <ThemedMoire enabled={showMoire} /> : null}
 
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
 
-        <RadialMenu
-          onOpenMessages={() => setShowMessages(true)}
-          onOpenQuiz={openQuizExperience}
-          onOpenSpin={openSpinMatch}
-        />
+        <React.Suspense fallback={null}>
+          <RadialMenu
+            onOpenMessages={() => setShowMessages(true)}
+            onOpenQuiz={openQuizExperience}
+            onOpenSpin={openSpinMatch}
+          />
+        </React.Suspense>
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div
@@ -470,7 +493,9 @@ const App: React.FC = () => {
                   activeTab={activeTab}
                 />
               </WorkspaceErrorBoundary>
-              <FishTankSection />
+              <React.Suspense fallback={null}>
+                <FishTankSection />
+              </React.Suspense>
             </div>
           </div>
         </div>
