@@ -63,32 +63,36 @@ export function useWorkspaceBentoConfig({
     ],
   );
 
-  const activeSorts = isMobile ? mobileSorts : sorts;
-
   const config = useMemo((): BentoSlotConfig => {
-    const next: BentoSlotConfig = {
+    const hasViewModes =
+      Boolean(viewModes?.length) &&
+      Boolean(activeViewMode) &&
+      Boolean(onViewModeChange);
+
+    return {
       stats,
-      sorts: activeSorts,
+      sorts: isMobile ? mobileSorts : sorts,
       activeSortOrder: sortOrder,
       onSortChange,
       ariaLabel,
+      ...(hasViewModes
+        ? {
+            viewModes,
+            activeViewMode,
+            onViewModeChange,
+            viewModeAriaLabel,
+          }
+        : {}),
     };
-
-    if (viewModes?.length && activeViewMode && onViewModeChange) {
-      next.viewModes = viewModes;
-      next.activeViewMode = activeViewMode;
-      next.onViewModeChange = onViewModeChange;
-      next.viewModeAriaLabel = viewModeAriaLabel;
-    }
-
-    return next;
   }, [
-    activeSorts,
     activeViewMode,
     ariaLabel,
+    isMobile,
+    mobileSorts,
     onSortChange,
     onViewModeChange,
     sortOrder,
+    sorts,
     stats,
     viewModeAriaLabel,
     viewModes,

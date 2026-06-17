@@ -1,12 +1,5 @@
 import { useEffect, useRef } from "react";
-
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const prefersCoarsePointer = () =>
-  typeof window !== "undefined" &&
-  !window.matchMedia("(hover: hover)").matches;
+import { hasHoverCapability, prefersReducedMotion } from "@/utils/motionPreference";
 
 /**
  * Cinematic card drop-in entrance — mirrors the hero's Phase 1 technique.
@@ -23,7 +16,12 @@ export function useCinematicEntrance(
   const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!ready || hasAnimated.current || prefersReducedMotion() || prefersCoarsePointer()) {
+    if (
+      !ready ||
+      hasAnimated.current ||
+      prefersReducedMotion() ||
+      !hasHoverCapability()
+    ) {
       return;
     }
 
@@ -35,7 +33,7 @@ export function useCinematicEntrance(
 
       function run() {
         const container = containerRef.current;
-        if (!container || hasAnimated.current) return;
+        if (!container || hasAnimated.current) return false;
 
         const targets = Array.from(
           container.querySelectorAll<HTMLElement>(selector),

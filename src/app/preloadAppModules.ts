@@ -1,45 +1,9 @@
+import { readInitialMainTab } from "@/app/appViewState";
 import type { MainTab } from "@/shared/types";
+import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 
 let criticalPreloadPromise: Promise<void> | null = null;
 let deferredPreloadPromise: Promise<void> | null = null;
-
-const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
-
-const readInitialTab = (): MainTab => {
-  if (typeof window === "undefined") {
-    return "movies";
-  }
-
-  const fromHash = window.location.hash.replace(/^#/, "");
-  if (fromHash === "places") return "places";
-  if (fromHash === "movies") return "movies";
-
-  try {
-    const raw = window.localStorage.getItem(APP_VIEW_STATE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as { activeTab?: string };
-      if (parsed.activeTab === "places") return "places";
-    }
-  } catch {
-    // ignore corrupt storage
-  }
-
-  return "movies";
-};
-
-const scheduleIdleWork = (work: () => void, timeoutMs = 2000): (() => void) => {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  if (typeof window.requestIdleCallback === "function") {
-    const idleId = window.requestIdleCallback(work, { timeout: timeoutMs });
-    return () => window.cancelIdleCallback(idleId);
-  }
-
-  const timerId = globalThis.setTimeout(work, Math.min(timeoutMs, 400));
-  return () => globalThis.clearTimeout(timerId);
-};
 
 const runPreloads = (modules: ReadonlyArray<() => Promise<unknown>>) =>
   Promise.allSettled(modules.map((load) => load())).then(() => undefined);
@@ -91,27 +55,26 @@ const DEFERRED_MODULES = [
   () => import("@/components/spin-wheel/SpinWheelGame"),
 ] as const;
 
-/**
- * Warm the modules needed for the first interactive shell paint.
- */
+/** Warm the modules needed for the first interactive shell paint. */
 export const preloadCriticalAppModules = (): Promise<void> => {
   if (criticalPreloadPromise) {
     return criticalPreloadPromise;
   }
 
-  criticalPreloadPromise = runPreloads(criticalModulesForTab(readInitialTab()));
+  criticalPreloadPromise = runPreloads(
+    criticalModulesForTab(readInitialMainTab()),
+  );
   return criticalPreloadPromise;
 };
 
-/**
- * Warm secondary feature chunks after the shell is visible.
- */
+/** Warm secondary feature chunks after the shell is visible. */
 export const preloadDeferredAppModules = (): Promise<void> => {
   if (deferredPreloadPromise) {
     return deferredPreloadPromise;
   }
 
-  const inactiveTab = readInitialTab() === "movies" ? "places" : "movies";
+  const initialTab = readInitialMainTab();
+  const inactiveTab: MainTab = initialTab === "movies" ? "places" : "movies";
   deferredPreloadPromise = staggerPreloads([
     () => preloadWorkspaceTab(inactiveTab),
     ...DEFERRED_MODULES,

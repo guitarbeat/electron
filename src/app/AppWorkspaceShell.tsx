@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
-import MoviesTabFallback from "@/components/movies/MoviesTabFallback";
-import PlacesTabFallback from "@/components/places/PlacesTabFallback";
+import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
 import BentoWorkspaceController from "@/components/ui/BentoWorkspaceController";
 import { BentoSlotContext, type BentoSlotConfig } from "./BentoSlotContext";
 
@@ -31,6 +30,13 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     previousTabRef.current = activeTab;
     setBentoConfig(null);
   }, [activeTab]);
+
+  const workspaceContent =
+    activeTab === "movies" ? (
+      <MoviesView isMobile={isMobile} />
+    ) : (
+      <PlacesList />
+    );
 
   return (
     <BentoSlotContext.Provider value={{ setConfig: setBentoConfig, searchPortalEl }}>
@@ -61,15 +67,9 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
             activeTab === "movies" ? "Movies workspace" : "Places workspace"
           }
         >
-          {activeTab === "movies" ? (
-            <React.Suspense fallback={<MoviesTabFallback />}>
-              <MoviesView isMobile={isMobile} />
-            </React.Suspense>
-          ) : (
-            <React.Suspense fallback={<PlacesTabFallback />}>
-              <PlacesList />
-            </React.Suspense>
-          )}
+          <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>
+            {workspaceContent}
+          </React.Suspense>
         </section>
       </main>
     </BentoSlotContext.Provider>

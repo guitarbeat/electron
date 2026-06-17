@@ -25,48 +25,43 @@ export function useChromaSpotlight({
     const el = rootRef.current;
     if (!el) return;
 
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const hoverMq = window.matchMedia("(hover: hover)");
     const syncEnabled = () => {
-      enabled.current = !mq.matches && hoverMq.matches;
+      enabled.current = !motionMq.matches && hoverMq.matches;
       el.style.setProperty("--chroma-enabled", enabled.current ? "1" : "0");
     };
     syncEnabled();
-    mq.addEventListener("change", syncEnabled);
+    motionMq.addEventListener("change", syncEnabled);
     hoverMq.addEventListener("change", syncEnabled);
-
-    if (!enabled.current) {
-      return () => {
-        mq.removeEventListener("change", syncEnabled);
-        hoverMq.removeEventListener("change", syncEnabled);
-      };
-    }
 
     let cancelled = false;
 
-    void import("gsap").then(({ gsap }) => {
-      if (cancelled || !rootRef.current) return;
+    if (enabled.current) {
+      void import("gsap").then(({ gsap }) => {
+        if (cancelled || !rootRef.current) return;
 
-      gsapRef.current = gsap;
-      el.style.setProperty("--r", `${radius}px`);
-      const setXAxis = gsap.quickSetter(el, "--x", "px") as (
-        value: number,
-      ) => void;
-      const setYAxis = gsap.quickSetter(el, "--y", "px") as (
-        value: number,
-      ) => void;
-      setX.current = setXAxis;
-      setY.current = setYAxis;
+        gsapRef.current = gsap;
+        el.style.setProperty("--r", `${radius}px`);
+        const setXAxis = gsap.quickSetter(el, "--x", "px") as (
+          value: number,
+        ) => void;
+        const setYAxis = gsap.quickSetter(el, "--y", "px") as (
+          value: number,
+        ) => void;
+        setX.current = setXAxis;
+        setY.current = setYAxis;
 
-      const { width, height } = el.getBoundingClientRect();
-      pos.current = { x: width / 2, y: height / 2 };
-      setXAxis(pos.current.x);
-      setYAxis(pos.current.y);
-    });
+        const { width, height } = el.getBoundingClientRect();
+        pos.current = { x: width / 2, y: height / 2 };
+        setXAxis(pos.current.x);
+        setYAxis(pos.current.y);
+      });
+    }
 
     return () => {
       cancelled = true;
-      mq.removeEventListener("change", syncEnabled);
+      motionMq.removeEventListener("change", syncEnabled);
       hoverMq.removeEventListener("change", syncEnabled);
     };
   }, [radius]);

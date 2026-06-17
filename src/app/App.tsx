@@ -5,6 +5,12 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import {
+  APP_VIEW_STATE_KEY,
+  parseMainTab,
+  readStoredAppViewState,
+  type StoredAppViewState,
+} from "@/app/appViewState";
 import { buildFeatureModals } from "@/app/buildMinigameModals";
 import {
   preloadCriticalAppModules,
@@ -28,6 +34,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { MainTab } from "@/shared/types";
 
+import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
 import "./App.scss";
 import "./app-skin.scss";
@@ -82,23 +89,6 @@ const isCohesionAuditRoute =
   typeof window !== "undefined" &&
   window.location.pathname.replace(/\/$/, "") === "/cohesion";
 
-const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
-
-const scheduleIdleWork = (work: () => void, timeoutMs = 2000): (() => void) => {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  if (typeof window.requestIdleCallback === "function") {
-    const idleId = window.requestIdleCallback(work, { timeout: timeoutMs });
-    return () => window.cancelIdleCallback(idleId);
-  }
-
-  const timerId = globalThis.setTimeout(work, Math.min(timeoutMs, 400));
-  return () => globalThis.clearTimeout(timerId);
-};
-
-/** True once at module load — avoids creating a canvas on every render. */
 const webGLAvailable: boolean = (() => {
   if (typeof document === "undefined") return false;
   try {
@@ -142,39 +132,6 @@ type ViewTransitionCapableDocument = Document & {
   };
 };
 
-const getRequestedTab = (value: string | null): MainTab | null => {
-  if (!value) return null;
-  if (value === "places") return "places";
-  if (value === "movies") return "movies";
-  return null;
-};
-
-interface StoredAppViewState {
-  activeTab: MainTab;
-  showMessages: boolean;
-}
-
-const readStoredAppViewState = (): StoredAppViewState | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(APP_VIEW_STATE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw) as Partial<StoredAppViewState>;
-    return {
-      activeTab: parsed.activeTab === "places" ? "places" : "movies",
-      showMessages: Boolean(parsed.showMessages),
-    };
-  } catch {
-    return null;
-  }
-};
-
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
@@ -200,7 +157,7 @@ const App: React.FC = () => {
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
   const [activeTab, setActiveTab] = useState<MainTab>(() => {
     if (typeof window !== "undefined") {
-      const fromHash = getRequestedTab(window.location.hash.replace(/^#/, ""));
+      const fromHash = parseMainTab(window.location.hash.replace(/^#/, ""));
       if (fromHash) return fromHash;
     }
     return persistedViewState?.activeTab ?? "movies";
@@ -293,7 +250,7 @@ const App: React.FC = () => {
 
     shortcutHandledRef.current = true;
     const search = new URLSearchParams(window.location.search);
-    const requestedTab = getRequestedTab(search.get("tab"));
+    const requestedTab = parseMainTab(search.get("tab"));
     const requestedPanel = search.get("panel");
     let didApplyShortcut = false;
 
@@ -380,7 +337,7 @@ const App: React.FC = () => {
   // Respond to back/forward navigation and direct hash links
   useEffect(() => {
     const onHashChange = () => {
-      const tab = getRequestedTab(window.location.hash.replace(/^#/, ""));
+      const tab = parseMainTab(window.location.hash.replace(/^#/, ""));
       if (tab) handleTabChange(tab);
     };
     window.addEventListener("hashchange", onHashChange);
