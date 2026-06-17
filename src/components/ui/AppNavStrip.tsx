@@ -20,6 +20,7 @@ interface Props {
   onTabChange: (tab: MainTab) => void;
   onOpenSpin?: () => void;
   onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
   status?: AppNavStripStatus;
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
@@ -34,6 +35,7 @@ const AppNavStrip: FC<Props> = ({
   onTabChange,
   onOpenSpin,
   onOpenMessages,
+  onOpenQuiz,
   status,
   onInstallApp,
   onApplyUpdate,
@@ -199,11 +201,22 @@ const AppNavStrip: FC<Props> = ({
       {isMobile && onOpenMessages ? (
         <button
           type="button"
-          className="ans__messages-btn"
+          className="ans__icon-btn"
           onClick={onOpenMessages}
           aria-label="Open messages"
         >
           💬
+        </button>
+      ) : null}
+
+      {isMobile && onOpenQuiz ? (
+        <button
+          type="button"
+          className="ans__icon-btn"
+          onClick={onOpenQuiz}
+          aria-label="Open couple quiz"
+        >
+          ❓
         </button>
       ) : null}
 

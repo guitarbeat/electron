@@ -10,6 +10,7 @@ interface AppHeaderProps {
   activeTab: MainTab;
   onTabChange: (tab: MainTab) => void;
   onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
   pwaStatus?: {
     isOnline: boolean;
     isStandalone: boolean;
@@ -28,6 +29,7 @@ const AppHeader: FC<AppHeaderProps> = ({
   activeTab,
   onTabChange,
   onOpenMessages,
+  onOpenQuiz,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
@@ -50,6 +52,7 @@ const AppHeader: FC<AppHeaderProps> = ({
           onTabChange={onTabChange}
           onOpenSpin={onOpenSpin}
           onOpenMessages={onOpenMessages}
+          onOpenQuiz={onOpenQuiz}
           status={pwaStatus}
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}

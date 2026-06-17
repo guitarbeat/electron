@@ -72,6 +72,13 @@ html {
     display: none;
   }
 
+  .app-shell--mobile .vignette-top,
+  .app-shell--mobile .vignette-bottom,
+  .app-shell--mobile .vignette-left,
+  .app-shell--mobile .vignette-right {
+    opacity: 0.35;
+  }
+
   .app-shell--mobile .app-workspace-stack {
     padding-top: 0;
     padding-bottom: 0;
@@ -82,6 +89,27 @@ html {
   }
 
   .app-shell--mobile .workspace-stage--mobile-shell {
-    padding-bottom: max(4.5rem, calc(env(safe-area-inset-bottom, 0px) + 4.5rem));
+    padding-bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+  }
+
+  .suggestion-item-card {
+    padding: 0.85rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--color-surface-1) 94%, transparent);
+    box-shadow: none;
+  }
+
+  .suggestion-item-card__actions {
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .suggestion-item-card__button {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 2.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.65rem;
   }
 }

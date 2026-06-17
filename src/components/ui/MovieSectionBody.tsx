@@ -63,7 +63,10 @@ interface Props {
 const SK_MOBILE = ["m1", "m2", "m3", "m4"];
 const SK_DESKTOP = ["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8"];
 
-const GRID = "clamp(10.5rem, 24vw, 13rem)";
+const GRID = "clamp(3.25rem, 18vw, 5.5rem)";
+
+const gridSurfaceClass = (browseLayout: MovieBrowseLayout) =>
+  `watchlist-content${browseLayout === "grid" ? " watchlist-content--poster-grid" : ""}`;
 
 const MovieSectionBody: React.FC<Props> = ({
   sections,
@@ -93,7 +96,10 @@ const MovieSectionBody: React.FC<Props> = ({
     sections.completed.length === 0;
 
   const movieGrid = (movies: Movie[], emptyLabel: string) => (
-    <ChromaCollectionGrid className="watchlist-content" minColumnWidth={GRID}>
+    <ChromaCollectionGrid
+      className={gridSurfaceClass(browseLayout)}
+      minColumnWidth={GRID}
+    >
       {movies.length > 0 ? (
         movies.map((movie) => (
           <MovieCard
@@ -163,7 +169,10 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
     return (
-      <ChromaCollectionGrid className="watchlist-content" minColumnWidth={GRID}>
+      <ChromaCollectionGrid
+        className={gridSurfaceClass(browseLayout)}
+        minColumnWidth={GRID}
+      >
         <div
           style={{
             gridColumn: "1 / -1",
@@ -208,7 +217,10 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── All-empty CTA ─────────────────────────────────────────────────────────
   if (isQueueEmpty && sections.completed.length === 0) {
     return (
-      <ChromaCollectionGrid className="watchlist-content" minColumnWidth={GRID}>
+      <ChromaCollectionGrid
+        className={gridSurfaceClass(browseLayout)}
+        minColumnWidth={GRID}
+      >
         <CollectionEmptyState
           padding={isMobile ? spacing.lg : spacing["3xl"]}
           className={`watchlist-empty-queue-state${isMobile ? " collection-empty-state--tight" : ""}`}

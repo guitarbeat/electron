@@ -249,12 +249,12 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion || isMobile) {
       return undefined;
     }
 
     return scheduleIdleWork(() => setShowMoire(true), 1500);
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, isMobile]);
 
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
@@ -456,13 +456,15 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <React.Suspense fallback={null}>
-          <RadialMenu
-            onOpenMessages={() => setShowMessages(true)}
-            onOpenQuiz={openQuizExperience}
-            onOpenSpin={openSpinMatch}
-          />
-        </React.Suspense>
+        {!isMobile ? (
+          <React.Suspense fallback={null}>
+            <RadialMenu
+              onOpenMessages={() => setShowMessages(true)}
+              onOpenQuiz={openQuizExperience}
+              onOpenSpin={openSpinMatch}
+            />
+          </React.Suspense>
+        ) : null}
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div
@@ -487,6 +489,7 @@ const App: React.FC = () => {
                 onRetrySync={handleRetryPendingSync}
                 onOpenSpin={openSpinMatch}
                 onOpenMessages={() => setShowMessages(true)}
+                onOpenQuiz={openQuizExperience}
               />
               <WorkspaceErrorBoundary>
                 <AppWorkspaceShell

@@ -241,6 +241,15 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
 
   return (
     <>
+      {isMobile && isSettingsOpen ? (
+        <button
+          type="button"
+          className="app-header__profile-backdrop"
+          aria-label="Close profile menu"
+          onClick={() => toggleSettings(false)}
+        />
+      ) : null}
+
       <div
         className={`app-header__profile-picker${isMobile ? " app-header__profile-picker--mobile" : ""}`}
         ref={pickerRef}
@@ -346,7 +355,6 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
                       className={`app-header__profile-option${isActive ? " is-active" : ""}`}
                       onClick={() => selectProfile(profile)}
                       disabled={isDisabled}
-                      aria-pressed={isActive}
                     >
                       <span className="app-header__option-avatar">
                         <UserAvatar user={profile} />

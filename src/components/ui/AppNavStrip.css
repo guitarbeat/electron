@@ -162,24 +162,30 @@
 
 @media (max-width: 640px) {
   .ans {
-    --ans-h: 2.75rem;
+    --ans-h: 2.65rem;
     width: 100%;
     max-width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
     border-radius: 0.85rem;
     box-shadow: none;
     background: color-mix(in srgb, var(--color-surface-1) 88%, transparent);
     border-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
 
-  .ans__messages-btn {
+  .ans::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ans__icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
     width: 2.35rem;
     height: calc(var(--ans-h) - var(--ans-pad) * 2);
-    margin-left: 0.15rem;
+    margin-left: 0.12rem;
     padding: 0;
     border: 0;
     border-radius: 999px;
@@ -191,7 +197,7 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .ans__messages-btn:active {
+  .ans__icon-btn:active {
     transform: scale(0.96);
   }
 
