@@ -17,6 +17,8 @@ import MovieCard from "@/components/movies/MovieCard";
 import MovieDeckStack from "@/components/movies/MovieDeckStack";
 import type { MovieSections } from "@/components/movies/lib/movieSections";
 import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
+import WorkspaceTabLoading from "@/components/ui/WorkspaceTabLoading";
+import { workspaceSectionLabels } from "@/utils/workspaceSectionLabels";
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -87,6 +89,7 @@ const MovieSectionBody: React.FC<Props> = ({
   browseLayout = "grid",
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
+  const sectionLabels = workspaceSectionLabels("movies", isMobile);
 
   const showInitialLoading =
     isLoading &&
@@ -173,33 +176,9 @@ const MovieSectionBody: React.FC<Props> = ({
         className={gridSurfaceClass(browseLayout)}
         minColumnWidth={GRID}
       >
-        <div
-          style={{
-            gridColumn: "1 / -1",
-            display: "flex",
-            flexDirection: "column",
-            gap: spacing.xl,
-          }}
-        >
-          <CollectionEmptyState
-            padding={spacing.xl}
-            className="collection-empty-state--tight"
-          >
-            <span
-              style={{ fontSize: "1.75rem", lineHeight: 1, opacity: 0.7 }}
-              aria-hidden="true"
-            >
-              🍿
-            </span>
-            <strong>Loading your movies</strong>
-          </CollectionEmptyState>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "inherit",
-              gap: "inherit",
-            }}
-          >
+        <div className="workspace-loading-grid" aria-busy="true">
+          <WorkspaceTabLoading emoji="🍿" label="Loading your movies…" />
+          <div className="workspace-loading-grid__cards" aria-hidden="true">
             {sk.map((key) => (
               <MovieCardSkeleton key={key} />
             ))}
@@ -263,7 +242,7 @@ const MovieSectionBody: React.FC<Props> = ({
     >
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
         <CollectionSection
-          heading="Incoming"
+          heading={sectionLabels.incoming}
           tone="incoming"
           id={sectionIds?.incoming}
         >
@@ -282,14 +261,17 @@ const MovieSectionBody: React.FC<Props> = ({
       )}
 
       {sections.queue.length > 0 && (
-        <CollectionSection heading="Up Next" id={sectionIds?.queue}>
+        <CollectionSection
+          heading={sectionLabels.queue}
+          id={sectionIds?.queue}
+        >
           {renderMovies(sections.queue, "Your movie list is wide open")}
         </CollectionSection>
       )}
 
       {sections.completed.length > 0 && (
         <CollectionSection
-          heading="Watched"
+          heading={sectionLabels.completed}
           tone="completed"
           id={sectionIds?.completed}
         >

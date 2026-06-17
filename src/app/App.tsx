@@ -9,6 +9,7 @@ import { buildFeatureModals } from "@/app/buildMinigameModals";
 import {
   preloadCriticalAppModules,
   preloadDeferredAppModules,
+  preloadWorkspaceTab,
 } from "@/app/preloadAppModules";
 import {
   readQuizCompletionState,
@@ -22,17 +23,23 @@ import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import AppHeader from "@/app/AppHeader";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import AppWorkspaceShell from "@/app/AppWorkspaceShell";
 import VignetteOverlay from "@/components/effects/VignetteOverlay";
 import { useAudio } from "@/hooks/useAudio";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { MainTab } from "@/shared/types";
 
 import MinigameModal from "@/ui/MinigameModal";
-import { Analytics } from "@vercel/analytics/react";
 import "./App.scss";
 import "./app-skin.scss";
 
+const AppWorkspaceShell = React.lazy(
+  () => import("@/app/AppWorkspaceShell"),
+);
+const LazyAnalytics = React.lazy(() =>
+  import("@vercel/analytics/react").then((module) => ({
+    default: module.Analytics,
+  })),
+);
 const MagicComponent = React.lazy(
   () =>
     import("@/components/effects/moire/Moire") as Promise<{
@@ -188,6 +195,7 @@ const App: React.FC = () => {
   );
   const [isBootReady, setIsBootReady] = useState(false);
   const [showMoire, setShowMoire] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const persistedViewState = useMemo(() => readStoredAppViewState(), []);
   const [activeTab, setActiveTab] = useState<MainTab>(() => {
@@ -261,6 +269,10 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    return scheduleIdleWork(() => setShowAnalytics(true), 4000);
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -331,6 +343,8 @@ const App: React.FC = () => {
       }
 
       playSwitch();
+
+      void preloadWorkspaceTab(tab);
 
       const nextTab = () => {
         startTransition(() => {
@@ -471,7 +485,7 @@ const App: React.FC = () => {
             className={`app-workspace-stack app-workspace-stack--${activeTab}`}
           >
             <div
-              className={`app-tab-shell app-tab-shell--${activeTab} movies-unified-shell`}
+              className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
             >
               <AppHeader
                 activeTab={activeTab}
@@ -492,10 +506,12 @@ const App: React.FC = () => {
                 onOpenQuiz={openQuizExperience}
               />
               <WorkspaceErrorBoundary>
-                <AppWorkspaceShell
-                  isMobile={isMobile}
-                  activeTab={activeTab}
-                />
+                <React.Suspense fallback={null}>
+                  <AppWorkspaceShell
+                    isMobile={isMobile}
+                    activeTab={activeTab}
+                  />
+                </React.Suspense>
               </WorkspaceErrorBoundary>
               <React.Suspense fallback={null}>
                 {!isMobile ? <FishTankSection /> : null}
@@ -522,7 +538,11 @@ const App: React.FC = () => {
           </MinigameModal>
         ))}
       </div>
-      <Analytics />
+      {showAnalytics ? (
+        <React.Suspense fallback={null}>
+          <LazyAnalytics />
+        </React.Suspense>
+      ) : null}
     </ThemeProvider>
   );
 };

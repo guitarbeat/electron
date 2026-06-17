@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, {
   memo,
   useCallback,
@@ -31,12 +30,13 @@ import { groupMemoriesByMovieId } from "@/components/memories/lib/memoryUtils";
 import { getErrorMessage } from "@/utils";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import { createPortal } from "react-dom";
+import { useBentoSlot } from "@/app/BentoSlotContext";
 import {
   type BentoSortChipConfig,
-  type BentoStatTileConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
-import { useBentoSlot } from "@/app/BentoSlotContext";
+import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
+import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
 const MOVIE_SECTION_IDS = {
   incoming: "movies-section-incoming",
   queue: "movies-section-queue",
@@ -71,7 +71,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({
   isMobile = false,
 }) => {
   const { currentUser } = useUser();
-  const { setConfig, searchPortalEl } = useBentoSlot();
+  const { searchPortalEl } = useBentoSlot();
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [browseLayout, setBrowseLayout] = useState<MovieBrowseLayout>(() =>
     readMovieBrowseLayout(),
@@ -127,44 +127,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({
     [movies, pendingSuggestions, sortOrder],
   );
 
-  const movieStats = useMemo(
-    (): BentoStatTileConfig[] => {
-      const stats: BentoStatTileConfig[] = [
-        {
-          id: "incoming",
-          label: isMobile ? "New" : "Incoming",
-          count: sections.suggestions.length,
-          icon: "💌",
-          sectionId: MOVIE_SECTION_IDS.incoming,
-          tone: "incoming",
-        },
-        {
-          id: "queue",
-          label: isMobile ? "Queue" : "Up Next",
-          count: sections.queue.length,
-          icon: "🎞",
-          sectionId: MOVIE_SECTION_IDS.queue,
-          tone: "default",
-        },
-        {
-          id: "watched",
-          label: isMobile ? "Done" : "Watched",
-          count: sections.completed.length,
-          icon: "✓",
-          sectionId: MOVIE_SECTION_IDS.completed,
-          tone: "completed",
-        },
-      ];
-      return stats;
-    },
-    [
-      isMobile,
-      sections.suggestions.length,
-      sections.queue.length,
-      sections.completed.length,
-    ],
-  );
-
   const handleMovieSortChange = useCallback((order: SortOrder) => {
     setSortOrder(order as MovieSortOrder);
   }, []);
@@ -175,31 +137,25 @@ const MoviesView: React.FC<MoviesViewProps> = ({
     writeMovieBrowseLayout(nextLayout);
   }, []);
 
-  const movieSorts = isMobile ? MOBILE_MOVIE_SORTS : MOVIE_SORTS;
-  const movieViewModes = isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS;
-
-  useEffect(() => {
-    setConfig({
-      stats: movieStats,
-      sorts: movieSorts,
-      activeSortOrder: sortOrder,
-      onSortChange: handleMovieSortChange,
-      ariaLabel: "Movies workspace controls",
-      viewModes: movieViewModes,
-      activeViewMode: browseLayout,
-      onViewModeChange: handleBrowseLayoutChange,
-      viewModeAriaLabel: "Movie browse layout",
-    });
-  }, [
-    setConfig,
-    movieStats,
-    movieSorts,
-    movieViewModes,
+  useWorkspaceBentoConfig({
+    tab: "movies",
+    isMobile,
+    sectionIds: MOVIE_SECTION_IDS,
+    counts: {
+      incoming: sections.suggestions.length,
+      queue: sections.queue.length,
+      completed: sections.completed.length,
+    },
     sortOrder,
-    browseLayout,
-    handleMovieSortChange,
-    handleBrowseLayoutChange,
-  ]);
+    onSortChange: handleMovieSortChange,
+    sorts: MOVIE_SORTS,
+    mobileSorts: MOBILE_MOVIE_SORTS,
+    ariaLabel: "Movies workspace controls",
+    viewModes: isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS,
+    activeViewMode: browseLayout,
+    onViewModeChange: handleBrowseLayoutChange,
+    viewModeAriaLabel: "Movie browse layout",
+  });
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -238,6 +194,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
+  useFocusSearchShortcut(focusSearchInput);
   const clearSearchAndRefocus = useCallback(() => {
     setSearchQuery("");
     setSelectedAutocompleteResult(null);
@@ -482,7 +439,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({
         {movieToDelete && (
           <ConfirmDialog
             isOpen={Boolean(movieToDelete)}
-            title="Remove Movie"
+            title="Remove movie"
             message={`Are you sure you want to remove "${movieToDelete.title}"?`}
             onConfirm={confirmDelete}
             onCancel={() => setMovieToDelete(null)}

@@ -75,6 +75,23 @@
     confetti-fall 2s ease-in forwards,
     confetti-sway 0.5s ease-in-out infinite;
 }
+
+section[id^="movies-section-"],
+section[id^="places-section-"] {
+  scroll-margin-top: 5.5rem;
+}
+
+@media (max-width: 640px) {
+  section[id^="movies-section-"],
+  section[id^="places-section-"] {
+    scroll-margin-top: 4.75rem;
+  }
+
+  .places-map-placeholder,
+  .places-map-shell {
+    --places-map-height: min(280px, 42vh);
+  }
+}
 .workspace-layout {
   display: grid;
   grid-template-columns: var(--workspace-layout-columns, 220px minmax(0, 1fr));

@@ -30,13 +30,13 @@
 }
 
 .workspace-section-heading--completed {
-  color: color-mix(in srgb, var(--color-secondary) 88%, var(--color-text-primary));
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-secondary) 25%, transparent);
+  color: var(--color-success, #34d399);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-success, #34d399) 25%, transparent);
 
   &::after {
     background: linear-gradient(
       90deg,
-      color-mix(in srgb, var(--color-secondary) 55%, transparent) 0%,
+      color-mix(in srgb, var(--color-success, #34d399) 55%, transparent) 0%,
       transparent 100%
     );
   }
@@ -81,7 +81,6 @@
     }
   }
 
-  .watchlist-top-controls__surprise .ui-button,
   .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
     background: var(--retro-bevel-face);
     color: var(--retro-bevel-ink);
@@ -186,20 +185,8 @@
 }
 
 @media (max-width: 720px) {
-  .watchlist-top-controls__hero {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .watchlist-top-controls__hero-stats {
-    padding-top: 0.2rem;
-  }
-
   .ui-subnav-tabs {
     flex-wrap: nowrap;
-  }
-
-  .watchlist-top-controls__surprise {
-    min-width: 2.75rem;
   }
 }
 

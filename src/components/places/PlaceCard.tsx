@@ -23,6 +23,7 @@ interface PlaceCardProps {
   canEdit: boolean;
   isSubmitting: boolean;
   isActive?: boolean;
+  onActivate?: () => void;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
@@ -34,6 +35,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   canEdit,
   isSubmitting,
   isActive = false,
+  onActivate,
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
@@ -79,8 +81,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       })
     : null;
 
+  const handleActivate = (event: React.MouseEvent | React.KeyboardEvent) => {
+    if ((event.target as HTMLElement).closest("button")) {
+      return;
+    }
+    onActivate?.();
+  };
+
   return (
     <div
+      id={`place-card-${place.id}`}
       draggable={canEdit}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = "link";
@@ -142,7 +152,24 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         >
           <div className="card-tilt-sheen" aria-hidden="true" />
           <MediaCardPosterWrap className="place-item-poster-wrap">
-            <MediaCardCover className="place-item-cover" aria-hidden="true">
+            <MediaCardCover
+              className="place-item-cover"
+              aria-hidden={onActivate ? undefined : true}
+              role={onActivate ? "button" : undefined}
+              tabIndex={onActivate ? 0 : undefined}
+              aria-label={onActivate ? `Show ${place.name} on map` : undefined}
+              onClick={onActivate ? handleActivate : undefined}
+              onKeyDown={
+                onActivate
+                  ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleActivate(event);
+                      }
+                    }
+                  : undefined
+              }
+            >
               {/* Large decorative emoji — acts like a poster focal element */}
               <span className="place-item-cover__icon">{meta.icon}</span>
               {hasCoords && <span className="place-item-cover__pin">📍</span>}

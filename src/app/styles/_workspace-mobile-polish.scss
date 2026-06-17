@@ -30,7 +30,7 @@ html {
 /* ── Search field: min 44px on mobile ───────────────────────────── */
 @media (max-width: 640px) {
   .watchlist-top-controls__search-field,
-  .places-search-field {
+  .places-add-input {
     min-height: 2.75rem;
   }
 }
@@ -84,7 +84,7 @@ html {
     padding-bottom: 0;
   }
 
-  .app-shell--mobile .movies-unified-shell {
+  .app-shell--mobile .workspace-unified-shell {
     gap: 0.45rem;
   }
 

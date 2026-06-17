@@ -54,7 +54,7 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
           <div
             className="bento-ctrl__stats"
             role="group"
-            aria-label="Section counts"
+            aria-label="Jump to section"
           >
             {stats.map((tile) => (
               <StatTile key={tile.id} tile={tile} />

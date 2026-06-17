@@ -1,12 +1,10 @@
 import React, { useRef } from "react";
+import Button from "@/ui/Button";
 import { Input } from "@/ui/FormFields";
 import { PlusIcon, Spinner } from "@/common/Icons";
 import type { PlaceSuggestion } from "@/shared/types";
 
 interface PlacesTopControlsProps {
-  queueCount: number;
-  visitedCount: number;
-  pinnedCount: number;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   suggestionAutocompleteResults?: PlaceSuggestion[];
@@ -120,7 +118,7 @@ const PlacesTopControls = React.forwardRef<
                 autoComplete="off"
                 fullWidth
               />
-              {hasQuery && searchQuery && (
+              {hasQuery && searchQuery ? (
                 <button
                   type="button"
                   className="watchlist-top-controls__search-clear"
@@ -130,31 +128,11 @@ const PlacesTopControls = React.forwardRef<
                   }}
                   aria-label="Clear search"
                   title="Clear search"
-                  style={{
-                    position: "absolute",
-                    right: autocompleteSuggestions.length > 0 ? "12px" : "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    color: "var(--color-text-secondary)",
-                    cursor: "pointer",
-                    fontSize: "1.2rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "4px",
-                    opacity: 0.6,
-                    transition: "opacity 0.2s",
-                    zIndex: 2,
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
                 >
                   ✕
                 </button>
-              )}
-              {hasQuery && autocompleteSuggestions.length > 0 && (
+              ) : null}
+              {hasQuery && autocompleteSuggestions.length > 0 ? (
                 <div
                   id={autocompleteId}
                   className="watchlist-top-controls__autocomplete is-open"
@@ -185,50 +163,48 @@ const PlacesTopControls = React.forwardRef<
                     </button>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
 
             {(showAddAction || showSuggestAction) && (
               <div className="watchlist-top-controls__search-actions">
-                {showAddAction && (
-                  <button
+                {showAddAction ? (
+                  <Button
                     type="submit"
-                    className="watchlist-top-controls__search-button ui-button ui-button--primary ui-button--md"
+                    variant="primary"
+                    size="md"
+                    className="watchlist-top-controls__search-button"
                     disabled={isBusy}
                     aria-label="Add place to your list"
                     title="Add directly to list"
+                    leftIcon={isAdding ? <Spinner size={16} /> : <PlusIcon size={14} />}
                   >
-                    {isAdding ? (
-                      <Spinner size={16} />
-                    ) : (
-                      <>
-                        <PlusIcon size={14} /> Add
-                      </>
-                    )}
-                  </button>
-                )}
-                {showSuggestAction && onSuggest && (
-                  <button
+                    {isAdding ? null : "Add"}
+                  </Button>
+                ) : null}
+                {showSuggestAction && onSuggest ? (
+                  <Button
                     type="button"
-                    className="watchlist-top-controls__search-button ui-button ui-button--ghost ui-button--md"
+                    variant="ghost"
+                    size="md"
+                    className="watchlist-top-controls__search-button watchlist-top-controls__search-button--dashed"
                     onClick={() => void onSuggest()}
                     disabled={isBusy}
                     aria-label="Suggest place for review"
                     title="Suggest for review"
-                    style={{ borderStyle: "dashed" }}
                   >
-                    {isSuggesting ? <Spinner size={16} /> : <>💡 Suggest</>}
-                  </button>
-                )}
+                    {isSuggesting ? <Spinner size={16} /> : "💡 Suggest"}
+                  </Button>
+                ) : null}
               </div>
             )}
           </form>
 
-          {suggestionError && (
-            <div className="places-top-controls__error" role="alert">
+          {suggestionError ? (
+            <div className="watchlist-top-controls__error" role="alert">
               {suggestionError}
             </div>
-          )}
+          ) : null}
         </div>
       </>
     );

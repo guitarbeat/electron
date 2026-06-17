@@ -65,8 +65,8 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         gap: spacing.xs,
         padding: `${spacing.sm} ${spacing.md}`,
         borderRadius: radius.md,
-        background: "rgba(255, 87, 87, 0.08)",
-        border: `1px solid rgba(255, 120, 120, 0.3)`,
+        background: "color-mix(in srgb, var(--color-error) 10%, transparent)",
+        border: "1px solid color-mix(in srgb, var(--color-error) 28%, transparent)",
         color: colors.textPrimary,
       }}
     >
@@ -85,7 +85,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
             fontWeight: 700,
             letterSpacing: "0.08em",
             textTransform: "uppercase",
-            color: "#ffb3b3",
+            color: "color-mix(in srgb, var(--color-error) 72%, white 28%)",
           }}
         >
           {content.badge}
@@ -93,7 +93,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         <span
           style={{
             fontSize: typography.fontSize.xs,
-            color: "rgba(255,200,200,0.6)",
+            color: "color-mix(in srgb, var(--color-error) 45%, var(--color-text-secondary) 55%)",
             marginRight: "auto",
           }}
         >
@@ -118,7 +118,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
           background: "rgba(0,0,0,0.25)",
           fontSize: "0.7rem",
           lineHeight: 1.6,
-          color: "rgba(255,220,220,0.85)",
+          color: "color-mix(in srgb, var(--color-error) 55%, var(--color-text-primary) 45%)",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
           userSelect: "text",

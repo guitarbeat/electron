@@ -24,6 +24,13 @@
   border-radius: inherit;
 }
 
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .chroma-overlay,
+  .chroma-fade {
+    display: none;
+  }
+}
+
 .chroma-overlay {
   backdrop-filter: grayscale(1) brightness(0.82);
   -webkit-backdrop-filter: grayscale(1) brightness(0.82);

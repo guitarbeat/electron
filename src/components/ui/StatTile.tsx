@@ -5,7 +5,6 @@ export interface BentoStatTileConfig {
   id: string;
   label: string;
   count: number;
-  icon: string;
   sectionId: string;
   tone?: "default" | "incoming" | "completed";
 }
@@ -27,11 +26,8 @@ const StatTile: React.FC<StatTileProps> = ({ tile }) => {
       type="button"
       className={`bento-stat-tile bento-stat-tile--${tile.tone ?? "default"}`}
       onClick={handleClick}
-      aria-label={`${tile.count} ${tile.label} — tap to jump to section`}
+      aria-label={`${tile.count} ${tile.label} — jump to section`}
     >
-      <span className="bento-stat-tile__icon" aria-hidden="true">
-        {tile.icon}
-      </span>
       <span className="bento-stat-tile__body">
         <span
           className="bento-stat-tile__count"

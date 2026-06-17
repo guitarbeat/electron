@@ -600,7 +600,7 @@ const MoviesTopControls = React.forwardRef<
       )}
 
       {suggestionError && !showRecommendationComposer && (
-        <div className="places-top-controls__error" role="alert">
+        <div className="watchlist-top-controls__error" role="alert">
           {suggestionError}
         </div>
       )}

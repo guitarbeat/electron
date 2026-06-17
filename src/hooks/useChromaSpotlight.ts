@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from "react";
-import { gsap } from "gsap";
 
 export interface ChromaSpotlightOptions {
   radius?: number;
@@ -20,41 +19,62 @@ export function useChromaSpotlight({
   const setY = useRef<((value: number) => void) | null>(null);
   const pos = useRef({ x: 0, y: 0 });
   const enabled = useRef(true);
+  const gsapRef = useRef<typeof import("gsap").gsap | null>(null);
 
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const hoverMq = window.matchMedia("(hover: hover)");
     const syncEnabled = () => {
-      enabled.current =
-        !mq.matches && window.matchMedia("(hover: hover)").matches;
+      enabled.current = !mq.matches && hoverMq.matches;
       el.style.setProperty("--chroma-enabled", enabled.current ? "1" : "0");
     };
     syncEnabled();
     mq.addEventListener("change", syncEnabled);
+    hoverMq.addEventListener("change", syncEnabled);
 
-    el.style.setProperty("--r", `${radius}px`);
-    const setXAxis = gsap.quickSetter(el, "--x", "px") as (
-      value: number,
-    ) => void;
-    const setYAxis = gsap.quickSetter(el, "--y", "px") as (
-      value: number,
-    ) => void;
-    setX.current = setXAxis;
-    setY.current = setYAxis;
+    if (!enabled.current) {
+      return () => {
+        mq.removeEventListener("change", syncEnabled);
+        hoverMq.removeEventListener("change", syncEnabled);
+      };
+    }
 
-    const { width, height } = el.getBoundingClientRect();
-    pos.current = { x: width / 2, y: height / 2 };
-    setXAxis(pos.current.x);
-    setYAxis(pos.current.y);
+    let cancelled = false;
 
-    return () => mq.removeEventListener("change", syncEnabled);
+    void import("gsap").then(({ gsap }) => {
+      if (cancelled || !rootRef.current) return;
+
+      gsapRef.current = gsap;
+      el.style.setProperty("--r", `${radius}px`);
+      const setXAxis = gsap.quickSetter(el, "--x", "px") as (
+        value: number,
+      ) => void;
+      const setYAxis = gsap.quickSetter(el, "--y", "px") as (
+        value: number,
+      ) => void;
+      setX.current = setXAxis;
+      setY.current = setYAxis;
+
+      const { width, height } = el.getBoundingClientRect();
+      pos.current = { x: width / 2, y: height / 2 };
+      setXAxis(pos.current.x);
+      setYAxis(pos.current.y);
+    });
+
+    return () => {
+      cancelled = true;
+      mq.removeEventListener("change", syncEnabled);
+      hoverMq.removeEventListener("change", syncEnabled);
+    };
   }, [radius]);
 
   const moveTo = useCallback(
     (x: number, y: number) => {
-      if (!enabled.current) return;
+      const gsap = gsapRef.current;
+      if (!enabled.current || !gsap) return;
       gsap.to(pos.current, {
         x,
         y,
@@ -77,14 +97,18 @@ export function useChromaSpotlight({
       if (!root) return;
       const rect = root.getBoundingClientRect();
       moveTo(e.clientX - rect.left, e.clientY - rect.top);
-      gsap.to(fadeRef.current, { opacity: 0, duration: 0.25, overwrite: true });
+      gsapRef.current?.to(fadeRef.current, {
+        opacity: 0,
+        duration: 0.25,
+        overwrite: true,
+      });
     },
     [moveTo],
   );
 
   const handlePointerLeave = useCallback(() => {
     if (!enabled.current) return;
-    gsap.to(fadeRef.current, {
+    gsapRef.current?.to(fadeRef.current, {
       opacity: 1,
       duration: fadeOut,
       overwrite: true,

@@ -1,5 +1,4 @@
 import { type FC, useRef, useEffect, useMemo, useState } from "react";
-import { gsap } from "gsap";
 import { RefreshCw, SatelliteDish, WifiOff, X } from "lucide-react";
 import type { MainTab } from "@/shared/types";
 import MagicToggle from "./MagicToggle";
@@ -57,27 +56,45 @@ const AppNavStrip: FC<Props> = ({
       return undefined;
     }
 
-    const btns = Array.from(nav.querySelectorAll<HTMLElement>(".ans__btn"));
-    const cleanups = btns.map((el) => {
-      const onMove = (e: MouseEvent) => {
-        const r = el.getBoundingClientRect();
-        gsap.to(el, {
-          x: (e.clientX - r.left - r.width / 2) * 0.3,
-          y: (e.clientY - r.top - r.height / 2) * 0.3,
-          ease: "power2.out",
-          duration: 0.35,
-        });
-      };
-      const onLeave = () =>
-        gsap.to(el, { x: 0, y: 0, ease: "elastic.out(1,0.3)", duration: 1.1 });
-      el.addEventListener("mousemove", onMove);
-      el.addEventListener("mouseleave", onLeave);
-      return () => {
-        el.removeEventListener("mousemove", onMove);
-        el.removeEventListener("mouseleave", onLeave);
-      };
+    let cancelled = false;
+    let cleanups: Array<() => void> = [];
+
+    void import("gsap").then(({ gsap }) => {
+      if (cancelled || !navRef.current) return;
+
+      const btns = Array.from(
+        navRef.current.querySelectorAll<HTMLElement>(".ans__btn"),
+      );
+      cleanups = btns.map((el) => {
+        const onMove = (e: MouseEvent) => {
+          const r = el.getBoundingClientRect();
+          gsap.to(el, {
+            x: (e.clientX - r.left - r.width / 2) * 0.3,
+            y: (e.clientY - r.top - r.height / 2) * 0.3,
+            ease: "power2.out",
+            duration: 0.35,
+          });
+        };
+        const onLeave = () =>
+          gsap.to(el, {
+            x: 0,
+            y: 0,
+            ease: "elastic.out(1,0.3)",
+            duration: 1.1,
+          });
+        el.addEventListener("mousemove", onMove);
+        el.addEventListener("mouseleave", onLeave);
+        return () => {
+          el.removeEventListener("mousemove", onMove);
+          el.removeEventListener("mouseleave", onLeave);
+        };
+      });
     });
-    return () => cleanups.forEach((fn) => fn());
+
+    return () => {
+      cancelled = true;
+      cleanups.forEach((fn) => fn());
+    };
   }, [activeTab]);
 
   const statusChip = useMemo(() => {
@@ -166,7 +183,7 @@ const AppNavStrip: FC<Props> = ({
 
         <span className="ans__sep" aria-hidden="true" />
 
-        <MagicToggle<MainTab | "spin">
+        <MagicToggle<MainTab>
           options={[
             {
               value: "movies",
@@ -178,26 +195,23 @@ const AppNavStrip: FC<Props> = ({
               label: isMobile ? "📍" : "📍 Places",
               ariaLabel: "Places",
             },
-            ...(onOpenSpin
-              ? [
-                  {
-                    value: "spin" as const,
-                    label: isMobile ? "🎡" : "🎡 Spin",
-                    ariaLabel: "Spin wheel",
-                  },
-                ]
-              : []),
           ]}
           activeValue={activeTab}
-          onChange={(val) => {
-            if (val === "spin" && onOpenSpin) {
-              onOpenSpin();
-            } else if (val !== "spin") {
-              onTabChange(val);
-            }
-          }}
+          onChange={onTabChange}
           ariaLabel="Main navigation tabs"
         />
+
+        {onOpenSpin ? (
+          <button
+            type="button"
+            className="ans__icon-btn"
+            onClick={onOpenSpin}
+            aria-label="Open spin wheel"
+            title="Spin wheel"
+          >
+            🎡
+          </button>
+        ) : null}
 
         {isMobile && onOpenMessages ? (
           <button
@@ -220,43 +234,9 @@ const AppNavStrip: FC<Props> = ({
             ❓
           </button>
         ) : null}
-
-        {!isMobile && showChip && statusChip ? (
-          <>
-            <span className="ans__sep ans__sep--wide" aria-hidden="true" />
-            <div
-              className={`ans__chip ans__chip--${statusChip.tone}`}
-              role="status"
-            >
-              <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
-              <span className="ans__chip-copy">
-                <strong>{statusChip.label}</strong>
-                <span>{statusChip.detail}</span>
-              </span>
-              {statusChip.action && statusChip.actionLabel && (
-                <button
-                  type="button"
-                  className="ans__chip-action"
-                  onClick={statusChip.action}
-                  aria-label={statusChip.actionLabel}
-                >
-                  {statusChip.actionLabel}
-                </button>
-              )}
-              <button
-                type="button"
-                className="ans__chip-dismiss"
-                onClick={dismissChip}
-                aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
-              >
-                <X size={13} strokeWidth={2.3} aria-hidden="true" />
-              </button>
-            </div>
-          </>
-        ) : null}
       </nav>
 
-      {isMobile && showChip && statusChip ? (
+      {showChip && statusChip ? (
         <div
           className={`ans__chip ans__chip--mobile-row ans__chip--${statusChip.tone}`}
           role="status"

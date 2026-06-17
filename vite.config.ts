@@ -167,6 +167,10 @@ export default defineConfig(({ mode }) => {
               return 'graphics-vendor';
             }
 
+            if (id.includes('node_modules/gsap')) {
+              return 'motion-vendor';
+            }
+
             return undefined;
           },
         },

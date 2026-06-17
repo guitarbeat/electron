@@ -1,8 +1,8 @@
 import React, { memo } from "react";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
-import PlaceCard from "./PlaceCard.tsx";
-import type { Place } from "../../shared/types.ts";
-import PlacesEmptyState from "./PlacesEmptyState.tsx";
+import PlaceCard from "./PlaceCard";
+import type { Place } from "@/shared/types";
+import PlacesEmptyState from "./PlacesEmptyState";
 
 interface PlacesGridProps {
   places: Place[];
@@ -11,10 +11,6 @@ interface PlacesGridProps {
   isSubmitting: boolean;
   activeCardId: string | null;
   onCardTap: (place: Place) => void;
-  onCardKeyDown: (
-    event: React.KeyboardEvent<HTMLDivElement>,
-    place: Place,
-  ) => void;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
@@ -28,7 +24,6 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
   isSubmitting,
   activeCardId,
   onCardTap,
-  onCardKeyDown,
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
@@ -41,29 +36,18 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
     >
       {places.length > 0 ? (
         places.map((place) => (
-          <div
+          <PlaceCard
             key={place.id}
-            id={`place-card-${place.id}`}
-            onClick={() => onCardTap(place)}
-            onKeyDown={(event) => onCardKeyDown(event, place)}
-            role="button"
-            aria-label={`View details for ${place.name}`}
-            tabIndex={0}
-            style={{
-              cursor: "pointer",
-            }}
-          >
-            <PlaceCard
-              place={place}
-              canEdit={canEdit}
-              isSubmitting={isSubmitting}
-              isActive={activeCardId === place.id}
-              onMarkVisited={onMarkVisited}
-              onMarkUnvisited={onMarkUnvisited}
-              onDelete={onDelete}
-              onEdit={onEdit}
-            />
-          </div>
+            place={place}
+            canEdit={canEdit}
+            isSubmitting={isSubmitting}
+            isActive={activeCardId === place.id}
+            onActivate={() => onCardTap(place)}
+            onMarkVisited={onMarkVisited}
+            onMarkUnvisited={onMarkUnvisited}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
         ))
       ) : (
         <PlacesEmptyState hint={emptyStateHint} />
