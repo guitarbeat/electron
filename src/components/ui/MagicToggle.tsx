@@ -4,6 +4,8 @@ import "./MagicToggle.css";
 export interface MagicToggleOption<T extends string> {
   value: T;
   label: React.ReactNode;
+  /** Used when label is icon-only or abbreviated on small screens. */
+  ariaLabel?: string;
   disabled?: boolean;
 }
 
@@ -61,12 +63,14 @@ function MagicToggle<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={`magic-toggle__btn ${isActive ? "is-active" : ""} ${option.disabled ? "is-disabled" : ""}`} disabled={option.disabled}
+            className={`magic-toggle__btn ${isActive ? "is-active" : ""} ${option.disabled ? "is-disabled" : ""}`}
+            disabled={option.disabled}
             onPointerDown={(e) => {
               e.preventDefault();
               onChange(option.value);
             }}
             aria-pressed={isActive}
+            aria-label={option.ariaLabel}
           >
             {option.label}
           </button>

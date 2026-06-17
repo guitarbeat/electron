@@ -57,18 +57,20 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
       )}
 
       {sorts.length > 0 && (
-        <div className="bento-ctrl__sort">
-          <span className="bento-ctrl__sort-label" aria-hidden="true">
-            Sort
-          </span>
-          <MagicToggle<SortOrder>
-            options={sorts}
-            activeValue={activeSortOrder}
-            onChange={onSortChange}
-            ariaLabel="Sort order"
-          />
+        <div className="bento-ctrl__controls">
+          <div className="bento-ctrl__sort-row">
+            <span className="bento-ctrl__sort-label" aria-hidden="true">
+              Sort
+            </span>
+            <MagicToggle<SortOrder>
+              options={sorts}
+              activeValue={activeSortOrder}
+              onChange={onSortChange}
+              ariaLabel="Sort order"
+            />
+          </div>
           {viewModes && viewModes.length > 0 && activeViewMode && onViewModeChange ? (
-            <>
+            <div className="bento-ctrl__sort-row">
               <span className="bento-ctrl__sort-label" aria-hidden="true">
                 View
               </span>
@@ -78,7 +80,7 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
                 onChange={onViewModeChange}
                 ariaLabel={viewModeAriaLabel ?? "Browse view"}
               />
-            </>
+            </div>
           ) : null}
         </div>
       )}

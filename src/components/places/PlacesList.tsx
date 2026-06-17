@@ -39,6 +39,7 @@ import {
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 
 const PLACE_SECTION_IDS = {
   incoming: "places-section-incoming",
@@ -47,13 +48,19 @@ const PLACE_SECTION_IDS = {
 };
 
 const PLACE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐 Recent" },
-  { value: "alpha", label: "A→Z" },
+  { value: "recent", label: "🕐 Recent", ariaLabel: "Recent" },
+  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
+];
+
+const MOBILE_PLACE_SORTS: BentoSortChipConfig[] = [
+  { value: "recent", label: "🕐", ariaLabel: "Recent" },
+  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
 ];
 
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
 const PlacesList: React.FC = () => {
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const mapRef = useRef<PlacesMapHandle>(null);
   const placesBodyRef = useRef<HTMLDivElement>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
@@ -108,7 +115,7 @@ const PlacesList: React.FC = () => {
     (): BentoStatTileConfig[] => [
       {
         id: "incoming",
-        label: "Incoming",
+        label: isMobile ? "New" : "Incoming",
         count: pendingSuggestions.length,
         icon: "💌",
         sectionId: PLACE_SECTION_IDS.incoming,
@@ -116,7 +123,7 @@ const PlacesList: React.FC = () => {
       },
       {
         id: "queue",
-        label: "To Try",
+        label: isMobile ? "Try" : "To Try",
         count: sections.queue.length,
         icon: "📍",
         sectionId: PLACE_SECTION_IDS.queue,
@@ -124,7 +131,7 @@ const PlacesList: React.FC = () => {
       },
       {
         id: "visited",
-        label: "Visited",
+        label: isMobile ? "Done" : "Visited",
         count: sections.completed.length,
         icon: "✓",
         sectionId: PLACE_SECTION_IDS.completed,
@@ -132,6 +139,7 @@ const PlacesList: React.FC = () => {
       },
     ],
     [
+      isMobile,
       pendingSuggestions.length,
       sections.queue.length,
       sections.completed.length,
@@ -155,15 +163,17 @@ const PlacesList: React.FC = () => {
     setSortOrder(order as PlaceSortOrder);
   }, []);
 
+  const placeSorts = isMobile ? MOBILE_PLACE_SORTS : PLACE_SORTS;
+
   useEffect(() => {
     setConfig({
       stats: placeStats,
-      sorts: PLACE_SORTS,
+      sorts: placeSorts,
       activeSortOrder: sortOrder,
       onSortChange: handlePlaceSortChange,
       ariaLabel: "Places workspace controls",
     });
-  }, [setConfig, placeStats, sortOrder, handlePlaceSortChange]);
+  }, [setConfig, placeStats, placeSorts, sortOrder, handlePlaceSortChange]);
 
   const handleCardTap = useCallback((place: Place) => {
     if (typeof place.lat === "number" && typeof place.lng === "number") {

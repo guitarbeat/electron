@@ -18,7 +18,8 @@
   background: unset;
   background-image: none;
   box-shadow: none;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   isolation: isolate;
 }
 
@@ -212,7 +213,7 @@
 .app-workspace-stack--movies .watchlist-top-controls__autocomplete-option {
   background: transparent;
   color: color-mix(in srgb, var(--color-text-primary) 92%, transparent);
-  font-family: 'Papyrus', var(--font-display), serif;
+  font-family: var(--font-interface, var(--font-body, sans-serif));
 }
 
 .app-workspace-stack--movies .watchlist-top-controls__autocomplete-option:hover,

@@ -54,7 +54,20 @@ html {
 }
 
 /* ── Nav strip buttons: no tap flash, instant feel ──────────────── */
-.ans__btn {
+.ans__btn,
+.magic-toggle__btn,
+.bento-stat-tile {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+.bento-stat-tile:active {
+  transform: scale(0.98);
+  transition: transform 0.08s ease;
+}
+
+@media (max-width: 640px) {
+  .bento-stat-tile:active {
+    transform: scale(0.98);
+  }
 }

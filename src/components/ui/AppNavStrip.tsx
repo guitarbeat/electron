@@ -163,9 +163,25 @@ const AppNavStrip: FC<Props> = ({
 
       <MagicToggle<MainTab | "spin">
         options={[
-          { value: "movies", label: "🎬 Movies" },
-          { value: "places", label: "📍 Places" },
-          ...(onOpenSpin ? [{ value: "spin" as const, label: "🎡 Spin" }] : []),
+          {
+            value: "movies",
+            label: isMobile ? "🎬" : "🎬 Movies",
+            ariaLabel: "Movies",
+          },
+          {
+            value: "places",
+            label: isMobile ? "📍" : "📍 Places",
+            ariaLabel: "Places",
+          },
+          ...(onOpenSpin
+            ? [
+                {
+                  value: "spin" as const,
+                  label: isMobile ? "🎡" : "🎡 Spin",
+                  ariaLabel: "Spin wheel",
+                },
+              ]
+            : []),
         ]}
         activeValue={activeTab}
         onChange={(val) => {

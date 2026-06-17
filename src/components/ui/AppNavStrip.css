@@ -143,7 +143,15 @@
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 720px) {
-  .ans__brand      { padding: 0 0.6rem; font-size: 0.88rem; }
+  .ans {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .ans__brand {
+    padding: 0 0.6rem;
+    font-size: 0.88rem;
+  }
 
   .ans__chip {
     max-width: min(47vw, 13rem);
@@ -152,14 +160,39 @@
   .ans__chip-copy span { display: none; }
 }
 
+@media (max-width: 640px) {
+  .ans {
+    --ans-h: 2.75rem;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    border-radius: 0.85rem;
+    box-shadow: none;
+  }
+
+  .ans__brand {
+    font-size: 0;
+    gap: 0;
+    padding: 0 0.35rem;
+  }
+
+  .ans__brand-glyph {
+    display: inline !important;
+    font-size: 1rem;
+    opacity: 1;
+  }
+
+  .ans__sep:first-of-type {
+    margin-inline: 0.15rem;
+  }
+}
+
 @media (max-width: 480px) {
-  .ans__brand      { padding: 0 0.5rem; font-size: 0.84rem; }
+  .ans__brand { padding: 0 0.25rem; }
 }
 
 @media (max-width: 440px) {
-  .ans__brand-glyph,
   .ans__sep:first-of-type { display: none; }
-  .ans__brand              { padding: 0 0.4rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

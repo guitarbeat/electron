@@ -44,10 +44,22 @@ const MOVIE_SECTION_IDS = {
 };
 
 const MOVIE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐 Recent" },
-  { value: "alpha", label: "A→Z" },
-  { value: "rating", label: "★ Rating" },
+  { value: "recent", label: "🕐 Recent", ariaLabel: "Recent" },
+  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
+  { value: "rating", label: "★ Rating", ariaLabel: "Rating" },
 ];
+
+const MOBILE_MOVIE_SORTS: BentoSortChipConfig[] = [
+  { value: "recent", label: "🕐", ariaLabel: "Recent" },
+  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
+  { value: "rating", label: "★", ariaLabel: "Rating" },
+];
+
+const MOBILE_MOVIE_VIEW_MODES = MOVIE_BROWSE_LAYOUTS.map(({ value }) => ({
+  value,
+  label: value === "grid" ? "⊞" : "↕",
+  ariaLabel: value === "grid" ? "Grid view" : "Scroll view",
+}));
 
 const resolveSearchTitle = (
   selectedAutocompleteResult: MovieAutocompleteResult | null,
@@ -116,33 +128,37 @@ const MoviesView: React.FC<MoviesViewProps> = ({
   );
 
   const movieStats = useMemo(
-    (): BentoStatTileConfig[] => [
-      {
-        id: "incoming",
-        label: "Incoming",
-        count: sections.suggestions.length,
-        icon: "💌",
-        sectionId: MOVIE_SECTION_IDS.incoming,
-        tone: "incoming",
-      },
-      {
-        id: "queue",
-        label: "Up Next",
-        count: sections.queue.length,
-        icon: "🎞",
-        sectionId: MOVIE_SECTION_IDS.queue,
-        tone: "default",
-      },
-      {
-        id: "watched",
-        label: "Watched",
-        count: sections.completed.length,
-        icon: "✓",
-        sectionId: MOVIE_SECTION_IDS.completed,
-        tone: "completed",
-      },
-    ],
+    (): BentoStatTileConfig[] => {
+      const stats: BentoStatTileConfig[] = [
+        {
+          id: "incoming",
+          label: isMobile ? "New" : "Incoming",
+          count: sections.suggestions.length,
+          icon: "💌",
+          sectionId: MOVIE_SECTION_IDS.incoming,
+          tone: "incoming",
+        },
+        {
+          id: "queue",
+          label: isMobile ? "Queue" : "Up Next",
+          count: sections.queue.length,
+          icon: "🎞",
+          sectionId: MOVIE_SECTION_IDS.queue,
+          tone: "default",
+        },
+        {
+          id: "watched",
+          label: isMobile ? "Done" : "Watched",
+          count: sections.completed.length,
+          icon: "✓",
+          sectionId: MOVIE_SECTION_IDS.completed,
+          tone: "completed",
+        },
+      ];
+      return stats;
+    },
     [
+      isMobile,
       sections.suggestions.length,
       sections.queue.length,
       sections.completed.length,
@@ -159,14 +175,17 @@ const MoviesView: React.FC<MoviesViewProps> = ({
     writeMovieBrowseLayout(nextLayout);
   }, []);
 
+  const movieSorts = isMobile ? MOBILE_MOVIE_SORTS : MOVIE_SORTS;
+  const movieViewModes = isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS;
+
   useEffect(() => {
     setConfig({
       stats: movieStats,
-      sorts: MOVIE_SORTS,
+      sorts: movieSorts,
       activeSortOrder: sortOrder,
       onSortChange: handleMovieSortChange,
       ariaLabel: "Movies workspace controls",
-      viewModes: MOVIE_BROWSE_LAYOUTS,
+      viewModes: movieViewModes,
       activeViewMode: browseLayout,
       onViewModeChange: handleBrowseLayoutChange,
       viewModeAriaLabel: "Movie browse layout",
@@ -174,6 +193,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({
   }, [
     setConfig,
     movieStats,
+    movieSorts,
+    movieViewModes,
     sortOrder,
     browseLayout,
     handleMovieSortChange,

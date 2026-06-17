@@ -64,7 +64,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         id="main-content"
         className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
         tabIndex={-1}
-        style={{ position: "relative", overflow: "hidden" }}
+        style={{ position: "relative" }}
       >
         <BentoWorkspaceController
           stats={bentoConfig?.stats ?? []}

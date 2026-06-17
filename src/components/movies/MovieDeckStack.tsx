@@ -258,19 +258,12 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
     <div
       ref={scrollRef}
       className="movie-deck-stack-scroll"
-      style={{ position: "relative", minHeight: scrollMinHeight }}
     >
       <div
-        style={{
-          position: "sticky",
-          top: "5rem",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "1.1rem",
-          paddingBlock: "1.25rem",
-        }}
+        className="movie-deck-stack-scroll__track"
+        style={{ minHeight: scrollMinHeight }}
       >
+        <div className="movie-deck-stack-scroll__stage">
         {/* Eyebrow hint */}
         <p
           style={{
@@ -350,6 +343,7 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
         >
           {deck.length} movies
         </p>
+        </div>
       </div>
     </div>
   );

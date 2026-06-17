@@ -61,6 +61,32 @@
   grid-column: 1 / -1;
 }
 
+/* Scroll browse mode — tall page scroll track with sticky deck stage */
+.movie-deck-stack-scroll {
+  position: relative;
+}
+
+.movie-deck-stack-scroll__track {
+  position: relative;
+}
+
+.movie-deck-stack-scroll__stage {
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  padding-block: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .movie-deck-stack-scroll__stage {
+    top: 4.25rem;
+    padding-block: 0.85rem;
+  }
+}
+
 /* Empty State */
 .watchlist-empty-state {
   grid-column: 1 / -1;
