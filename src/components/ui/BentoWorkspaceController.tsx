@@ -65,7 +65,7 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
 
       {sorts.length > 0 && (
         <div
-          className={`bento-ctrl__controls${isMobile && hasViewModes ? " bento-ctrl__controls--split" : ""}`}
+          className={`bento-ctrl__controls${hasViewModes ? " bento-ctrl__controls--split" : ""}`}
         >
           <div className="bento-ctrl__sort-row">
             <span className="bento-ctrl__sort-label" aria-hidden="true">
