@@ -441,7 +441,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({
           />,
           searchPortalEl,
         )}
-      <div className="watchlist-container places-container">
+      <div className="watchlist-container">
         {isMoviesWorkspaceDegraded && (
           <SyncBanner
             isBlocked={isMoviesWorkspaceSyncBlocked}

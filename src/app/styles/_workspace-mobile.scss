@@ -70,19 +70,19 @@
     line-height: 1.2;
   }
 
-  .suggestion-item-card__button {
+  .watchlist-suggestion-rail .suggestion-item-card__button {
     width: 44px !important;
     min-width: 44px !important;
     height: 44px !important;
     min-height: 44px !important;
   }
 
-  .suggestion-item-card__button svg {
+  .watchlist-suggestion-rail .suggestion-item-card__button svg {
     width: 20px !important;
     height: 20px !important;
   }
 
-  .suggestion-item-card__profile-hint {
+  .watchlist-suggestion-rail .suggestion-item-card__profile-hint {
     display: none;
   }
 }
@@ -115,9 +115,8 @@
     min-height: 44px;
   }
 
-  /* Suggestion card actions: let buttons share the row evenly so the
-     left-aligned 44px buttons + right-aligned caption stop fighting. */
-  .suggestion-item-card__button {
+  /* Suggestion card actions in horizontal rail only */
+  .watchlist-suggestion-rail .suggestion-item-card__button {
     flex: 1 1 0;
     width: auto !important;
     max-width: 220px;

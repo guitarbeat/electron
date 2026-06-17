@@ -1,5 +1,17 @@
 /* AppNavStrip — unified brand + nav tabs + PWA status chip */
 
+.ans-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.ans-wrap--has-chip {
+  gap: 0.4rem;
+}
+
 .ans {
   /* ── token scale (inherits active theme from applyTheme) ── */
   --ans-accent: var(--color-accent);
@@ -199,6 +211,22 @@
 
   .ans__icon-btn:active {
     transform: scale(0.96);
+  }
+
+  .ans__chip--mobile-row {
+    display: flex;
+    align-items: center;
+    gap: 0.42rem;
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.35rem 0.5rem 0.35rem 0.65rem;
+    border-radius: 0.65rem;
+    max-width: none;
+  }
+
+  .ans__chip--mobile-row .ans__chip-copy span {
+    display: inline;
+    font-size: 0.6875rem;
   }
 
   .ans__brand {

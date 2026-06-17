@@ -9,7 +9,7 @@ pnpm install
 pnpm dev
 ```
 
-- Dev app: `http://localhost:5000`
+- Dev app: `http://localhost:5173`
 - `/api/*` requests are served in dev by Vite middleware that loads handlers from `api/` (no separate backend process)
 
 ```bash

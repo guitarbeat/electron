@@ -56,7 +56,7 @@ const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
   ) {
     return [
       "Cause: this browser could not reach /api/state (dev server offline, wrong origin, or offline).",
-      "Verify: run pnpm dev and open the app on the same origin; check the browser Network tab.",
+      "Verify: run pnpm dev and open the URL printed in the terminal (not :5000 on macOS — AirPlay uses that port).",
       "State: showing cached local data until the API responds.",
     ];
   }

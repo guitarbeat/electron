@@ -25,7 +25,15 @@
 }
 
 /* Content Grid — always at least 2 columns, even on the smallest phones */
-.watchlist-content {
+.watchlist-content:not(.chroma-grid-root) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(clamp(9rem, 40vw, 12.2rem), calc(50% - 0.5rem)), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.chroma-grid-root.watchlist-content:not(.watchlist-content--poster-grid)
+  > .chroma-grid-root__grid.collection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(clamp(9rem, 40vw, 12.2rem), calc(50% - 0.5rem)), 1fr));
   gap: 1rem;
@@ -33,32 +41,46 @@
 }
 
 @media (max-width: 640px) {
-  .watchlist-content {
+  .watchlist-content:not(.chroma-grid-root),
+  .chroma-grid-root.watchlist-content:not(.watchlist-content--poster-grid)
+    > .chroma-grid-root__grid.collection-grid {
     gap: 0.65rem;
   }
 }
 
 @media (max-width: 360px) {
-  .watchlist-content {
+  .watchlist-content:not(.chroma-grid-root),
+  .chroma-grid-root.watchlist-content:not(.watchlist-content--poster-grid)
+    > .chroma-grid-root__grid.collection-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.75rem;
   }
 
-  .watchlist-content > .movie-item-card {
+  .watchlist-content > .movie-item-card,
+  .watchlist-content .chroma-grid-root__grid > .movie-item-card {
     max-width: min(100%, 18rem);
     justify-self: center;
   }
 }
 
-.watchlist-content > .movie-item-card {
+.watchlist-content > .movie-item-card,
+.watchlist-content .chroma-grid-root__grid > .movie-item-container,
+.watchlist-content .chroma-grid-root__grid > .movie-item-card {
   width: 100%;
   max-width: none;
   justify-self: stretch;
 }
 
 .watchlist-content > .watchlist-empty-state,
-.watchlist-content > .watchlist-error {
+.watchlist-content > .watchlist-error,
+.watchlist-content .chroma-grid-root__grid > .watchlist-empty-state,
+.watchlist-content .chroma-grid-root__grid > .watchlist-error {
   grid-column: 1 / -1;
+}
+
+.watchlist-container {
+  width: 100%;
+  min-width: 0;
 }
 
 /* Scroll browse mode — contained scrollport with sticky deck stage */

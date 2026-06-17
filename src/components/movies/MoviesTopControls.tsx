@@ -29,6 +29,7 @@ import {
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './lib/movieAutocomplete';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
@@ -111,8 +112,14 @@ const MoviesTopControls = React.forwardRef<
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to movies';
+  const noteActionLabel = isGuest
+    ? isMobile
+      ? "Note"
+      : "Add a note"
+    : "Recommend";
 
   useImperativeHandle(
     forwardedRef,
@@ -570,7 +577,7 @@ const MoviesTopControls = React.forwardRef<
                   aria-label={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
                   leftIcon={<PlusIcon />}
                 >
-                  {isGuest ? 'Add a note' : 'Recommend'}
+                  {noteActionLabel}
                 </Button>
               </div>
           ) : null}

@@ -339,6 +339,7 @@
     min-width: 0;
     overflow: visible;
     justify-content: stretch;
+    flex: 1 1 auto;
   }
 
   .app-header--mobile .app-header__right {

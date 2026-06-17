@@ -56,7 +56,8 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: '0.0.0.0',
-      port: 5000,
+      // Avoid 5000 — macOS AirPlay Receiver binds it by default and breaks /api/state.
+      port: 5173,
       allowedHosts: true,
       watch: {
         ignored: ['**/.local/share/pnpm/store/**', '**/node_modules/.pnpm/store/**'],

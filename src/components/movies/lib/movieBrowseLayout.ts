@@ -16,7 +16,11 @@ export const readMovieBrowseLayout = (): MovieBrowseLayout => {
   }
 
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === "scroll" ? "scroll" : "grid";
+  if (stored === "scroll" || stored === "grid") {
+    return stored;
+  }
+
+  return window.matchMedia("(max-width: 640px)").matches ? "scroll" : "grid";
 };
 
 export const writeMovieBrowseLayout = (layout: MovieBrowseLayout): void => {

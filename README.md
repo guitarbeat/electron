@@ -11,7 +11,7 @@ pnpm install
 pnpm dev
 ```
 
-Dev server: `http://localhost:5000`. API routes under `/api/*` are handled by Vite dev middleware (see `vite.config.ts` and `api/`).
+Dev server: `http://localhost:5173` (see the terminal for the Network URL on your phone). API routes under `/api/*` are handled by Vite dev middleware (see `vite.config.ts` and `api/`).
 
 ```bash
 pnpm verify

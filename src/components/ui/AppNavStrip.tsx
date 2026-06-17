@@ -155,105 +155,138 @@ const AppNavStrip: FC<Props> = ({
   };
 
   return (
-    <nav ref={navRef} className="ans" aria-label="Primary navigation">
-      <span className="ans__brand" aria-label="Electron">
-        <span className="ans__brand-glyph" aria-hidden="true">
-          ◈
+    <div className={`ans-wrap${showChip ? " ans-wrap--has-chip" : ""}`}>
+      <nav ref={navRef} className="ans" aria-label="Primary navigation">
+        <span className="ans__brand" aria-label="Electron">
+          <span className="ans__brand-glyph" aria-hidden="true">
+            ◈
+          </span>
+          Electron
         </span>
-        Electron
-      </span>
 
-      <span className="ans__sep" aria-hidden="true" />
+        <span className="ans__sep" aria-hidden="true" />
 
-      <MagicToggle<MainTab | "spin">
-        options={[
-          {
-            value: "movies",
-            label: isMobile ? "🎬" : "🎬 Movies",
-            ariaLabel: "Movies",
-          },
-          {
-            value: "places",
-            label: isMobile ? "📍" : "📍 Places",
-            ariaLabel: "Places",
-          },
-          ...(onOpenSpin
-            ? [
-                {
-                  value: "spin" as const,
-                  label: isMobile ? "🎡" : "🎡 Spin",
-                  ariaLabel: "Spin wheel",
-                },
-              ]
-            : []),
-        ]}
-        activeValue={activeTab}
-        onChange={(val) => {
-          if (val === "spin" && onOpenSpin) {
-            onOpenSpin();
-          } else if (val !== "spin") {
-            onTabChange(val);
-          }
-        }}
-        ariaLabel="Main navigation tabs"
-      />
+        <MagicToggle<MainTab | "spin">
+          options={[
+            {
+              value: "movies",
+              label: isMobile ? "🎬" : "🎬 Movies",
+              ariaLabel: "Movies",
+            },
+            {
+              value: "places",
+              label: isMobile ? "📍" : "📍 Places",
+              ariaLabel: "Places",
+            },
+            ...(onOpenSpin
+              ? [
+                  {
+                    value: "spin" as const,
+                    label: isMobile ? "🎡" : "🎡 Spin",
+                    ariaLabel: "Spin wheel",
+                  },
+                ]
+              : []),
+          ]}
+          activeValue={activeTab}
+          onChange={(val) => {
+            if (val === "spin" && onOpenSpin) {
+              onOpenSpin();
+            } else if (val !== "spin") {
+              onTabChange(val);
+            }
+          }}
+          ariaLabel="Main navigation tabs"
+        />
 
-      {isMobile && onOpenMessages ? (
-        <button
-          type="button"
-          className="ans__icon-btn"
-          onClick={onOpenMessages}
-          aria-label="Open messages"
-        >
-          💬
-        </button>
-      ) : null}
-
-      {isMobile && onOpenQuiz ? (
-        <button
-          type="button"
-          className="ans__icon-btn"
-          onClick={onOpenQuiz}
-          aria-label="Open couple quiz"
-        >
-          ❓
-        </button>
-      ) : null}
-
-      {showChip && statusChip && (
-        <>
-          <span className="ans__sep ans__sep--wide" aria-hidden="true" />
-          <div
-            className={`ans__chip ans__chip--${statusChip.tone}`}
-            role="status"
+        {isMobile && onOpenMessages ? (
+          <button
+            type="button"
+            className="ans__icon-btn"
+            onClick={onOpenMessages}
+            aria-label="Open messages"
           >
-            <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
-            <span className="ans__chip-copy">
-              <strong>{statusChip.label}</strong>
-              <span>{statusChip.detail}</span>
-            </span>
-            {statusChip.action && statusChip.actionLabel && (
+            💬
+          </button>
+        ) : null}
+
+        {isMobile && onOpenQuiz ? (
+          <button
+            type="button"
+            className="ans__icon-btn"
+            onClick={onOpenQuiz}
+            aria-label="Open couple quiz"
+          >
+            ❓
+          </button>
+        ) : null}
+
+        {!isMobile && showChip && statusChip ? (
+          <>
+            <span className="ans__sep ans__sep--wide" aria-hidden="true" />
+            <div
+              className={`ans__chip ans__chip--${statusChip.tone}`}
+              role="status"
+            >
+              <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
+              <span className="ans__chip-copy">
+                <strong>{statusChip.label}</strong>
+                <span>{statusChip.detail}</span>
+              </span>
+              {statusChip.action && statusChip.actionLabel && (
+                <button
+                  type="button"
+                  className="ans__chip-action"
+                  onClick={statusChip.action}
+                  aria-label={statusChip.actionLabel}
+                >
+                  {statusChip.actionLabel}
+                </button>
+              )}
               <button
                 type="button"
-                className="ans__chip-action"
-                onClick={statusChip.action}
-                aria-label={statusChip.actionLabel}
+                className="ans__chip-dismiss"
+                onClick={dismissChip}
+                aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
               >
-                {statusChip.actionLabel}
+                <X size={13} strokeWidth={2.3} aria-hidden="true" />
               </button>
-            )}
+            </div>
+          </>
+        ) : null}
+      </nav>
+
+      {isMobile && showChip && statusChip ? (
+        <div
+          className={`ans__chip ans__chip--mobile-row ans__chip--${statusChip.tone}`}
+          role="status"
+        >
+          <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
+          <span className="ans__chip-copy">
+            <strong>{statusChip.label}</strong>
+            <span>{statusChip.detail}</span>
+          </span>
+          {statusChip.action && statusChip.actionLabel && (
             <button
               type="button"
-              className="ans__chip-dismiss"
-              onClick={dismissChip}
-              aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
+              className="ans__chip-action"
+              onClick={statusChip.action}
+              aria-label={statusChip.actionLabel}
             >
-              <X size={13} strokeWidth={2.3} aria-hidden="true" />
+              {statusChip.actionLabel}
             </button>
-          </div>
-        </>
-      )}
-    </nav>
+          )}
+          <button
+            type="button"
+            className="ans__chip-dismiss"
+            onClick={dismissChip}
+            aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
+          >
+            <X size={13} strokeWidth={2.3} aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 };
 

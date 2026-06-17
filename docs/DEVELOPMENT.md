@@ -22,7 +22,7 @@ pnpm test
 
 Command behavior:
 
-- `pnpm dev`: starts the Vite dev server on `http://localhost:5000`.
+- `pnpm dev`: starts the Vite dev server on `http://localhost:5173` (use the Network URL from the terminal for phone testing).
 - `pnpm verify`: runs the full pre-deploy validation set (`check-types`, `lint`, `test`, `build`).
 - `pnpm build`: writes the production bundle to `dist/`.
 - `pnpm preview`: serves the built app locally.

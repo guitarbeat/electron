@@ -18,6 +18,7 @@ test("movie browse layout persists to localStorage", () => {
           storage.set(key, value);
         },
       },
+      matchMedia: () => ({ matches: false }),
     },
   });
 

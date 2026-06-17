@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import type { MovieSuggestion, User } from "@/shared/types";
 import Stack from "@/components/ui/Stack";
 import SuggestionCard from "./SuggestionCard";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import "./SuggestionStack.css";
 
 interface SuggestionStackProps {
@@ -19,6 +20,7 @@ const SuggestionStack: React.FC<SuggestionStackProps> = ({
   onAccept,
   onReject,
 }) => {
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const orderedSuggestions = useMemo(
     () => [...suggestions].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     [suggestions],
@@ -96,15 +98,21 @@ const SuggestionStack: React.FC<SuggestionStackProps> = ({
 
       {stackItems.length > 1 ? (
         <p className="suggestion-stack__hint">
-          {currentUser
-            ? "Drag or tap the poster to peek at more"
-            : "Tap the poster to flip through suggestions"}
+          {isMobile
+            ? currentUser
+              ? "Tap the card to see the next one"
+              : "Tap the card to browse suggestions"
+            : currentUser
+              ? "Drag or tap the poster to peek at more"
+              : "Tap the poster to flip through suggestions"}
         </p>
       ) : null}
 
       {!currentUser ? (
         <p className="suggestion-stack__guest-hint">
-          Sign in to accept or reject suggestions
+          {isMobile
+            ? "Tap Guest at the top to sign in and accept movies"
+            : "Sign in to accept or reject suggestions"}
         </p>
       ) : null}
 
