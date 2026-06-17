@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, type FC } from "react";
 import { useUser } from "@/app/useProviders";
 import type { User } from "@/shared/types";
 import { usePins } from "@/hooks/usePins";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import { USER_OPTIONS, consoleError, getErrorMessage } from "@/utils";
 import PinDialog from "@/common/PinDialog";
 import UserAvatar from "@/ui/UserAvatar";
@@ -91,6 +92,7 @@ const LogoutIcon: FC = () => (
 );
 
 const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } =
     usePins();
@@ -239,42 +241,74 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
 
   return (
     <>
-      <div className="app-header__profile-picker" ref={pickerRef}>
-        <div
-          className="app-header__profile-list app-header__profile-list--inline"
-          role="group"
-          aria-label="Select profile"
-        >
-          {([...USER_OPTIONS] as User[]).map((profile) => {
-            const isActive = currentUser === profile;
-            const hasPin = userHasPin(profile);
-            return (
-              <button
-                key={profile}
-                type="button"
-                className={`app-header__profile-option app-header__profile-option--inline${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
-                onClick={() => selectProfile(profile)}
-                disabled={isDisabled}
-                aria-pressed={isActive}
-                aria-label={
-                  isActive
-                    ? `${profile} (active) — tap again to log out`
-                    : hasPin
-                      ? `Sign in as ${profile} (PIN protected)`
-                      : `Sign in as ${profile}`
-                }
-              >
+      <div
+        className={`app-header__profile-picker${isMobile ? " app-header__profile-picker--mobile" : ""}`}
+        ref={pickerRef}
+      >
+        {isMobile ? (
+          <button
+            ref={settingsTriggerRef}
+            type="button"
+            className={`app-header__profile-mobile-trigger${isSettingsOpen ? " is-open" : ""}${currentUser ? " has-user" : ""}`}
+            onClick={() => toggleSettings(!isSettingsOpen)}
+            aria-expanded={isSettingsOpen}
+            aria-haspopup="menu"
+            aria-label={
+              currentUser
+                ? `Signed in as ${currentUser}. Open profile menu`
+                : "Guest mode. Open profile menu"
+            }
+            disabled={isDisabled}
+          >
+            {currentUser ? (
+              <>
                 <span className="app-header__option-avatar">
-                  <UserAvatar user={profile} />
+                  <UserAvatar user={currentUser} />
                 </span>
-                <span className="app-header__option-name">{profile}</span>
-                {hasPin && <LockIcon size={12} />}
-              </button>
-            );
-          })}
-        </div>
+                <span className="app-header__profile-mobile-label">{currentUser}</span>
+              </>
+            ) : (
+              <span className="app-header__profile-mobile-label">Guest</span>
+            )}
+            <ChevronIcon />
+          </button>
+        ) : (
+          <div
+            className="app-header__profile-list app-header__profile-list--inline"
+            role="group"
+            aria-label="Select profile"
+          >
+            {([...USER_OPTIONS] as User[]).map((profile) => {
+              const isActive = currentUser === profile;
+              const hasPin = userHasPin(profile);
+              return (
+                <button
+                  key={profile}
+                  type="button"
+                  className={`app-header__profile-option app-header__profile-option--inline${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
+                  onClick={() => selectProfile(profile)}
+                  disabled={isDisabled}
+                  aria-pressed={isActive}
+                  aria-label={
+                    isActive
+                      ? `${profile} (active) — tap again to log out`
+                      : hasPin
+                        ? `Sign in as ${profile} (PIN protected)`
+                        : `Sign in as ${profile}`
+                  }
+                >
+                  <span className="app-header__option-avatar">
+                    <UserAvatar user={profile} />
+                  </span>
+                  <span className="app-header__option-name">{profile}</span>
+                  {hasPin && <LockIcon size={12} />}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-        {currentUser && (
+        {!isMobile && currentUser && (
           <>
             <button
               ref={settingsTriggerRef}
@@ -288,43 +322,72 @@ const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
             >
               <ChevronIcon />
             </button>
+          </>
+        )}
 
-            {isSettingsOpen && (
-              <div
-                ref={menuRef}
-                className="app-header__profile-menu"
-                role="menu"
-                aria-label="Profile settings"
-              >
-                <div className="app-header__menu-section app-header__menu-section--actions">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="app-header__menu-action"
-                    onClick={openPinSettings}
-                    disabled={isDisabled || isSavingPin}
-                  >
-                    <LockIcon size={16} />
-                    {userNeedsPin(currentUser)
-                      ? "Finish PIN Setup"
-                      : userHasPin(currentUser)
-                        ? "Change PIN"
-                        : "Set PIN"}
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="app-header__menu-action app-header__menu-action--logout"
-                    onClick={handleLogout}
-                    disabled={isDisabled}
-                  >
-                    <LogoutIcon />
-                    Log out
-                  </button>
-                </div>
+        {isSettingsOpen && (
+          <div
+            ref={menuRef}
+            className="app-header__profile-menu"
+            role="menu"
+            aria-label={isMobile ? "Profile menu" : "Profile settings"}
+          >
+            {isMobile && (
+              <div className="app-header__menu-section">
+                <p className="app-header__menu-heading">Who&apos;s using this?</p>
+                {([...USER_OPTIONS] as User[]).map((profile) => {
+                  const isActive = currentUser === profile;
+                  const hasPin = userHasPin(profile);
+                  return (
+                    <button
+                      key={profile}
+                      type="button"
+                      role="menuitem"
+                      className={`app-header__profile-option${isActive ? " is-active" : ""}`}
+                      onClick={() => selectProfile(profile)}
+                      disabled={isDisabled}
+                      aria-pressed={isActive}
+                    >
+                      <span className="app-header__option-avatar">
+                        <UserAvatar user={profile} />
+                      </span>
+                      <span className="app-header__option-name">{profile}</span>
+                      {hasPin && <LockIcon size={14} />}
+                    </button>
+                  );
+                })}
               </div>
             )}
-          </>
+
+            {currentUser && (
+              <div className="app-header__menu-section app-header__menu-section--actions">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="app-header__menu-action"
+                  onClick={openPinSettings}
+                  disabled={isDisabled || isSavingPin}
+                >
+                  <LockIcon size={16} />
+                  {userNeedsPin(currentUser)
+                    ? "Finish PIN Setup"
+                    : userHasPin(currentUser)
+                      ? "Change PIN"
+                      : "Set PIN"}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="app-header__menu-action app-header__menu-action--logout"
+                  onClick={handleLogout}
+                  disabled={isDisabled}
+                >
+                  <LogoutIcon />
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {selectionError && (

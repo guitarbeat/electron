@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   motion,
-  useScroll,
+  useMotionValue,
   useTransform,
   useMotionTemplate,
   type MotionValue,
@@ -9,9 +9,18 @@ import {
 import type { Movie } from "@/shared/types";
 
 const CARD_W = 240;
-const CARD_H = 360; // 2:3 ratio
-const INCREMENT_Y = 10; // px vertical offset per card in stack
-const INCREMENT_Z = 10; // px z-depth per card
+const CARD_H = 360;
+const INCREMENT_Y = 10;
+const INCREMENT_Z = 10;
+const SCROLL_STEP_PX = 108;
+const MAX_FAN_DEG = 16;
+const MAX_DOT_COUNT = 16;
+
+const fanAngleFor = (index: number, total: number) => {
+  const center = (total - 1) / 2;
+  const spread = total > 12 ? 3.5 : 7;
+  return Math.max(-MAX_FAN_DEG, Math.min(MAX_FAN_DEG, (index - center) * spread));
+};
 
 interface DeckCardProps {
   movie: Movie;
@@ -26,26 +35,18 @@ const DeckCard: React.FC<DeckCardProps> = ({
   total,
   scrollYProgress,
 }) => {
-  // Scroll range for this card — mirrors the reference component math:
-  //   start = index / (total + 1)
-  //   end   = (index + 1) / (total + 1)
   const start = index / (total + 1);
   const end = (index + 1) / (total + 1);
-
-  // Fan angle: cards start spread like a hand of cards, converge to 0 on scroll
-  const fanAngle = (index - (total - 1) / 2) * 7;
+  const fanAngle = fanAngleFor(index, total);
   const rotateStart = Math.max(0, start - 0.5);
   const rotateEnd = Math.min(0.99, end / 1.3);
 
-  // translateY: card flies up and out
   const y = useTransform(scrollYProgress, [start, end], ["0%", "-175%"]);
-  // rotate: card straightens from fan angle as it comes into focus
   const rotate = useTransform(
     scrollYProgress,
     [rotateStart, rotateEnd],
     [fanAngle, 0],
   );
-  // opacity: card fades at the very end of its range
   const opacity = useTransform(scrollYProgress, [end - 0.04, end], [1, 0]);
 
   const z = index * INCREMENT_Z;
@@ -70,7 +71,6 @@ const DeckCard: React.FC<DeckCardProps> = ({
           "0 22px 56px rgba(0,0,0,0.72), 0 8px 20px rgba(0,0,0,0.48), 0 0 0 0.5px rgba(200,215,255,0.08)",
       }}
     >
-      {/* Poster image */}
       {movie.posterUrl ? (
         <img
           src={movie.posterUrl}
@@ -100,7 +100,6 @@ const DeckCard: React.FC<DeckCardProps> = ({
         </div>
       )}
 
-      {/* Bottom gradient overlay */}
       <div
         style={{
           position: "absolute",
@@ -111,7 +110,6 @@ const DeckCard: React.FC<DeckCardProps> = ({
         }}
       />
 
-      {/* Top stripe: addedBy user color hint */}
       <div
         style={{
           position: "absolute",
@@ -126,7 +124,6 @@ const DeckCard: React.FC<DeckCardProps> = ({
         }}
       />
 
-      {/* Title + meta */}
       <div
         style={{
           position: "absolute",
@@ -172,7 +169,6 @@ const DeckCard: React.FC<DeckCardProps> = ({
   );
 };
 
-// ─── Animated dot indicator ───────────────────────────────────────────────────
 const DotIndicator: React.FC<{
   index: number;
   total: number;
@@ -206,7 +202,6 @@ const DotIndicator: React.FC<{
         justifyContent: "center",
       }}
     >
-      {/* Glow bloom behind active dot */}
       <motion.div
         style={{
           position: "absolute",
@@ -235,114 +230,108 @@ const DotIndicator: React.FC<{
   );
 };
 
-// ─── Main component ───────────────────────────────────────────────────────────
+const DeckProgress: React.FC<{
+  total: number;
+  scrollYProgress: MotionValue<number>;
+}> = ({ total, scrollYProgress }) => {
+  const label = useTransform(scrollYProgress, (value) => {
+    const active = Math.min(total, Math.max(1, Math.ceil(value * total) || 1));
+    return `${active} / ${total}`;
+  });
+
+  return (
+    <motion.p
+      className="movie-deck-stack-scroll__counter"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {label}
+    </motion.p>
+  );
+};
+
 interface Props {
   movies: Movie[];
 }
 
 const MovieDeckStack: React.FC<Props> = ({ movies }) => {
   const deck = movies;
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollYProgress = useMotionValue(0);
 
-  const { scrollYProgress } = useScroll({
-    target: scrollRef,
-    offset: ["start center", "end end"],
-  });
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const update = () => {
+      const maxScroll = container.scrollHeight - container.clientHeight;
+      scrollYProgress.set(maxScroll > 0 ? container.scrollTop / maxScroll : 0);
+    };
+
+    update();
+    container.addEventListener("scroll", update, { passive: true });
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(container);
+
+    return () => {
+      container.removeEventListener("scroll", update);
+      resizeObserver.disconnect();
+    };
+  }, [deck.length, scrollYProgress]);
 
   if (deck.length < 2) return null;
 
   const stackHeight = CARD_H + (deck.length - 1) * INCREMENT_Y;
-  const scrollMinHeight = `${Math.max(140, (deck.length + 1) * 42)}vh`;
+  const trackHeight = (deck.length + 1) * SCROLL_STEP_PX;
+  const showDots = deck.length <= MAX_DOT_COUNT;
 
   return (
     <div
-      ref={scrollRef}
+      ref={containerRef}
       className="movie-deck-stack-scroll"
+      tabIndex={0}
+      aria-label={`Scroll through ${deck.length} movies`}
     >
       <div
         className="movie-deck-stack-scroll__track"
-        style={{ minHeight: scrollMinHeight }}
+        style={{ height: trackHeight }}
       >
         <div className="movie-deck-stack-scroll__stage">
-        {/* Eyebrow hint */}
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(244,114,182,0.5)",
-            fontFamily: "var(--font-heading)",
-            fontSize: "0.64rem",
-            fontWeight: 600,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            userSelect: "none",
-            textShadow: "0 0 12px rgba(244,114,182,0.3)",
-          }}
-        >
-          ↓ &nbsp;Scroll to browse
-        </p>
+          <p className="movie-deck-stack-scroll__hint" aria-hidden="true">
+            ↓ Scroll to browse
+          </p>
 
-        {/* The card deck container */}
-        <div
-          style={{ position: "relative", width: CARD_W, height: stackHeight }}
-        >
-          {/* Ambient glow behind the stack */}
           <div
-            style={{
-              position: "absolute",
-              bottom: -32,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: CARD_W * 0.8,
-              height: 80,
-              background:
-                "radial-gradient(ellipse at center, rgba(244,114,182,0.22) 0%, transparent 72%)",
-              filter: "blur(16px)",
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
-          {deck.map((movie, i) => (
-            <DeckCard
-              key={movie.id}
-              movie={movie}
-              index={i}
-              total={deck.length}
-              scrollYProgress={scrollYProgress}
-            />
-          ))}
-        </div>
+            className="movie-deck-stack-scroll__deck"
+            style={{ height: stackHeight }}
+          >
+            <div className="movie-deck-stack-scroll__glow" aria-hidden="true" />
+            {deck.map((movie, i) => (
+              <DeckCard
+                key={movie.id}
+                movie={movie}
+                index={i}
+                total={deck.length}
+                scrollYProgress={scrollYProgress}
+              />
+            ))}
+          </div>
 
-        {/* Progress dots */}
-        <div
-          style={{
-            display: "flex",
-            gap: "0.42rem",
-            alignItems: "center",
-            marginTop: "0.25rem",
-          }}
-        >
-          {deck.map((_, i) => (
-            <DotIndicator
-              key={i}
-              index={i}
-              total={deck.length}
-              scrollYProgress={scrollYProgress}
-            />
-          ))}
-        </div>
-
-        {/* Count eyebrow */}
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(148,163,200,0.4)",
-            fontFamily: "var(--font-heading)",
-            fontSize: "0.62rem",
-            letterSpacing: "0.08em",
-          }}
-        >
-          {deck.length} movies
-        </p>
+          <div className="movie-deck-stack-scroll__meta">
+            {showDots ? (
+              <div className="movie-deck-stack-scroll__dots">
+                {deck.map((_, i) => (
+                  <DotIndicator
+                    key={i}
+                    index={i}
+                    total={deck.length}
+                    scrollYProgress={scrollYProgress}
+                  />
+                ))}
+              </div>
+            ) : null}
+            <DeckProgress total={deck.length} scrollYProgress={scrollYProgress} />
+          </div>
         </div>
       </div>
     </div>

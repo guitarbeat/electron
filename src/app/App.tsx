@@ -448,7 +448,7 @@ const App: React.FC = () => {
       <React.Suspense fallback={null}>
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
-      <div className="app-shell app-shell--viewport bg-main">
+      <div className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}>
         {!prefersReducedMotion ? <ThemedMoire enabled={showMoire} /> : null}
 
         <VignetteOverlay />
@@ -486,6 +486,7 @@ const App: React.FC = () => {
                 onApplyUpdate={handleApplyUpdate}
                 onRetrySync={handleRetryPendingSync}
                 onOpenSpin={openSpinMatch}
+                onOpenMessages={() => setShowMessages(true)}
               />
               <WorkspaceErrorBoundary>
                 <AppWorkspaceShell
@@ -494,7 +495,7 @@ const App: React.FC = () => {
                 />
               </WorkspaceErrorBoundary>
               <React.Suspense fallback={null}>
-                <FishTankSection />
+                {!isMobile ? <FishTankSection /> : null}
               </React.Suspense>
             </div>
           </div>

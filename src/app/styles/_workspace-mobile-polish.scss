@@ -67,7 +67,21 @@ html {
 }
 
 @media (max-width: 640px) {
-  .bento-stat-tile:active {
-    transform: scale(0.98);
+  .app-shell--mobile::before,
+  .app-shell--mobile::after {
+    display: none;
+  }
+
+  .app-shell--mobile .app-workspace-stack {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .app-shell--mobile .movies-unified-shell {
+    gap: 0.45rem;
+  }
+
+  .app-shell--mobile .workspace-stage--mobile-shell {
+    padding-bottom: max(4.5rem, calc(env(safe-area-inset-bottom, 0px) + 4.5rem));
   }
 }

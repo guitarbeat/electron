@@ -1,6 +1,7 @@
 import React from "react";
 import StatTile, { type BentoStatTileConfig } from "./StatTile";
 import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
+import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import "./BentoWorkspaceController.css";
 
 export type SortOrder = "recent" | "alpha" | "rating";
@@ -34,9 +35,15 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
   onViewModeChange,
   viewModeAriaLabel,
 }) => {
+  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const hasViewModes =
+    Boolean(viewModes?.length) &&
+    Boolean(activeViewMode) &&
+    Boolean(onViewModeChange);
+
   return (
     <section
-      className="workspace-control-panel bento-ctrl"
+      className={`workspace-control-panel bento-ctrl${isMobile ? " bento-ctrl--mobile" : ""}`}
       aria-label={ariaLabel}
     >
       <div className="bento-ctrl__search">{children}</div>
@@ -57,7 +64,9 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
       )}
 
       {sorts.length > 0 && (
-        <div className="bento-ctrl__controls">
+        <div
+          className={`bento-ctrl__controls${isMobile && hasViewModes ? " bento-ctrl__controls--split" : ""}`}
+        >
           <div className="bento-ctrl__sort-row">
             <span className="bento-ctrl__sort-label" aria-hidden="true">
               Sort
@@ -69,15 +78,15 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
               ariaLabel="Sort order"
             />
           </div>
-          {viewModes && viewModes.length > 0 && activeViewMode && onViewModeChange ? (
+          {hasViewModes ? (
             <div className="bento-ctrl__sort-row">
               <span className="bento-ctrl__sort-label" aria-hidden="true">
                 View
               </span>
               <MagicToggle<string>
-                options={viewModes}
-                activeValue={activeViewMode}
-                onChange={onViewModeChange}
+                options={viewModes!}
+                activeValue={activeViewMode!}
+                onChange={onViewModeChange!}
                 ariaLabel={viewModeAriaLabel ?? "Browse view"}
               />
             </div>
