@@ -186,12 +186,18 @@ export const undoMatchmakerSwipe = (
       : (game.electraSwipeOrder ?? []);
 
   // Fall back to pool-order search for games that predate swipe order tracking
-  const lastSwipedId =
-    swipeOrder.length > 0
-      ? swipeOrder[swipeOrder.length - 1]
-      : [...game.moviePool]
-          .reverse()
-          .find((movieId) => getUserSwipedIds(game, user).includes(movieId));
+  const lastSwipedId = (() => {
+    if (swipeOrder.length > 0) {
+      return swipeOrder[swipeOrder.length - 1];
+    }
+    // Optimization: Convert swiped IDs to a Set outside the loop to change
+    // the time complexity from O(N * M) (where N is movie pool size and M is swiped count)
+    // to O(N + M) and avoid O(N^2) array regeneration and search overhead.
+    const swipedIdsSet = new Set(getUserSwipedIds(game, user));
+    return [...game.moviePool]
+      .reverse()
+      .find((movieId) => swipedIdsSet.has(movieId));
+  })();
 
   if (!lastSwipedId) {
     return game;
