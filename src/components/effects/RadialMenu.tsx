@@ -376,7 +376,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       index: 2,
       colorClass: "amber",
       label: "Spin",
-      description: "Launch the movie picker wheel",
+      description: "Swipe to merge, spin to pick a movie",
       onClick: () => handleMenuItemClick(onOpenSpin),
       icon: <SpinIcon />,
     },

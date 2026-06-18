@@ -76,6 +76,8 @@
     confetti-sway 0.5s ease-in-out infinite;
 }
 
+#quiz-section,
+#spin-match-section,
 section[id^="movies-section-"],
 section[id^="places-section-"] {
   scroll-margin-top: var(--workspace-section-scroll-margin, 12rem);
@@ -87,6 +89,8 @@ section[id^="places-section-"] {
 }
 
 @media (max-width: 640px) {
+  #quiz-section,
+  #spin-match-section,
   section[id^="movies-section-"],
   section[id^="places-section-"] {
     scroll-margin-top: var(--workspace-section-scroll-margin, 14rem);

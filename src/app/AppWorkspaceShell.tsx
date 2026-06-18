@@ -18,6 +18,9 @@ const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 const QuizWorkspaceSection = React.lazy(
   () => import("@/components/quiz/QuizWorkspaceSection"),
 );
+const SpinMatchWorkspaceSection = React.lazy(
+  () => import("@/components/spin-match/SpinMatchWorkspaceSection"),
+);
 
 const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 
@@ -37,7 +40,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
-  onOpenSpin,
   currentUser,
   quizCompleted,
   onQuizComplete,
@@ -99,7 +101,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}
           onRetrySync={onRetrySync}
-          onOpenSpin={onOpenSpin}
           ariaLabel={bento.ariaLabel}
           viewModes={bento.viewModes}
           activeViewMode={bento.activeViewMode}
@@ -130,6 +131,25 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
             onRetake={onQuizRetake}
             onEdit={currentUser ? onQuizEdit : undefined}
           />
+        </React.Suspense>
+
+        <React.Suspense
+          fallback={
+            <section
+              id="spin-match-section"
+              className="spin-match-workspace-section"
+              aria-label="Spin match game"
+            >
+              <p
+                className="spin-match-workspace-section__loading"
+                aria-live="polite"
+              >
+                Loading spin match…
+              </p>
+            </section>
+          }
+        >
+          <SpinMatchWorkspaceSection />
         </React.Suspense>
 
         <section

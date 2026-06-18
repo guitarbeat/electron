@@ -161,9 +161,6 @@ const App: React.FC = () => {
     () => initialViewState.showMessages,
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
-  const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () =>
       typeof window !== "undefined" &&
@@ -271,7 +268,7 @@ const App: React.FC = () => {
   }, [updateQuizCompletion]);
 
   const openSpinMatch = useCallback(() => {
-    setShowSpinWheel(true);
+    scrollToWorkspaceSection("spin-match-section");
   }, []);
 
   const featureModals = useMemo(
@@ -279,22 +276,10 @@ const App: React.FC = () => {
       buildFeatureModals({
         showMessages,
         showQuizEditor,
-        showSpinWheel,
-        showSpinWheelOnly,
-        isSpinWheelLocked,
         setShowMessages,
         setShowQuizEditor,
-        setShowSpinWheel,
-        setShowSpinWheelOnly,
-        setIsSpinWheelLocked,
       }),
-    [
-      isSpinWheelLocked,
-      showMessages,
-      showQuizEditor,
-      showSpinWheel,
-      showSpinWheelOnly,
-    ],
+    [showMessages, showQuizEditor],
   );
 
   if (isCohesionAuditRoute) {
@@ -375,7 +360,6 @@ const App: React.FC = () => {
                     onInstallApp={() => void handleInstallApp()}
                     onApplyUpdate={handleApplyUpdate}
                     onRetrySync={handleRetryPendingSync}
-                    onOpenSpin={openSpinMatch}
                     onOpenMessages={() => setShowMessages(true)}
                     currentUser={currentUser}
                     quizCompleted={quizCompleted}

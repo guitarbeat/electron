@@ -22,7 +22,6 @@ export interface WorkspaceChromeHeaderProps {
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
-  onOpenSpin?: () => void;
 }
 
 interface ViewModeControlsProps {
@@ -73,7 +72,6 @@ function BentoWorkspaceController({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
-  onOpenSpin,
 }: BentoWorkspaceControllerProps) {
   const { isMobile } = useViewport();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -92,7 +90,6 @@ function BentoWorkspaceController({
           <AppNavStrip
             activeTab={activeTab}
             onTabChange={onTabChange}
-            onOpenSpin={onOpenSpin}
             onOpenMessages={onOpenMessages}
             status={pwaStatus}
             onInstallApp={onInstallApp}

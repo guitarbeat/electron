@@ -1,11 +1,6 @@
 import { type CSSProperties, type ReactNode } from "react";
 import LazyBoundary from "@/app/LazyBoundary";
-import {
-  MessageBoardPanel,
-  QuizEditorPanel,
-  SpinSwipeGamePanel,
-  SpinWheelGamePanel,
-} from "@/app/lazyFeaturePanels";
+import { MessageBoardPanel, QuizEditorPanel } from "@/app/lazyFeaturePanels";
 
 export interface AppModalConfig {
   key: string;
@@ -34,14 +29,8 @@ const renderSuspended = (content: ReactNode, label: string) => (
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
   showQuizEditor: boolean;
-  showSpinWheel: boolean;
-  showSpinWheelOnly: boolean;
-  isSpinWheelLocked: boolean;
   setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
-  setShowSpinWheel: (open: boolean) => void;
-  setShowSpinWheelOnly: (open: boolean) => void;
-  setIsSpinWheelLocked: (locked: boolean) => void;
 }
 
 export function buildFeatureModals(
@@ -50,14 +39,8 @@ export function buildFeatureModals(
   const {
     showMessages,
     showQuizEditor,
-    showSpinWheel,
-    showSpinWheelOnly,
-    isSpinWheelLocked,
     setShowMessages,
     setShowQuizEditor,
-    setShowSpinWheel,
-    setShowSpinWheelOnly,
-    setIsSpinWheelLocked,
   } = params;
 
   return [
@@ -84,33 +67,6 @@ export function buildFeatureModals(
         <QuizEditorPanel onClose={() => setShowQuizEditor(false)} />,
         "Loading quiz editor",
       ),
-    },
-    {
-      key: "spin-match",
-      isOpen: showSpinWheel,
-      onClose: () => setShowSpinWheel(false),
-      title: "Spin · Match Game",
-      ariaLabel: "Choose a subset of movies, then spin the wheel",
-      maxWidth: 520,
-      maxHeight: 820,
-      closeDisabled: isSpinWheelLocked,
-      closeDisabledLabel: "Finish the current spin before closing.",
-      content: renderSuspended(
-        <SpinSwipeGamePanel onSpinningChange={setIsSpinWheelLocked} />,
-        "Loading spin match",
-      ),
-      contentStyle: { flex: 1, overflowY: "auto" },
-    },
-    {
-      key: "spin-wheel-only",
-      isOpen: showSpinWheelOnly,
-      onClose: () => setShowSpinWheelOnly(false),
-      title: "Spin · Wheel Picker",
-      ariaLabel: "Spin the wheel to pick a movie",
-      maxWidth: 520,
-      maxHeight: 700,
-      content: renderSuspended(<SpinWheelGamePanel />, "Loading spin wheel"),
-      contentStyle: { flex: 1, overflowY: "auto" },
     },
   ];
 }

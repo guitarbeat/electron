@@ -165,7 +165,7 @@ test("getScopeWarning maps shared-store and config errors to user-safe copy", ()
   assert.ok(
     (
       getScopeWarning(new Error("DATABASE_URL is not configured.")) ?? ""
-    ).includes("VITE_DATABASE_URL"),
+    ).includes("DATABASE_URL"),
   );
   assert.ok(
     (

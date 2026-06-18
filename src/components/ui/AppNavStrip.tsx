@@ -1,6 +1,5 @@
 import { type FC, type ReactNode, useMemo, useState } from "react";
 import {
-  CircleDot,
   MessageCircle,
   RefreshCw,
   SatelliteDish,
@@ -24,7 +23,6 @@ export interface AppNavStripStatus {
 interface Props {
   activeTab: MainTab;
   onTabChange: (tab: MainTab) => void;
-  onOpenSpin?: () => void;
   onOpenMessages?: () => void;
   status?: AppNavStripStatus;
   onInstallApp?: () => void;
@@ -38,7 +36,6 @@ const pluralize = (n: number, s: string, p = `${s}s`) =>
 const AppNavStrip: FC<Props> = ({
   activeTab,
   onTabChange,
-  onOpenSpin,
   onOpenMessages,
   status,
   onInstallApp,
@@ -125,15 +122,6 @@ const AppNavStrip: FC<Props> = ({
   };
 
   const utilityButtons = [
-    onOpenSpin
-      ? {
-          key: "spin",
-          label: "Open spin wheel",
-          title: "Spin wheel",
-          onClick: onOpenSpin,
-          icon: <CircleDot size={16} strokeWidth={2.2} aria-hidden="true" />,
-        }
-      : null,
     isMobile && onOpenMessages
       ? {
           key: "messages",
