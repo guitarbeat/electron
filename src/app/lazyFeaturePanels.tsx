@@ -12,3 +12,6 @@ export const SpinWheelGamePanel = React.lazy(
 export const QuizEditorPanel = React.lazy(
   () => import("@/components/quiz/QuizEditor"),
 );
+export const QuizExperiencePanel = React.lazy(
+  () => import("@/components/quiz/QuizExperience"),
+);

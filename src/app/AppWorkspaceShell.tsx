@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 
-import type { MainTab, User } from "@/shared/types";
+import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
 import BentoWorkspaceController, {
   type WorkspaceChromeHeaderProps,
@@ -13,24 +13,13 @@ import {
 
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
-const QuizWorkspaceSection = React.lazy(
-  () => import("@/components/quiz/QuizWorkspaceSection"),
-);
 const SpinMatchWorkspaceSection = React.lazy(
   () => import("@/components/spin-match/SpinMatchWorkspaceSection"),
 );
 
 const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 
-interface AppWorkspaceShellProps extends WorkspaceChromeHeaderProps {
-  currentUser: User | null;
-  quizCompleted: boolean;
-  onQuizComplete: () => void;
-  onQuizRetake: () => void;
-  onQuizEdit: () => void;
-}
-
-const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
+const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
   activeTab,
   onTabChange,
   onOpenMessages,
@@ -38,11 +27,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
-  currentUser,
-  quizCompleted,
-  onQuizComplete,
-  onQuizRetake,
-  onQuizEdit,
 }) => {
   const { isMobile } = useViewport();
   const [tabConfigs, setTabConfigs] = useState<
@@ -99,28 +83,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         >
           <div ref={setSearchPortalEl} />
         </BentoWorkspaceController>
-
-        <React.Suspense
-          fallback={
-            <section
-              id="quiz-section"
-              className="quiz-workspace-section"
-              aria-label="Personality quiz"
-            >
-              <p className="quiz-workspace-section__loading" aria-live="polite">
-                Loading personality quiz…
-              </p>
-            </section>
-          }
-        >
-          <QuizWorkspaceSection
-            currentUser={currentUser}
-            quizCompleted={quizCompleted}
-            onComplete={onQuizComplete}
-            onRetake={onQuizRetake}
-            onEdit={currentUser ? onQuizEdit : undefined}
-          />
-        </React.Suspense>
 
         <React.Suspense
           fallback={

@@ -159,6 +159,7 @@ const App: React.FC = () => {
     () => initialViewState.showMessages,
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
+  const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () =>
       typeof window !== "undefined" &&
@@ -250,7 +251,7 @@ const App: React.FC = () => {
   );
 
   const openQuizExperience = useCallback(() => {
-    scrollToWorkspaceSection("quiz-section");
+    setShowQuizExperience(true);
   }, []);
 
   const handleQuizComplete = useCallback(() => {
@@ -258,6 +259,7 @@ const App: React.FC = () => {
   }, [updateQuizCompletion]);
 
   const handleQuizEdit = useCallback(() => {
+    setShowQuizExperience(false);
     setShowQuizEditor(true);
   }, []);
 
@@ -274,10 +276,26 @@ const App: React.FC = () => {
       buildFeatureModals({
         showMessages,
         showQuizEditor,
+        showQuizExperience,
+        quizCompleted,
+        currentUser,
         setShowMessages,
         setShowQuizEditor,
+        setShowQuizExperience,
+        onQuizComplete: handleQuizComplete,
+        onQuizRetake: handleQuizRetake,
+        onQuizEdit: handleQuizEdit,
       }),
-    [showMessages, showQuizEditor],
+    [
+      currentUser,
+      handleQuizComplete,
+      handleQuizEdit,
+      handleQuizRetake,
+      quizCompleted,
+      showMessages,
+      showQuizEditor,
+      showQuizExperience,
+    ],
   );
 
   if (isCohesionAuditRoute) {
@@ -359,11 +377,6 @@ const App: React.FC = () => {
                     onApplyUpdate={handleApplyUpdate}
                     onRetrySync={handleRetryPendingSync}
                     onOpenMessages={() => setShowMessages(true)}
-                    currentUser={currentUser}
-                    quizCompleted={quizCompleted}
-                    onQuizComplete={handleQuizComplete}
-                    onQuizRetake={handleQuizRetake}
-                    onQuizEdit={handleQuizEdit}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>

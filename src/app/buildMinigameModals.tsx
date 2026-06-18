@@ -1,6 +1,11 @@
 import { type CSSProperties, type ReactNode } from "react";
 import LazyBoundary from "@/app/LazyBoundary";
-import { MessageBoardPanel, QuizEditorPanel } from "@/app/lazyFeaturePanels";
+import {
+  MessageBoardPanel,
+  QuizEditorPanel,
+  QuizExperiencePanel,
+} from "@/app/lazyFeaturePanels";
+import type { User } from "@/shared/types";
 
 export interface AppModalConfig {
   key: string;
@@ -29,8 +34,15 @@ const renderSuspended = (content: ReactNode, label: string) => (
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
   showQuizEditor: boolean;
+  showQuizExperience: boolean;
+  quizCompleted: boolean;
+  currentUser: User | null;
   setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
+  setShowQuizExperience: (open: boolean) => void;
+  onQuizComplete: () => void;
+  onQuizRetake: () => void;
+  onQuizEdit: () => void;
 }
 
 export function buildFeatureModals(
@@ -39,8 +51,15 @@ export function buildFeatureModals(
   const {
     showMessages,
     showQuizEditor,
+    showQuizExperience,
+    quizCompleted,
+    currentUser,
     setShowMessages,
     setShowQuizEditor,
+    setShowQuizExperience,
+    onQuizComplete,
+    onQuizRetake,
+    onQuizEdit,
   } = params;
 
   return [
@@ -56,10 +75,30 @@ export function buildFeatureModals(
       content: renderSuspended(<MessageBoardPanel />, "Loading messages"),
     },
     {
+      key: "quiz-experience",
+      isOpen: showQuizExperience,
+      onClose: () => setShowQuizExperience(false),
+      title: "Quiz · Personality",
+      ariaLabel: "Personality quiz",
+      maxWidth: 720,
+      maxHeight: 900,
+      contentStyle: scrollContentStyle,
+      content: renderSuspended(
+        <QuizExperiencePanel
+          currentUser={currentUser}
+          quizCompleted={quizCompleted}
+          onComplete={onQuizComplete}
+          onRetake={onQuizRetake}
+          onEdit={currentUser ? onQuizEdit : undefined}
+        />,
+        "Loading personality quiz",
+      ),
+    },
+    {
       key: "quiz-editor",
       isOpen: showQuizEditor,
       onClose: () => setShowQuizEditor(false),
-      title: "Quiz · Personality",
+      title: "Quiz · Editor",
       ariaLabel: "Personality quiz editor",
       maxWidth: 1200,
       maxHeight: 900,
