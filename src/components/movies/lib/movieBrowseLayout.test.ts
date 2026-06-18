@@ -1,39 +1,36 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
 import {
-  readMovieBrowseLayout,
-  writeMovieBrowseLayout,
+  movieScrollDeckMax,
+  shouldUseMovieScrollDeck,
 } from "./movieBrowseLayout.ts";
 
-test("movie browse layout persists to localStorage", () => {
-  const storage = new Map<string, string>();
-  const originalWindow = globalThis.window;
-
-  Object.defineProperty(globalThis, "window", {
-    configurable: true,
-    value: {
-      localStorage: {
-        getItem: (key: string) => storage.get(key) ?? null,
-        setItem: (key: string, value: string) => {
-          storage.set(key, value);
-        },
-      },
-      matchMedia: () => ({ matches: false }),
-    },
+test("shouldUseMovieScrollDeck caps scroll mode for large lists", async (t) => {
+  await t.test("allows scroll for small mobile lists", () => {
+    assert.equal(shouldUseMovieScrollDeck(8, "scroll", true), true);
   });
 
-  try {
-    assert.equal(readMovieBrowseLayout(), "grid");
+  await t.test("falls back to grid for large mobile lists", () => {
+    assert.equal(shouldUseMovieScrollDeck(81, "scroll", true), false);
+  });
 
-    writeMovieBrowseLayout("scroll");
-    assert.equal(readMovieBrowseLayout(), "scroll");
+  await t.test("respects desktop cap separately", () => {
+    assert.equal(
+      shouldUseMovieScrollDeck(20, "scroll", false),
+      true,
+    );
+    assert.equal(
+      shouldUseMovieScrollDeck(30, "scroll", false),
+      false,
+    );
+  });
 
-    writeMovieBrowseLayout("grid");
-    assert.equal(readMovieBrowseLayout(), "grid");
-  } finally {
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: originalWindow,
-    });
-  }
+  await t.test("grid layout never uses scroll deck", () => {
+    assert.equal(shouldUseMovieScrollDeck(5, "grid", true), false);
+  });
+});
+
+test("movieScrollDeckMax", () => {
+  assert.equal(movieScrollDeckMax(true), 16);
+  assert.equal(movieScrollDeckMax(false), 24);
 });

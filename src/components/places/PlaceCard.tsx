@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { CheckIcon, EditIcon, TrashIcon } from "@/common/Icons";
+import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import MediaCard from "@/ui/MediaCard";
 import type { Place } from "@/shared/types";
 import { radius } from "@/theme/tokens";
@@ -16,7 +17,6 @@ import { getPlaceMeta } from "./lib/placeMeta";
 import WatcherBadge from "@/common/WatcherBadge";
 import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 import MediaCardMetadata from "@/ui/MediaCardMetadata";
-import { useCardTilt } from "@/hooks/useCardTilt";
 
 interface PlaceCardProps {
   place: Place;
@@ -43,7 +43,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const tilt = useCardTilt();
   const isVisited = Boolean(place.visitedAt);
   const meta = getPlaceMeta(place.name);
   const hasCoords =
@@ -138,19 +137,13 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         />
       )}
 
-      <div
-        ref={tilt.ref}
-        className="card-tilt-wrap"
-        onMouseEnter={tilt.onMouseEnter}
-        onMouseMove={tilt.onMouseMove}
-        onMouseLeave={tilt.onMouseLeave}
-      >
+      <CardTiltShell>
         <MediaCard
           variant={isVisited ? "visited" : "default"}
           className={`place-item-card chroma-card${isVisited ? " place-item-card--visited" : ""}`}
           hover={false}
         >
-          <div className="card-tilt-sheen" aria-hidden="true" />
+          <CardTiltSheen />
           <MediaCardPosterWrap className="place-item-poster-wrap">
             <MediaCardCover
               className="place-item-cover"
@@ -279,8 +272,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             </MediaCardOverlay>
           </MediaCardPosterWrap>
         </MediaCard>
-      </div>
-      {/* card-tilt-wrap */}
+      </CardTiltShell>
     </div>
   );
 };

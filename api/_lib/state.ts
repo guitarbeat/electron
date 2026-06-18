@@ -49,6 +49,7 @@ import {
   sanitizeInput,
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
+  findMovieByNormalizedTitle,
 } from '../../src/utils/index.ts';
 import {
   badRequestResponse,
@@ -313,6 +314,13 @@ const scopes: {
 
           if (movies.some((movie) => movie.id === id)) {
             return { ok: false, conflict: 'Movie already exists.' };
+          }
+
+          if (findMovieByNormalizedTitle(movies, title)) {
+            return {
+              ok: false,
+              conflict: 'A movie with this title is already in the queue.',
+            };
           }
 
           return {

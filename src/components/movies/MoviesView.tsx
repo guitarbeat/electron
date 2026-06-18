@@ -23,6 +23,7 @@ import { buildMovieSections } from "./lib/movieSections";
 import {
   MOVIE_BROWSE_LAYOUTS,
   readMovieBrowseLayout,
+  shouldUseMovieScrollDeck,
   writeMovieBrowseLayout,
   type MovieBrowseLayout,
 } from "./lib/movieBrowseLayout";
@@ -94,8 +95,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isSuggestionsLoading,
     memories,
     isMoviesWorkspaceDegraded,
-    isMoviesWorkspaceSyncBlocked,
-    moviesWorkspaceSyncWarning,
+    moviesSyncBanner,
     retryMoviesWorkspaceSync,
   } = useMoviesWorkspace({ currentUser, isPaused });
   const movieMemories = useMemo(
@@ -106,6 +106,19 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     () => buildMovieSections(movies, pendingSuggestions),
     [movies, pendingSuggestions],
   );
+  const allMovieCount = sections.queue.length + sections.completed.length;
+  const scrollBrowseAllowed = shouldUseMovieScrollDeck(
+    allMovieCount,
+    "scroll",
+    isMobile,
+  );
+
+  useEffect(() => {
+    if (browseLayout === "scroll" && !scrollBrowseAllowed) {
+      setBrowseLayout("grid");
+      writeMovieBrowseLayout("grid");
+    }
+  }, [browseLayout, scrollBrowseAllowed]);
 
   const handleBrowseLayoutChange = useCallback((layout: string) => {
     const nextLayout = layout === "scroll" ? "scroll" : "grid";
@@ -118,19 +131,21 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     sectionIds: workspaceSectionIds("movies"),
     counts: {
       incoming: sections.suggestions.length,
-      queue: sections.queue.length,
-      completed: sections.completed.length,
+      queue: sections.queue.length + sections.completed.length,
+      completed: 0,
     },
     ariaLabel: "Movies workspace controls",
-    viewModes: isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS,
+    viewModes: (isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS).filter(
+      (mode) => mode.value !== "scroll" || scrollBrowseAllowed,
+    ),
     activeViewMode: browseLayout,
     onViewModeChange: handleBrowseLayoutChange,
     viewModeAriaLabel: "Movie browse layout",
     sectionShortcutsEnabled: !isLoading,
     sectionAvailability: {
       incoming: isSuggestionsLoading || sections.suggestions.length > 0,
-      queue: sections.queue.length > 0,
-      completed: sections.completed.length > 0,
+      queue: sections.queue.length > 0 || sections.completed.length > 0,
+      completed: false,
     },
   });
 
@@ -223,7 +238,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     }
     setIsAdding(true);
     try {
-      const addedMovie = await addMovie(
+      const { movie: addedMovie, isDuplicate } = await addMovie(
         title,
         selectedAutocompleteResult ?? undefined,
       );
@@ -237,8 +252,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       );
       clearSearchAndRefocus();
       setToast({
-        message: `"${title}" added to movies!`,
-        type: "success",
+        message: isDuplicate
+          ? `"${title}" is already in your queue.`
+          : `"${title}" added to movies!`,
+        type: isDuplicate ? "info" : "success",
       });
     } catch (error) {
       setToast({
@@ -334,10 +351,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const handleAcceptSuggestion = useCallback(
     async (suggestion: MovieSuggestion) => {
       try {
-        await acceptSuggestionToWatchlist(suggestion.id);
+        const { suggestion: accepted, isDuplicate } =
+          await acceptSuggestionToWatchlist(suggestion.id);
         setToast({
-          message: `"${suggestion.title}" added to movies!`,
-          type: "success",
+          message: isDuplicate
+            ? `"${accepted.title}" is already in your queue.`
+            : `"${accepted.title}" added to movies!`,
+          type: isDuplicate ? "info" : "success",
         });
       } catch (error) {
         setToast({
@@ -402,18 +422,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           searchPortalEl,
         )}
       <div className="watchlist-container">
-        {isMoviesWorkspaceDegraded && (
+        {isMoviesWorkspaceDegraded ? (
           <SyncBanner
-            isBlocked={isMoviesWorkspaceSyncBlocked}
+            isBlocked={moviesSyncBanner.isBlocked}
             onRetry={() => void retryMoviesWorkspaceSync()}
-            label={
-              isMoviesWorkspaceSyncBlocked
-                ? "A shared movies change conflicted with local edits. Refresh and retry."
-                : moviesWorkspaceSyncWarning ||
-                  "Movie changes are being kept locally until shared sync recovers."
-            }
+            label={moviesSyncBanner.label}
           />
-        )}
+        ) : null}
         <MovieSectionBody
         sections={sections}
         isLoading={isLoading}

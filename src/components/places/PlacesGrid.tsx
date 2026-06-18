@@ -1,8 +1,8 @@
 import React, { memo } from "react";
-import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import PlaceCard from "./PlaceCard";
 import type { Place } from "@/shared/types";
 import { WorkspaceSectionEmpty } from "@/components/ui/WorkspaceEmptyState";
+import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
 import { PLACES_GRID_CLASS, PLACES_GRID_MIN_COL } from "@/utils/workspaceConfig";
 
 interface PlacesGridProps {
@@ -29,32 +29,27 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
   onMarkUnvisited,
   onDelete,
   onEdit,
-}) => {
-  return (
-    <ChromaCollectionGrid
-      className={PLACES_GRID_CLASS}
-      minColumnWidth={PLACES_GRID_MIN_COL}
-    >
-      {places.length > 0 ? (
-        places.map((place) => (
-          <PlaceCard
-            key={place.id}
-            place={place}
-            canEdit={canEdit}
-            isSubmitting={isSubmitting}
-            isActive={activeCardId === place.id}
-            onActivate={() => onCardTap(place)}
-            onMarkVisited={onMarkVisited}
-            onMarkUnvisited={onMarkUnvisited}
-            onDelete={onDelete}
-            onEdit={onEdit}
-          />
-        ))
-      ) : (
-        <WorkspaceSectionEmpty tab="places" variant={variant} />
-      )}
-    </ChromaCollectionGrid>
-  );
-};
+}) => (
+  <WorkspaceCollectionGrid
+    className={PLACES_GRID_CLASS}
+    minColumnWidth={PLACES_GRID_MIN_COL}
+    items={places}
+    getItemKey={(place) => place.id}
+    renderItem={(place) => (
+      <PlaceCard
+        place={place}
+        canEdit={canEdit}
+        isSubmitting={isSubmitting}
+        isActive={activeCardId === place.id}
+        onActivate={() => onCardTap(place)}
+        onMarkVisited={onMarkVisited}
+        onMarkUnvisited={onMarkUnvisited}
+        onDelete={onDelete}
+        onEdit={onEdit}
+      />
+    )}
+    empty={<WorkspaceSectionEmpty tab="places" variant={variant} />}
+  />
+);
 
 export default memo(PlacesGrid);

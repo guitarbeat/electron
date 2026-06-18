@@ -20,6 +20,7 @@ import {
 } from "../../utils";
 import { trackMetric } from "@/services/analytics";
 import { readScope, retryScopeSync } from "../../services/state";
+import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner";
 
 const POLLING_INTERVAL = 30000;
 
@@ -230,13 +231,13 @@ export const useMoviesWorkspace = ({
       }
 
       return withProcessingSuggestion(suggestionId, async () => {
-        await addMovie(
+        const { isDuplicate } = await addMovie(
           suggestion.title,
           getMovieSelectionFromSuggestion(suggestion),
         );
         await acceptSuggestion(suggestionId, currentUser);
         trackMetric("suggestion_accepted");
-        return suggestion;
+        return { suggestion, isDuplicate };
       });
     },
     [
@@ -347,6 +348,41 @@ export const useMoviesWorkspace = ({
   const moviesWorkspaceSyncWarning =
     moviesSyncWarning ?? suggestionsSyncWarning ?? memoriesSnapshot?.warning;
 
+  const moviesSyncBanner = useWorkspaceSyncBanner({
+    sources: [
+      {
+        isDegraded: isMoviesDegraded,
+        isSyncBlocked: isMoviesSyncBlocked,
+        syncWarning: moviesSyncWarning,
+        retrySync: retryMoviesSync,
+      },
+      {
+        isDegraded: isSuggestionsDegraded,
+        isSyncBlocked: isSuggestionsSyncBlocked,
+        syncWarning: suggestionsSyncWarning,
+        retrySync: retrySuggestionsSync,
+      },
+    ],
+    combinedBlockedLabel:
+      "Shared movies and suggestions conflicted with local edits. Refresh and retry.",
+    combinedDegradedLabel:
+      "Movies and suggestions are being kept locally until shared sync recovers.",
+    blockedLabels: [
+      "A shared movies change conflicted with local edits. Refresh and retry.",
+      suggestionsSyncWarning ||
+        "Movie suggestion changes conflicted with local edits. Refresh and retry.",
+    ],
+    degradedLabels: [
+      moviesSyncWarning ||
+        "Movie changes are being kept locally until shared sync recovers.",
+      suggestionsSyncWarning ||
+        "Movie suggestion changes are being kept locally.",
+    ],
+    defaultDegradedLabel:
+      moviesWorkspaceSyncWarning ||
+      "Movie changes are being kept locally until shared sync recovers.",
+  });
+
   return {
     isAdding,
     setIsAdding,
@@ -365,6 +401,7 @@ export const useMoviesWorkspace = ({
     isMoviesWorkspaceDegraded,
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
+    moviesSyncBanner,
     addMovie,
     renameMovie,
     toggleWatched,

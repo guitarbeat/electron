@@ -123,18 +123,4 @@ const SuggestionStack: React.FC<SuggestionStackProps> = ({
   );
 };
 
-export const SuggestionStackSkeleton: React.FC = () => (
-  <div
-    className="suggestion-stack-stage suggestion-stack-stage--incoming"
-    aria-hidden
-  >
-    <div className="suggestion-stack-skeleton">
-      <div className="suggestion-stack-skeleton__card suggestion-stack-skeleton__card--back" />
-      <div className="suggestion-stack-skeleton__card suggestion-stack-skeleton__card--mid" />
-      <div className="suggestion-stack-skeleton__card" />
-    </div>
-    <p className="suggestion-stack__hint">Loading suggestions</p>
-  </div>
-);
-
 export default SuggestionStack;

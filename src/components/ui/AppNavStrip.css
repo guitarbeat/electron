@@ -272,8 +272,10 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 2.35rem;
-    height: calc(var(--ans-h) - var(--ans-pad) * 2);
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
     margin-left: 0.12rem;
     padding: 0;
     border: 0;

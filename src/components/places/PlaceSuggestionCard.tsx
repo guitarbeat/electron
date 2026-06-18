@@ -1,5 +1,5 @@
 import React from "react";
-import BaseSuggestionCard from "@/components/common/BaseSuggestionCard";
+import SuggestionCardBase from "@/ui/SuggestionCardBase";
 import { getPlaceIcon } from "@/components/places/lib/placeMeta";
 import type { PlaceSuggestion } from "@/shared/types";
 import { colors, typography } from "@/theme/tokens";
@@ -24,7 +24,7 @@ const PlaceSuggestionCard: React.FC<PlaceSuggestionCardProps> = ({
   const icon = getPlaceIcon(suggestion.name);
 
   return (
-    <BaseSuggestionCard
+    <SuggestionCardBase
       suggestedBy={suggestion.suggestedBy}
       title={suggestion.name}
       subtitle={suggestion.notes}

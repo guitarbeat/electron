@@ -10,6 +10,11 @@ export type MovieSortOrder = "recent" | "alpha" | "rating";
 
 export type MovieSections = CollectionSections<Movie, MovieSuggestion>;
 
+export const getAllMovies = (sections: MovieSections): Movie[] => [
+  ...sections.queue,
+  ...sections.completed,
+];
+
 function sortMovies(movies: Movie[], sortOrder: MovieSortOrder): Movie[] {
   const sorted = [...movies];
   switch (sortOrder) {

@@ -2,6 +2,22 @@ export type MovieBrowseLayout = "grid" | "scroll";
 
 const STORAGE_KEY = "movie-watch.movies.browseLayout";
 
+/** Scroll deck fans one card per movie — keep this bounded for mobile performance. */
+export const MOVIE_SCROLL_DECK_MAX_DESKTOP = 24;
+export const MOVIE_SCROLL_DECK_MAX_MOBILE = 16;
+
+export const movieScrollDeckMax = (isMobile: boolean): number =>
+  isMobile ? MOVIE_SCROLL_DECK_MAX_MOBILE : MOVIE_SCROLL_DECK_MAX_DESKTOP;
+
+export const shouldUseMovieScrollDeck = (
+  movieCount: number,
+  browseLayout: MovieBrowseLayout,
+  isMobile: boolean,
+): boolean =>
+  browseLayout === "scroll" &&
+  movieCount >= 2 &&
+  movieCount <= movieScrollDeckMax(isMobile);
+
 export const MOVIE_BROWSE_LAYOUTS: Array<{
   value: MovieBrowseLayout;
   label: string;
@@ -20,7 +36,7 @@ export const readMovieBrowseLayout = (): MovieBrowseLayout => {
     return stored;
   }
 
-  return window.matchMedia("(max-width: 640px)").matches ? "scroll" : "grid";
+  return "grid";
 };
 
 export const writeMovieBrowseLayout = (layout: MovieBrowseLayout): void => {

@@ -7,17 +7,18 @@ import type {
 } from "@/shared/types";
 import { CollectionSection } from "@/ui/CollectionLayout";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
-import SuggestionStack, {
-  SuggestionStackSkeleton,
-} from "@/components/movies/SuggestionStack";
+import SuggestionStack from "@/components/movies/SuggestionStack";
 import MovieCard from "@/components/movies/MovieCard";
 import MovieDeckStack from "@/components/movies/MovieDeckStack";
 import type { MovieSections } from "@/components/movies/lib/movieSections";
+import { getAllMovies } from "@/components/movies/lib/movieSections";
 import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
+import { shouldUseMovieScrollDeck } from "@/components/movies/lib/movieBrowseLayout";
 import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
+import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
+import WorkspaceIncomingSkeleton from "@/ui/WorkspaceIncomingSkeleton";
 import {
   WorkspaceGlobalEmpty,
-  WorkspaceSectionEmpty,
 } from "@/components/ui/WorkspaceEmptyState";
 import { useViewport } from "@/app/ViewportContext";
 import {
@@ -89,71 +90,66 @@ const MovieSectionBody: React.FC<Props> = ({
   const browseLayoutClass =
     browseLayout === "grid" ? " watchlist-content--poster-grid" : "";
 
+  const allMovies = getAllMovies(sections);
+
   const showInitialLoading =
     (isLoading || isSuggestionsLoading) &&
-    sections.queue.length === 0 &&
-    sections.suggestions.length === 0 &&
-    sections.completed.length === 0;
+    allMovies.length === 0 &&
+    sections.suggestions.length === 0;
 
-  const movieGrid = (movies: Movie[], emptyVariant: "queue" | "completed") => (
-    <ChromaCollectionGrid
+  const movieGrid = (movies: Movie[]) => (
+    <WorkspaceCollectionGrid
       className={gridSurfaceClass(browseLayout)}
       minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
-    >
-      {movies.length > 0 ? (
-        movies.map((movie) => (
-          <MovieCard
-            key={movie.id}
-            movie={movie}
-            currentUser={currentUser}
-            onToggle={() => {
-              actions.toggleWatched(movie.id);
-            }}
-            onToggleError={onToggleError}
-            onRename={async (title) => {
-              await actions.renameMovie(movie.id, title);
-            }}
-            onDelete={() => onDeleteRequest(movie)}
-            isHighlighted={successMovieId === movie.id}
-            memories={movieMemories.get(movie.id) ?? []}
-            onAddMemory={
-              currentUser
-                ? async (note) => {
-                    await actions.addMemory(
-                      movie.id,
-                      movie.title,
-                      currentUser,
-                      note,
-                    );
-                  }
-                : undefined
-            }
-            onUpdateMemory={async (memoryId, note) => {
-              await actions.updateMemory(memoryId, { note });
-            }}
-            onDeleteMemory={async (memoryId) => {
-              await actions.deleteMemory(memoryId);
-            }}
-            onTogglePin={async (memoryId) => {
-              await actions.togglePin(memoryId);
-            }}
-          />
-        ))
-      ) : (
-        <WorkspaceSectionEmpty tab="movies" variant={emptyVariant} />
+      items={movies}
+      getItemKey={(movie) => movie.id}
+      renderItem={(movie) => (
+        <MovieCard
+          movie={movie}
+          currentUser={currentUser}
+          onToggle={() => {
+            actions.toggleWatched(movie.id);
+          }}
+          onToggleError={onToggleError}
+          onRename={async (title) => {
+            await actions.renameMovie(movie.id, title);
+          }}
+          onDelete={() => onDeleteRequest(movie)}
+          isHighlighted={successMovieId === movie.id}
+          memories={movieMemories.get(movie.id) ?? []}
+          onAddMemory={
+            currentUser
+              ? async (note) => {
+                  await actions.addMemory(
+                    movie.id,
+                    movie.title,
+                    currentUser,
+                    note,
+                  );
+                }
+              : undefined
+          }
+          onUpdateMemory={async (memoryId, note) => {
+            await actions.updateMemory(memoryId, { note });
+          }}
+          onDeleteMemory={async (memoryId) => {
+            await actions.deleteMemory(memoryId);
+          }}
+          onTogglePin={async (memoryId) => {
+            await actions.togglePin(memoryId);
+          }}
+        />
       )}
-    </ChromaCollectionGrid>
+      empty={null}
+    />
   );
 
-  const renderMovies = (
-    movies: Movie[],
-    emptyVariant: "queue" | "completed",
-  ) => {
-    if (browseLayout === "scroll" && movies.length >= 2) {
+  const renderMovies = (movies: Movie[]) => {
+    if (shouldUseMovieScrollDeck(movies.length, browseLayout, isMobile)) {
       return <MovieDeckStack movies={movies} />;
     }
 
-    return movieGrid(movies, emptyVariant);
+    return movieGrid(movies);
   };
 
   if (showInitialLoading) {
@@ -165,12 +161,12 @@ const MovieSectionBody: React.FC<Props> = ({
     );
   }
 
-  const isQueueEmpty =
-    sections.queue.length === 0 &&
+  const isListEmpty =
+    allMovies.length === 0 &&
     sections.suggestions.length === 0 &&
     !isSuggestionsLoading;
 
-  if (isQueueEmpty && sections.completed.length === 0) {
+  if (isListEmpty) {
     return (
       <ChromaCollectionGrid
         className={gridSurfaceClass(browseLayout)}
@@ -203,7 +199,7 @@ const MovieSectionBody: React.FC<Props> = ({
           id={sectionIds.incoming}
         >
           {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-            <SuggestionStackSkeleton />
+            <WorkspaceIncomingSkeleton variant="stack" />
           ) : (
             <SuggestionStack
               suggestions={sections.suggestions}
@@ -216,24 +212,13 @@ const MovieSectionBody: React.FC<Props> = ({
         </CollectionSection>
       )}
 
-      {sections.queue.length > 0 && (
+      {allMovies.length > 0 && (
         <CollectionSection
           heading={sectionLabels.queue}
-          count={sections.queue.length}
+          count={allMovies.length}
           id={sectionIds.queue}
         >
-          {renderMovies(sections.queue, "queue")}
-        </CollectionSection>
-      )}
-
-      {sections.completed.length > 0 && (
-        <CollectionSection
-          heading={sectionLabels.completed}
-          count={sections.completed.length}
-          tone="completed"
-          id={sectionIds.completed}
-        >
-          {renderMovies(sections.completed, "completed")}
+          {renderMovies(allMovies)}
         </CollectionSection>
       )}
     </div>

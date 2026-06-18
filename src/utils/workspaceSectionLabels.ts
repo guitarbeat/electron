@@ -18,7 +18,7 @@ const INCOMING_LABELS = { desktop: "Incoming", mobile: "New" } as const;
 
 const TAB_SECTION_LABELS = {
   movies: {
-    queue: { desktop: "Up Next", mobile: "Queue" },
+    queue: { desktop: "Movies", mobile: "All" },
     completed: { desktop: "Watched", mobile: "Done" },
   },
   places: {

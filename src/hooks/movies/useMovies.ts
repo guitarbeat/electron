@@ -7,13 +7,20 @@ import {
 } from "@/services/metadata";
 import {
   concurrentMap,
+  findMovieByNormalizedTitle,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
   sanitizeInput,
 } from "@/utils";
+import { mergeMissingMovieMetadata } from "@/services/content/movieRecords";
 import { useCollection } from "../useCollection";
 
 const POLLING_INTERVAL = 15000;
+
+export interface AddMovieResult {
+  movie: Movie;
+  isDuplicate: boolean;
+}
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   const { poster, year, plot, imdbRating, runtime, genre, director } = metadata;
@@ -27,6 +34,58 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
     result.genre = sanitizeInput(genre.join(", "));
   if (director) result.director = sanitizeInput(director);
   return result;
+};
+
+const enrichMovieMetadata = async (
+  movieId: string,
+  title: string,
+  selectedResult: Pick<MovieAutocompleteResult, "imdbID" | "type"> | undefined,
+  performMutationIfMoviePresent: (
+    movieId: string,
+    op: string,
+    payload: unknown,
+    buildOptimistic: (current: Movie[]) => Movie[],
+  ) => Promise<boolean>,
+  mergeOnlyMissing = false,
+): Promise<void> => {
+  try {
+    const metadata = await fetchMovieMetadata(
+      title,
+      selectedResult?.type,
+      selectedResult?.imdbID,
+    );
+    const safeMetadata = extractSafeMetadata(metadata);
+    if (Object.keys(safeMetadata).length === 0) {
+      return;
+    }
+
+    await performMutationIfMoviePresent(
+      movieId,
+      "update_metadata",
+      {
+        movieId,
+        metadata: safeMetadata,
+      },
+      (current) =>
+        current.map((entry) => {
+          if (entry.id !== movieId) {
+            return entry;
+          }
+
+          const metadataPatch = mergeOnlyMissing
+            ? mergeMissingMovieMetadata(entry, safeMetadata)
+            : safeMetadata;
+
+          if (!metadataPatch || Object.keys(metadataPatch).length === 0) {
+            return entry;
+          }
+
+          return { ...entry, ...metadataPatch };
+        }),
+    );
+  } catch (metadataError) {
+    console.warn("Metadata enrichment failed:", metadataError);
+  }
 };
 
 const validateMovieTitle = (title: string): string => {
@@ -129,12 +188,25 @@ export const useMovies = (
     async (
       title: string,
       selectedResult?: Pick<MovieAutocompleteResult, "imdbID" | "type">,
-    ) => {
+    ): Promise<AddMovieResult> => {
       if (!currentUser) {
         throw new Error("Profile required");
       }
 
       const cleanTitle = validateMovieTitle(title);
+      const existingMovie = findMovieByNormalizedTitle(movies, cleanTitle);
+
+      if (existingMovie) {
+        void enrichMovieMetadata(
+          existingMovie.id,
+          cleanTitle,
+          selectedResult,
+          performMutationIfMoviePresent,
+          true,
+        );
+
+        return { movie: existingMovie, isDuplicate: true };
+      }
 
       const newMovie: Movie = {
         id: crypto.randomUUID(),
@@ -153,38 +225,14 @@ export const useMovies = (
         [...movies, newMovie],
       );
 
-      void (async () => {
-        try {
-          const metadata = await fetchMovieMetadata(
-            cleanTitle,
-            selectedResult?.type,
-            selectedResult?.imdbID,
-          );
-          const safeMetadata = extractSafeMetadata(metadata);
-          if (Object.keys(safeMetadata).length === 0) {
-            return;
-          }
+      void enrichMovieMetadata(
+        newMovie.id,
+        cleanTitle,
+        selectedResult,
+        performMutationIfMoviePresent,
+      );
 
-          await performMutationIfMoviePresent(
-            newMovie.id,
-            "update_metadata",
-            {
-              movieId: newMovie.id,
-              metadata: safeMetadata,
-            },
-            (current) =>
-              current.map((entry) =>
-                entry.id === newMovie.id
-                  ? { ...entry, ...safeMetadata }
-                  : entry,
-              ),
-          );
-        } catch (metadataError) {
-          console.warn("Metadata enrichment failed:", metadataError);
-        }
-      })();
-
-      return newMovie;
+      return { movie: newMovie, isDuplicate: false };
     },
     [currentUser, movies, performMutation, performMutationIfMoviePresent],
   );

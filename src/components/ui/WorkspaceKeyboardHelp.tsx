@@ -10,7 +10,7 @@ interface ShortcutRow {
 
 const WORKSPACE_SHORTCUTS: ShortcutRow[] = [
   { keys: "/", description: "Focus search" },
-  { keys: "1 2 3", description: "Jump to Incoming, Queue, and Done sections" },
+  { keys: "1 2 3", description: "Jump to workspace sections" },
   { keys: "M P", description: "Switch to Movies or Places" },
   { keys: "?", description: "Show or hide this help" },
   { keys: "Esc", description: "Close menus, autocomplete, or this help" },

@@ -415,7 +415,7 @@
   }
 
   .bento-ctrl--mobile .bento-ctrl__search .watchlist-top-controls__search-actions .ui-button {
-    min-height: 2.35rem !important;
+    min-height: 2.75rem !important;
     font-size: 0.8125rem !important;
   }
 
@@ -450,9 +450,9 @@
   }
 
   .bento-ctrl--mobile .magic-toggle__btn {
-    min-height: 1.85rem;
+    min-height: 2.75rem;
     min-width: 0;
-    padding: 0.18rem 0.4rem;
+    padding: 0.28rem 0.5rem;
     font-size: 0.75rem;
   }
 }

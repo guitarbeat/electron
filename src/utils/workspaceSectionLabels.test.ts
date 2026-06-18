@@ -3,12 +3,12 @@ import assert from "node:assert/strict";
 import { workspaceSectionLabel } from "./workspaceSectionLabels.ts";
 
 test("workspaceSectionLabel returns desktop movie labels", () => {
-  assert.equal(workspaceSectionLabel("movies", "queue", false), "Up Next");
+  assert.equal(workspaceSectionLabel("movies", "queue", false), "Movies");
   assert.equal(workspaceSectionLabel("movies", "completed", false), "Watched");
 });
 
 test("workspaceSectionLabel returns mobile movie labels", () => {
-  assert.equal(workspaceSectionLabel("movies", "queue", true), "Queue");
+  assert.equal(workspaceSectionLabel("movies", "queue", true), "All");
   assert.equal(workspaceSectionLabel("movies", "completed", true), "Done");
 });
 

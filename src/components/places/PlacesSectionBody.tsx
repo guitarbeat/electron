@@ -4,7 +4,7 @@ import { CollectionSection } from "@/ui/CollectionLayout";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import PlaceSuggestionCard from "./PlaceSuggestionCard";
 import PlacesGrid from "./PlacesGrid";
-import PlacesSuggestionsSkeleton from "./PlacesSuggestionsSkeleton";
+import WorkspaceIncomingSkeleton from "@/ui/WorkspaceIncomingSkeleton";
 import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
 import { WorkspaceGlobalEmpty } from "@/components/ui/WorkspaceEmptyState";
 import { useViewport } from "@/app/ViewportContext";
@@ -115,7 +115,11 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
           id={sectionIds.incoming}
         >
           {isSuggestionsLoading && pendingSuggestions.length === 0 ? (
-            <PlacesSuggestionsSkeleton />
+            <WorkspaceIncomingSkeleton
+              variant="grid"
+              gridClass={PLACES_GRID_CLASS}
+              minColumnWidth={PLACES_GRID_MIN_COL}
+            />
           ) : (
             <ChromaCollectionGrid
               className={PLACES_GRID_CLASS}

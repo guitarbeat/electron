@@ -2,7 +2,7 @@ import React from "react";
 import type { MovieSuggestion } from "@/shared/types";
 import { fetchOmdbMetadata } from "@/services/metadata/omdb";
 import MediaPoster from "@/ui/MediaPoster";
-import BaseSuggestionCard from "@/components/common/BaseSuggestionCard";
+import SuggestionCardBase from "@/ui/SuggestionCardBase";
 import MediaCardMetadata from "@/ui/MediaCardMetadata";
 
 interface SuggestionCardProps {
@@ -55,7 +55,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   }, [suggestion.title, suggestion.type, suggestion.imdbID]);
 
   return (
-    <BaseSuggestionCard
+    <SuggestionCardBase
       suggestedBy={suggestion.suggestedBy}
       title={suggestion.title}
       subtitle={suggestion.reason}

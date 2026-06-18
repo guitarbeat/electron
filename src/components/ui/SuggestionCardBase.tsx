@@ -11,7 +11,7 @@ import {
 } from "@/ui/MediaCard";
 import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 
-export interface BaseSuggestionCardProps {
+export interface SuggestionCardBaseProps {
   suggestedBy: string;
   title: string;
   subtitle?: string;
@@ -27,7 +27,19 @@ export interface BaseSuggestionCardProps {
   style?: React.CSSProperties;
 }
 
-const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
+export const SuggestionCardProcessingOverlay: React.FC = () => (
+  <div
+    style={{
+      position: "absolute",
+      inset: 0,
+      background: "rgba(0,0,0,0.1)",
+      backdropFilter: "blur(1px)",
+      zIndex: 1,
+    }}
+  />
+);
+
+const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
   suggestedBy,
   title,
   subtitle,
@@ -118,17 +130,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
           />
         </MediaCardPosterWrap>
 
-        {isProcessing && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "rgba(0,0,0,0.1)",
-              backdropFilter: "blur(1px)",
-              zIndex: 1,
-            }}
-          />
-        )}
+        {isProcessing ? <SuggestionCardProcessingOverlay /> : null}
       </Card>
     );
   }
@@ -167,7 +169,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
           >
             Suggestion from {suggestedBy}
           </div>
-          {icon && <span style={{ fontSize: "1.2rem" }}>{icon}</span>}
+          {icon ? <span style={{ fontSize: "1.2rem" }}>{icon}</span> : null}
         </div>
         <h3
           style={{
@@ -179,7 +181,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
         >
           {title}
         </h3>
-        {subtitle && (
+        {subtitle ? (
           <p
             style={{
               margin: 0,
@@ -192,7 +194,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
           >
             &quot;{subtitle}&quot;
           </p>
-        )}
+        ) : null}
         {details}
       </div>
 
@@ -229,7 +231,7 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
         </Button>
       </div>
 
-      {!canRespond && (
+      {!canRespond ? (
         <p
           className="suggestion-item-card__profile-hint"
           style={{
@@ -242,24 +244,11 @@ const BaseSuggestionCard: React.FC<BaseSuggestionCardProps> = ({
         >
           Pick a profile to review suggestions.
         </p>
-      )}
+      ) : null}
 
-      {isProcessing && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(0,0,0,0.1)",
-            backdropFilter: "blur(1px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1,
-          }}
-        />
-      )}
+      {isProcessing ? <SuggestionCardProcessingOverlay /> : null}
     </Card>
   );
 };
 
-export default BaseSuggestionCard;
+export default SuggestionCardBase;

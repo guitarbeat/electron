@@ -1,9 +1,9 @@
 import React from "react";
-import { useCardTilt } from "@/hooks/useCardTilt";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { Movie, SharedMemory, User } from "@/shared/types";
 import { executeAction, getErrorMessage, consoleError } from "@/utils";
 import Card from "@/ui/Card";
+import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import {
   MediaCardPosterWrap,
   MediaCardTitle,
@@ -63,7 +63,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isUpdating, setIsUpdating] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
-  const tilt = useCardTilt();
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
@@ -115,13 +114,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""}`}
         data-movie-id={movie.id}
       >
-        <div
-          ref={tilt.ref}
-          className="card-tilt-wrap"
-          onMouseEnter={tilt.onMouseEnter}
-          onMouseMove={tilt.onMouseMove}
-          onMouseLeave={tilt.onMouseLeave}
-        >
+        <CardTiltShell>
           <Card
             ref={cardRef}
             variant="default"
@@ -133,7 +126,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               overflow: "hidden",
             }}
           >
-            <div className="card-tilt-sheen" aria-hidden="true" />
+            <CardTiltSheen />
             <MediaCardPosterWrap
               ref={posterRef}
               className="movie-item-poster-wrap"
@@ -169,8 +162,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               </button>
             </MediaCardPosterWrap>
           </Card>
-        </div>
-        {/* card-tilt-wrap */}
+        </CardTiltShell>
 
         <div className="movie-item-info-external">
           <MediaCardTitle className="movie-item-title-external">

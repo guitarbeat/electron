@@ -6,6 +6,16 @@ import type { PlaceSuggestion } from "@/shared/types";
 import WorkspaceSearchShell from "@/components/ui/WorkspaceSearchShell";
 import WorkspaceSearchClear from "@/components/ui/WorkspaceSearchClear";
 import WorkspaceSearchActions from "@/components/ui/WorkspaceSearchActions";
+import {
+  WorkspaceAutocompleteCopy,
+  WorkspaceAutocompleteNoMatchPanel,
+  WorkspaceAutocompleteOption,
+  WorkspaceAutocompletePanel,
+} from "@/components/ui/WorkspaceAutocomplete";
+import {
+  useAutocompleteFocusBoundary,
+  useWorkspaceAutocompleteDismiss,
+} from "@/components/ui/lib/useWorkspaceAutocompleteDismiss";
 
 interface PlacesTopControlsProps {
   searchQuery: string;
@@ -43,7 +53,6 @@ const PlacesTopControls = React.forwardRef<
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const autocompleteRegionRef = useRef<HTMLDivElement>(null);
-    const focusBoundaryFrameRef = useRef<number | null>(null);
     const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
     const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
     const isBusy = isAdding || Boolean(isSuggesting);
@@ -63,13 +72,6 @@ const PlacesTopControls = React.forwardRef<
     const showNoMatchHint =
       hasAutocompletePanel && visibleSuggestions.length === 0;
 
-    const clearFocusBoundaryCheck = useCallback(() => {
-      if (focusBoundaryFrameRef.current !== null) {
-        window.cancelAnimationFrame(focusBoundaryFrameRef.current);
-        focusBoundaryFrameRef.current = null;
-      }
-    }, []);
-
     const openAutocomplete = useCallback(() => {
       if (!hasQuery) {
         return;
@@ -83,6 +85,11 @@ const PlacesTopControls = React.forwardRef<
       setActiveAutocompleteIndex(-1);
     }, []);
 
+    const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
+      useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete);
+
+    useWorkspaceAutocompleteDismiss(autocompleteRegionRef, hideAutocomplete);
+
     useEffect(() => {
       setActiveAutocompleteIndex(-1);
     }, [normalizedQuery, visibleSuggestions.length]);
@@ -92,21 +99,6 @@ const PlacesTopControls = React.forwardRef<
         hideAutocomplete();
       }
     }, [hasQuery, hideAutocomplete]);
-
-    useEffect(() => {
-      const handlePointerDown = (event: PointerEvent) => {
-        const target = event.target;
-        if (!(target instanceof Node)) {
-          return;
-        }
-        if (!autocompleteRegionRef.current?.contains(target)) {
-          hideAutocomplete();
-        }
-      };
-
-      document.addEventListener("pointerdown", handlePointerDown);
-      return () => document.removeEventListener("pointerdown", handlePointerDown);
-    }, [hideAutocomplete]);
 
     const selectSuggestion = (suggestion: PlaceSuggestion) => {
       setSearchQuery(suggestion.name);
@@ -136,22 +128,13 @@ const PlacesTopControls = React.forwardRef<
         isAutocompleteActive={showSuggestionList || showNoMatchHint}
         shellRef={autocompleteRegionRef}
         onShellFocusCapture={() => {
-          clearFocusBoundaryCheck();
+          onFocusCapture();
           if (hasQuery) {
             openAutocomplete();
           }
         }}
         onShellBlurCapture={() => {
-          clearFocusBoundaryCheck();
-          focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
-            focusBoundaryFrameRef.current = null;
-            const nextIsFocused = Boolean(
-              autocompleteRegionRef.current?.contains(document.activeElement),
-            );
-            if (!nextIsFocused) {
-              hideAutocomplete();
-            }
-          });
+          onBlurCapture();
         }}
         onSubmit={(event) => {
           event.preventDefault();
@@ -263,49 +246,30 @@ const PlacesTopControls = React.forwardRef<
         }
         autocomplete={
           showSuggestionList ? (
-            <div
+            <WorkspaceAutocompletePanel
               id={autocompleteId}
-              className="watchlist-top-controls__autocomplete is-open"
-              role="listbox"
-              aria-label="Place suggestions"
+              ariaLabel="Place suggestions"
             >
               {visibleSuggestions.map((suggestion, index) => (
-                <button
+                <WorkspaceAutocompleteOption
                   key={suggestion.id}
                   id={`${autocompleteId}-option-${index}`}
-                  type="button"
-                  role="option"
-                  aria-selected={index === activeAutocompleteIndex}
-                  className={`watchlist-top-controls__autocomplete-option${
-                    index === activeAutocompleteIndex ? " is-active" : ""
-                  }`}
-                  onPointerDown={(e) => {
-                    e.preventDefault();
-                    selectSuggestion(suggestion);
-                  }}
+                  isActive={index === activeAutocompleteIndex}
+                  onSelect={() => selectSuggestion(suggestion)}
                 >
-                  <span className="watchlist-top-controls__autocomplete-copy">
-                    <span className="watchlist-top-controls__autocomplete-title">
-                      {suggestion.name}
-                    </span>
-                    <span className="watchlist-top-controls__autocomplete-meta">
-                      Suggested place
-                    </span>
-                  </span>
-                </button>
+                  <WorkspaceAutocompleteCopy
+                    title={suggestion.name}
+                    meta="Suggested place"
+                  />
+                </WorkspaceAutocompleteOption>
               ))}
-            </div>
+            </WorkspaceAutocompletePanel>
           ) : showNoMatchHint ? (
-            <div
-              className="watchlist-top-controls__autocomplete is-open"
-              role="status"
-            >
-              <p className="watchlist-top-controls__autocomplete-status">
-                {canEdit
-                  ? "No matching suggestions — use Add to save this place."
-                  : "No matching suggestions — use Suggest to share this place."}
-              </p>
-            </div>
+            <WorkspaceAutocompleteNoMatchPanel>
+              {canEdit
+                ? "No matching suggestions — use Add to save this place."
+                : "No matching suggestions — use Suggest to share this place."}
+            </WorkspaceAutocompleteNoMatchPanel>
           ) : null
         }
         actions={

@@ -1,4 +1,4 @@
-import type { User } from "../shared/types.ts";
+import type { Movie, User } from "../shared/types.ts";
 import { spacing } from "../theme/tokens.ts";
 
 /**
@@ -236,7 +236,17 @@ export const concurrentMap = async <T, R>(
 // ============================================================================
 
 export const normalizeMovieTitle = (title: string): string =>
-  title.trim().toLowerCase();
+  title.trim().toLowerCase().replace(/\s+/g, " ");
+
+export const findMovieByNormalizedTitle = (
+  movies: readonly Movie[],
+  title: string,
+): Movie | undefined => {
+  const normalized = normalizeMovieTitle(title);
+  return movies.find(
+    (movie) => normalizeMovieTitle(movie.title) === normalized,
+  );
+};
 
 export const throttle = <T extends (...args: unknown[]) => unknown>(
   func: T,
