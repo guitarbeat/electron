@@ -5,9 +5,7 @@ import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
 import BentoWorkspaceController, {
   type WorkspaceChromeHeaderProps,
 } from "@/components/ui/BentoWorkspaceController";
-import WorkspaceKeyboardHelp from "@/components/ui/WorkspaceKeyboardHelp";
 import { useViewport } from "@/app/ViewportContext";
-import { useWorkspaceKeyboardHelp } from "@/hooks/useWorkspaceKeyboardHelp";
 import {
   BentoSlotContext,
   type RegisteredBentoSlotConfig,
@@ -47,7 +45,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   onQuizEdit,
 }) => {
   const { isMobile } = useViewport();
-  const keyboardHelp = useWorkspaceKeyboardHelp();
   const [tabConfigs, setTabConfigs] = useState<
     Partial<Record<MainTab, RegisteredBentoSlotConfig>>
   >({});
@@ -80,13 +77,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {activeTab === "movies" ? "Movies workspace" : "Places workspace"}
       </p>
-      <p className="sr-only">
-        Press question mark for keyboard shortcuts.
-      </p>
-      <WorkspaceKeyboardHelp
-        isOpen={keyboardHelp.isOpen}
-        onClose={keyboardHelp.close}
-      />
       <main
         id="main-content"
         className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
@@ -106,7 +96,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           activeViewMode={bento.activeViewMode}
           onViewModeChange={bento.onViewModeChange}
           viewModeAriaLabel={bento.viewModeAriaLabel}
-          onOpenKeyboardHelp={keyboardHelp.open}
         >
           <div ref={setSearchPortalEl} />
         </BentoWorkspaceController>

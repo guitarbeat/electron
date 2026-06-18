@@ -147,7 +147,6 @@ const PlacesTopControls = React.forwardRef<
           void onSubmit();
         }}
         error={suggestionError}
-        showShortcutHint={!hasQuery}
         input={
           <>
             <Input

@@ -367,7 +367,6 @@ const MoviesTopControls = React.forwardRef<
           });
         }}
         error={suggestionError && !showRecommendationComposer ? suggestionError : null}
-        showShortcutHint={!searchQuery.trim()}
         input={
           <>
             <Input
@@ -428,8 +427,8 @@ const MoviesTopControls = React.forwardRef<
                   void onSubmit();
                 }
               }}
-              placeholder="Search movies & shows to add"
-              aria-label="Movie or show title"
+              placeholder="What's on tonight? Search a movie or show to add."
+              aria-label="Search movies and shows to add"
               role="combobox"
               aria-autocomplete="list"
               aria-expanded={isAutocompleteOpen}

@@ -135,6 +135,77 @@
   font-size: 0.8125rem;
 }
 
+.app-header__profile-option--inline.is-logout {
+  border-color: color-mix(in srgb, var(--color-error, #f87171) 28%, transparent);
+  background: color-mix(in srgb, var(--color-error, #f87171) 8%, transparent);
+}
+
+.app-header__profile-option--inline.is-logout:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-error, #f87171) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-error, #f87171) 40%, transparent);
+}
+
+.app-header__profile-option--inline.is-logout .app-header__option-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.app-header__option-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.app-header__avatar-logout-badge {
+  position: absolute;
+  right: -0.15rem;
+  bottom: -0.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-error, #f87171) 88%, transparent);
+  color: #fff;
+  border: 1.5px solid color-mix(in srgb, var(--color-surface-0) 90%, transparent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.app-header__profile-pin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 9%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  color: color-mix(in srgb, var(--color-text-primary) 75%, transparent);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.app-header__profile-pin-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text-primary) 9%, transparent);
+  border-color: var(--color-border);
+  color: color-mix(in srgb, var(--color-text-primary) 95%, transparent);
+}
+
+.app-header__profile-pin-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.app-header__profile-pin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .app-header__profile-settings {
   display: inline-flex;
   align-items: center;
@@ -299,50 +370,32 @@
     width: auto;
     justify-content: flex-end;
     flex-shrink: 0;
+    gap: 0.25rem;
   }
 
-  .app-header__profile-picker--mobile {
-    width: auto;
-    justify-content: flex-end;
+  .app-header__profile-picker {
+    gap: 0.25rem;
   }
 
   .app-header__profile-list--inline {
+    gap: 0.25rem;
+  }
+
+  .app-header__profile-option--inline {
+    padding: 0.28rem 0.45rem 0.28rem 0.28rem;
+  }
+
+  .app-header__profile-option--inline .app-header__option-name {
     display: none;
   }
 
-  .app-header__profile-mobile-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    width: auto;
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-    padding: 0.3rem 0.65rem;
-    border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--color-surface-1) 88%, transparent);
-    color: var(--color-text-primary);
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .app-header__profile-mobile-trigger.is-open,
-  .app-header__profile-mobile-trigger.has-user {
-    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
-    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-  }
-
-  .app-header__profile-mobile-trigger .app-header__option-avatar .app-header__avatar-image,
-  .app-header__profile-mobile-trigger .app-header__option-avatar .app-header__avatar-initial {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
-  .app-header__profile-settings {
+  .app-header__profile-option--inline.is-logout .app-header__option-name {
     display: none;
+  }
+
+  .app-header__profile-pin-btn {
+    width: 1.85rem;
+    height: 1.85rem;
   }
 }
 

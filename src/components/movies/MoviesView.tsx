@@ -33,11 +33,7 @@ import type { MovieAutocompleteResult } from "@/services/metadata";
 import { createPortal } from "react-dom";
 import { useBentoSlot } from "@/app/BentoSlotContext";
 import { useViewport } from "@/app/ViewportContext";
-import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
 import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
-import {
-  workspaceSectionIds,
-} from "@/utils/workspaceConfig";
 
 const MOBILE_MOVIE_VIEW_MODES = MOVIE_BROWSE_LAYOUTS.map(({ value, label }) => ({
   value,
@@ -128,12 +124,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
 
   useWorkspaceBentoConfig({
     tab: "movies",
-    sectionIds: workspaceSectionIds("movies"),
-    counts: {
-      incoming: sections.suggestions.length,
-      queue: sections.queue.length + sections.completed.length,
-      completed: 0,
-    },
     ariaLabel: "Movies workspace controls",
     viewModes: (isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS).filter(
       (mode) => mode.value !== "scroll" || scrollBrowseAllowed,
@@ -141,12 +131,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     activeViewMode: browseLayout,
     onViewModeChange: handleBrowseLayoutChange,
     viewModeAriaLabel: "Movie browse layout",
-    sectionShortcutsEnabled: !isLoading,
-    sectionAvailability: {
-      incoming: isSuggestionsLoading || sections.suggestions.length > 0,
-      queue: sections.queue.length > 0 || sections.completed.length > 0,
-      completed: false,
-    },
   });
 
   useEffect(() => {
@@ -186,7 +170,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
-  useFocusSearchShortcut(focusSearchInput);
   const clearSearchAndRefocus = useCallback(() => {
     setSearchQuery("");
     setSelectedAutocompleteResult(null);

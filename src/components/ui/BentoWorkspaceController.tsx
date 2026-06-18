@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import type { MainTab } from "@/shared/types";
 import AppNavStrip from "@/ui/AppNavStrip";
 import ProfileMenu from "@/ui/ProfileMenu";
@@ -54,7 +54,6 @@ interface BentoWorkspaceControllerProps extends WorkspaceChromeHeaderProps {
   activeViewMode?: string;
   onViewModeChange?: (mode: string) => void;
   viewModeAriaLabel?: string;
-  onOpenKeyboardHelp?: () => void;
 }
 
 function BentoWorkspaceController({
@@ -64,7 +63,6 @@ function BentoWorkspaceController({
   activeViewMode,
   onViewModeChange,
   viewModeAriaLabel,
-  onOpenKeyboardHelp,
   activeTab,
   onTabChange,
   onOpenMessages,
@@ -74,7 +72,6 @@ function BentoWorkspaceController({
   onRetrySync,
 }: BentoWorkspaceControllerProps) {
   const { isMobile } = useViewport();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const hasViewModes =
     (viewModes?.length ?? 0) > 1 &&
     Boolean(activeViewMode) &&
@@ -82,7 +79,7 @@ function BentoWorkspaceController({
 
   return (
     <section
-      className={`workspace-control-panel bento-ctrl bento-ctrl--${activeTab}${isMobile ? " bento-ctrl--mobile" : ""}${isMenuOpen ? " is-profile-menu-open" : ""}`}
+      className={`workspace-control-panel bento-ctrl bento-ctrl--${activeTab}${isMobile ? " bento-ctrl--mobile" : ""}`}
       aria-label={ariaLabel}
     >
       <header className="bento-ctrl__topbar" role="banner">
@@ -98,7 +95,7 @@ function BentoWorkspaceController({
           />
         </div>
         <div className="bento-ctrl__topbar-right app-header__right">
-          <ProfileMenu onOpenChange={setIsMenuOpen} />
+          <ProfileMenu />
         </div>
       </header>
 
@@ -114,21 +111,6 @@ function BentoWorkspaceController({
             onViewModeChange={onViewModeChange}
             viewModeAriaLabel={viewModeAriaLabel}
           />
-        </div>
-      ) : null}
-
-      {onOpenKeyboardHelp && !isMobile ? (
-        <div className="bento-ctrl__shortcuts-row">
-          <button
-            type="button"
-            className="bento-ctrl__shortcuts-btn"
-            onClick={onOpenKeyboardHelp}
-            aria-label="Keyboard shortcuts"
-            title="Keyboard shortcuts (?)"
-          >
-            <kbd className="bento-ctrl__shortcuts-kbd">?</kbd>
-            {!isMobile ? <span>Shortcuts</span> : null}
-          </button>
         </div>
       ) : null}
     </section>

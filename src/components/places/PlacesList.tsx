@@ -22,10 +22,8 @@ import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import { getErrorMessage } from "@/utils";
 import { createPortal } from "react-dom";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
 import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
 import { useWorkspaceSyncBanner } from "@/hooks/useWorkspaceSyncBanner";
-import { workspaceSectionIds } from "@/utils/workspaceConfig";
 
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
@@ -82,20 +80,7 @@ const PlacesList: React.FC = () => {
 
   useWorkspaceBentoConfig({
     tab: "places",
-    sectionIds: workspaceSectionIds("places"),
-    counts: {
-      incoming: pendingSuggestions.length,
-      queue: sections.queue.length,
-      completed: sections.completed.length,
-    },
     ariaLabel: "Places workspace controls",
-    sectionShortcutsEnabled: !isLoading,
-    sectionAvailability: {
-      incoming:
-        isSuggestionsLoading || pendingSuggestions.length > 0,
-      queue: sections.queue.length > 0,
-      completed: sections.completed.length > 0,
-    },
   });
 
   const syncBanner = useWorkspaceSyncBanner({
@@ -147,8 +132,6 @@ const PlacesList: React.FC = () => {
   const focusPlacesSearch = useCallback(() => {
     placesTopControlsRef.current?.focusSearchInput();
   }, []);
-
-  useFocusSearchShortcut(focusPlacesSearch);
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {

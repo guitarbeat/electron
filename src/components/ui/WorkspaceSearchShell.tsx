@@ -1,5 +1,4 @@
 import type { FC, FormEvent, ReactNode, Ref } from "react";
-import { useViewport } from "@/app/ViewportContext";
 
 interface WorkspaceSearchShellProps {
   icon?: ReactNode;
@@ -9,7 +8,6 @@ interface WorkspaceSearchShellProps {
   autocomplete?: ReactNode;
   actions?: ReactNode;
   error?: string | null;
-  showShortcutHint?: boolean;
   shellRef?: Ref<HTMLDivElement>;
   onShellFocusCapture?: () => void;
   onShellBlurCapture?: () => void;
@@ -23,60 +21,42 @@ const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
   autocomplete,
   actions,
   error,
-  showShortcutHint = true,
   shellRef,
   onShellFocusCapture,
   onShellBlurCapture,
-}) => {
-  const { isMobile } = useViewport();
-
-  return (
-    <div className="watchlist-top-controls__stage">
-      <form
-        className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
-          isAutocompleteActive ? " is-autocomplete-active" : ""
+}) => (
+  <div className="watchlist-top-controls__stage">
+    <form
+      className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
+        isAutocompleteActive ? " is-autocomplete-active" : ""
+      }`}
+      onSubmit={onSubmit}
+    >
+      <div
+        ref={shellRef}
+        className={`watchlist-top-controls__search-shell${
+          icon ? " watchlist-top-controls__search-shell--with-icon" : ""
         }`}
-        onSubmit={onSubmit}
+        onFocusCapture={onShellFocusCapture}
+        onBlurCapture={onShellBlurCapture}
       >
-        <div
-          ref={shellRef}
-          className={`watchlist-top-controls__search-shell${
-            icon ? " watchlist-top-controls__search-shell--with-icon" : ""
-          }`}
-          onFocusCapture={onShellFocusCapture}
-          onBlurCapture={onShellBlurCapture}
-        >
-          {icon ? (
-            <span className="watchlist-top-controls__search-icon" aria-hidden="true">
-              {icon}
-            </span>
-          ) : null}
-          <div className="watchlist-top-controls__search-input-wrap">
-            {input}
-            {!isMobile && showShortcutHint ? (
-              <>
-                <span className="sr-only">Press slash to focus search</span>
-                <kbd
-                  className="watchlist-top-controls__search-kbd"
-                  aria-hidden="true"
-                >
-                  /
-                </kbd>
-              </>
-            ) : null}
-          </div>
-        </div>
-        {autocomplete}
-        {actions}
-      </form>
+        {icon ? (
+          <span className="watchlist-top-controls__search-icon" aria-hidden="true">
+            {icon}
+          </span>
+        ) : null}
+        <div className="watchlist-top-controls__search-input-wrap">{input}</div>
+      </div>
+      {autocomplete}
+      {actions}
+    </form>
 
-      {error ? (
-        <div className="watchlist-top-controls__error" role="alert">
-          {error}
-        </div>
-      ) : null}
-    </div>
-  );
-};
+    {error ? (
+      <div className="watchlist-top-controls__error" role="alert">
+        {error}
+      </div>
+    ) : null}
+  </div>
+);
 
 export default WorkspaceSearchShell;

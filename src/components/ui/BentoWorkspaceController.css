@@ -24,10 +24,6 @@
     0 4px 12px rgba(2, 4, 18, 0.18);
 }
 
-.bento-ctrl.is-profile-menu-open {
-  z-index: 1500;
-}
-
 .bento-ctrl::before {
   content: '';
   position: absolute;
@@ -158,7 +154,9 @@
 }
 
 .bento-ctrl__search .watchlist-top-controls__search-form--stack {
-  gap: 0.35rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
   padding: 0.28rem 0.32rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
   border-radius: 0.7rem;
@@ -169,6 +167,13 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+}
+
+.bento-ctrl__search .watchlist-top-controls__search-shell,
+.bento-ctrl__search .watchlist-top-controls__autocomplete,
+.bento-ctrl__search .watchlist-top-controls__search-actions {
+  width: 100%;
+  flex: 1 1 100%;
 }
 
 .bento-ctrl__search .watchlist-top-controls__search-form--stack:focus-within {
@@ -222,16 +227,6 @@
 .bento-ctrl__search .watchlist-top-controls__search-field::placeholder {
   color: color-mix(in srgb, var(--color-text-tertiary) 92%, transparent);
   opacity: 1;
-}
-
-.bento-ctrl__search .watchlist-top-controls__search-kbd {
-  right: 0.5rem;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 0.3rem;
-  font-size: 0.625rem;
-  opacity: 0.85;
-  background: color-mix(in srgb, var(--color-surface-3) 75%, transparent);
 }
 
 .bento-ctrl__search .watchlist-top-controls__search-actions {
@@ -482,70 +477,11 @@
     0 8px 20px rgba(40, 28, 8, 0.16);
 }
 
-.bento-ctrl__shortcuts-row {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 0.65rem 0.45rem;
-  margin-top: -0.15rem;
-}
-
-.bento-ctrl__shortcuts-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.2rem 0.45rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-text-tertiary);
-  font-family: var(--font-interface, var(--font-body, sans-serif));
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-}
-
-.bento-ctrl__shortcuts-btn:hover {
-  color: var(--color-text-secondary);
-  background: color-mix(in srgb, var(--color-surface-2) 65%, transparent);
-}
-
-.bento-ctrl__shortcuts-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.bento-ctrl__shortcuts-kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1rem;
-  height: 1rem;
-  padding: 0 0.2rem;
-  border-radius: 0.25rem;
-  border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
-  background: color-mix(in srgb, var(--color-surface-2) 75%, transparent);
-  font-size: 0.625rem;
-  line-height: 1;
-}
-
-.bento-ctrl--mobile .bento-ctrl__shortcuts-row {
-  display: none;
-}
-
 @media (max-width: 600px) {
   .bento-ctrl {
     position: sticky;
     top: max(env(safe-area-inset-top, 0px), 0.35rem);
     z-index: 160;
-  }
-
-  .bento-ctrl.is-profile-menu-open {
-    z-index: 1500;
   }
 }
 
