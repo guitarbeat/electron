@@ -167,16 +167,6 @@ const PlacesList: React.FC = () => {
     placesTopControlsRef.current?.focusSearchInput();
   }, []);
 
-  const handlePlacesEmptyAction = useCallback(() => {
-    focusPlacesSearch();
-    if (!currentUser) {
-      showToast({
-        message: "Type a place name in search, then press Suggest.",
-        type: "info",
-      });
-    }
-  }, [currentUser, focusPlacesSearch, showToast]);
-
   useFocusSearchShortcut(focusPlacesSearch);
 
   const handleAcceptSuggestion = useCallback(
@@ -273,6 +263,27 @@ const PlacesList: React.FC = () => {
     }
   }, [addPlaceSuggestion, isSuggesting, searchQuery, showToast]);
 
+  const handlePlacesEmptyAction = useCallback(() => {
+    const query = searchQuery.trim();
+    if (!currentUser && query) {
+      void handleSuggestAction();
+      return;
+    }
+    focusPlacesSearch();
+    if (!currentUser) {
+      showToast({
+        message: "Type a place name in search, then press Suggest.",
+        type: "info",
+      });
+    }
+  }, [
+    currentUser,
+    focusPlacesSearch,
+    handleSuggestAction,
+    searchQuery,
+    showToast,
+  ]);
+
   const confirmDelete = useCallback(async () => {
     if (!placeToDelete) return;
     const deleted = placeToDelete;
@@ -359,6 +370,11 @@ const PlacesList: React.FC = () => {
           onEdit={setPlaceToEdit}
           mapSlot={mapSlot}
           onAddPlaceFocus={handlePlacesEmptyAction}
+          emptyActionLabel={
+            !currentUser && searchQuery.trim()
+              ? "Suggest this place"
+              : undefined
+          }
         />
 
         {placeToDelete && (

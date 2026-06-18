@@ -182,15 +182,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
-  const handleEmptyStateAction = useCallback(() => {
-    focusSearchInput();
-    if (!currentUser) {
-      setToast({
-        message: "Type a movie or show title in search, then press Suggest.",
-        type: "info",
-      });
-    }
-  }, [currentUser, focusSearchInput, setToast]);
   useFocusSearchShortcut(focusSearchInput);
   const clearSearchAndRefocus = useCallback(() => {
     setSearchQuery("");
@@ -210,6 +201,26 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setSuggestionError(null);
     setIsRecommendationComposerOpen(true);
   }, [searchQuery]);
+  const handleEmptyStateAction = useCallback(() => {
+    if (!currentUser && searchQuery.trim()) {
+      openRecommendationComposer();
+      focusSearchInput();
+      return;
+    }
+    focusSearchInput();
+    if (!currentUser) {
+      setToast({
+        message: "Type a movie or show title in search, then press Suggest.",
+        type: "info",
+      });
+    }
+  }, [
+    currentUser,
+    focusSearchInput,
+    openRecommendationComposer,
+    searchQuery,
+    setToast,
+  ]);
   const handleAddAction = useCallback(async () => {
     if (isAdding || isSubmittingRecommendation) {
       return;
@@ -417,6 +428,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         successMovieId={successMovieId}
         movieMemories={movieMemories}
         onAddMovieFocus={handleEmptyStateAction}
+        emptyActionLabel={
+          !currentUser && searchQuery.trim()
+            ? "Suggest this title"
+            : undefined
+        }
         onAcceptSuggestion={handleAcceptSuggestion}
         onRejectSuggestion={handleRejectSuggestion}
         onDeleteRequest={setMovieToDelete}

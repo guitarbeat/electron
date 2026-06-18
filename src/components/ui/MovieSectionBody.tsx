@@ -52,6 +52,7 @@ interface Props {
   successMovieId: string | null;
   movieMemories: Map<string, SharedMemory[]>;
   onAddMovieFocus: () => void;
+  emptyActionLabel?: string;
   onAcceptSuggestion: (s: MovieSuggestion) => void;
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
@@ -72,6 +73,7 @@ const MovieSectionBody: React.FC<Props> = ({
   successMovieId,
   movieMemories,
   onAddMovieFocus,
+  emptyActionLabel,
   onAcceptSuggestion,
   onRejectSuggestion,
   onDeleteRequest,
@@ -176,7 +178,10 @@ const MovieSectionBody: React.FC<Props> = ({
         <WorkspaceGlobalEmpty
           tab="movies"
           onAction={onAddMovieFocus}
-          actionLabel={currentUser ? "Add a movie" : "Suggest a movie"}
+          actionLabel={
+            emptyActionLabel ??
+            (currentUser ? "Add a movie" : "Suggest a movie")
+          }
         />
       </ChromaCollectionGrid>
     );

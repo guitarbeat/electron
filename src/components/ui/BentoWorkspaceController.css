@@ -512,3 +512,19 @@
   font-size: 0.625rem;
   line-height: 1;
 }
+
+.bento-ctrl--mobile .bento-ctrl__shortcuts-row {
+  justify-content: center;
+  padding: 0 0.35rem 0.35rem;
+  margin-top: 0;
+}
+
+.bento-ctrl__shortcuts-btn--compact {
+  padding: 0.28rem 0.5rem;
+}
+
+.bento-ctrl__shortcuts-btn--compact .bento-ctrl__shortcuts-kbd {
+  min-width: 1.15rem;
+  height: 1.15rem;
+  font-size: 0.7rem;
+}

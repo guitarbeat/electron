@@ -35,6 +35,7 @@ interface PlacesSectionBodyProps {
   onEdit: (place: Place) => void;
   mapSlot?: React.ReactNode;
   onAddPlaceFocus?: () => void;
+  emptyActionLabel?: string;
 }
 
 const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
@@ -56,6 +57,7 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
   onEdit,
   mapSlot,
   onAddPlaceFocus,
+  emptyActionLabel,
 }) => {
   const { isMobile } = useViewport();
   const sectionLabels = workspaceSectionLabels("places", isMobile);
@@ -86,7 +88,9 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
         <WorkspaceGlobalEmpty
           tab="places"
           onAction={onAddPlaceFocus}
-          actionLabel={canEdit ? "Add a place" : "Suggest a place"}
+          actionLabel={
+            emptyActionLabel ?? (canEdit ? "Add a place" : "Suggest a place")
+          }
         />
       </ChromaCollectionGrid>
     );

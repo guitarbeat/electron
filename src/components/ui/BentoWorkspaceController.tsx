@@ -131,17 +131,17 @@ function BentoWorkspaceController<TSort extends string>({
         </div>
       )}
 
-      {onOpenKeyboardHelp && !isMobile ? (
+      {onOpenKeyboardHelp ? (
         <div className="bento-ctrl__shortcuts-row">
           <button
             type="button"
-            className="bento-ctrl__shortcuts-btn"
+            className={`bento-ctrl__shortcuts-btn${isMobile ? " bento-ctrl__shortcuts-btn--compact" : ""}`}
             onClick={onOpenKeyboardHelp}
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"
           >
             <kbd className="bento-ctrl__shortcuts-kbd">?</kbd>
-            <span>Shortcuts</span>
+            {!isMobile ? <span>Shortcuts</span> : null}
           </button>
         </div>
       ) : null}
