@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { MainTab } from "@/shared/types";
 import AppNavStrip from "@/ui/AppNavStrip";
 import ProfileMenu from "@/ui/ProfileMenu";
+import QuizPromoBanner from "@/ui/QuizPromoBanner";
 import { useViewport } from "@/app/ViewportContext";
 import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
 import "@/app/WorkspaceTopbar.css";
@@ -12,6 +13,7 @@ export interface WorkspaceChromeHeaderProps {
   onTabChange: (tab: MainTab) => void;
   onOpenMessages?: () => void;
   onOpenQuiz?: () => void;
+  quizCompleted?: boolean;
   pwaStatus?: {
     isOnline: boolean;
     isStandalone: boolean;
@@ -71,6 +73,7 @@ function BentoWorkspaceController({
   onTabChange,
   onOpenMessages,
   onOpenQuiz,
+  quizCompleted,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
@@ -96,7 +99,6 @@ function BentoWorkspaceController({
             onTabChange={onTabChange}
             onOpenSpin={onOpenSpin}
             onOpenMessages={onOpenMessages}
-            onOpenQuiz={onOpenQuiz}
             status={pwaStatus}
             onInstallApp={onInstallApp}
             onApplyUpdate={onApplyUpdate}
@@ -107,6 +109,13 @@ function BentoWorkspaceController({
           <ProfileMenu onOpenChange={setIsMenuOpen} />
         </div>
       </header>
+
+      {onOpenQuiz ? (
+        <QuizPromoBanner
+          onOpen={onOpenQuiz}
+          completed={quizCompleted}
+        />
+      ) : null}
 
       <div className="bento-ctrl__topbar-sep" aria-hidden="true" />
 

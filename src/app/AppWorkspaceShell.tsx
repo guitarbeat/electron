@@ -25,6 +25,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   onTabChange,
   onOpenMessages,
   onOpenQuiz,
+  quizCompleted,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
@@ -83,6 +84,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           onTabChange={onTabChange}
           onOpenMessages={onOpenMessages}
           onOpenQuiz={onOpenQuiz}
+          quizCompleted={quizCompleted}
           pwaStatus={pwaStatus}
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}

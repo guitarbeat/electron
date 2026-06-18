@@ -189,6 +189,7 @@ export const PwaInstallProvider: React.FC<PwaInstallProviderProps> = ({
         useLocalStorage
         manualApple
         manualChrome
+        disable-screenshots
         installDescription="Install Electron on your home screen or dock for quick launch, fullscreen viewing, and offline access to your shared queue."
       />
     </PwaInstallContext.Provider>

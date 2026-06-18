@@ -1,7 +1,6 @@
 import { type FC, type ReactNode, useMemo, useState } from "react";
 import {
   CircleDot,
-  HelpCircle,
   MessageCircle,
   RefreshCw,
   SatelliteDish,
@@ -27,7 +26,6 @@ interface Props {
   onTabChange: (tab: MainTab) => void;
   onOpenSpin?: () => void;
   onOpenMessages?: () => void;
-  onOpenQuiz?: () => void;
   status?: AppNavStripStatus;
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
@@ -42,7 +40,6 @@ const AppNavStrip: FC<Props> = ({
   onTabChange,
   onOpenSpin,
   onOpenMessages,
-  onOpenQuiz,
   status,
   onInstallApp,
   onApplyUpdate,
@@ -144,15 +141,6 @@ const AppNavStrip: FC<Props> = ({
           title: "Messages",
           onClick: onOpenMessages,
           icon: <MessageCircle size={16} strokeWidth={2.2} aria-hidden="true" />,
-        }
-      : null,
-    isMobile && onOpenQuiz
-      ? {
-          key: "quiz",
-          label: "Open couple quiz",
-          title: "Couple quiz",
-          onClick: onOpenQuiz,
-          icon: <HelpCircle size={16} strokeWidth={2.2} aria-hidden="true" />,
         }
       : null,
   ].filter(Boolean) as Array<{

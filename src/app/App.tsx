@@ -386,6 +386,7 @@ const App: React.FC = () => {
                     onOpenSpin={openSpinMatch}
                     onOpenMessages={() => setShowMessages(true)}
                     onOpenQuiz={openQuizExperience}
+                    quizCompleted={quizCompleted}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>
