@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
 import BentoWorkspaceController from "@/components/ui/BentoWorkspaceController";
-import { BentoSlotContext, type BentoSlotConfig } from "./BentoSlotContext";
+import { useViewport } from "@/app/ViewportContext";
+import {
+  BentoSlotContext,
+  type RegisteredBentoSlotConfig,
+} from "./BentoSlotContext";
 
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
-const EMPTY_BENTO_CONFIG: BentoSlotConfig = {
+const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {
   stats: [],
   sorts: [],
   activeSortOrder: "recent",
@@ -16,29 +20,40 @@ const EMPTY_BENTO_CONFIG: BentoSlotConfig = {
 };
 
 interface AppWorkspaceShellProps {
-  isMobile: boolean;
   activeTab: MainTab;
 }
 
-const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
-  isMobile,
-  activeTab,
-}) => {
-  const [bentoConfig, setBentoConfig] = useState<BentoSlotConfig | null>(null);
+const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
+  const { isMobile } = useViewport();
+  const [tabConfigs, setTabConfigs] = useState<
+    Partial<Record<MainTab, RegisteredBentoSlotConfig>>
+  >({});
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );
 
-  const bento = bentoConfig ?? EMPTY_BENTO_CONFIG;
+  const registerTabConfig = useCallback(
+    (tab: MainTab, config: RegisteredBentoSlotConfig) => {
+      setTabConfigs((previous) => ({ ...previous, [tab]: config }));
+    },
+    [],
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      activeTab,
+      registerTabConfig,
+      searchPortalEl,
+    }),
+    [activeTab, registerTabConfig, searchPortalEl],
+  );
+
+  const bento = tabConfigs[activeTab] ?? EMPTY_BENTO_CONFIG;
   const workspaceContent =
-    activeTab === "movies" ? (
-      <MoviesView isMobile={isMobile} />
-    ) : (
-      <PlacesList />
-    );
+    activeTab === "movies" ? <MoviesView /> : <PlacesList />;
 
   return (
-    <BentoSlotContext.Provider value={{ setConfig: setBentoConfig, searchPortalEl }}>
+    <BentoSlotContext.Provider value={contextValue}>
       <main
         id="main-content"
         className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}

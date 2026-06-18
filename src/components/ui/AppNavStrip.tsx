@@ -3,7 +3,7 @@ import { RefreshCw, SatelliteDish, WifiOff, X } from "lucide-react";
 import type { MainTab } from "@/shared/types";
 import { hasFinePointer, prefersReducedMotion } from "@/utils/motionPreference";
 import MagicToggle from "./MagicToggle";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useViewport } from "@/app/ViewportContext";
 import "./AppNavStrip.css";
 
 export interface AppNavStripStatus {
@@ -42,7 +42,7 @@ const AppNavStrip: FC<Props> = ({
   onRetrySync,
 }) => {
   const navRef = useRef<HTMLElement>(null);
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const { isMobile } = useViewport();
   const [dismissedKeys, setDismissedKeys] = useState<Record<string, true>>({});
 
   useEffect(() => {

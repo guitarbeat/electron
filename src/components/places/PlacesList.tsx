@@ -7,61 +7,35 @@ import React, {
   useState,
 } from "react";
 import { useUser, useToast } from "@/app/useProviders";
-import { usePlaces } from "@/hooks/places";
+import { usePlaces, usePlaceSuggestions } from "@/hooks/places";
 import ConfirmDialog from "@/ui/ConfirmDialog";
-import {
-  CollectionSection,
-} from "@/ui/CollectionLayout";
-import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
-import PlacesLoadingGrid from "./PlacesLoadingGrid.tsx";
-import SyncBanner from "../ui/SyncBanner.tsx";
-import type { Place, PlaceSuggestion } from "../../shared/types.ts";
+import SyncBanner from "@/components/ui/SyncBanner";
+import type { Place, PlaceSuggestion } from "@/shared/types";
 import type { PlacesMapHandle } from "./PlacesMap.tsx";
-import PlaceSuggestionCard from "./PlaceSuggestionCard.tsx";
 import PlaceEditModal from "./PlaceEditModal.tsx";
 import PlacesTopControls, {
   type PlacesTopControlsHandle,
 } from "./PlacesTopControls.tsx";
-import PlacesGrid from "./PlacesGrid.tsx";
-import PlacesEmptyState from "./PlacesEmptyState.tsx";
+import PlacesSectionBody from "./PlacesSectionBody.tsx";
 import {
   buildPlaceSections,
   type PlaceSortOrder,
 } from "./lib/placeSections.ts";
-import { usePlaceSuggestions } from "@/hooks/places";
 import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import { getErrorMessage } from "@/utils";
 import { createPortal } from "react-dom";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import {
-  type BentoSortChipConfig,
-  type SortOrder,
-} from "@/components/ui/BentoWorkspaceController";
 import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
 import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import { workspaceSectionLabels } from "@/utils/workspaceSectionLabels";
-
-const PLACE_SECTION_IDS = {
-  incoming: "places-section-incoming",
-  queue: "places-section-queue",
-  completed: "places-section-visited",
-};
-
-const PLACE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐 Recent", ariaLabel: "Recent" },
-  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
-];
-
-const MOBILE_PLACE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐", ariaLabel: "Recent" },
-  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
-];
+import { useWorkspaceSyncBanner } from "@/hooks/useWorkspaceSyncBanner";
+import {
+  PLACE_COLLECTION_SORTS,
+  workspaceSectionIds,
+} from "@/utils/workspaceConfig";
 
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
 const PlacesList: React.FC = () => {
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const mapRef = useRef<PlacesMapHandle>(null);
   const placesBodyRef = useRef<HTMLDivElement>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
@@ -112,14 +86,13 @@ const PlacesList: React.FC = () => {
     [places, pendingSuggestions, sortOrder],
   );
 
-  const handlePlaceSortChange = useCallback((order: SortOrder) => {
-    setSortOrder(order as PlaceSortOrder);
+  const handlePlaceSortChange = useCallback((order: PlaceSortOrder) => {
+    setSortOrder(order);
   }, []);
 
   useWorkspaceBentoConfig({
     tab: "places",
-    isMobile,
-    sectionIds: PLACE_SECTION_IDS,
+    sectionIds: workspaceSectionIds("places"),
     counts: {
       incoming: pendingSuggestions.length,
       queue: sections.queue.length,
@@ -127,9 +100,44 @@ const PlacesList: React.FC = () => {
     },
     sortOrder,
     onSortChange: handlePlaceSortChange,
-    sorts: PLACE_SORTS,
-    mobileSorts: MOBILE_PLACE_SORTS,
+    sorts: PLACE_COLLECTION_SORTS.desktop,
+    mobileSorts: PLACE_COLLECTION_SORTS.mobile,
     ariaLabel: "Places workspace controls",
+  });
+
+  const syncBanner = useWorkspaceSyncBanner({
+    sources: [
+      {
+        isDegraded,
+        isSyncBlocked,
+        syncWarning,
+        retrySync,
+      },
+      {
+        isDegraded: isSuggestionsDegraded,
+        isSyncBlocked: isSuggestionsSyncBlocked,
+        syncWarning: suggestionsSyncWarning,
+        retrySync: retrySuggestionsSync,
+      },
+    ],
+    combinedBlockedLabel:
+      "Shared places and suggestions conflicted with local edits. Refresh and retry.",
+    combinedDegradedLabel:
+      "Places and suggestions are being kept locally until shared sync recovers.",
+    blockedLabels: [
+      "A shared places change conflicted with local edits. Refresh and retry.",
+      suggestionsSyncWarning ||
+        "Place suggestion changes conflicted with local edits. Refresh and retry.",
+    ],
+    degradedLabels: [
+      syncWarning ||
+        "Places changes are being kept locally until shared sync recovers.",
+      suggestionsSyncWarning ||
+        "Place suggestion changes are being kept locally.",
+    ],
+    defaultDegradedLabel:
+      suggestionsSyncWarning ||
+      "Place suggestion changes are being kept locally.",
   });
 
   const handleCardTap = useCallback((place: Place) => {
@@ -256,71 +264,28 @@ const PlacesList: React.FC = () => {
     }
   }, [placeToDelete, removePlace, showToast]);
 
-  const placesSyncDegraded = isDegraded || isSuggestionsDegraded;
-  const placesSyncBlocked = isSyncBlocked || isSuggestionsSyncBlocked;
-  const placesSyncLabel = useMemo(() => {
-    if (isSyncBlocked && isSuggestionsSyncBlocked) {
-      return "Shared places and suggestions conflicted with local edits. Refresh and retry.";
-    }
-    if (isSyncBlocked) {
-      return "A shared places change conflicted with local edits. Refresh and retry.";
-    }
-    if (isSuggestionsSyncBlocked) {
-      return (
-        suggestionsSyncWarning ||
-        "Place suggestion changes conflicted with local edits. Refresh and retry."
-      );
-    }
-    if (isDegraded && isSuggestionsDegraded) {
-      return (
-        syncWarning ||
-        "Places and suggestions are being kept locally until shared sync recovers."
-      );
-    }
-    if (isDegraded) {
-      return (
-        syncWarning ||
-        "Places changes are being kept locally until shared sync recovers."
-      );
-    }
-    return (
-      suggestionsSyncWarning ||
-      "Place suggestion changes are being kept locally."
-    );
-  }, [
-    isDegraded,
-    isSuggestionsDegraded,
-    isSyncBlocked,
-    isSuggestionsSyncBlocked,
-    syncWarning,
-    suggestionsSyncWarning,
-  ]);
-
-  const retryPlacesSync = useCallback(() => {
-    if (isDegraded) {
-      void retrySync();
-    }
-    if (isSuggestionsDegraded) {
-      void retrySuggestionsSync();
-    }
-  }, [isDegraded, isSuggestionsDegraded, retrySync, retrySuggestionsSync]);
-
   const allPlaces = useMemo(
     () => [...sections.queue, ...sections.completed],
     [sections.queue, sections.completed],
   );
 
-  const sectionLabels = useMemo(
-    () => workspaceSectionLabels("places", isMobile),
-    [isMobile],
-  );
-
-  const hasPlaces = allPlaces.length > 0;
-  const showEmptyState = !isLoading && !hasPlaces;
-
   const placeCardsReady =
-    !isLoading && (hasPlaces || pendingSuggestions.length > 0);
+    !isLoading && (allPlaces.length > 0 || pendingSuggestions.length > 0);
   useCinematicEntrance(placesBodyRef, placeCardsReady, ".card-tilt-wrap");
+
+  const mapSlot =
+    allPlaces.length > 0 ? (
+      <React.Suspense fallback={<div className="places-map-placeholder" />}>
+        <PlacesMap
+          ref={mapRef}
+          places={allPlaces}
+          canEdit={Boolean(currentUser)}
+          onUpdatePlace={async (id, updates) => {
+            await updatePlace(id, updates);
+          }}
+        />
+      </React.Suspense>
+    ) : null;
 
   return (
     <>
@@ -341,102 +306,36 @@ const PlacesList: React.FC = () => {
           searchPortalEl,
         )}
       <div ref={placesBodyRef} className="watchlist-container places-container">
-        {placesSyncDegraded && (
+        {syncBanner.isDegraded && (
           <SyncBanner
-            isBlocked={placesSyncBlocked}
-            onRetry={() => void retryPlacesSync()}
-            label={placesSyncLabel}
+            isBlocked={syncBanner.isBlocked}
+            onRetry={() => void syncBanner.onRetry()}
+            label={syncBanner.label}
           />
         )}
 
-        {isLoading && allPlaces.length === 0 ? <PlacesLoadingGrid /> : null}
-
-        {allPlaces.length > 0 && (
-          <React.Suspense fallback={<div className="places-map-placeholder" />}>
-            <PlacesMap
-              ref={mapRef}
-              places={allPlaces}
-              canEdit={Boolean(currentUser)}
-              onUpdatePlace={async (id, updates) => {
-                await updatePlace(id, updates);
-              }}
-            />
-          </React.Suspense>
-        )}
-
-        {pendingSuggestions.length > 0 && (
-          <CollectionSection
-            heading={sectionLabels.incoming}
-            tone="incoming"
-            id={PLACE_SECTION_IDS.incoming}
-          >
-            <ChromaCollectionGrid
-              className="watchlist-content places-grid"
-              minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-            >
-              {pendingSuggestions.map((suggestion) => (
-                <PlaceSuggestionCard
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  onAccept={() => void handleAcceptSuggestion(suggestion)}
-                  onReject={() =>
-                    void handleRejectSuggestion(suggestion.id, suggestion.name)
-                  }
-                  canRespond={Boolean(currentUser)}
-                  disableActions={!currentUser}
-                  isProcessing={processingSuggestionId === suggestion.id}
-                />
-              ))}
-            </ChromaCollectionGrid>
-          </CollectionSection>
-        )}
-
-        {sections.queue.length > 0 && (
-          <CollectionSection heading={sectionLabels.queue} id={PLACE_SECTION_IDS.queue}>
-            <PlacesGrid
-              places={sections.queue}
-              emptyStateHint="Search above to add your first spot"
-              canEdit={Boolean(currentUser)}
-              isSubmitting={isSubmitting}
-              activeCardId={activeCardId}
-              onCardTap={handleCardTap}
-              onMarkVisited={markVisited}
-              onMarkUnvisited={markUnvisited}
-              onDelete={setPlaceToDelete}
-              onEdit={setPlaceToEdit}
-            />
-          </CollectionSection>
-        )}
-
-        {sections.completed.length > 0 && (
-          <CollectionSection
-            heading={sectionLabels.completed}
-            tone="completed"
-            id={PLACE_SECTION_IDS.completed}
-          >
-            <PlacesGrid
-              places={sections.completed}
-              emptyStateHint="No visited places yet"
-              canEdit={Boolean(currentUser)}
-              isSubmitting={isSubmitting}
-              activeCardId={activeCardId}
-              onCardTap={handleCardTap}
-              onMarkVisited={markVisited}
-              onMarkUnvisited={markUnvisited}
-              onDelete={setPlaceToDelete}
-              onEdit={setPlaceToEdit}
-            />
-          </CollectionSection>
-        )}
-
-        {showEmptyState && (
-          <ChromaCollectionGrid
-            className="watchlist-content places-grid"
-            minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-          >
-            <PlacesEmptyState hint="Add a restaurant, café, park, or anywhere else you'd like to visit together." />
-          </ChromaCollectionGrid>
-        )}
+        <PlacesSectionBody
+          sections={sections}
+          isLoading={isLoading}
+          pendingSuggestions={pendingSuggestions}
+          currentUser={currentUser}
+          processingSuggestionId={processingSuggestionId}
+          onAcceptSuggestion={(suggestion) =>
+            void handleAcceptSuggestion(suggestion)
+          }
+          onRejectSuggestion={(id, name) =>
+            void handleRejectSuggestion(id, name)
+          }
+          canEdit={Boolean(currentUser)}
+          isSubmitting={isSubmitting}
+          activeCardId={activeCardId}
+          onCardTap={handleCardTap}
+          onMarkVisited={markVisited}
+          onMarkUnvisited={markUnvisited}
+          onDelete={setPlaceToDelete}
+          onEdit={setPlaceToEdit}
+          mapSlot={mapSlot}
+        />
 
         {placeToDelete && (
           <ConfirmDialog

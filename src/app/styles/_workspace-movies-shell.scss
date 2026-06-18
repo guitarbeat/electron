@@ -40,43 +40,6 @@
   min-width: 0;
 }
 
-.app-workspace-stack--movies {
-  gap: 0;
-}
-
-.app-workspace-stack--movies .workspace-stage--simplified {
-  gap: clamp(0.55rem, 0.5rem + 0.22vw, 0.78rem);
-  padding: 0 0 0.2rem;
-}
-
-.app-workspace-stack--movies .workspace-stage--simplified::before {
-  display: none;
-}
-
-.app-workspace-stack--movies .watchlist-top-controls {
-  gap: 0.7rem;
-  width: 100%;
-  min-width: 0;
-}
-
-.app-workspace-stack--movies .watchlist-top-controls__stage {
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  overflow: visible;
-  isolation: isolate;
-}
-
-.app-workspace-stack--movies .watchlist-top-controls__stage::before {
-  display: none;
-}
-
-.app-workspace-stack--movies .watchlist-top-controls__stage > * {
-  position: relative;
-  z-index: 1;
-}
-
 .app-workspace-stack--movies .watchlist-top-controls__search-form {
   width: 100%;
   max-width: 100%;
@@ -139,10 +102,5 @@
 
   .workspace-unified-shell::before {
     display: none;
-  }
-
-  .app-workspace-stack--movies .watchlist-top-controls__stage {
-    padding: 0;
-    border-radius: 0;
   }
 }

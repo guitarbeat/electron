@@ -5,11 +5,8 @@ import type {
   SharedMemory,
   User,
 } from "@/shared/types";
-import { MovieCardSkeleton } from "@/ui/Skeleton";
-import { CollectionEmptyState, CollectionSection } from "@/ui/CollectionLayout";
+import { CollectionSection } from "@/ui/CollectionLayout";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
-import Button from "@/ui/Button";
-import { spacing } from "@/theme/tokens";
 import SuggestionStack, {
   SuggestionStackSkeleton,
 } from "@/components/movies/SuggestionStack";
@@ -17,7 +14,16 @@ import MovieCard from "@/components/movies/MovieCard";
 import MovieDeckStack from "@/components/movies/MovieDeckStack";
 import type { MovieSections } from "@/components/movies/lib/movieSections";
 import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
-import WorkspaceTabLoading from "@/components/ui/WorkspaceTabLoading";
+import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
+import {
+  WorkspaceGlobalEmpty,
+  WorkspaceSectionEmpty,
+} from "@/components/ui/WorkspaceEmptyState";
+import { useViewport } from "@/app/ViewportContext";
+import {
+  MOVIES_POSTER_GRID_MIN_COL,
+  workspaceSectionIds,
+} from "@/utils/workspaceConfig";
 import { workspaceSectionLabels } from "@/utils/workspaceSectionLabels";
 
 export interface MovieBodyActions {
@@ -37,18 +43,11 @@ export interface MovieBodyActions {
   togglePin: (memoryId: string) => Promise<unknown>;
 }
 
-export interface MovieSectionIds {
-  incoming?: string;
-  queue?: string;
-  completed?: string;
-}
-
 interface Props {
   sections: MovieSections;
   isLoading: boolean;
   isSuggestionsLoading: boolean;
   currentUser: User | null;
-  isMobile: boolean;
   processingSuggestionId: string | null;
   successMovieId: string | null;
   movieMemories: Map<string, SharedMemory[]>;
@@ -58,14 +57,8 @@ interface Props {
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
-  sectionIds?: MovieSectionIds;
   browseLayout?: MovieBrowseLayout;
 }
-
-const SK_MOBILE = ["m1", "m2", "m3", "m4"];
-const SK_DESKTOP = ["d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8"];
-
-const GRID = "clamp(3.25rem, 18vw, 5.5rem)";
 
 const gridSurfaceClass = (browseLayout: MovieBrowseLayout) =>
   `watchlist-content${browseLayout === "grid" ? " watchlist-content--poster-grid" : ""}`;
@@ -75,7 +68,6 @@ const MovieSectionBody: React.FC<Props> = ({
   isLoading,
   isSuggestionsLoading,
   currentUser,
-  isMobile,
   processingSuggestionId,
   successMovieId,
   movieMemories,
@@ -85,11 +77,13 @@ const MovieSectionBody: React.FC<Props> = ({
   onDeleteRequest,
   onToggleError,
   actions,
-  sectionIds,
   browseLayout = "grid",
 }) => {
-  const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
+  const { isMobile } = useViewport();
   const sectionLabels = workspaceSectionLabels("movies", isMobile);
+  const sectionIds = workspaceSectionIds("movies");
+  const browseLayoutClass =
+    browseLayout === "grid" ? " watchlist-content--poster-grid" : "";
 
   const showInitialLoading =
     isLoading &&
@@ -98,10 +92,10 @@ const MovieSectionBody: React.FC<Props> = ({
     sections.suggestions.length === 0 &&
     sections.completed.length === 0;
 
-  const movieGrid = (movies: Movie[], emptyLabel: string) => (
+  const movieGrid = (movies: Movie[], emptyVariant: "queue" | "completed") => (
     <ChromaCollectionGrid
       className={gridSurfaceClass(browseLayout)}
-      minColumnWidth={GRID}
+      minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
     >
       {movies.length > 0 ? (
         movies.map((movie) => (
@@ -143,48 +137,28 @@ const MovieSectionBody: React.FC<Props> = ({
           />
         ))
       ) : (
-        <CollectionEmptyState
-          padding={isMobile ? spacing.md : spacing["2xl"]}
-          className={`watchlist-empty-watched-state${isMobile ? " collection-empty-state--tight" : ""}`}
-        >
-          <span
-            className="watchlist-empty-watched-state__icon"
-            aria-hidden="true"
-          >
-            ✓
-          </span>
-          <span className="watchlist-empty-watched-state__text">
-            {emptyLabel}
-          </span>
-        </CollectionEmptyState>
+        <WorkspaceSectionEmpty tab="movies" variant={emptyVariant} />
       )}
     </ChromaCollectionGrid>
   );
 
-  const renderMovies = (movies: Movie[], emptyLabel: string) => {
+  const renderMovies = (
+    movies: Movie[],
+    emptyVariant: "queue" | "completed",
+  ) => {
     if (browseLayout === "scroll" && movies.length >= 2) {
       return <MovieDeckStack movies={movies} />;
     }
 
-    return movieGrid(movies, emptyLabel);
+    return movieGrid(movies, emptyVariant);
   };
 
-  // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
     return (
-      <ChromaCollectionGrid
-        className={gridSurfaceClass(browseLayout)}
-        minColumnWidth={GRID}
-      >
-        <div className="workspace-loading-grid" aria-busy="true">
-          <WorkspaceTabLoading emoji="🍿" label="Loading your movies…" />
-          <div className="workspace-loading-grid__cards" aria-hidden="true">
-            {sk.map((key) => (
-              <MovieCardSkeleton key={key} />
-            ))}
-          </div>
-        </div>
-      </ChromaCollectionGrid>
+      <WorkspaceCollectionLoading
+        tab="movies"
+        browseLayoutClass={browseLayoutClass}
+      />
     );
   }
 
@@ -193,58 +167,24 @@ const MovieSectionBody: React.FC<Props> = ({
     sections.suggestions.length === 0 &&
     !isSuggestionsLoading;
 
-  // ── All-empty CTA ─────────────────────────────────────────────────────────
   if (isQueueEmpty && sections.completed.length === 0) {
     return (
       <ChromaCollectionGrid
         className={gridSurfaceClass(browseLayout)}
-        minColumnWidth={GRID}
+        minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
       >
-        <CollectionEmptyState
-          padding={isMobile ? spacing.lg : spacing["3xl"]}
-          className={`watchlist-empty-queue-state${isMobile ? " collection-empty-state--tight" : ""}`}
-        >
-          <span
-            className="watchlist-empty-queue-state__icon"
-            aria-hidden="true"
-          >
-            🎬
-          </span>
-          <strong className="watchlist-empty-queue-state__title">
-            Your movie list is wide open
-          </strong>
-          <span className="watchlist-empty-queue-state__copy">
-            No movies lined up yet. Add something you both want to watch and
-            kick off movie night.
-          </span>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={onAddMovieFocus}
-            className="watchlist-empty-queue-state__action"
-          >
-            Add a movie
-          </Button>
-        </CollectionEmptyState>
+        <WorkspaceGlobalEmpty tab="movies" onAction={onAddMovieFocus} />
       </ChromaCollectionGrid>
     );
   }
 
-  // ── Full section body ─────────────────────────────────────────────────────
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? spacing.xl : spacing["2xl"],
-      }}
-    >
+    <div className="workspace-section-body">
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
         <CollectionSection
           heading={sectionLabels.incoming}
           tone="incoming"
-          id={sectionIds?.incoming}
+          id={sectionIds.incoming}
         >
           {isSuggestionsLoading && sections.suggestions.length === 0 ? (
             <SuggestionStackSkeleton />
@@ -263,9 +203,9 @@ const MovieSectionBody: React.FC<Props> = ({
       {sections.queue.length > 0 && (
         <CollectionSection
           heading={sectionLabels.queue}
-          id={sectionIds?.queue}
+          id={sectionIds.queue}
         >
-          {renderMovies(sections.queue, "Your movie list is wide open")}
+          {renderMovies(sections.queue, "queue")}
         </CollectionSection>
       )}
 
@@ -273,9 +213,9 @@ const MovieSectionBody: React.FC<Props> = ({
         <CollectionSection
           heading={sectionLabels.completed}
           tone="completed"
-          id={sectionIds?.completed}
+          id={sectionIds.completed}
         >
-          {renderMovies(sections.completed, "No watched movies yet")}
+          {renderMovies(sections.completed, "completed")}
         </CollectionSection>
       )}
     </div>

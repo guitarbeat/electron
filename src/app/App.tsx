@@ -1,5 +1,4 @@
 import React, {
-  startTransition,
   useCallback,
   useEffect,
   useMemo,
@@ -7,7 +6,6 @@ import React, {
 } from "react";
 import {
   APP_VIEW_STATE_KEY,
-  readHashMainTab,
   readInitialAppViewState,
   stripLaunchUrlShortcuts,
   type StoredAppViewState,
@@ -16,7 +14,6 @@ import { buildFeatureModals } from "@/app/buildMinigameModals";
 import {
   preloadCriticalAppModules,
   preloadDeferredAppModules,
-  preloadWorkspaceTab,
 } from "@/app/preloadAppModules";
 import {
   readQuizCompletionState,
@@ -24,6 +21,7 @@ import {
 } from "@/app/quizCompletionStorage";
 import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
+import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
 import { useAppSession, useUser, useTheme } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
@@ -32,8 +30,8 @@ import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import VignetteOverlay from "@/components/effects/VignetteOverlay";
 import { useAudio } from "@/hooks/useAudio";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import type { MainTab } from "@/shared/types";
+import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
@@ -127,30 +125,6 @@ const ThemedMoire: React.FC<{ enabled: boolean }> = ({ enabled }) => {
   );
 };
 
-type ViewTransitionCapableDocument = Document & {
-  startViewTransition?: (callback: () => void | Promise<void>) => {
-    finished: Promise<void>;
-  };
-};
-
-const runWithViewTransition = (
-  update: () => void,
-  disabled: boolean,
-): void => {
-  if (disabled) {
-    update();
-    return;
-  }
-
-  const transitionDocument = document as ViewTransitionCapableDocument;
-  if (typeof transitionDocument.startViewTransition === "function") {
-    transitionDocument.startViewTransition(update);
-    return;
-  }
-
-  update();
-};
-
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const { isSessionLoading } = useAppSession();
@@ -165,7 +139,7 @@ const App: React.FC = () => {
     handleInstallApp,
   } = usePwaRuntime();
   const { playSwitch } = useAudio();
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const { isMobile } = useViewport();
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
@@ -174,9 +148,12 @@ const App: React.FC = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
-  const [activeTab, setActiveTab] = useState<MainTab>(
-    () => initialViewState.activeTab,
-  );
+  const { activeTab, handleTabChange } = useAppTabNavigation({
+    initialTab: initialViewState.activeTab,
+    prefersReducedMotion,
+    isMobile,
+    onTabSwitch: playSwitch,
+  });
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
   );
@@ -281,46 +258,6 @@ const App: React.FC = () => {
   const handleQuizRetake = useCallback(() => {
     updateQuizCompletion(false);
   }, [updateQuizCompletion]);
-
-  const handleTabChange = useCallback(
-    (tab: MainTab) => {
-      if (tab === activeTab) {
-        return;
-      }
-
-      playSwitch();
-
-      void preloadWorkspaceTab(tab);
-
-      runWithViewTransition(
-        () => {
-          startTransition(() => {
-            setActiveTab(tab);
-          });
-        },
-        prefersReducedMotion || isMobile,
-      );
-    },
-    [activeTab, isMobile, playSwitch, prefersReducedMotion],
-  );
-
-  // Keep URL hash in sync with active tab
-  useEffect(() => {
-    const hashTab = readHashMainTab();
-    if (hashTab !== activeTab) {
-      window.history.replaceState(null, "", `#${activeTab}`);
-    }
-  }, [activeTab]);
-
-  // Respond to back/forward navigation and direct hash links
-  useEffect(() => {
-    const onHashChange = () => {
-      const tab = readHashMainTab();
-      if (tab) handleTabChange(tab);
-    };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, [handleTabChange]);
 
   const openSpinMatch = useCallback(() => {
     setShowSpinWheel(true);
@@ -442,10 +379,7 @@ const App: React.FC = () => {
               />
               <WorkspaceErrorBoundary>
                 <React.Suspense fallback={null}>
-                  <AppWorkspaceShell
-                    isMobile={isMobile}
-                    activeTab={activeTab}
-                  />
+                  <AppWorkspaceShell activeTab={activeTab} />
                 </React.Suspense>
               </WorkspaceErrorBoundary>
               <React.Suspense fallback={null}>
@@ -486,7 +420,9 @@ const AppWithProviders: React.FC = () => (
   <UserProvider>
     <ToastProvider>
       <PwaInstallProvider>
-        <App />
+        <ViewportProvider>
+          <App />
+        </ViewportProvider>
       </PwaInstallProvider>
     </ToastProvider>
   </UserProvider>

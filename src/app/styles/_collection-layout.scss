@@ -152,3 +152,44 @@ section[id^="places-section-"] {
     padding: 1.15rem 0.85rem !important;
   }
 }
+
+.workspace-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 0.9rem;
+  font-family: var(--font-heading);
+  font-size: clamp(0.78rem, 0.68rem + 0.35vw, 0.96rem);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-accent) 80%, var(--color-secondary) 20%);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 45%, transparent);
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-accent) 65%, transparent),
+      color-mix(in srgb, var(--color-accent) 18%, transparent) 40%,
+      transparent
+    );
+    border-radius: 1px;
+    filter: blur(0.5px);
+  }
+
+  @media (max-width: 640px) {
+    margin-bottom: 0.5rem;
+    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.82rem);
+  }
+}
+
+.workspace-section-heading--incoming {
+  color: var(--color-accent);
+}
+
+.workspace-section-heading--completed {
+  color: var(--color-success, #34d399);
+}

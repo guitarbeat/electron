@@ -42,7 +42,8 @@
   }
 }
 
-.app-workspace-stack--movies {
+.app-workspace-stack--movies,
+.app-workspace-stack--places {
   .watchlist-top-controls__search-button.ui-button {
     background: var(--retro-bevel-face);
     color: var(--retro-bevel-ink);

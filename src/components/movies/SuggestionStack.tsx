@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import type { MovieSuggestion, User } from "@/shared/types";
 import Stack from "@/components/ui/Stack";
 import SuggestionCard from "./SuggestionCard";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useViewport } from "@/app/ViewportContext";
 import "./SuggestionStack.css";
 
 interface SuggestionStackProps {
@@ -20,7 +20,7 @@ const SuggestionStack: React.FC<SuggestionStackProps> = ({
   onAccept,
   onReject,
 }) => {
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const { isMobile } = useViewport();
   const orderedSuggestions = useMemo(
     () => [...suggestions].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     [suggestions],

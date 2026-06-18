@@ -1,21 +1,43 @@
 import React from "react";
 import StatTile, { type BentoStatTileConfig } from "./StatTile";
 import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useViewport } from "@/app/ViewportContext";
 import "./BentoWorkspaceController.css";
-
-export type SortOrder = "recent" | "alpha" | "rating";
-
-export type BentoSortChipConfig = MagicToggleOption<SortOrder>;
 
 export { type BentoStatTileConfig };
 
-interface BentoWorkspaceControllerProps {
+interface ViewModeControlsProps {
+  viewModes: MagicToggleOption<string>[];
+  activeViewMode: string;
+  onViewModeChange: (mode: string) => void;
+  viewModeAriaLabel?: string;
+}
+
+const ViewModeControls: React.FC<ViewModeControlsProps> = ({
+  viewModes,
+  activeViewMode,
+  onViewModeChange,
+  viewModeAriaLabel,
+}) => (
+  <div className="bento-ctrl__sort-row">
+    <span className="bento-ctrl__sort-label" aria-hidden="true">
+      View
+    </span>
+    <MagicToggle<string>
+      options={viewModes}
+      activeValue={activeViewMode}
+      onChange={onViewModeChange}
+      ariaLabel={viewModeAriaLabel ?? "Browse view"}
+    />
+  </div>
+);
+
+interface BentoWorkspaceControllerProps<TSort extends string = string> {
   children: React.ReactNode;
   stats: BentoStatTileConfig[];
-  sorts: BentoSortChipConfig[];
-  activeSortOrder: SortOrder;
-  onSortChange: (order: SortOrder) => void;
+  sorts: MagicToggleOption<TSort>[];
+  activeSortOrder: TSort;
+  onSortChange: (order: TSort) => void;
   ariaLabel?: string;
   viewModes?: MagicToggleOption<string>[];
   activeViewMode?: string;
@@ -23,7 +45,7 @@ interface BentoWorkspaceControllerProps {
   viewModeAriaLabel?: string;
 }
 
-const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
+function BentoWorkspaceController<TSort extends string>({
   children,
   stats,
   sorts,
@@ -34,8 +56,8 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
   activeViewMode,
   onViewModeChange,
   viewModeAriaLabel,
-}) => {
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+}: BentoWorkspaceControllerProps<TSort>) {
+  const { isMobile } = useViewport();
   const hasViewModes =
     Boolean(viewModes?.length) &&
     Boolean(activeViewMode) &&
@@ -71,30 +93,25 @@ const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
             <span className="bento-ctrl__sort-label" aria-hidden="true">
               Sort
             </span>
-            <MagicToggle<SortOrder>
+            <MagicToggle<TSort>
               options={sorts}
               activeValue={activeSortOrder}
               onChange={onSortChange}
               ariaLabel="Sort order"
             />
           </div>
-          {hasViewModes ? (
-            <div className="bento-ctrl__sort-row">
-              <span className="bento-ctrl__sort-label" aria-hidden="true">
-                View
-              </span>
-              <MagicToggle<string>
-                options={viewModes!}
-                activeValue={activeViewMode!}
-                onChange={onViewModeChange!}
-                ariaLabel={viewModeAriaLabel ?? "Browse view"}
-              />
-            </div>
+          {hasViewModes && viewModes && activeViewMode && onViewModeChange ? (
+            <ViewModeControls
+              viewModes={viewModes}
+              activeViewMode={activeViewMode}
+              onViewModeChange={onViewModeChange}
+              viewModeAriaLabel={viewModeAriaLabel}
+            />
           ) : null}
         </div>
       )}
     </section>
   );
-};
+}
 
 export default BentoWorkspaceController;

@@ -31,29 +31,13 @@ import { getErrorMessage } from "@/utils";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import { createPortal } from "react-dom";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import {
-  type BentoSortChipConfig,
-  type SortOrder,
-} from "@/components/ui/BentoWorkspaceController";
+import { useViewport } from "@/app/ViewportContext";
 import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
 import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
-const MOVIE_SECTION_IDS = {
-  incoming: "movies-section-incoming",
-  queue: "movies-section-queue",
-  completed: "movies-section-watched",
-};
-
-const MOVIE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐 Recent", ariaLabel: "Recent" },
-  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
-  { value: "rating", label: "★ Rating", ariaLabel: "Rating" },
-];
-
-const MOBILE_MOVIE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐", ariaLabel: "Recent" },
-  { value: "alpha", label: "A→Z", ariaLabel: "Alphabetical" },
-  { value: "rating", label: "★", ariaLabel: "Rating" },
-];
+import {
+  MOVIE_COLLECTION_SORTS,
+  workspaceSectionIds,
+} from "@/utils/workspaceConfig";
 
 const MOBILE_MOVIE_VIEW_MODES = MOVIE_BROWSE_LAYOUTS.map(({ value }) => ({
   value,
@@ -66,11 +50,9 @@ const resolveSearchTitle = (
   searchQuery: string,
 ) => selectedAutocompleteResult?.title.trim() || searchQuery.trim();
 
-const MoviesView: React.FC<MoviesViewProps> = ({
-  isPaused = false,
-  isMobile = false,
-}) => {
+const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
+  const { isMobile } = useViewport();
   const { searchPortalEl } = useBentoSlot();
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [browseLayout, setBrowseLayout] = useState<MovieBrowseLayout>(() =>
@@ -127,8 +109,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({
     [movies, pendingSuggestions, sortOrder],
   );
 
-  const handleMovieSortChange = useCallback((order: SortOrder) => {
-    setSortOrder(order as MovieSortOrder);
+  const handleMovieSortChange = useCallback((order: MovieSortOrder) => {
+    setSortOrder(order);
   }, []);
 
   const handleBrowseLayoutChange = useCallback((layout: string) => {
@@ -139,8 +121,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({
 
   useWorkspaceBentoConfig({
     tab: "movies",
-    isMobile,
-    sectionIds: MOVIE_SECTION_IDS,
+    sectionIds: workspaceSectionIds("movies"),
     counts: {
       incoming: sections.suggestions.length,
       queue: sections.queue.length,
@@ -148,8 +129,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({
     },
     sortOrder,
     onSortChange: handleMovieSortChange,
-    sorts: MOVIE_SORTS,
-    mobileSorts: MOBILE_MOVIE_SORTS,
+    sorts: MOVIE_COLLECTION_SORTS.desktop,
+    mobileSorts: MOVIE_COLLECTION_SORTS.mobile,
     ariaLabel: "Movies workspace controls",
     viewModes: isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS,
     activeViewMode: browseLayout,
@@ -416,7 +397,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({
         isLoading={isLoading}
         isSuggestionsLoading={isSuggestionsLoading}
         currentUser={currentUser}
-        isMobile={isMobile}
         processingSuggestionId={processingSuggestionId}
         successMovieId={successMovieId}
         movieMemories={movieMemories}
@@ -433,7 +413,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({
           deleteMemory: deleteMemoryRecord,
           togglePin: toggleMemoryPin,
         }}
-        sectionIds={MOVIE_SECTION_IDS}
         browseLayout={browseLayout}
       />
         {movieToDelete && (

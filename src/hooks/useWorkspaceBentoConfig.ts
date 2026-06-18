@@ -1,26 +1,22 @@
 import { useEffect, useMemo } from "react";
-import { useBentoSlot, type BentoSlotConfig } from "@/app/BentoSlotContext";
-import type {
-  BentoSortChipConfig,
-  SortOrder,
-} from "@/components/ui/BentoWorkspaceController";
+import { useBentoSlot, type RegisteredBentoSlotConfig } from "@/app/BentoSlotContext";
+import { useViewport } from "@/app/ViewportContext";
 import type { MagicToggleOption } from "@/components/ui/MagicToggle";
+import type { MainTab } from "@/shared/types";
 import {
   buildWorkspaceStatTiles,
   type WorkspaceSectionCounts,
   type WorkspaceSectionIds,
-  type WorkspaceTab,
 } from "@/utils/workspaceSectionLabels";
 
-interface UseWorkspaceBentoConfigOptions {
-  tab: WorkspaceTab;
-  isMobile: boolean;
+interface UseWorkspaceBentoConfigOptions<TSort extends string> {
+  tab: MainTab;
   sectionIds: WorkspaceSectionIds;
   counts: WorkspaceSectionCounts;
-  sortOrder: SortOrder;
-  onSortChange: (order: SortOrder) => void;
-  sorts: BentoSortChipConfig[];
-  mobileSorts: BentoSortChipConfig[];
+  sortOrder: TSort;
+  onSortChange: (order: TSort) => void;
+  sorts: MagicToggleOption<TSort>[];
+  mobileSorts: MagicToggleOption<TSort>[];
   ariaLabel: string;
   viewModes?: MagicToggleOption<string>[];
   activeViewMode?: string;
@@ -28,9 +24,8 @@ interface UseWorkspaceBentoConfigOptions {
   viewModeAriaLabel?: string;
 }
 
-export function useWorkspaceBentoConfig({
+export function useWorkspaceBentoConfig<TSort extends string>({
   tab,
-  isMobile,
   sectionIds,
   counts,
   sortOrder,
@@ -42,8 +37,9 @@ export function useWorkspaceBentoConfig({
   activeViewMode,
   onViewModeChange,
   viewModeAriaLabel,
-}: UseWorkspaceBentoConfigOptions): void {
-  const { setConfig } = useBentoSlot();
+}: UseWorkspaceBentoConfigOptions<TSort>): void {
+  const { isMobile } = useViewport();
+  const { registerTabConfig } = useBentoSlot();
 
   const stats = useMemo(
     () =>
@@ -64,11 +60,11 @@ export function useWorkspaceBentoConfig({
   );
 
   const config = useMemo(
-    (): BentoSlotConfig => ({
+    (): RegisteredBentoSlotConfig => ({
       stats,
-      sorts: isMobile ? mobileSorts : sorts,
+      sorts: (isMobile ? mobileSorts : sorts) as MagicToggleOption<string>[],
       activeSortOrder: sortOrder,
-      onSortChange,
+      onSortChange: onSortChange as (order: string) => void,
       ariaLabel,
       viewModes,
       activeViewMode,
@@ -91,7 +87,6 @@ export function useWorkspaceBentoConfig({
   );
 
   useEffect(() => {
-    setConfig(config);
-    return () => setConfig(null);
-  }, [config, setConfig]);
+    registerTabConfig(tab, config);
+  }, [config, registerTabConfig, tab]);
 }

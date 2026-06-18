@@ -2,11 +2,12 @@ import React, { memo } from "react";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import PlaceCard from "./PlaceCard";
 import type { Place } from "@/shared/types";
-import PlacesEmptyState from "./PlacesEmptyState";
+import { WorkspaceSectionEmpty } from "@/components/ui/WorkspaceEmptyState";
+import { PLACES_GRID_CLASS, PLACES_GRID_MIN_COL } from "@/utils/workspaceConfig";
 
 interface PlacesGridProps {
   places: Place[];
-  emptyStateHint: string;
+  variant: "queue" | "completed";
   canEdit: boolean;
   isSubmitting: boolean;
   activeCardId: string | null;
@@ -19,7 +20,7 @@ interface PlacesGridProps {
 
 const PlacesGrid: React.FC<PlacesGridProps> = ({
   places,
-  emptyStateHint,
+  variant,
   canEdit,
   isSubmitting,
   activeCardId,
@@ -31,8 +32,8 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
 }) => {
   return (
     <ChromaCollectionGrid
-      className="watchlist-content places-grid"
-      minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
+      className={PLACES_GRID_CLASS}
+      minColumnWidth={PLACES_GRID_MIN_COL}
     >
       {places.length > 0 ? (
         places.map((place) => (
@@ -50,7 +51,7 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
           />
         ))
       ) : (
-        <PlacesEmptyState hint={emptyStateHint} />
+        <WorkspaceSectionEmpty tab="places" variant={variant} />
       )}
     </ChromaCollectionGrid>
   );

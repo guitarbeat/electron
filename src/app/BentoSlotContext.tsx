@@ -1,16 +1,13 @@
 import { createContext, useContext } from "react";
-import type {
-  BentoStatTileConfig,
-  BentoSortChipConfig,
-  SortOrder,
-} from "@/components/ui/BentoWorkspaceController";
+import type { BentoStatTileConfig } from "@/components/ui/StatTile";
 import type { MagicToggleOption } from "@/components/ui/MagicToggle";
+import type { MainTab } from "@/shared/types";
 
-export interface BentoSlotConfig {
+export interface BentoSlotConfig<TSort extends string = string> {
   stats: BentoStatTileConfig[];
-  sorts: BentoSortChipConfig[];
-  activeSortOrder: SortOrder;
-  onSortChange: (order: SortOrder) => void;
+  sorts: MagicToggleOption<TSort>[];
+  activeSortOrder: TSort;
+  onSortChange: (order: TSort) => void;
   ariaLabel?: string;
   viewModes?: MagicToggleOption<string>[];
   activeViewMode?: string;
@@ -18,8 +15,11 @@ export interface BentoSlotConfig {
   viewModeAriaLabel?: string;
 }
 
+export type RegisteredBentoSlotConfig = BentoSlotConfig<string>;
+
 export interface BentoSlotContextValue {
-  setConfig: (config: BentoSlotConfig | null) => void;
+  activeTab: MainTab;
+  registerTabConfig: (tab: MainTab, config: RegisteredBentoSlotConfig) => void;
   searchPortalEl: HTMLDivElement | null;
 }
 
@@ -29,7 +29,8 @@ export const BentoSlotContext = createContext<BentoSlotContextValue | null>(
 
 export function useBentoSlot(): BentoSlotContextValue {
   const ctx = useContext(BentoSlotContext);
-  if (!ctx)
+  if (!ctx) {
     throw new Error("useBentoSlot must be used within AppWorkspaceShell");
+  }
   return ctx;
 }

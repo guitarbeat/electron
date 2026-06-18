@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, type FC } from "react";
 import { useUser } from "@/app/useProviders";
 import type { User } from "@/shared/types";
 import { usePins } from "@/hooks/usePins";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useViewport } from "@/app/ViewportContext";
 import { USER_OPTIONS, consoleError, getErrorMessage } from "@/utils";
 import PinDialog from "@/common/PinDialog";
 import UserAvatar from "@/ui/UserAvatar";
@@ -92,7 +92,7 @@ const LogoutIcon: FC = () => (
 );
 
 const ProfileMenu: FC<Props> = ({ onOpenChange }) => {
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const { isMobile } = useViewport();
   const { currentUser, setCurrentUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } =
     usePins();

@@ -1,30 +1,5 @@
 /* ── Places workspace chrome ──────────────────────────────────────────────── */
 
-.app-workspace-stack--places {
-  gap: 0;
-}
-
-.app-workspace-stack--places .workspace-stage--simplified {
-  gap: clamp(0.55rem, 0.5rem + 0.22vw, 0.78rem);
-  padding: 0 0 0.2rem;
-}
-
-.app-workspace-stack--places .watchlist-top-controls__stage {
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  overflow: visible;
-  isolation: isolate;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-}
-
-.app-workspace-stack--places .watchlist-top-controls__stage::before {
-  display: none;
-}
-
 .places-top-controls__error,
 .watchlist-top-controls__error {
   padding: 0.5rem 0.75rem;
@@ -56,49 +31,6 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* ── Shared section heading — used by both Movies and Places ── */
-.workspace-section-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin: 0 0 0.9rem;
-  font-family: var(--font-heading);
-  font-size: clamp(0.78rem, 0.68rem + 0.35vw, 0.96rem);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-accent) 80%, var(--color-secondary) 20%);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 45%, transparent);
-
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      color-mix(in srgb, var(--color-accent) 65%, transparent),
-      color-mix(in srgb, var(--color-accent) 18%, transparent) 40%,
-      transparent
-    );
-    border-radius: 1px;
-    filter: blur(0.5px);
-  }
-
-  @media (max-width: 640px) {
-    margin-bottom: 0.5rem;
-    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.82rem);
-  }
-}
-
-.workspace-section-heading--incoming {
-  color: var(--color-accent);
-}
-
-.workspace-section-heading--completed {
-  color: var(--color-success, #34d399);
-}
-
-/* Suggestions row */
 .places-suggestions-row {
   display: flex;
   flex-direction: column;

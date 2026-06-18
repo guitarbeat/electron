@@ -29,7 +29,7 @@ import {
   shouldClearSelectedMovieResult,
   shouldFetchMovieAutocomplete,
 } from './lib/movieAutocomplete';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import { useViewport } from '@/app/ViewportContext';
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
@@ -112,7 +112,7 @@ const MoviesTopControls = React.forwardRef<
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
   const isGuest = !currentUser;
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const { isMobile } = useViewport();
   const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
   const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to movies';
   const noteActionLabel = isGuest

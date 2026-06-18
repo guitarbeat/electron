@@ -1,4 +1,4 @@
-import type { MainTab } from "@/shared/types";
+import { MAIN_TABS, type MainTab } from "../shared/types.ts";
 
 export const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
 
@@ -10,9 +10,13 @@ export interface StoredAppViewState {
 export const parseMainTab = (
   value: string | null | undefined,
 ): MainTab | null => {
-  if (value === "places") return "places";
-  if (value === "movies") return "movies";
-  return null;
+  if (value == null || value === "") {
+    return null;
+  }
+
+  return (MAIN_TABS as readonly string[]).includes(value)
+    ? (value as MainTab)
+    : null;
 };
 
 /** Read the main tab from the current URL hash, if present. */

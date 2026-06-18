@@ -1,4 +1,4 @@
-export type WorkspaceTab = "movies" | "places";
+import type { MainTab } from "@/shared/types";
 
 export type WorkspaceSectionKey = "incoming" | "queue" | "completed";
 
@@ -24,7 +24,7 @@ const TAB_SECTION_LABELS = {
 } as const;
 
 export function workspaceSectionLabel(
-  tab: WorkspaceTab,
+  tab: MainTab,
   section: WorkspaceSectionKey,
   isMobile: boolean,
 ): string {
@@ -37,7 +37,7 @@ export function workspaceSectionLabel(
 }
 
 export function workspaceSectionLabels(
-  tab: WorkspaceTab,
+  tab: MainTab,
   isMobile: boolean,
 ): Record<WorkspaceSectionKey, string> {
   return {
@@ -61,7 +61,7 @@ export function buildWorkspaceStatTiles({
   sectionIds,
   counts,
 }: {
-  tab: WorkspaceTab;
+  tab: MainTab;
   isMobile: boolean;
   sectionIds: WorkspaceSectionIds;
   counts: WorkspaceSectionCounts;
