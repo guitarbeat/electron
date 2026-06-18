@@ -39,7 +39,7 @@ export const preloadAppWorkspaceShell = (): Promise<unknown> =>
 
 const DEFERRED_MODULES = [
   () => import("@/app/CohesionAudit"),
-  () => import("@/app/QuizFlowModalContent"),
+  () => import("@/components/quiz/QuizWorkspaceSection"),
   () => import("@/branding/ElectronLogoLab"),
   () => import("@/components/effects/moire/Moire"),
   () => import("@/components/effects/RetroEffects"),

@@ -368,7 +368,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       index: 1,
       colorClass: "violet",
       label: "Quiz",
-      description: "Run the couple compatibility quiz",
+      description: "Take the retro personality quiz",
       onClick: () => handleMenuItemClick(onOpenQuiz),
       icon: <QuizIcon />,
     },

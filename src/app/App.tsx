@@ -34,6 +34,7 @@ import { useWorkspaceTabShortcuts } from "@/hooks/useWorkspaceTabShortcuts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
+import { scrollToWorkspaceSection } from "@/utils/scrollToWorkspaceSection";
 import MinigameModal from "@/ui/MinigameModal";
 import "./App.scss";
 
@@ -160,7 +161,6 @@ const App: React.FC = () => {
     () => initialViewState.showMessages,
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [showQuizFlow, setShowQuizFlow] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
   const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
@@ -255,13 +255,16 @@ const App: React.FC = () => {
   );
 
   const openQuizExperience = useCallback(() => {
-    setShowQuizFlow(true);
+    scrollToWorkspaceSection("quiz-section");
   }, []);
 
   const handleQuizComplete = useCallback(() => {
     updateQuizCompletion(true);
-    setShowQuizFlow(false);
   }, [updateQuizCompletion]);
+
+  const handleQuizEdit = useCallback(() => {
+    setShowQuizEditor(true);
+  }, []);
 
   const handleQuizRetake = useCallback(() => {
     updateQuizCompletion(false);
@@ -276,30 +279,19 @@ const App: React.FC = () => {
       buildFeatureModals({
         showMessages,
         showQuizEditor,
-        showQuizFlow,
         showSpinWheel,
         showSpinWheelOnly,
-        quizCompleted,
         isSpinWheelLocked,
-        currentUser,
         setShowMessages,
         setShowQuizEditor,
-        setShowQuizFlow,
         setShowSpinWheel,
         setShowSpinWheelOnly,
         setIsSpinWheelLocked,
-        onQuizComplete: handleQuizComplete,
-        onQuizRetake: handleQuizRetake,
       }),
     [
-      currentUser,
-      handleQuizComplete,
-      handleQuizRetake,
       isSpinWheelLocked,
-      quizCompleted,
       showMessages,
       showQuizEditor,
-      showQuizFlow,
       showSpinWheel,
       showSpinWheelOnly,
     ],
@@ -385,8 +377,11 @@ const App: React.FC = () => {
                     onRetrySync={handleRetryPendingSync}
                     onOpenSpin={openSpinMatch}
                     onOpenMessages={() => setShowMessages(true)}
-                    onOpenQuiz={openQuizExperience}
+                    currentUser={currentUser}
                     quizCompleted={quizCompleted}
+                    onQuizComplete={handleQuizComplete}
+                    onQuizRetake={handleQuizRetake}
+                    onQuizEdit={handleQuizEdit}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>

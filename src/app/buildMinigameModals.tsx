@@ -3,11 +3,9 @@ import LazyBoundary from "@/app/LazyBoundary";
 import {
   MessageBoardPanel,
   QuizEditorPanel,
-  QuizFlowModalPanel,
   SpinSwipeGamePanel,
   SpinWheelGamePanel,
 } from "@/app/lazyFeaturePanels";
-import type { User } from "@/shared/types";
 import { spacing } from "@/theme/tokens";
 
 export interface AppModalConfig {
@@ -30,12 +28,6 @@ const scrollContentStyle: CSSProperties = {
   overflowY: "auto",
 };
 
-const paddedScrollContentStyle: CSSProperties = {
-  flex: 1,
-  overflowY: "auto",
-  padding: spacing.lg,
-};
-
 const renderSuspended = (content: ReactNode, label: string) => (
   <LazyBoundary label={label}>{content}</LazyBoundary>
 );
@@ -43,20 +35,14 @@ const renderSuspended = (content: ReactNode, label: string) => (
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
   showQuizEditor: boolean;
-  showQuizFlow: boolean;
   showSpinWheel: boolean;
   showSpinWheelOnly: boolean;
-  quizCompleted: boolean;
   isSpinWheelLocked: boolean;
-  currentUser: User | null;
   setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
-  setShowQuizFlow: (open: boolean) => void;
   setShowSpinWheel: (open: boolean) => void;
   setShowSpinWheelOnly: (open: boolean) => void;
   setIsSpinWheelLocked: (locked: boolean) => void;
-  onQuizComplete: () => void;
-  onQuizRetake: () => void;
 }
 
 export function buildFeatureModals(
@@ -65,20 +51,14 @@ export function buildFeatureModals(
   const {
     showMessages,
     showQuizEditor,
-    showQuizFlow,
     showSpinWheel,
     showSpinWheelOnly,
-    quizCompleted,
     isSpinWheelLocked,
-    currentUser,
     setShowMessages,
     setShowQuizEditor,
-    setShowQuizFlow,
     setShowSpinWheel,
     setShowSpinWheelOnly,
     setIsSpinWheelLocked,
-    onQuizComplete,
-    onQuizRetake,
   } = params;
 
   return [
@@ -98,7 +78,7 @@ export function buildFeatureModals(
       isOpen: showQuizEditor,
       onClose: () => setShowQuizEditor(false),
       title: "Quiz · Personality",
-      ariaLabel: "Personality quiz",
+      ariaLabel: "Personality quiz editor",
       maxWidth: 1200,
       maxHeight: 900,
       content: renderSuspended(
@@ -132,29 +112,6 @@ export function buildFeatureModals(
       maxHeight: 700,
       content: renderSuspended(<SpinWheelGamePanel />, "Loading spin wheel"),
       contentStyle: { flex: 1, overflowY: "auto" },
-    },
-    {
-      key: "quiz-flow",
-      isOpen: showQuizFlow,
-      onClose: () => setShowQuizFlow(false),
-      title: quizCompleted ? "Quiz · Retake Flow" : "Quiz · Start Flow",
-      ariaLabel: "Quiz experience",
-      maxWidth: 920,
-      maxHeight: 900,
-      contentStyle: paddedScrollContentStyle,
-      content: renderSuspended(
-        <QuizFlowModalPanel
-          currentUser={currentUser}
-          quizCompleted={quizCompleted}
-          onComplete={onQuizComplete}
-          onRetake={onQuizRetake}
-          onEdit={() => {
-            setShowQuizFlow(false);
-            setShowQuizEditor(true);
-          }}
-        />,
-        "Loading quiz",
-      ),
     },
   ];
 }
