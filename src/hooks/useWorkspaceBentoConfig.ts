@@ -100,5 +100,6 @@ export function useWorkspaceBentoConfig({
 
   useEffect(() => {
     setConfig(config);
+    return () => setConfig(null);
   }, [config, setConfig]);
 }

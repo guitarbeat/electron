@@ -8,7 +8,8 @@ import React, {
 import {
   APP_VIEW_STATE_KEY,
   parseMainTab,
-  readStoredAppViewState,
+  readInitialAppViewState,
+  stripLaunchUrlShortcuts,
   type StoredAppViewState,
 } from "@/app/appViewState";
 import { buildFeatureModals } from "@/app/buildMinigameModals";
@@ -154,19 +155,15 @@ const App: React.FC = () => {
   const [showMoire, setShowMoire] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  const persistedViewState = useMemo(() => readStoredAppViewState(), []);
-  const [activeTab, setActiveTab] = useState<MainTab>(() => {
-    if (typeof window !== "undefined") {
-      const fromHash = parseMainTab(window.location.hash.replace(/^#/, ""));
-      if (fromHash) return fromHash;
-    }
-    return persistedViewState?.activeTab ?? "movies";
-  });
+  const initialViewState = useMemo(() => readInitialAppViewState(), []);
+  const [activeTab, setActiveTab] = useState<MainTab>(
+    () => initialViewState.activeTab,
+  );
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
   );
   const [showMessages, setShowMessages] = useState(
-    persistedViewState?.showMessages ?? false,
+    () => initialViewState.showMessages,
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizFlow, setShowQuizFlow] = useState(false);
@@ -178,7 +175,10 @@ const App: React.FC = () => {
       typeof window !== "undefined" &&
       localStorage.getItem("cursorTrailEnabled") === "true",
   );
-  const shortcutHandledRef = React.useRef(false);
+
+  useEffect(() => {
+    stripLaunchUrlShortcuts();
+  }, []);
 
   const logoLabState = useMemo(() => {
     if (typeof window === "undefined") {
@@ -242,35 +242,6 @@ const App: React.FC = () => {
       } satisfies StoredAppViewState),
     );
   }, [activeTab, showMessages]);
-
-  useEffect(() => {
-    if (shortcutHandledRef.current || typeof window === "undefined") {
-      return;
-    }
-
-    shortcutHandledRef.current = true;
-    const search = new URLSearchParams(window.location.search);
-    const requestedTab = parseMainTab(search.get("tab"));
-    const requestedPanel = search.get("panel");
-    let didApplyShortcut = false;
-
-    if (requestedTab) {
-      setActiveTab(requestedTab);
-      didApplyShortcut = true;
-    }
-
-    if (requestedPanel === "messages") {
-      setShowMessages(true);
-      didApplyShortcut = true;
-    }
-
-    if (didApplyShortcut) {
-      search.delete("tab");
-      search.delete("panel");
-      const next = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ""}${window.location.hash}`;
-      window.history.replaceState({}, "", next);
-    }
-  }, []);
 
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {

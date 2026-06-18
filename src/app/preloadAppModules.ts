@@ -81,10 +81,3 @@ export const preloadDeferredAppModules = (): Promise<void> => {
   ]);
   return deferredPreloadPromise;
 };
-
-/** @deprecated Use preloadCriticalAppModules + preloadDeferredAppModules. */
-export const preloadAppModules = (): Promise<void> =>
-  Promise.all([
-    preloadCriticalAppModules(),
-    preloadDeferredAppModules(),
-  ]).then(() => undefined);

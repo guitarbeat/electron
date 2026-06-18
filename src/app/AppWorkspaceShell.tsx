@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
@@ -21,15 +21,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );
-
-  const previousTabRef = useRef(activeTab);
-  useEffect(() => {
-    if (previousTabRef.current === activeTab) {
-      return;
-    }
-    previousTabRef.current = activeTab;
-    setBentoConfig(null);
-  }, [activeTab]);
 
   const workspaceContent =
     activeTab === "movies" ? (

@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
+import {
+  isChromaSpotlightEnabled,
+  subscribeMotionPreferences,
+} from "@/utils/motionPreference";
 
 export interface ChromaSpotlightOptions {
   radius?: number;
@@ -25,15 +29,11 @@ export function useChromaSpotlight({
     const el = rootRef.current;
     if (!el) return;
 
-    const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const hoverMq = window.matchMedia("(hover: hover)");
     const syncEnabled = () => {
-      enabled.current = !motionMq.matches && hoverMq.matches;
+      enabled.current = isChromaSpotlightEnabled();
       el.style.setProperty("--chroma-enabled", enabled.current ? "1" : "0");
     };
     syncEnabled();
-    motionMq.addEventListener("change", syncEnabled);
-    hoverMq.addEventListener("change", syncEnabled);
 
     let cancelled = false;
 
@@ -59,10 +59,11 @@ export function useChromaSpotlight({
       });
     }
 
+    const unsubscribe = subscribeMotionPreferences(syncEnabled);
+
     return () => {
       cancelled = true;
-      motionMq.removeEventListener("change", syncEnabled);
-      hoverMq.removeEventListener("change", syncEnabled);
+      unsubscribe();
     };
   }, [radius]);
 
