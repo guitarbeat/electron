@@ -19,7 +19,6 @@ const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
   activeTab,
   onTabChange,
-  onOpenMessages,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
@@ -67,7 +66,6 @@ const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
         <BentoWorkspaceController
           activeTab={activeTab}
           onTabChange={onTabChange}
-          onOpenMessages={onOpenMessages}
           pwaStatus={pwaStatus}
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}

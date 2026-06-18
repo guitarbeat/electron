@@ -10,7 +10,6 @@ import "./BentoWorkspaceController.css";
 export interface WorkspaceChromeHeaderProps {
   activeTab: MainTab;
   onTabChange: (tab: MainTab) => void;
-  onOpenMessages?: () => void;
   pwaStatus?: {
     isOnline: boolean;
     isStandalone: boolean;
@@ -65,7 +64,6 @@ function BentoWorkspaceController({
   viewModeAriaLabel,
   activeTab,
   onTabChange,
-  onOpenMessages,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
@@ -87,7 +85,6 @@ function BentoWorkspaceController({
           <AppNavStrip
             activeTab={activeTab}
             onTabChange={onTabChange}
-            onOpenMessages={onOpenMessages}
             status={pwaStatus}
             onInstallApp={onInstallApp}
             onApplyUpdate={onApplyUpdate}

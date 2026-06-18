@@ -65,10 +65,6 @@
   transition: opacity 0.3s ease;
 }
 
-.ans__brand-text {
-  font-family: inherit;
-}
-
 .ans:hover .ans__brand-glyph { opacity: 1; }
 
 .ans__tabs {

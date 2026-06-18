@@ -329,7 +329,6 @@ const App: React.FC = () => {
                     onInstallApp={() => void handleInstallApp()}
                     onApplyUpdate={handleApplyUpdate}
                     onRetrySync={handleRetryPendingSync}
-                    onOpenMessages={() => setShowMessages(true)}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>

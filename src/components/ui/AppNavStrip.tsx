@@ -1,6 +1,5 @@
-import { type FC, type ReactNode, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import {
-  MessageCircle,
   RefreshCw,
   SatelliteDish,
   WifiOff,
@@ -23,7 +22,6 @@ export interface AppNavStripStatus {
 interface Props {
   activeTab: MainTab;
   onTabChange: (tab: MainTab) => void;
-  onOpenMessages?: () => void;
   status?: AppNavStripStatus;
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
@@ -36,7 +34,6 @@ const pluralize = (n: number, s: string, p = `${s}s`) =>
 const AppNavStrip: FC<Props> = ({
   activeTab,
   onTabChange,
-  onOpenMessages,
   status,
   onInstallApp,
   onApplyUpdate,
@@ -121,32 +118,13 @@ const AppNavStrip: FC<Props> = ({
     setDismissedKeys((prev) => ({ ...prev, [dismissKey]: true }));
   };
 
-  const utilityButtons = [
-    isMobile && onOpenMessages
-      ? {
-          key: "messages",
-          label: "Open messages",
-          title: "Messages",
-          onClick: onOpenMessages,
-          icon: <MessageCircle size={16} strokeWidth={2.2} aria-hidden="true" />,
-        }
-      : null,
-  ].filter(Boolean) as Array<{
-    key: string;
-    label: string;
-    title: string;
-    onClick: () => void;
-    icon: ReactNode;
-  }>;
-
   return (
     <div className={`ans-wrap${showChipBelow ? " ans-wrap--has-chip" : ""}`}>
       <nav className="ans" aria-label="Primary navigation">
-        <span className="ans__brand" aria-label="Electron">
+        <span className="ans__brand" aria-label="Home">
           <span className="ans__brand-glyph" aria-hidden="true">
             ◈
           </span>
-          <span className="ans__brand-text">Electron</span>
         </span>
 
         <span className="ans__sep" aria-hidden="true" />
@@ -170,26 +148,6 @@ const AppNavStrip: FC<Props> = ({
             ariaLabel="Main navigation tabs"
           />
         </div>
-
-        {utilityButtons.length > 0 ? (
-          <>
-            <span className="ans__sep ans__sep--wide" aria-hidden="true" />
-            <div className="ans__tools" role="group" aria-label="Quick actions">
-              {utilityButtons.map((button) => (
-                <button
-                  key={button.key}
-                  type="button"
-                  className="ans__icon-btn"
-                  onClick={button.onClick}
-                  aria-label={button.label}
-                  title={button.title}
-                >
-                  {button.icon}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : null}
 
         {showChipInline && statusChip ? (
           <>

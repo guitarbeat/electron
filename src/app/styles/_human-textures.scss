@@ -99,15 +99,7 @@ body[data-theme='places'] {
 }
 
 .bento-ctrl::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: calc(var(--texture-grain-strength) * 1.35);
-  mix-blend-mode: soft-light;
-  background-image: var(--texture-grain-image);
-  background-size: 180px 180px;
+  display: none;
 }
 
 .ui-card,

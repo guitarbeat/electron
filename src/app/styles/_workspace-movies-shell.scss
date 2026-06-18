@@ -9,14 +9,9 @@
   width: 100%;
   min-width: 0;
   padding: clamp(1rem, 0.9rem + 0.5vw, 1.4rem);
-  border-width: 0;
-  border-color: transparent;
-  border-style: none;
-  border-image: none;
-  border-radius: 1.8rem;
-  background-color: unset;
-  background: unset;
-  background-image: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
   overflow-x: clip;
   overflow-y: visible;
@@ -24,14 +19,7 @@
 }
 
 .workspace-unified-shell::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(115deg, transparent 14%, color-mix(in srgb, var(--color-text-primary) 8%, transparent) 34%, transparent 52%),
-    radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--color-text-primary) 6%, transparent) 0%, transparent 22%);
-  pointer-events: none;
+  display: none;
 }
 
 .workspace-unified-shell > * {
@@ -97,10 +85,5 @@
   .workspace-unified-shell {
     gap: 0.35rem;
     padding: 0;
-    border-radius: 0;
-  }
-
-  .workspace-unified-shell::before {
-    display: none;
   }
 }
