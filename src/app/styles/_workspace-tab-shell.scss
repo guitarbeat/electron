@@ -15,19 +15,13 @@
   display: none;
 }
 
-.app-workspace-stack--movies .watchlist-top-controls,
-.app-workspace-stack--places .watchlist-top-controls {
+.app-workspace-stack--movies .workspace-search__stage,
+.app-workspace-stack--places .workspace-search__stage {
   gap: 0.7rem;
-  width: 100%;
-  min-width: 0;
-}
-
-.app-workspace-stack--movies .watchlist-top-controls__stage,
-.app-workspace-stack--places .watchlist-top-controls__stage {
-  padding: 0;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  padding: 0;
   overflow: visible;
   isolation: isolate;
   border: none;
@@ -35,12 +29,12 @@
   box-shadow: none;
 }
 
-.app-workspace-stack--movies .watchlist-top-controls__stage::before,
-.app-workspace-stack--places .watchlist-top-controls__stage::before {
+.app-workspace-stack--movies .workspace-search__stage::before,
+.app-workspace-stack--places .workspace-search__stage::before {
   display: none;
 }
 
-.app-workspace-stack--movies .watchlist-top-controls__stage > * {
+.app-workspace-stack--movies .workspace-search__stage > * {
   position: relative;
   z-index: 1;
 }
@@ -56,8 +50,8 @@
     gap: 1rem;
   }
 
-  .app-workspace-stack--movies .watchlist-top-controls__stage,
-  .app-workspace-stack--places .watchlist-top-controls__stage {
+  .app-workspace-stack--movies .workspace-search__stage,
+  .app-workspace-stack--places .workspace-search__stage {
     padding: 0;
     border-radius: 0;
   }

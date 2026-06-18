@@ -13,7 +13,7 @@ export const WorkspaceAutocompletePanel: React.FC<
 > = ({ id, isOpen = true, ariaLabel, onPointerDown, children }) => (
   <div
     id={id}
-    className={`watchlist-top-controls__autocomplete${isOpen ? " is-open" : ""}`}
+    className={`workspace-search__autocomplete${isOpen ? " is-open" : ""}`}
     role="listbox"
     aria-label={ariaLabel}
     onPointerDown={() => {
@@ -26,13 +26,13 @@ export const WorkspaceAutocompletePanel: React.FC<
 
 export const WorkspaceAutocompleteLoading: React.FC = () => (
   <div
-    className="watchlist-top-controls__autocomplete-loading"
+    className="workspace-search__autocomplete-loading"
     role="status"
     aria-label="Searching"
   >
-    <span className="watchlist-top-controls__autocomplete-loading-dot" />
-    <span className="watchlist-top-controls__autocomplete-loading-dot" />
-    <span className="watchlist-top-controls__autocomplete-loading-dot" />
+    <span className="workspace-search__autocomplete-loading-dot" />
+    <span className="workspace-search__autocomplete-loading-dot" />
+    <span className="workspace-search__autocomplete-loading-dot" />
   </div>
 );
 
@@ -44,7 +44,7 @@ interface WorkspaceAutocompleteStatusProps {
 export const WorkspaceAutocompleteStatus: React.FC<
   WorkspaceAutocompleteStatusProps
 > = ({ children, role = "status" }) => (
-  <div className="watchlist-top-controls__autocomplete-status" role={role}>
+  <div className="workspace-search__autocomplete-status" role={role}>
     {children}
   </div>
 );
@@ -65,7 +65,7 @@ export const WorkspaceAutocompleteOption: React.FC<
     type="button"
     role="option"
     aria-selected={isActive}
-    className={`watchlist-top-controls__autocomplete-option${
+    className={`workspace-search__autocomplete-option${
       isActive ? " is-active" : ""
     }`}
     onPointerDown={(event) => {
@@ -86,10 +86,10 @@ interface WorkspaceAutocompleteCopyProps {
 export const WorkspaceAutocompleteCopy: React.FC<
   WorkspaceAutocompleteCopyProps
 > = ({ title, meta }) => (
-  <span className="watchlist-top-controls__autocomplete-copy">
-    <span className="watchlist-top-controls__autocomplete-title">{title}</span>
+  <span className="workspace-search__autocomplete-copy">
+    <span className="workspace-search__autocomplete-title">{title}</span>
     {meta ? (
-      <span className="watchlist-top-controls__autocomplete-meta">{meta}</span>
+      <span className="workspace-search__autocomplete-meta">{meta}</span>
     ) : null}
   </span>
 );
@@ -108,7 +108,7 @@ const WorkspaceAutocompletePosterImage: React.FC<{ src: string }> = ({
     <img
       src={src}
       alt=""
-      className={`watchlist-top-controls__autocomplete-poster-image${
+      className={`workspace-search__autocomplete-poster-image${
         loaded ? " is-loaded" : ""
       }`}
       onLoad={() => setLoaded(true)}
@@ -119,12 +119,12 @@ const WorkspaceAutocompletePosterImage: React.FC<{ src: string }> = ({
 export const WorkspaceAutocompletePoster: React.FC<
   WorkspaceAutocompletePosterProps
 > = ({ src, fallbackLetter }) => (
-  <span className="watchlist-top-controls__autocomplete-poster">
+  <span className="workspace-search__autocomplete-poster">
     {src ? (
       <WorkspaceAutocompletePosterImage src={src} />
     ) : (
       <span
-        className="watchlist-top-controls__autocomplete-poster-fallback"
+        className="workspace-search__autocomplete-poster-fallback"
         aria-hidden
       >
         {fallbackLetter}
@@ -141,9 +141,9 @@ export const WorkspaceAutocompleteNoMatchPanel: React.FC<
   WorkspaceAutocompleteNoMatchPanelProps
 > = ({ children }) => (
   <div
-    className="watchlist-top-controls__autocomplete is-open"
+    className="workspace-search__autocomplete is-open"
     role="status"
   >
-    <p className="watchlist-top-controls__autocomplete-status">{children}</p>
+    <p className="workspace-search__autocomplete-status">{children}</p>
   </div>
 );

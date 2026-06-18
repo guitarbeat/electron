@@ -3,7 +3,7 @@ import type { Place, PlaceSuggestion, User } from "@/shared/types";
 import { CollectionSection } from "@/ui/CollectionLayout";
 import PlaceSuggestionCard from "./PlaceSuggestionCard";
 import PlacesGrid from "./PlacesGrid";
-import WorkspaceCollectionGlobalEmpty from "@/components/ui/WorkspaceCollectionGlobalEmpty";
+import { WorkspaceCollectionGlobalEmpty } from "@/components/ui/WorkspaceEmptyState";
 import WorkspaceIncomingSection from "@/components/ui/WorkspaceIncomingSection";
 import WorkspaceIncomingSkeleton from "@/ui/WorkspaceIncomingSkeleton";
 import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";

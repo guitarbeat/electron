@@ -29,9 +29,10 @@ import {
   shouldFetchMovieAutocomplete,
 } from './lib/movieAutocomplete';
 import { useViewport } from '@/app/ViewportContext';
-import WorkspaceSearchShell from '@/components/ui/WorkspaceSearchShell';
+import WorkspaceSearchShell, {
+  WorkspaceSearchActions,
+} from '@/components/ui/WorkspaceSearchShell';
 import WorkspaceSearchField from '@/components/ui/WorkspaceSearchField';
-import WorkspaceSearchActions from '@/components/ui/WorkspaceSearchActions';
 import {
   WorkspaceAutocompleteCopy,
   WorkspaceAutocompleteLoading,
@@ -211,7 +212,7 @@ const MoviesTopControls = React.forwardRef<
       }
 
       const panel = autocompleteRegionRef.current.closest(
-        ".watchlist-top-controls__search-form",
+        ".workspace-search__search-form",
       );
       if (!panel) {
         return;
@@ -443,7 +444,7 @@ const MoviesTopControls = React.forwardRef<
             >
               {isAutocompleteLoading ? <WorkspaceAutocompleteLoading /> : null}
               {!isAutocompleteLoading && autocompleteResults.length > 0 && (
-                <div className="watchlist-top-controls__autocomplete-filters">
+                <div className="workspace-search__autocomplete-filters">
                   <MagicToggle<'all' | 'movie' | 'series'>
                     options={(
                       [
@@ -460,9 +461,9 @@ const MoviesTopControls = React.forwardRef<
                       return {
                         value,
                         label: (
-                          <span className="watchlist-top-controls__autocomplete-filter-label">
+                          <span className="workspace-search__autocomplete-filter-label">
                             {label}
-                            <span className="watchlist-top-controls__autocomplete-filter-count">
+                            <span className="workspace-search__autocomplete-filter-count">
                               {count}
                             </span>
                           </span>
@@ -526,7 +527,7 @@ const MoviesTopControls = React.forwardRef<
                 disabled={isBusy}
                 title={primaryActionTitle}
                 aria-label={primaryActionTitle}
-                className="watchlist-top-controls__search-button"
+                className="workspace-search__search-button"
               >
                 {primaryActionLabel}
               </Button>

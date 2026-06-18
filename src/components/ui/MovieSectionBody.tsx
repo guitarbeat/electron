@@ -13,7 +13,7 @@ import type { MovieSections } from "@/components/movies/lib/movieSections";
 import { getAllMovies } from "@/components/movies/lib/movieSections";
 import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
 import { shouldUseMovieScrollDeck } from "@/components/movies/lib/movieBrowseLayout";
-import WorkspaceCollectionGlobalEmpty from "@/components/ui/WorkspaceCollectionGlobalEmpty";
+import { WorkspaceCollectionGlobalEmpty } from "@/components/ui/WorkspaceEmptyState";
 import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
 import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
 import WorkspaceIncomingSection from "@/components/ui/WorkspaceIncomingSection";
@@ -62,7 +62,7 @@ interface Props {
 }
 
 const gridSurfaceClass = (browseLayout: MovieBrowseLayout) =>
-  `watchlist-content${browseLayout === "grid" ? " watchlist-content--poster-grid" : ""}`;
+  `workspace-content${browseLayout === "grid" ? " workspace-content--poster-grid" : ""}`;
 
 const MovieSectionBody: React.FC<Props> = ({
   sections,
@@ -86,7 +86,7 @@ const MovieSectionBody: React.FC<Props> = ({
   const sectionLabels = workspaceSectionLabels("movies", isMobile);
   const sectionIds = workspaceSectionIds("movies");
   const browseLayoutClass =
-    browseLayout === "grid" ? " watchlist-content--poster-grid" : "";
+    browseLayout === "grid" ? " workspace-content--poster-grid" : "";
 
   const allMovies = getAllMovies(sections);
 

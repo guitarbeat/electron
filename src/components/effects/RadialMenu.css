@@ -446,9 +446,18 @@
   transform: translateY(-2px) scale(1.02);
 }
 
-.toggle:active {
+.toggle:active,
+.toggle.toggle--dragging {
   cursor: grabbing;
   transform: scale(0.98);
+}
+
+.toggle.toggle--dragging {
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(255, 245, 232, 0.08) inset,
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 34px color-mix(in oklab, var(--moire-accent, #fe8922) 48%, transparent);
 }
 
 .toggle:focus-visible,

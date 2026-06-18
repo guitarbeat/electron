@@ -1,48 +1,48 @@
 /* 44px+ touch targets on phones for the accept/reject suggestion buttons */
 @media (max-width: 640px) {
-  .watchlist-container,
+  .workspace-container,
   .places-container {
     gap: 0.8rem !important;
   }
 
   .workspace-control-panel,
-  .watchlist-top-controls {
+  .workspace-search__stage {
     gap: 0.55rem;
   }
 
-  .watchlist-top-controls__search-form {
+  .workspace-search__search-form {
     padding: 4px;
     gap: 4px;
   }
 
-  .watchlist-top-controls__search-shell {
+  .workspace-search__search-shell {
     flex-basis: 100%;
   }
 
-  .watchlist-top-controls__search-icon {
+  .workspace-search__search-icon {
     padding-left: 0.7rem;
     font-size: 0.82rem;
   }
 
-  .watchlist-top-controls__search-field {
+  .workspace-search__search-field {
     min-height: 2.85rem;
   }
 
-  .watchlist-top-controls__search-actions {
+  .workspace-search__search-actions {
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem;
   }
 
-  .watchlist-top-controls__search-button.ui-button,
-  .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+  .workspace-search__search-button.ui-button,
+  .workspace-search__search-actions .ui-button:not(.workspace-search__search-button) {
     min-width: 0 !important;
     min-height: 2.75rem !important;
     font-size: 0.72rem !important;
     letter-spacing: 0.03em !important;
   }
 
-  .watchlist-top-controls__autocomplete {
+  .workspace-search__autocomplete {
     margin-top: 0.4rem;
     max-height: min(18rem, 58vh);
   }

@@ -1,4 +1,5 @@
 import type { FC, ReactNode } from "react";
+import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import Button from "@/ui/Button";
 import { CollectionEmptyState } from "@/ui/CollectionLayout";
 import { spacing } from "@/theme/tokens";
@@ -100,3 +101,32 @@ export const WorkspaceGlobalEmpty: FC<WorkspaceGlobalEmptyProps> = ({
     </CollectionEmptyState>
   );
 };
+
+export interface WorkspaceCollectionGlobalEmptyProps {
+  tab: MainTab;
+  className: string;
+  minColumnWidth: string;
+  onAction?: () => void;
+  actionLabel?: string;
+  actionBusy?: boolean;
+}
+
+export const WorkspaceCollectionGlobalEmpty: FC<
+  WorkspaceCollectionGlobalEmptyProps
+> = ({
+  tab,
+  className,
+  minColumnWidth,
+  onAction,
+  actionLabel,
+  actionBusy,
+}) => (
+  <ChromaCollectionGrid className={className} minColumnWidth={minColumnWidth}>
+    <WorkspaceGlobalEmpty
+      tab={tab}
+      onAction={onAction}
+      actionLabel={actionLabel}
+      actionBusy={actionBusy}
+    />
+  </ChromaCollectionGrid>
+);

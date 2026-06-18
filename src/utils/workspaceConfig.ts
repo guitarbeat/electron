@@ -14,12 +14,6 @@ export type WorkspaceSectionAvailability = Partial<
 
 export type WorkspaceSectionIds = Record<WorkspaceSectionKey, string>;
 
-export interface WorkspaceSectionCounts {
-  incoming: number;
-  queue: number;
-  completed: number;
-}
-
 const INCOMING_LABELS = { desktop: "Incoming", mobile: "New" } as const;
 
 const TAB_SECTION_LABELS = {
@@ -75,7 +69,7 @@ export const workspaceSectionIds = (tab: MainTab): WorkspaceSectionIds =>
 
 export const MOVIES_POSTER_GRID_MIN_COL = "clamp(3.25rem, 18vw, 5.5rem)";
 export const PLACES_GRID_MIN_COL = "clamp(10.5rem, 24vw, 13rem)";
-export const PLACES_GRID_CLASS = "watchlist-content places-grid";
+export const PLACES_GRID_CLASS = "workspace-content places-grid";
 
 export interface WorkspaceEmptyCopy {
   icon: string;
@@ -119,6 +113,11 @@ export const WORKSPACE_LOADING_COPY: Record<
 > = {
   movies: { emoji: "🍿", label: "Loading your movies…" },
   places: { emoji: "🗺️", label: "Loading your places…" },
+};
+
+export const WORKSPACE_TAB_CONTAINER: Record<MainTab, string> = {
+  movies: "workspace-container",
+  places: "workspace-container places-container",
 };
 
 const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {

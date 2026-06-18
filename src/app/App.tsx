@@ -23,7 +23,7 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
 import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
-import { useUser, useTheme } from "@/app/useProviders";
+import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
@@ -87,43 +87,6 @@ const isCohesionAuditRoute =
   typeof window !== "undefined" &&
   window.location.pathname.replace(/\/$/, "") === "/cohesion";
 
-const webGLAvailable: boolean = (() => {
-  if (typeof document === "undefined") return false;
-  try {
-    const canvas = document.createElement("canvas");
-    return Boolean(
-      canvas.getContext("webgl2") ??
-      canvas.getContext("webgl") ??
-      canvas.getContext("experimental-webgl"),
-    );
-  } catch {
-    return false;
-  }
-})();
-
-/**
- * Reads the active theme tokens and feeds the Moiré shader its accent colors,
- * so the background stays color-linked to the rest of the UI.
- */
-const ThemedMoire: React.FC<{ enabled: boolean }> = ({ enabled }) => {
-  const { theme } = useTheme();
-
-  if (!enabled || !webGLAvailable) {
-    return null;
-  }
-
-  return (
-    <React.Suspense fallback={null}>
-      <MagicComponent
-        isVisible
-        opacity={0.2}
-        color1={theme.moire.color1}
-        color2={theme.moire.color2}
-      />
-    </React.Suspense>
-  );
-};
-
 const App: React.FC = () => {
   const { currentUser } = useUser();
   const {
@@ -142,7 +105,6 @@ const App: React.FC = () => {
     "(prefers-reduced-motion: reduce)",
   );
   const [isBootReady, setIsBootReady] = useState(false);
-  const [showMoire, setShowMoire] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
@@ -211,14 +173,6 @@ const App: React.FC = () => {
       void preloadDeferredAppModules();
     }, 300);
   }, [isBootReady]);
-
-  useEffect(() => {
-    if (prefersReducedMotion || isMobile) {
-      return undefined;
-    }
-
-    return scheduleIdleWork(() => setShowMoire(true), 1500);
-  }, [prefersReducedMotion, isMobile]);
 
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
@@ -336,8 +290,6 @@ const App: React.FC = () => {
         <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
       </React.Suspense>
       <div className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}>
-        {!prefersReducedMotion ? <ThemedMoire enabled={showMoire} /> : null}
-
         <VignetteOverlay />
         <a href="#main-content" className="skip-link">
           Skip to content

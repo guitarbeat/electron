@@ -56,17 +56,13 @@ const DESKTOP_CHROME_CLEARANCE_TOP = 92;
 const isMobileViewport = (): boolean =>
   typeof window !== "undefined" && window.innerWidth <= MOBILE_BREAKPOINT;
 
-const isStandaloneDisplayMode = (): boolean =>
-  typeof window !== "undefined" &&
-  (window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true);
-
-const shouldUseDockedLayout = (): boolean =>
-  typeof window !== "undefined" &&
-  (isStandaloneDisplayMode() ||
-    window.matchMedia("(pointer: coarse)").matches ||
-    isMobileViewport());
+const persistMenuPosition = (position: { x: number; y: number }) => {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
+  } catch {
+    // Ignore quota / privacy-mode failures.
+  }
+};
 
 const getSafeAreaInset = (
   edge: "top" | "right" | "bottom" | "left",
@@ -149,7 +145,7 @@ const getInitialMenuPosition = () => {
     return { x: 0, y: 0 };
   }
 
-  const stored = shouldUseDockedLayout() ? null : readStoredPosition();
+  const stored = readStoredPosition();
   return stored ? clampToViewport(stored) : getDockedPosition();
 };
 
@@ -176,6 +172,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
   const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
   const [highlightedItemIndex, setHighlightedItemIndex] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const isDraggingRef = useRef(false);
   const suppressToggleClickRef = useRef(false);
@@ -228,54 +225,67 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     toggleMenu();
   }, [toggleMenu]);
 
-  useEffect(() => {
-    const handlePointerDown = (e: PointerEvent) => {
-      if (
-        !toggleRef.current?.contains(e.target as Node) ||
-        shouldUseDockedLayout()
-      )
+  const beginTogglePointer = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) {
         return;
+      }
 
-      e.preventDefault();
-      e.stopPropagation();
-
-      dragStartPosRef.current = { x: e.clientX, y: e.clientY };
+      dragStartPosRef.current = { x: event.clientX, y: event.clientY };
       dragStartTimeRef.current = Date.now();
-      dragPointerIdRef.current = e.pointerId;
+      dragPointerIdRef.current = event.pointerId;
       isDraggingRef.current = false;
-    };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    [],
+  );
 
-    const handlePointerMove = (e: PointerEvent) => {
+  const moveTogglePointer = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
       if (
         dragStartTimeRef.current === 0 ||
-        dragPointerIdRef.current !== e.pointerId
-      )
+        dragPointerIdRef.current !== event.pointerId
+      ) {
         return;
+      }
 
-      const deltaX = e.clientX - dragStartPosRef.current.x;
-      const deltaY = e.clientY - dragStartPosRef.current.y;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const deltaX = event.clientX - dragStartPosRef.current.x;
+      const deltaY = event.clientY - dragStartPosRef.current.y;
+      const distance = Math.hypot(deltaX, deltaY);
 
       if (distance > dragThreshold && !isDraggingRef.current) {
         isDraggingRef.current = true;
+        setIsDragging(true);
+        setIsActive(false);
+        event.preventDefault();
       }
 
-      if (isDraggingRef.current && menuRef.current) {
-        const { toggleOffset } = getMenuMetrics();
-        const newX = e.clientX - toggleOffset;
-        const newY = e.clientY - toggleOffset;
-        menuRef.current.style.left = `${newX}px`;
-        menuRef.current.style.top = `${newY}px`;
-        setMenuPos({ x: newX, y: newY });
+      if (!isDraggingRef.current || !menuRef.current) {
+        return;
       }
-    };
 
-    const handlePointerUp = (e: PointerEvent) => {
+      event.preventDefault();
+      const { toggleOffset } = getMenuMetrics();
+      const newX = event.clientX - toggleOffset;
+      const newY = event.clientY - toggleOffset;
+      menuRef.current.style.left = `${newX}px`;
+      menuRef.current.style.top = `${newY}px`;
+      setMenuPos({ x: newX, y: newY });
+    },
+    [dragThreshold],
+  );
+
+  const finishTogglePointer = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
       if (
         dragPointerIdRef.current !== null &&
-        dragPointerIdRef.current !== e.pointerId
+        dragPointerIdRef.current !== event.pointerId
       ) {
         return;
+      }
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
       }
 
       if (dragStartTimeRef.current > 0) {
@@ -283,40 +293,30 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         const wasDragging = isDraggingRef.current;
 
         if (!wasDragging && clickDuration < clickTimeThreshold) {
-          if (shouldUseDockedLayout()) {
-            // Docked layouts rely on the button click handler.
-          } else {
-            toggleMenu();
-            suppressToggleClickRef.current = true;
-          }
+          toggleMenu();
+          suppressToggleClickRef.current = true;
         }
 
         if (wasDragging && menuRef.current) {
-          // Clamp final position to keep the fan on-screen.
           const left = parseFloat(menuRef.current.style.left || "0");
           const top = parseFloat(menuRef.current.style.top || "0");
           const clamped = clampToViewport({ x: left, y: top });
           menuRef.current.style.left = `${clamped.x}px`;
           menuRef.current.style.top = `${clamped.y}px`;
           setMenuPos(clamped);
-
-          if (!shouldUseDockedLayout()) {
-            // Persist final position so it survives reloads (desktop only —
-            // docked layouts always snap back to the bottom-right).
-            try {
-              window.localStorage.setItem(STORAGE_KEY, JSON.stringify(clamped));
-            } catch {
-              // Ignore quota / privacy-mode failures.
-            }
-          }
+          persistMenuPosition(clamped);
         }
 
         isDraggingRef.current = false;
+        setIsDragging(false);
         dragStartTimeRef.current = 0;
         dragPointerIdRef.current = null;
       }
-    };
+    },
+    [clickTimeThreshold, toggleMenu],
+  );
 
+  useEffect(() => {
     const handlePointerDownOutside = (e: PointerEvent) => {
       const target = e.target;
       if (!(target instanceof Node)) {
@@ -329,11 +329,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     };
 
     const handleResize = () => {
-      // Re-dock in compact/standalone layouts so the toggle stays in the corner
-      // across rotations and dynamic viewport changes.
-      setMenuPos((prev) =>
-        shouldUseDockedLayout() ? getDockedPosition() : clampToViewport(prev),
-      );
+      setMenuPos((prev) => clampToViewport(prev));
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -347,18 +343,9 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     window.visualViewport?.addEventListener("resize", handleResize);
     window.visualViewport?.addEventListener("scroll", handleResize);
     window.addEventListener("keydown", handleKeyDown);
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("pointermove", handlePointerMove);
-    document.addEventListener("pointerup", handlePointerUp);
-    document.addEventListener("pointercancel", handlePointerUp);
     document.addEventListener("pointerdown", handlePointerDownOutside);
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("pointermove", handlePointerMove);
-      document.removeEventListener("pointerup", handlePointerUp);
-      document.removeEventListener("pointercancel", handlePointerUp);
       document.removeEventListener("pointerdown", handlePointerDownOutside);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
@@ -366,7 +353,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       window.visualViewport?.removeEventListener("scroll", handleResize);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [closeMenu, toggleMenu]);
+  }, [closeMenu]);
 
   const handleMenuItemClick = (callback?: () => void) => {
     callback?.();
@@ -401,6 +388,8 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   ];
 
   const highlightedItem = menuItems[highlightedItemIndex] ?? menuItems[0];
+  const toggleLabel = isActive ? "Close quick actions" : "Open quick actions";
+  const toggleHint = "Drag to reposition • Click to toggle quick actions";
 
   return (
     <div
@@ -415,12 +404,16 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       <button
         ref={toggleRef}
         type="button"
-        className={`toggle ${isActive ? "toggle--active" : ""} ${!hasDiscovered ? "discover-pulse" : ""}`}
-        aria-label={isActive ? "Close quick actions" : "Open quick actions"}
-        title={isActive ? "Close quick actions" : "Open quick actions"}
+        className={`toggle ${isActive ? "toggle--active" : ""} ${isDragging ? "toggle--dragging" : ""} ${!hasDiscovered ? "discover-pulse" : ""}`}
+        aria-label={`${toggleLabel}. ${toggleHint}`}
+        title={toggleHint}
         aria-expanded={isActive}
         aria-haspopup="menu"
         onClick={handleToggleClick}
+        onPointerDown={beginTogglePointer}
+        onPointerMove={moveTogglePointer}
+        onPointerUp={finishTogglePointer}
+        onPointerCancel={finishTogglePointer}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();

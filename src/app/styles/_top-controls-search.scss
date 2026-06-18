@@ -1,54 +1,44 @@
-/* Shared search / top-controls — watchlist + places */
+/* Shared search shell — movies and places workspaces */
 
 @media (max-width: 420px) {
-  .watchlist-top-controls {
-    gap: 0.55rem;
-  }
-
-  .watchlist-top-controls__search-form {
+  .workspace-search__search-form {
     flex-wrap: wrap;
     gap: 0.35rem;
     padding: 0.26rem;
     border-radius: 1rem;
   }
 
-  .watchlist-top-controls__search-shell {
+  .workspace-search__search-shell {
     flex-basis: 100%;
   }
 
-  .watchlist-top-controls__search-field {
+  .workspace-search__search-field {
     min-height: 2.65rem;
     padding-left: 0.8rem !important;
     padding-right: 0.6rem !important;
   }
 
-  .watchlist-top-controls__search-actions {
+  .workspace-search__search-actions {
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem;
   }
 
-  .watchlist-top-controls__search-actions .ui-button {
+  .workspace-search__search-actions .ui-button {
     min-width: 0;
   }
 
-  .watchlist-top-controls__search-button.ui-button {
+  .workspace-search__search-button.ui-button {
     min-width: 0;
     border-left: none;
   }
 
-  .watchlist-top-controls__search-actions .ui-button__content {
+  .workspace-search__search-actions .ui-button__content {
     white-space: nowrap;
   }
 }
 
-.watchlist-top-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.watchlist-top-controls__stage {
+.workspace-search__stage {
   position: relative;
   z-index: 100;
   display: grid;
@@ -64,7 +54,7 @@
     0 14px 26px rgba(2, 4, 18, 0.16);
 }
 
-.watchlist-top-controls__search-form {
+.workspace-search__search-form {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -89,7 +79,7 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
-.watchlist-top-controls__search-form--stack {
+.workspace-search__search-form--stack {
   gap: 0.85rem;
   padding-top: 0.8rem;
   border-top: 1px solid rgba(148, 163, 200, 0.14);
@@ -99,23 +89,23 @@
   min-width: 0;
 }
 
-.watchlist-top-controls__search-form--stack.is-autocomplete-active {
+.workspace-search__search-form--stack.is-autocomplete-active {
   position: relative;
   z-index: 300;
 }
 
-.watchlist-top-controls__search-form--stack {
+.workspace-search__search-form--stack {
   position: relative;
 }
 
-.watchlist-top-controls__search-form:focus-within {
+.workspace-search__search-form:focus-within {
   border-color: rgba(244, 114, 182, 0.4);
   box-shadow:
     0 0 0 3px rgba(244, 114, 182, 0.12),
     0 12px 22px rgba(2, 4, 20, 0.22);
 }
 
-.watchlist-top-controls__search-shell {
+.workspace-search__search-shell {
   flex: 1 1 220px;
   flex: 1;
   min-width: 0;
@@ -125,24 +115,24 @@
   z-index: 50;
 }
 
-.watchlist-top-controls__search-input-wrap {
+.workspace-search__search-input-wrap {
   position: relative;
   width: 100%;
   flex: 1;
   z-index: 2;
 }
 
-.watchlist-top-controls__search-input-wrap:has(.watchlist-top-controls__search-clear) .watchlist-top-controls__search-kbd,
-.watchlist-top-controls__search-input-wrap:has(.watchlist-top-controls__search-clear) .watchlist-top-controls__search-field {
+.workspace-search__search-input-wrap:has(.workspace-search__search-clear) .workspace-search__search-kbd,
+.workspace-search__search-input-wrap:has(.workspace-search__search-clear) .workspace-search__search-field {
   padding-right: 2.2rem !important;
 }
 
-.watchlist-top-controls__search-input-wrap:has(.watchlist-top-controls__search-clear) .watchlist-top-controls__search-kbd,
-.watchlist-top-controls__search-input-wrap:focus-within .watchlist-top-controls__search-kbd {
+.workspace-search__search-input-wrap:has(.workspace-search__search-clear) .workspace-search__search-kbd,
+.workspace-search__search-input-wrap:focus-within .workspace-search__search-kbd {
   display: none;
 }
 
-.watchlist-top-controls__search-prompt {
+.workspace-search__search-prompt {
   margin: 0;
   padding: 0 0.15rem;
   font-family: var(--font-interface, var(--font-body, sans-serif));
@@ -154,7 +144,7 @@
   line-height: 1.35;
 }
 
-.watchlist-top-controls__search-kbd {
+.workspace-search__search-kbd {
   position: absolute;
   right: 0.65rem;
   top: 50%;
@@ -178,17 +168,17 @@
   z-index: 2;
 }
 
-.watchlist-top-controls__search-input-wrap:has(.watchlist-top-controls__search-kbd) .watchlist-top-controls__search-field {
+.workspace-search__search-input-wrap:has(.workspace-search__search-kbd) .workspace-search__search-field {
   padding-right: 2.35rem !important;
 }
 
-.watchlist-top-controls__autocomplete-filter-label {
+.workspace-search__autocomplete-filter-label {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-.watchlist-top-controls__autocomplete-filter-count {
+.workspace-search__autocomplete-filter-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -200,7 +190,7 @@
   opacity: 0.85;
 }
 
-.watchlist-top-controls__search-clear {
+.workspace-search__search-clear {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -220,22 +210,22 @@
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.watchlist-top-controls__search-clear:hover {
+.workspace-search__search-clear:hover {
   opacity: 1;
 }
 
-.watchlist-top-controls__search-clear:focus-visible {
+.workspace-search__search-clear:focus-visible {
   opacity: 1;
   outline: 2px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
   outline-offset: 2px;
   border-radius: 0.35rem;
 }
 
-.watchlist-top-controls__search-shell--with-icon {
+.workspace-search__search-shell--with-icon {
   align-items: center;
 }
 
-.watchlist-top-controls__search-icon {
+.workspace-search__search-icon {
   flex: 0 0 auto;
   padding-left: 1rem;
   font-size: 1rem;
@@ -246,25 +236,25 @@
   transition: filter 0.2s ease;
 }
 
-.watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
+.workspace-search__search-form:focus-within .workspace-search__search-icon {
   filter: drop-shadow(0 0 10px rgba(255, 127, 198, 0.75));
 }
 
-.watchlist-top-controls__search-shell--with-icon .watchlist-top-controls__search-field {
+.workspace-search__search-shell--with-icon .workspace-search__search-field {
   padding-left: 0.6rem !important;
 }
 
-.watchlist-top-controls__search-form--stack:focus-within {
+.workspace-search__search-form--stack:focus-within {
   position: relative;
   z-index: 300;
 }
 
-.watchlist-top-controls__search-shell .ui-input {
+.workspace-search__search-shell .ui-input {
   width: 100%;
   display: flex;
 }
 
-.watchlist-top-controls__search-field {
+.workspace-search__search-field {
   min-height: 3rem;
   flex: 1;
   border: 0;
@@ -276,19 +266,19 @@
   color: var(--color-text-primary);
 }
 
-.watchlist-top-controls__search-field::placeholder {
+.workspace-search__search-field::placeholder {
   color: rgba(255, 225, 175, 0.45);
 }
 
-.watchlist-top-controls__search-field:focus,
-.watchlist-top-controls__search-field:focus-visible {
+.workspace-search__search-field:focus,
+.workspace-search__search-field:focus-visible {
   background: transparent;
   border: 0;
   box-shadow: none;
   outline: none;
 }
 
-.watchlist-top-controls__search-button.ui-button {
+.workspace-search__search-button.ui-button {
   min-height: 3rem;
   min-width: 7.25rem;
   border-radius: 1rem;
@@ -297,11 +287,11 @@
   letter-spacing: 0.02em;
 }
 
-.watchlist-top-controls__search-actions .ui-button {
+.workspace-search__search-actions .ui-button {
   min-height: 3rem;
 }
 
-.watchlist-top-controls__search-actions {
+.workspace-search__search-actions {
   display: grid;
   grid-template-columns: minmax(7.25rem, 1fr) auto;
   gap: 0.45rem;
@@ -309,7 +299,7 @@
   min-width: 0;
 }
 
-.watchlist-top-controls__autocomplete {
+.workspace-search__autocomplete {
   position: relative;
   width: 100%;
   z-index: 10000;
@@ -334,13 +324,13 @@
   pointer-events: none;
 }
 
-.watchlist-top-controls__autocomplete.is-open {
+.workspace-search__autocomplete.is-open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
 
-.watchlist-top-controls__autocomplete-option {
+.workspace-search__autocomplete-option {
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -359,17 +349,17 @@
 }
 
 @media (max-width: 640px) {
-  .watchlist-top-controls__search-form {
+  .workspace-search__search-form {
     gap: 0.55rem;
   }
 
-  .watchlist-top-controls__search-form--stack {
+  .workspace-search__search-form--stack {
     gap: 0.55rem;
     padding-top: 0;
     border-top: 0;
   }
 
-  .watchlist-top-controls__search-shell {
+  .workspace-search__search-shell {
     min-height: 2.875rem;
     border-radius: 0.75rem;
     background: color-mix(in srgb, var(--color-surface-0) 90%, transparent);
@@ -377,68 +367,68 @@
     box-shadow: none;
   }
 
-  .watchlist-top-controls__search-field {
+  .workspace-search__search-field {
     min-height: 2.875rem;
     padding-left: 0.85rem;
     padding-right: 2.25rem;
     font-size: 1rem;
   }
 
-  .watchlist-top-controls__search-button.ui-button {
+  .workspace-search__search-button.ui-button {
     min-height: 2.75rem;
     min-width: 0;
     font-size: 0.875rem;
     border-radius: 0.75rem;
   }
 
-  .watchlist-top-controls__search-actions {
+  .workspace-search__search-actions {
     gap: 0.4rem;
     width: 100%;
   }
 
-  .watchlist-top-controls__search-actions .ui-button {
+  .workspace-search__search-actions .ui-button {
     min-height: 2.75rem !important;
     font-size: 0.875rem !important;
     border-radius: 0.75rem;
   }
 
-  .watchlist-top-controls__autocomplete {
+  .workspace-search__autocomplete {
     margin-top: 0.3rem;
     border-radius: 0.75rem;
     max-height: min(15rem, 48vh);
     box-shadow: 0 12px 28px rgba(2, 4, 18, 0.35);
   }
 
-  .watchlist-top-controls__autocomplete-option {
+  .workspace-search__autocomplete-option {
     min-height: 3rem;
     padding: 0.7rem 0.8rem;
   }
 
-  .watchlist-top-controls__autocomplete-title {
+  .workspace-search__autocomplete-title {
     font-size: 0.9375rem;
     font-family: var(--font-interface, var(--font-body, sans-serif));
   }
 
-  .watchlist-top-controls__autocomplete-meta {
+  .workspace-search__autocomplete-meta {
     font-size: 0.75rem;
   }
 }
 
-.watchlist-top-controls__autocomplete-option + .watchlist-top-controls__autocomplete-option {
+.workspace-search__autocomplete-option + .workspace-search__autocomplete-option {
   border-top: 1px solid rgba(148, 163, 200, 0.1);
 }
 
-.watchlist-top-controls__autocomplete-option:hover,
-.watchlist-top-controls__autocomplete-option.is-active {
+.workspace-search__autocomplete-option:hover,
+.workspace-search__autocomplete-option.is-active {
   background: linear-gradient(90deg, rgba(244, 114, 182, 0.1) 0%, rgba(200, 215, 255, 0.04) 100%);
 }
 
-.watchlist-top-controls__autocomplete-option:focus-visible {
+.workspace-search__autocomplete-option:focus-visible {
   outline: none;
   background: linear-gradient(90deg, rgba(244, 114, 182, 0.14) 0%, rgba(200, 215, 255, 0.05) 100%);
 }
 
-.watchlist-top-controls__autocomplete-poster {
+.workspace-search__autocomplete-poster {
   flex: 0 0 2.6rem;
   width: 2.6rem;
   aspect-ratio: 2 / 3;
@@ -449,24 +439,24 @@
   box-shadow: inset 0 1px 0 rgba(200, 215, 255, 0.05);
 }
 
-.watchlist-top-controls__autocomplete-poster-image,
-.watchlist-top-controls__autocomplete-poster-fallback {
+.workspace-search__autocomplete-poster-image,
+.workspace-search__autocomplete-poster-fallback {
   width: 100%;
   height: 100%;
 }
 
-.watchlist-top-controls__autocomplete-poster-image {
+.workspace-search__autocomplete-poster-image {
   display: block;
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.watchlist-top-controls__autocomplete-poster-image.is-loaded {
+.workspace-search__autocomplete-poster-image.is-loaded {
   opacity: 1;
 }
 
-.watchlist-top-controls__autocomplete-poster-fallback {
+.workspace-search__autocomplete-poster-fallback {
   display: grid;
   place-items: center;
   font-family: var(--type-heading-family);
@@ -478,14 +468,14 @@
     linear-gradient(165deg, rgba(30, 48, 100, 0.9) 0%, rgba(14, 24, 56, 0.96) 100%);
 }
 
-.watchlist-top-controls__autocomplete-copy {
+.workspace-search__autocomplete-copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 }
 
-.watchlist-top-controls__autocomplete-title {
+.workspace-search__autocomplete-title {
   color: var(--color-text-primary);
   font-family: var(--type-body-md-family);
   font-size: 0.95rem;
@@ -493,14 +483,14 @@
   line-height: 1.2;
 }
 
-.watchlist-top-controls__autocomplete-meta {
+.workspace-search__autocomplete-meta {
   color: color-mix(in srgb, var(--color-text-secondary) 86%, var(--color-secondary) 14%);
   font-family: var(--type-caption-family);
   font-size: 0.75rem;
   line-height: 1.35;
 }
 
-.watchlist-top-controls__autocomplete-status {
+.workspace-search__autocomplete-status {
   padding: 0.9rem 1rem;
   color: color-mix(in srgb, var(--color-text-secondary) 86%, var(--color-secondary) 14%);
   font-family: var(--type-body-sm-family);
@@ -515,14 +505,14 @@
 
 
 
-.watchlist-top-controls__autocomplete-loading {
+.workspace-search__autocomplete-loading {
   display: flex;
   align-items: center;
   gap: 0.28rem;
   padding: 0.55rem 0.9rem 0.3rem;
 }
 
-.watchlist-top-controls__autocomplete-loading-dot {
+.workspace-search__autocomplete-loading-dot {
   display: block;
   width: 0.32rem;
   height: 0.32rem;
@@ -531,11 +521,11 @@
   animation: autocomplete-dot-bounce 1.1s ease-in-out infinite;
 }
 
-.watchlist-top-controls__autocomplete-loading-dot:nth-child(2) {
+.workspace-search__autocomplete-loading-dot:nth-child(2) {
   animation-delay: 0.18s;
 }
 
-.watchlist-top-controls__autocomplete-loading-dot:nth-child(3) {
+.workspace-search__autocomplete-loading-dot:nth-child(3) {
   animation-delay: 0.36s;
 }
 
@@ -550,7 +540,7 @@
   }
 }
 
-.watchlist-top-controls__search-empty {
+.workspace-search__search-empty {
   min-width: 3rem;
   min-height: 2.5rem;
   display: inline-flex;
@@ -560,14 +550,14 @@
   opacity: 0.6;
 }
 
-.watchlist-top-controls__suggestion-error {
+.workspace-search__suggestion-error {
   color: var(--color-error);
   margin-top: 0.25rem;
   font-size: var(--font-size-xs);
   font-family: var(--type-body-sm-family);
 }
 
-.watchlist-top-controls__error {
+.workspace-search__error {
   margin-top: 0.45rem;
   padding: 0.5rem 0.75rem;
   background-color: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
@@ -578,6 +568,6 @@
   line-height: 1.45;
 }
 
-.watchlist-top-controls__search-button--dashed {
+.workspace-search__search-button--dashed {
   border-style: dashed !important;
 }

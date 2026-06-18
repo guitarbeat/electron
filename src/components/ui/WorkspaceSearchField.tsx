@@ -1,6 +1,5 @@
 import type { FC, KeyboardEvent, RefObject } from "react";
 import { Input } from "@/ui/FormFields";
-import WorkspaceSearchClear from "@/components/ui/WorkspaceSearchClear";
 
 export interface WorkspaceSearchFieldComboboxProps {
   expanded: boolean;
@@ -34,7 +33,7 @@ const WorkspaceSearchField: FC<WorkspaceSearchFieldProps> = ({
   <>
     <Input
       ref={inputRef}
-      className="watchlist-top-controls__search-field"
+      className="workspace-search__search-field"
       value={value}
       onChange={(event) => onChange(event.target.value)}
       onFocus={onFocus}
@@ -49,7 +48,17 @@ const WorkspaceSearchField: FC<WorkspaceSearchFieldProps> = ({
       autoComplete="off"
       fullWidth
     />
-    {value ? <WorkspaceSearchClear onClick={onClear} /> : null}
+    {value ? (
+      <button
+        type="button"
+        className="workspace-search__search-clear"
+        onClick={onClear}
+        aria-label="Clear search"
+        title="Clear search"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+    ) : null}
   </>
 );
 

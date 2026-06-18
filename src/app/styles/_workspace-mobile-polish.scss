@@ -29,7 +29,7 @@ html {
 
 /* ── Search field: min 44px on mobile ───────────────────────────── */
 @media (max-width: 640px) {
-  .watchlist-top-controls__search-field {
+  .workspace-search__search-field {
     min-height: 2.75rem;
   }
 }
@@ -114,7 +114,7 @@ html {
     opacity: 0.3;
   }
 
-  .collection-grid.watchlist-content {
+  .collection-grid.workspace-content {
     --collection-grid-min-column-width: clamp(9rem, 44vw, 11.5rem);
     gap: 0.65rem;
   }

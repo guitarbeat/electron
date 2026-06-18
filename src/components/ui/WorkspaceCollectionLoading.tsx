@@ -35,7 +35,7 @@ const WorkspaceCollectionLoading: FC<WorkspaceCollectionLoadingProps> = ({
     gridClassName ??
     (tab === "places"
       ? PLACES_GRID_CLASS
-      : `watchlist-content${browseLayoutClass}`);
+      : `workspace-content${browseLayoutClass}`);
   const resolvedMinCol =
     minColumnWidth ??
     (tab === "places" ? PLACES_GRID_MIN_COL : MOVIES_POSTER_GRID_MIN_COL);

@@ -28,11 +28,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .watchlist-top-controls__search-form,
+  .workspace-search__search-form,
   .ui-control-input-shell,
-  .watchlist-top-controls__autocomplete,
-  .watchlist-top-controls__autocomplete-option,
-  .watchlist-top-controls__autocomplete-poster-image,
+  .workspace-search__autocomplete,
+  .workspace-search__autocomplete-option,
+  .workspace-search__autocomplete-poster-image,
   .media-card,
   .media-card__overlay,
   .movie-poster,
@@ -51,18 +51,18 @@
     transition: none !important;
   }
 
-  .watchlist-top-controls__autocomplete,
-  .watchlist-top-controls__autocomplete.is-open,
+  .workspace-search__autocomplete,
+  .workspace-search__autocomplete.is-open,
   .movie-item-success-badge,
   .movie-item-imdb-badge,
-  .watchlist-top-controls__autocomplete-loading-dot {
+  .workspace-search__autocomplete-loading-dot {
     animation: none !important;
   }
 }
 
-.watchlist-top-controls__autocomplete-option:hover,
-.watchlist-top-controls__autocomplete-option.is-active,
-.watchlist-top-controls__autocomplete-option:focus-visible {
+.workspace-search__autocomplete-option:hover,
+.workspace-search__autocomplete-option.is-active,
+.workspace-search__autocomplete-option:focus-visible {
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--color-accent) 8%, transparent) 0%,
@@ -71,7 +71,7 @@
 }
 
 
-.watchlist-top-controls__autocomplete-loading-dot {
+.workspace-search__autocomplete-loading-dot {
   opacity: 0.6;
   transform: none;
 }
@@ -134,7 +134,7 @@
     inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 7%, transparent);
 }
 
-.app-workspace-stack--movies .watchlist-top-controls__autocomplete {
+.app-workspace-stack--movies .workspace-search__autocomplete {
   border-radius: 1rem;
   border: 1px solid color-mix(in srgb, var(--color-border-subtle) 74%, transparent);
   background:
@@ -145,9 +145,9 @@
     0 18px 34px color-mix(in srgb, var(--color-background) 40%, transparent);
 }
 
-.app-workspace-stack--movies .watchlist-top-controls__autocomplete-option,
-.app-workspace-stack--movies .watchlist-top-controls__autocomplete-title,
-.app-workspace-stack--movies .watchlist-top-controls__autocomplete-meta {
+.app-workspace-stack--movies .workspace-search__autocomplete-option,
+.app-workspace-stack--movies .workspace-search__autocomplete-title,
+.app-workspace-stack--movies .workspace-search__autocomplete-meta {
   color: inherit;
   font-family: inherit;
 }

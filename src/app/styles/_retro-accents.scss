@@ -13,7 +13,7 @@
 
 .app-workspace-stack--movies,
 .app-workspace-stack--places {
-  .watchlist-top-controls__search-button.ui-button {
+  .workspace-search__search-button.ui-button {
     background: var(--retro-bevel-face);
     color: var(--retro-bevel-ink);
     font-family: var(--font-display);
@@ -51,7 +51,7 @@
     }
   }
 
-  .watchlist-top-controls__search-actions .ui-button:not(.watchlist-top-controls__search-button) {
+  .workspace-search__search-actions .ui-button:not(.workspace-search__search-button) {
     background: var(--retro-bevel-face);
     color: var(--retro-bevel-ink);
     font-family: var(--font-display);
@@ -76,13 +76,13 @@
     }
   }
 
-  .watchlist-top-controls__search-icon {
+  .workspace-search__search-icon {
     padding-left: 0.5rem;
     font-size: 0.9rem;
     filter: none;
   }
 
-  .watchlist-top-controls__search-form:focus-within .watchlist-top-controls__search-icon {
+  .workspace-search__search-form:focus-within .workspace-search__search-icon {
     filter: none;
   }
 }
@@ -161,12 +161,12 @@
 }
 
 @media (max-width: 420px) {
-  .app-workspace-stack--movies .watchlist-top-controls__search-form {
+  .app-workspace-stack--movies .workspace-search__search-form {
     border-radius: 0;
     padding: 4px;
   }
 
-  .app-workspace-stack--movies .watchlist-top-controls__search-button.ui-button {
+  .app-workspace-stack--movies .workspace-search__search-button.ui-button {
     min-height: 2.4rem;
   }
 }

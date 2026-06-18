@@ -307,7 +307,7 @@ const PlacesList: React.FC = () => {
           />,
           searchPortalEl,
         )}
-      <div ref={placesBodyRef} className="watchlist-container places-container">
+      <div ref={placesBodyRef} className="workspace-container places-container">
         {syncBanner.isDegraded && (
           <SyncBanner
             isBlocked={syncBanner.isBlocked}

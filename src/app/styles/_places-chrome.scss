@@ -1,7 +1,7 @@
 /* ── Places workspace chrome ──────────────────────────────────────────────── */
 
 .places-top-controls__error,
-.watchlist-top-controls__error {
+.workspace-search__error {
   padding: 0.5rem 0.75rem;
   background-color: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-error, #ef4444) 25%, transparent);

@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/ui/Button";
 import { PlusIcon, Spinner } from "@/common/Icons";
 import type { PlaceSuggestion } from "@/shared/types";
-import WorkspaceSearchShell from "@/components/ui/WorkspaceSearchShell";
+import WorkspaceSearchShell, {
+  WorkspaceSearchActions,
+} from "@/components/ui/WorkspaceSearchShell";
 import WorkspaceSearchField from "@/components/ui/WorkspaceSearchField";
-import WorkspaceSearchActions from "@/components/ui/WorkspaceSearchActions";
 import {
   WorkspaceAutocompleteCopy,
   WorkspaceAutocompleteNoMatchPanel,
@@ -275,7 +276,7 @@ const PlacesTopControls = React.forwardRef<
                   type="submit"
                   variant="primary"
                   size="md"
-                  className="watchlist-top-controls__search-button"
+                  className="workspace-search__search-button"
                   disabled={isBusy}
                   aria-label="Add place to your list"
                   title="Add directly to list"
@@ -289,7 +290,7 @@ const PlacesTopControls = React.forwardRef<
                   type="button"
                   variant="ghost"
                   size="md"
-                  className="watchlist-top-controls__search-button watchlist-top-controls__search-button--dashed"
+                  className="workspace-search__search-button workspace-search__search-button--dashed"
                   onClick={() => void onSuggest()}
                   disabled={isBusy}
                   aria-label="Suggest place for review"

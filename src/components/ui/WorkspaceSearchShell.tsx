@@ -13,6 +13,10 @@ interface WorkspaceSearchShellProps {
   onShellBlurCapture?: () => void;
 }
 
+export const WorkspaceSearchActions: FC<{ children: ReactNode }> = ({
+  children,
+}) => <div className="workspace-search__search-actions">{children}</div>;
+
 const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
   icon,
   isAutocompleteActive = false,
@@ -25,34 +29,34 @@ const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
   onShellFocusCapture,
   onShellBlurCapture,
 }) => (
-  <div className="watchlist-top-controls__stage">
+  <div className="workspace-search__stage">
     <form
-      className={`watchlist-top-controls__search-form watchlist-top-controls__search-form--stack${
+      className={`workspace-search__search-form workspace-search__search-form--stack${
         isAutocompleteActive ? " is-autocomplete-active" : ""
       }`}
       onSubmit={onSubmit}
     >
       <div
         ref={shellRef}
-        className={`watchlist-top-controls__search-shell${
-          icon ? " watchlist-top-controls__search-shell--with-icon" : ""
+        className={`workspace-search__search-shell${
+          icon ? " workspace-search__search-shell--with-icon" : ""
         }`}
         onFocusCapture={onShellFocusCapture}
         onBlurCapture={onShellBlurCapture}
       >
         {icon ? (
-          <span className="watchlist-top-controls__search-icon" aria-hidden="true">
+          <span className="workspace-search__search-icon" aria-hidden="true">
             {icon}
           </span>
         ) : null}
-        <div className="watchlist-top-controls__search-input-wrap">{input}</div>
+        <div className="workspace-search__search-input-wrap">{input}</div>
       </div>
       {autocomplete}
       {actions}
     </form>
 
     {error ? (
-      <div className="watchlist-top-controls__error" role="alert">
+      <div className="workspace-search__error" role="alert">
         {error}
       </div>
     ) : null}

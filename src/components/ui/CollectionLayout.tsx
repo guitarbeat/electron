@@ -140,76 +140,8 @@ const CollectionSection: React.FC<CollectionSectionProps> = ({
   );
 };
 
-// ============================================================================
-// WorkspacePanels
-// ============================================================================
-
-interface WorkspacePanelsProps {
-  first: React.ReactNode;
-  second: React.ReactNode;
-  desktopColumns?: string;
-  gap?: string;
-  mobileGap?: string;
-  className?: string;
-  firstClassName?: string;
-  secondClassName?: string;
-  stickyFirst?: boolean;
-  stickyOffset?: string;
-  firstAs?: React.ElementType;
-  secondAs?: React.ElementType;
-}
-
-const WorkspacePanels: React.FC<WorkspacePanelsProps> = ({
-  first,
-  second,
-  desktopColumns = "minmax(280px, 320px) 1fr",
-  gap = spacing.xl,
-  mobileGap = gap,
-  className = "",
-  firstClassName = "",
-  secondClassName = "",
-  stickyFirst = false,
-  stickyOffset = spacing.xl,
-  firstAs: FirstTag = "div",
-  secondAs: SecondTag = "div",
-}) => {
-  return (
-    <div
-      className={`workspace-layout ${className}`.trim()}
-      style={
-        {
-          "--workspace-layout-columns": desktopColumns,
-          "--workspace-layout-gap": gap,
-          "--workspace-layout-mobile-gap": mobileGap,
-        } as React.CSSProperties
-      }
-    >
-      <FirstTag
-        className={`workspace-layout__controls ${
-          stickyFirst ? "workspace-layout__controls--sticky" : ""
-        } ${firstClassName}`.trim()}
-        style={
-          stickyFirst
-            ? ({
-                "--workspace-layout-sticky-offset": stickyOffset,
-              } as React.CSSProperties)
-            : undefined
-        }
-      >
-        {first}
-      </FirstTag>
-      <SecondTag
-        className={`workspace-layout__content ${secondClassName}`.trim()}
-      >
-        {second}
-      </SecondTag>
-    </div>
-  );
-};
-
 export {
   CollectionEmptyState,
   CollectionGrid,
   CollectionSection,
-  WorkspacePanels,
 };

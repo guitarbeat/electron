@@ -126,14 +126,14 @@ body[data-theme='places'] {
 }
 
 @media (max-width: 520px) {
-  .watchlist-top-controls__search-actions {
+  .workspace-search__search-actions {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem;
   }
 
-  .watchlist-top-controls__search-actions .ui-button {
+  .workspace-search__search-actions .ui-button {
     min-width: 0;
   }
 
@@ -149,12 +149,12 @@ body[data-theme='places'] {
 }
 
 
-.watchlist-top-controls__search-field {
+.workspace-search__search-field {
   padding-left: 1rem !important;
   padding-right: 0.85rem !important;
 }
 
-.watchlist-top-controls__search-button.ui-button {
+.workspace-search__search-button.ui-button {
   border-left-color: rgba(189, 153, 100, 0.18);
 }
 
@@ -251,7 +251,7 @@ body[data-theme='places'] {
   font-size: 0.78rem;
   opacity: 0.7;
 }
-.watchlist-top-controls__autocomplete-filters {
+.workspace-search__autocomplete-filters {
   display: flex;
   align-items: center;
   gap: 0.35rem;
