@@ -19,7 +19,7 @@ import { useMoviesWorkspace } from "@/hooks/movies";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
-import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
+import { buildMovieSections } from "./lib/movieSections";
 import {
   MOVIE_BROWSE_LAYOUTS,
   readMovieBrowseLayout,
@@ -35,7 +35,6 @@ import { useViewport } from "@/app/ViewportContext";
 import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
 import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
 import {
-  MOVIE_COLLECTION_SORTS,
   workspaceSectionIds,
 } from "@/utils/workspaceConfig";
 
@@ -54,7 +53,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
   const { isMobile } = useViewport();
   const { searchPortalEl } = useBentoSlot();
-  const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [browseLayout, setBrowseLayout] = useState<MovieBrowseLayout>(() =>
     readMovieBrowseLayout(),
   );
@@ -105,13 +103,9 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [memories, movies],
   );
   const sections = useMemo(
-    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
-    [movies, pendingSuggestions, sortOrder],
+    () => buildMovieSections(movies, pendingSuggestions),
+    [movies, pendingSuggestions],
   );
-
-  const handleMovieSortChange = useCallback((order: MovieSortOrder) => {
-    setSortOrder(order);
-  }, []);
 
   const handleBrowseLayoutChange = useCallback((layout: string) => {
     const nextLayout = layout === "scroll" ? "scroll" : "grid";
@@ -127,17 +121,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       queue: sections.queue.length,
       completed: sections.completed.length,
     },
-    sortOrder,
-    onSortChange: handleMovieSortChange,
-    sorts: MOVIE_COLLECTION_SORTS.desktop,
-    mobileSorts: MOVIE_COLLECTION_SORTS.mobile,
     ariaLabel: "Movies workspace controls",
     viewModes: isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS,
     activeViewMode: browseLayout,
     onViewModeChange: handleBrowseLayoutChange,
     viewModeAriaLabel: "Movie browse layout",
-    sectionSpyEnabled: !isLoading,
-    statsLoading: isLoading,
+    sectionShortcutsEnabled: !isLoading,
     sectionAvailability: {
       incoming: isSuggestionsLoading || sections.suggestions.length > 0,
       queue: sections.queue.length > 0,
@@ -201,26 +190,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setSuggestionError(null);
     setIsRecommendationComposerOpen(true);
   }, [searchQuery]);
-  const handleEmptyStateAction = useCallback(() => {
-    if (!currentUser && searchQuery.trim()) {
-      openRecommendationComposer();
-      focusSearchInput();
-      return;
-    }
-    focusSearchInput();
-    if (!currentUser) {
-      setToast({
-        message: "Type a movie or show title in search, then press Suggest.",
-        type: "info",
-      });
-    }
-  }, [
-    currentUser,
-    focusSearchInput,
-    openRecommendationComposer,
-    searchQuery,
-    setToast,
-  ]);
   const handleAddAction = useCallback(async () => {
     if (isAdding || isSubmittingRecommendation) {
       return;
@@ -292,6 +261,32 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     setSuccessMovieId,
     setToast,
     submitRecommendation,
+  ]);
+  const handleEmptyStateAction = useCallback(() => {
+    const hasQuery = Boolean(searchQuery.trim());
+    if (!currentUser && hasQuery) {
+      openRecommendationComposer();
+      focusSearchInput();
+      return;
+    }
+    if (currentUser && hasQuery) {
+      void handleAddAction();
+      return;
+    }
+    focusSearchInput();
+    if (!currentUser) {
+      setToast({
+        message: "Type a movie or show title in search, then press Suggest.",
+        type: "info",
+      });
+    }
+  }, [
+    currentUser,
+    focusSearchInput,
+    handleAddAction,
+    openRecommendationComposer,
+    searchQuery,
+    setToast,
   ]);
   const handleSubmitRecommendation = useCallback(async () => {
     if (isAdding || isSubmittingRecommendation) {
@@ -429,10 +424,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         movieMemories={movieMemories}
         onAddMovieFocus={handleEmptyStateAction}
         emptyActionLabel={
-          !currentUser && searchQuery.trim()
-            ? "Suggest this title"
+          searchQuery.trim()
+            ? currentUser
+              ? "Add this title"
+              : "Suggest this title"
             : undefined
         }
+        emptyActionBusy={isAdding || isSubmittingRecommendation}
         onAcceptSuggestion={handleAcceptSuggestion}
         onRejectSuggestion={handleRejectSuggestion}
         onDeleteRequest={setMovieToDelete}

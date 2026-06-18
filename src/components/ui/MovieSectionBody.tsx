@@ -53,6 +53,7 @@ interface Props {
   movieMemories: Map<string, SharedMemory[]>;
   onAddMovieFocus: () => void;
   emptyActionLabel?: string;
+  emptyActionBusy?: boolean;
   onAcceptSuggestion: (s: MovieSuggestion) => void;
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
@@ -74,6 +75,7 @@ const MovieSectionBody: React.FC<Props> = ({
   movieMemories,
   onAddMovieFocus,
   emptyActionLabel,
+  emptyActionBusy,
   onAcceptSuggestion,
   onRejectSuggestion,
   onDeleteRequest,
@@ -88,8 +90,7 @@ const MovieSectionBody: React.FC<Props> = ({
     browseLayout === "grid" ? " watchlist-content--poster-grid" : "";
 
   const showInitialLoading =
-    isLoading &&
-    isSuggestionsLoading &&
+    (isLoading || isSuggestionsLoading) &&
     sections.queue.length === 0 &&
     sections.suggestions.length === 0 &&
     sections.completed.length === 0;
@@ -182,6 +183,7 @@ const MovieSectionBody: React.FC<Props> = ({
             emptyActionLabel ??
             (currentUser ? "Add a movie" : "Suggest a movie")
           }
+          actionBusy={emptyActionBusy}
         />
       </ChromaCollectionGrid>
     );

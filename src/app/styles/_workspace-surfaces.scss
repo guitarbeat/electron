@@ -2,93 +2,6 @@
    Shared Static Workspace Surfaces
    ============================================================================ */
 
-.workspace-summary {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(12rem, auto);
-  gap: 1rem;
-  align-items: end;
-  padding: 1rem 1.05rem 0.95rem;
-  border-radius: 1.2rem;
-  border-width: 0;
-  border-color: rgba(0, 0, 0, 0);
-  border-style: none;
-  border-image: none;
-  box-shadow: none;
-  background: unset;
-  background-color: unset;
-  background-image: none;
-}
-
-.workspace-summary__copy {
-  display: grid;
-  gap: 0.34rem;
-  min-width: 0;
-}
-
-.workspace-summary__eyebrow {
-  margin: 0;
-  font-family: var(--type-eyebrow-family);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-text-secondary) 78%, var(--color-secondary) 22%);
-}
-
-.workspace-summary__title {
-  margin: 0;
-  font-family: var(--type-title-sm-family);
-  font-size: clamp(1.25rem, 1rem + 0.55vw, 1.7rem);
-  line-height: var(--line-height-heading);
-  letter-spacing: 0.03em;
-  color: var(--color-text-primary);
-}
-
-.workspace-summary__lead {
-  margin: 0;
-  max-width: 48ch;
-  color: color-mix(in srgb, var(--color-text-secondary) 86%, white 14%);
-  font-family: var(--type-body-sm-family);
-  font-size: var(--type-body-sm-size);
-  line-height: var(--type-body-sm-line-height);
-}
-
-.workspace-summary__stats {
-  display: grid;
-  grid-template-columns: repeat(var(--workspace-summary-stat-count, 3), minmax(0, 1fr));
-  gap: 0.55rem;
-}
-
-.workspace-summary__stat {
-  display: grid;
-  gap: 0.18rem;
-  min-width: 0;
-  padding-left: 0.65rem;
-  border-left: 1px solid var(--color-border-subtle);
-}
-
-.workspace-summary__stat:first-child {
-  padding-left: 0;
-  border-left: none;
-}
-
-.workspace-summary__stat-value {
-  color: var(--color-text-primary);
-  font-family: 'Cormorant Garamond', var(--font-display);
-  font-size: clamp(1.6rem, 1.35rem + 0.8vw, 2.2rem);
-  line-height: 0.95;
-  letter-spacing: 0.02em;
-}
-
-.workspace-summary__stat-label {
-  color: color-mix(in srgb, var(--color-text-secondary) 72%, transparent);
-  font-family: var(--type-eyebrow-family);
-  font-size: 0.62rem;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .workspace-section--utility {
   margin-top: 0.1rem;
 }
@@ -243,28 +156,6 @@
   font-family: inherit;
 }
 
-@media (max-width: 900px) {
-  .workspace-summary {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .workspace-summary {
-    padding: 0.9rem;
-    gap: 0.75rem;
-  }
-
-  .workspace-summary__stats {
-    grid-template-columns: repeat(var(--workspace-summary-stat-count, 3), minmax(0, 1fr));
-  }
-
-  .workspace-summary__stat {
-    padding-left: 0;
-    border-left: none;
-  }
-}
-
 /* External Movie Card Actions */
 .workspace-card-action.movie-action-btn--watch {
   flex-direction: column;
@@ -336,53 +227,4 @@
   .workspace-card-action.movie-action-btn--watch .workspace-card-action__text {
     font-size: clamp(0.62rem, 5.2cqi, 0.72rem);
   }
-}
-
-/* ── In-header search: reset form visuals so it blends with the header ──── */
-.watchlist-top-controls__search-form--in-header {
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-left: 1px solid var(--color-border-subtle);
-  border-right: 1px solid var(--color-border-subtle);
-  border-radius: 0;
-  padding: 0 0.7rem;
-  justify-content: center;
-  align-items: center;
-}
-
-.watchlist-top-controls__search-form--in-header .ui-input__field {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-radius: 0;
-  min-height: 3.35rem;
-  padding-top: 0.1rem;
-  padding-bottom: 0.1rem;
-  font-size: 1rem;
-  line-height: 1.2;
-  color: var(--color-text-primary);
-  text-align: center;
-}
-
-.watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-field {
-  color: color-mix(in srgb, var(--color-text-primary) 88%, transparent);
-}
-
-.watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-shell {
-  justify-content: center;
-  min-width: min(34rem, 100%);
-}
-
-.watchlist-top-controls__search-form--in-header .ui-input {
-  max-width: min(34rem, 100%);
-  margin: 0 auto;
-}
-
-.watchlist-top-controls__search-form--in-header .watchlist-top-controls__search-field::placeholder {
-  color: color-mix(in srgb, var(--color-text-secondary) 50%, transparent);
 }

@@ -2,7 +2,9 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import BentoWorkspaceController from "@/components/ui/BentoWorkspaceController";
+import BentoWorkspaceController, {
+  type WorkspaceChromeHeaderProps,
+} from "@/components/ui/BentoWorkspaceController";
 import WorkspaceKeyboardHelp from "@/components/ui/WorkspaceKeyboardHelp";
 import { useViewport } from "@/app/ViewportContext";
 import { useWorkspaceKeyboardHelp } from "@/hooks/useWorkspaceKeyboardHelp";
@@ -14,18 +16,21 @@ import {
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
-const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {
-  stats: [],
-  sorts: [],
-  activeSortOrder: "recent",
-  onSortChange: () => {},
-};
+const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 
-interface AppWorkspaceShellProps {
-  activeTab: MainTab;
-}
+interface AppWorkspaceShellProps extends WorkspaceChromeHeaderProps {}
 
-const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
+const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
+  activeTab,
+  onTabChange,
+  onOpenMessages,
+  onOpenQuiz,
+  pwaStatus,
+  onInstallApp,
+  onApplyUpdate,
+  onRetrySync,
+  onOpenSpin,
+}) => {
   const { isMobile } = useViewport();
   const keyboardHelp = useWorkspaceKeyboardHelp();
   const [tabConfigs, setTabConfigs] = useState<
@@ -74,11 +79,15 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
         style={{ position: "relative" }}
       >
         <BentoWorkspaceController
-          stats={bento.stats}
-          statsLoading={bento.statsLoading}
-          sorts={bento.sorts}
-          activeSortOrder={bento.activeSortOrder}
-          onSortChange={bento.onSortChange}
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          onOpenMessages={onOpenMessages}
+          onOpenQuiz={onOpenQuiz}
+          pwaStatus={pwaStatus}
+          onInstallApp={onInstallApp}
+          onApplyUpdate={onApplyUpdate}
+          onRetrySync={onRetrySync}
+          onOpenSpin={onOpenSpin}
           ariaLabel={bento.ariaLabel}
           viewModes={bento.viewModes}
           activeViewMode={bento.activeViewMode}

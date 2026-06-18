@@ -17,10 +17,7 @@ import PlacesTopControls, {
   type PlacesTopControlsHandle,
 } from "./PlacesTopControls.tsx";
 import PlacesSectionBody from "./PlacesSectionBody.tsx";
-import {
-  buildPlaceSections,
-  type PlaceSortOrder,
-} from "./lib/placeSections.ts";
+import { buildPlaceSections } from "./lib/placeSections.ts";
 import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import { getErrorMessage } from "@/utils";
 import { createPortal } from "react-dom";
@@ -28,10 +25,7 @@ import { useBentoSlot } from "@/app/BentoSlotContext";
 import { useFocusSearchShortcut } from "@/hooks/useFocusSearchShortcut";
 import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
 import { useWorkspaceSyncBanner } from "@/hooks/useWorkspaceSyncBanner";
-import {
-  PLACE_COLLECTION_SORTS,
-  workspaceSectionIds,
-} from "@/utils/workspaceConfig";
+import { workspaceSectionIds } from "@/utils/workspaceConfig";
 
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
@@ -69,7 +63,6 @@ const PlacesList: React.FC = () => {
     retrySync: retrySuggestionsSync,
   } = usePlaceSuggestions(isLoading);
 
-  const [sortOrder, setSortOrder] = useState<PlaceSortOrder>("recent");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -83,15 +76,9 @@ const PlacesList: React.FC = () => {
   const activeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const sections = useMemo(
-    () => buildPlaceSections(places, pendingSuggestions, sortOrder),
-    [places, pendingSuggestions, sortOrder],
+    () => buildPlaceSections(places, pendingSuggestions),
+    [places, pendingSuggestions],
   );
-  const hasPlaces =
-    sections.queue.length > 0 || sections.completed.length > 0;
-
-  const handlePlaceSortChange = useCallback((order: PlaceSortOrder) => {
-    setSortOrder(order);
-  }, []);
 
   useWorkspaceBentoConfig({
     tab: "places",
@@ -101,14 +88,8 @@ const PlacesList: React.FC = () => {
       queue: sections.queue.length,
       completed: sections.completed.length,
     },
-    sortOrder,
-    onSortChange: handlePlaceSortChange,
-    sorts: PLACE_COLLECTION_SORTS.desktop,
-    mobileSorts: PLACE_COLLECTION_SORTS.mobile,
     ariaLabel: "Places workspace controls",
-    sectionSpyEnabled: !isLoading,
-    statsLoading: isLoading,
-    sectionSpyTopInset: hasPlaces ? "38%" : undefined,
+    sectionShortcutsEnabled: !isLoading,
     sectionAvailability: {
       incoming:
         isSuggestionsLoading || pendingSuggestions.length > 0,
@@ -269,6 +250,10 @@ const PlacesList: React.FC = () => {
       void handleSuggestAction();
       return;
     }
+    if (currentUser && query) {
+      void handleAddAction();
+      return;
+    }
     focusPlacesSearch();
     if (!currentUser) {
       showToast({
@@ -279,6 +264,7 @@ const PlacesList: React.FC = () => {
   }, [
     currentUser,
     focusPlacesSearch,
+    handleAddAction,
     handleSuggestAction,
     searchQuery,
     showToast,
@@ -371,10 +357,13 @@ const PlacesList: React.FC = () => {
           mapSlot={mapSlot}
           onAddPlaceFocus={handlePlacesEmptyAction}
           emptyActionLabel={
-            !currentUser && searchQuery.trim()
-              ? "Suggest this place"
+            searchQuery.trim()
+              ? currentUser
+                ? "Add this place"
+                : "Suggest this place"
               : undefined
           }
+          emptyActionBusy={isAdding || isSuggesting}
         />
 
         {placeToDelete && (

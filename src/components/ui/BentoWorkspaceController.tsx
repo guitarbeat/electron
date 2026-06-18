@@ -1,10 +1,30 @@
-import React from "react";
-import StatTile, { type BentoStatTileConfig } from "./StatTile";
-import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
+import React, { useState } from "react";
+import type { MainTab } from "@/shared/types";
+import AppNavStrip from "@/ui/AppNavStrip";
+import ProfileMenu from "@/ui/ProfileMenu";
 import { useViewport } from "@/app/ViewportContext";
+import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
+import "@/app/WorkspaceTopbar.css";
 import "./BentoWorkspaceController.css";
 
-export { type BentoStatTileConfig };
+export interface WorkspaceChromeHeaderProps {
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
+  pwaStatus?: {
+    isOnline: boolean;
+    isStandalone: boolean;
+    canInstall: boolean;
+    hasUpdateReady: boolean;
+    pendingSyncCount: number;
+    blockedSyncCount: number;
+  };
+  onInstallApp?: () => void;
+  onApplyUpdate?: () => void;
+  onRetrySync?: () => void;
+  onOpenSpin?: () => void;
+}
 
 interface ViewModeControlsProps {
   viewModes: MagicToggleOption<string>[];
@@ -32,25 +52,8 @@ const ViewModeControls: React.FC<ViewModeControlsProps> = ({
   </div>
 );
 
-const StatTilesSkeleton: React.FC = () => (
-  <>
-    {(["incoming", "queue", "completed"] as const).map((id) => (
-      <div
-        key={id}
-        className="bento-stat-tile bento-stat-tile--skeleton skeleton"
-        aria-hidden="true"
-      />
-    ))}
-  </>
-);
-
-interface BentoWorkspaceControllerProps<TSort extends string = string> {
+interface BentoWorkspaceControllerProps extends WorkspaceChromeHeaderProps {
   children: React.ReactNode;
-  stats: BentoStatTileConfig[];
-  statsLoading?: boolean;
-  sorts: MagicToggleOption<TSort>[];
-  activeSortOrder: TSort;
-  onSortChange: (order: TSort) => void;
   ariaLabel?: string;
   viewModes?: MagicToggleOption<string>[];
   activeViewMode?: string;
@@ -59,21 +62,26 @@ interface BentoWorkspaceControllerProps<TSort extends string = string> {
   onOpenKeyboardHelp?: () => void;
 }
 
-function BentoWorkspaceController<TSort extends string>({
+function BentoWorkspaceController({
   children,
-  stats,
-  statsLoading = false,
-  sorts,
-  activeSortOrder,
-  onSortChange,
   ariaLabel,
   viewModes,
   activeViewMode,
   onViewModeChange,
   viewModeAriaLabel,
   onOpenKeyboardHelp,
-}: BentoWorkspaceControllerProps<TSort>) {
+  activeTab,
+  onTabChange,
+  onOpenMessages,
+  onOpenQuiz,
+  pwaStatus,
+  onInstallApp,
+  onApplyUpdate,
+  onRetrySync,
+  onOpenSpin,
+}: BentoWorkspaceControllerProps) {
   const { isMobile } = useViewport();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const hasViewModes =
     Boolean(viewModes?.length) &&
     Boolean(activeViewMode) &&
@@ -81,61 +89,59 @@ function BentoWorkspaceController<TSort extends string>({
 
   return (
     <section
-      className={`workspace-control-panel bento-ctrl${isMobile ? " bento-ctrl--mobile" : ""}`}
+      className={`workspace-control-panel bento-ctrl bento-ctrl--${activeTab}${isMobile ? " bento-ctrl--mobile" : ""}${isMenuOpen ? " is-profile-menu-open" : ""}`}
       aria-label={ariaLabel}
     >
+      <header className="bento-ctrl__topbar" role="banner">
+        <div className="bento-ctrl__topbar-left app-header__left">
+          <AppNavStrip
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            onOpenSpin={onOpenSpin}
+            onOpenMessages={onOpenMessages}
+            onOpenQuiz={onOpenQuiz}
+            status={pwaStatus}
+            onInstallApp={onInstallApp}
+            onApplyUpdate={onApplyUpdate}
+            onRetrySync={onRetrySync}
+          />
+        </div>
+        <div className="bento-ctrl__topbar-right app-header__right">
+          {onOpenKeyboardHelp && isMobile ? (
+            <button
+              type="button"
+              className="bento-ctrl__topbar-icon-btn"
+              onClick={onOpenKeyboardHelp}
+              aria-label="Keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+            >
+              <kbd className="bento-ctrl__topbar-icon-kbd">?</kbd>
+            </button>
+          ) : null}
+          <ProfileMenu onOpenChange={setIsMenuOpen} />
+        </div>
+      </header>
+
+      <div className="bento-ctrl__topbar-sep" aria-hidden="true" />
+
       <div className="bento-ctrl__search">{children}</div>
 
-      {statsLoading || stats.length > 0 ? (
-        <>
-          <div className="bento-ctrl__sep" aria-hidden="true" />
-          <div
-            className="bento-ctrl__stats"
-            role="group"
-            aria-label="Jump to section"
-            aria-keyshortcuts="1 2 3"
-            aria-busy={statsLoading || undefined}
-          >
-            {statsLoading ? (
-              <StatTilesSkeleton />
-            ) : (
-              stats.map((tile) => <StatTile key={tile.id} tile={tile} />)
-            )}
-          </div>
-        </>
+      {hasViewModes && viewModes && activeViewMode && onViewModeChange ? (
+        <div className="bento-ctrl__controls">
+          <ViewModeControls
+            viewModes={viewModes}
+            activeViewMode={activeViewMode}
+            onViewModeChange={onViewModeChange}
+            viewModeAriaLabel={viewModeAriaLabel}
+          />
+        </div>
       ) : null}
 
-      {sorts.length > 0 && (
-        <div
-          className={`bento-ctrl__controls${hasViewModes ? " bento-ctrl__controls--split" : ""}`}
-        >
-          <div className="bento-ctrl__sort-row">
-            <span className="bento-ctrl__sort-label" aria-hidden="true">
-              Sort
-            </span>
-            <MagicToggle<TSort>
-              options={sorts}
-              activeValue={activeSortOrder}
-              onChange={onSortChange}
-              ariaLabel="Sort order"
-            />
-          </div>
-          {hasViewModes && viewModes && activeViewMode && onViewModeChange ? (
-            <ViewModeControls
-              viewModes={viewModes}
-              activeViewMode={activeViewMode}
-              onViewModeChange={onViewModeChange}
-              viewModeAriaLabel={viewModeAriaLabel}
-            />
-          ) : null}
-        </div>
-      )}
-
-      {onOpenKeyboardHelp ? (
+      {onOpenKeyboardHelp && !isMobile ? (
         <div className="bento-ctrl__shortcuts-row">
           <button
             type="button"
-            className={`bento-ctrl__shortcuts-btn${isMobile ? " bento-ctrl__shortcuts-btn--compact" : ""}`}
+            className="bento-ctrl__shortcuts-btn"
             onClick={onOpenKeyboardHelp}
             aria-label="Keyboard shortcuts"
             title="Keyboard shortcuts (?)"

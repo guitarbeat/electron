@@ -1,5 +1,4 @@
 import type { MainTab } from "@/shared/types";
-import { buildSortChips } from "@/utils/buildSortChips";
 import type { WorkspaceSectionIds } from "@/utils/workspaceSectionLabels";
 
 const SECTION_IDS: Record<MainTab, WorkspaceSectionIds> = {
@@ -21,35 +20,6 @@ export const workspaceSectionIds = (tab: MainTab): WorkspaceSectionIds =>
 export const MOVIES_POSTER_GRID_MIN_COL = "clamp(3.25rem, 18vw, 5.5rem)";
 export const PLACES_GRID_MIN_COL = "clamp(10.5rem, 24vw, 13rem)";
 export const PLACES_GRID_CLASS = "watchlist-content places-grid";
-
-const RECENT_ALPHA = [
-  {
-    value: "recent" as const,
-    desktopLabel: "🕐 Recent",
-    mobileLabel: "Recent",
-    ariaLabel: "Recent",
-  },
-  {
-    value: "alpha" as const,
-    desktopLabel: "A→Z",
-    mobileLabel: "A→Z",
-    ariaLabel: "Alphabetical",
-  },
-];
-
-export const BASE_COLLECTION_SORTS = buildSortChips(RECENT_ALPHA);
-
-export const MOVIE_COLLECTION_SORTS = buildSortChips([
-  ...RECENT_ALPHA,
-  {
-    value: "rating",
-    desktopLabel: "★ Rating",
-    mobileLabel: "Rating",
-    ariaLabel: "Rating",
-  },
-]);
-
-export const PLACE_COLLECTION_SORTS = BASE_COLLECTION_SORTS;
 
 export interface WorkspaceEmptyCopy {
   icon: string;

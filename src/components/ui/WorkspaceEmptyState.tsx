@@ -57,6 +57,7 @@ interface WorkspaceGlobalEmptyProps {
   tab: MainTab;
   onAction?: () => void;
   actionLabel?: string;
+  actionBusy?: boolean;
   children?: ReactNode;
 }
 
@@ -64,6 +65,7 @@ export const WorkspaceGlobalEmpty: FC<WorkspaceGlobalEmptyProps> = ({
   tab,
   onAction,
   actionLabel: actionLabelOverride,
+  actionBusy = false,
   children,
 }) => {
   const { isMobile } = useViewport();
@@ -88,6 +90,8 @@ export const WorkspaceGlobalEmpty: FC<WorkspaceGlobalEmptyProps> = ({
           variant="secondary"
           size="sm"
           onClick={onAction}
+          isLoading={actionBusy}
+          loadingText={actionLabel}
           className="watchlist-empty-queue-state__action"
         >
           {actionLabel}

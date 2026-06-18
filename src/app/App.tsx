@@ -25,7 +25,6 @@ import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
 import { useUser, useTheme } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
-import AppHeader from "@/app/AppHeader";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import VignetteOverlay from "@/components/effects/VignetteOverlay";
@@ -368,27 +367,26 @@ const App: React.FC = () => {
             <div
               className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
             >
-              <AppHeader
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                pwaStatus={{
-                  isOnline,
-                  isStandalone,
-                  canInstall: canInstallApp,
-                  hasUpdateReady,
-                  pendingSyncCount: outboxStatus.pendingCount,
-                  blockedSyncCount: outboxStatus.blockedCount,
-                }}
-                onInstallApp={() => void handleInstallApp()}
-                onApplyUpdate={handleApplyUpdate}
-                onRetrySync={handleRetryPendingSync}
-                onOpenSpin={openSpinMatch}
-                onOpenMessages={() => setShowMessages(true)}
-                onOpenQuiz={openQuizExperience}
-              />
               <WorkspaceErrorBoundary>
                 <React.Suspense fallback={null}>
-                  <AppWorkspaceShell activeTab={activeTab} />
+                  <AppWorkspaceShell
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    pwaStatus={{
+                      isOnline,
+                      isStandalone,
+                      canInstall: canInstallApp,
+                      hasUpdateReady,
+                      pendingSyncCount: outboxStatus.pendingCount,
+                      blockedSyncCount: outboxStatus.blockedCount,
+                    }}
+                    onInstallApp={() => void handleInstallApp()}
+                    onApplyUpdate={handleApplyUpdate}
+                    onRetrySync={handleRetryPendingSync}
+                    onOpenSpin={openSpinMatch}
+                    onOpenMessages={() => setShowMessages(true)}
+                    onOpenQuiz={openQuizExperience}
+                  />
                 </React.Suspense>
               </WorkspaceErrorBoundary>
               <React.Suspense fallback={null}>

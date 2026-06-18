@@ -1,14 +1,8 @@
 import { createContext, useContext } from "react";
-import type { BentoStatTileConfig } from "@/components/ui/StatTile";
 import type { MagicToggleOption } from "@/components/ui/MagicToggle";
 import type { MainTab } from "@/shared/types";
 
-export interface BentoSlotConfig<TSort extends string = string> {
-  stats: BentoStatTileConfig[];
-  statsLoading?: boolean;
-  sorts: MagicToggleOption<TSort>[];
-  activeSortOrder: TSort;
-  onSortChange: (order: TSort) => void;
+export interface BentoSlotConfig {
   ariaLabel?: string;
   viewModes?: MagicToggleOption<string>[];
   activeViewMode?: string;
@@ -16,7 +10,7 @@ export interface BentoSlotConfig<TSort extends string = string> {
   viewModeAriaLabel?: string;
 }
 
-export type RegisteredBentoSlotConfig = BentoSlotConfig<string>;
+export type RegisteredBentoSlotConfig = BentoSlotConfig;
 
 export interface BentoSlotContextValue {
   activeTab: MainTab;

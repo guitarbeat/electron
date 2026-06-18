@@ -1,35 +1,37 @@
 ---
 name: BentoWorkspaceController
-description: Unified search+stats+sort control surface used in both Movies and Places tabs
+description: Unified workspace chrome — nav, profile, search, and optional view controls for Movies and Places tabs
 ---
 
 ## Pattern
 
-`BentoWorkspaceController` (`src/components/ui/BentoWorkspaceController.tsx`) wraps any TopControls component as `children` inside a single amber-bordered `<section>`. It adds:
-- **Stat tiles row** — 3 glass tiles showing live section counts, clickable to smooth-scroll to their section
-- **Sort chips row** — pill chips that cascade `SortOrder` state into the parent's `buildXxxSections()` call
+`BentoWorkspaceController` (`src/components/ui/BentoWorkspaceController.tsx`) is the single sticky workspace shell. It renders:
+
+- **Topbar** — `AppNavStrip` (brand + Movies/Places/Spin tabs) and `ProfileMenu`; on mobile, a `?` shortcuts icon lives in the topbar
+- **Search slot** — TopControls (`MoviesTopControls` / `PlacesTopControls`) portaled as `children`
+- **View controls** — `ViewModeControls` (movies only, when view modes are configured)
+- **Shortcuts row** — desktop-only footer button opening keyboard-help modal
+
+Styles: `BentoWorkspaceController.css` (shell) + `WorkspaceTopbar.css` (profile menu; legacy `app-header__*` class names on `ProfileMenu`).
 
 ## TopControls stripping rule
 
-Both `MoviesTopControls` and `PlacesTopControls` were refactored to return `<>…</>` (React fragment) instead of `<section className="workspace-control-panel …">`. The `BentoWorkspaceController` provides that outer section. Do NOT re-add an outer section wrapper to either TopControls component.
-
-**Why:** The bento owns the `workspace-control-panel` section element so both search and meta-controls share one unified border/background. Duplicating the section wrapper would break the visual enclosure.
+Both `MoviesTopControls` and `PlacesTopControls` return `<>…</>` (React fragment), not an outer `<section>`. The bento owns the `bento-ctrl` section element. Do NOT re-add an outer section wrapper to either TopControls component.
 
 ## Section IDs
 
-Stat tiles navigate by calling `document.getElementById(sectionId).scrollIntoView(…)`.
-IDs follow the pattern `{tab}-section-{name}`:
+Keyboard shortcuts 1–3 jump to workspace sections via `document.getElementById(sectionId).scrollIntoView(…)`.
+IDs follow `{tab}-section-{name}`:
+
 - Movies: `movies-section-incoming`, `movies-section-queue`, `movies-section-watched`
 - Places: `places-section-incoming`, `places-section-queue`, `places-section-visited`
 
-These IDs are passed via `sectionIds` prop to `MovieSectionBody` and directly as `id=` on `CollectionSection` in `PlacesList`.
+Passed via `sectionIds` to `MovieSectionBody` and as `id=` on `CollectionSection` in `PlacesList`.
 
-## Sort integration
+## Sorting (internal only)
 
-`MovieSortOrder = 'recent' | 'alpha' | 'rating'` (rating sorts by `imdbRating` desc, fallback 0).
-`PlaceSortOrder = 'recent' | 'alpha'`.
-Sort state lives in `MoviesView` / `PlacesList`. It's passed as the third argument to `buildMovieSections` / `buildPlaceSections`, which sort a copy of the array before sectioning.
+Lists still sort with default `"recent"` inside `buildMovieSections` / `buildPlaceSections`. There is no sort UI in the chrome.
 
-## Count animation
+## Wiring
 
-The `bento-stat-tile__count` span uses `key={tile.count}` — React remounts the span on count change, replaying the `@keyframes bento-count-tick` CSS animation (spring bounce from top).
+`AppWorkspaceShell` passes header props (`activeTab`, `onTabChange`, profile/session) into `BentoWorkspaceController`. `App.tsx` no longer renders a separate header component.
