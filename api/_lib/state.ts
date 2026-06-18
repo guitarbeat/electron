@@ -1270,7 +1270,7 @@ export const getScopeWarning = (error: unknown): string | undefined => {
   const msg = error.message;
 
   if (msg === 'DATABASE_URL is not configured.') {
-    return 'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL (or VITE_DATABASE_URL during local Vite development), then restart the dev server.';
+    return 'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL in your environment variables, then restart the server.';
   }
 
   const readMatch = /^Failed to read shared state \((\d+)\)\.$/.exec(msg);
