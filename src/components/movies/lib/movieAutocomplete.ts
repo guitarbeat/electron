@@ -3,7 +3,7 @@ import type { MovieAutocompleteResult } from "@/services/metadata";
 import {
   getListEnterSelectionIndex,
   getNextListIndex,
-} from "@/components/ui/lib/workspaceListAutocomplete";
+} from "../../ui/lib/workspaceListAutocomplete.ts";
 
 export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
 export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 160;

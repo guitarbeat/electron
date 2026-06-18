@@ -12,7 +12,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10001;
   pointer-events: none;
   touch-action: none;
 }
@@ -434,6 +434,7 @@
     rgba(6, 10, 28, 0.99) 100%
   );
   pointer-events: auto;
+  touch-action: manipulation;
   user-select: none;
   border: 1px solid rgba(148, 163, 200, 0.2);
   overflow: hidden;

@@ -1,12 +1,13 @@
 import React from "react";
 import type { Place, PlaceSuggestion, User } from "@/shared/types";
 import { CollectionSection } from "@/ui/CollectionLayout";
-import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import PlaceSuggestionCard from "./PlaceSuggestionCard";
 import PlacesGrid from "./PlacesGrid";
+import WorkspaceCollectionGlobalEmpty from "@/components/ui/WorkspaceCollectionGlobalEmpty";
+import WorkspaceIncomingSection from "@/components/ui/WorkspaceIncomingSection";
 import WorkspaceIncomingSkeleton from "@/ui/WorkspaceIncomingSkeleton";
+import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
 import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
-import { WorkspaceGlobalEmpty } from "@/components/ui/WorkspaceEmptyState";
 import { useViewport } from "@/app/ViewportContext";
 import type { PlaceSections } from "./lib/placeSections";
 import {
@@ -83,19 +84,16 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
 
   if (showGlobalEmpty) {
     return (
-      <ChromaCollectionGrid
+      <WorkspaceCollectionGlobalEmpty
+        tab="places"
         className={PLACES_GRID_CLASS}
         minColumnWidth={PLACES_GRID_MIN_COL}
-      >
-        <WorkspaceGlobalEmpty
-          tab="places"
-          onAction={onAddPlaceFocus}
-          actionLabel={
-            emptyActionLabel ?? (canEdit ? "Add a place" : "Suggest a place")
-          }
-          actionBusy={emptyActionBusy}
-        />
-      </ChromaCollectionGrid>
+        onAction={onAddPlaceFocus}
+        actionLabel={
+          emptyActionLabel ?? (canEdit ? "Add a place" : "Suggest a place")
+        }
+        actionBusy={emptyActionBusy}
+      />
     );
   }
 
@@ -103,45 +101,40 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
     <div className="workspace-section-body">
       {mapSlot}
 
-      {(isSuggestionsLoading || pendingSuggestions.length > 0) && (
-        <CollectionSection
-          heading={sectionLabels.incoming}
-          count={
-            isSuggestionsLoading && pendingSuggestions.length === 0
-              ? undefined
-              : pendingSuggestions.length
-          }
-          tone="incoming"
-          id={sectionIds.incoming}
-        >
-          {isSuggestionsLoading && pendingSuggestions.length === 0 ? (
-            <WorkspaceIncomingSkeleton
-              variant="grid"
-              gridClass={PLACES_GRID_CLASS}
-              minColumnWidth={PLACES_GRID_MIN_COL}
+      <WorkspaceIncomingSection
+        heading={sectionLabels.incoming}
+        sectionId={sectionIds.incoming}
+        isLoading={isSuggestionsLoading}
+        itemCount={pendingSuggestions.length}
+        showCount={!isSuggestionsLoading && pendingSuggestions.length > 1}
+        skeleton={
+          <WorkspaceIncomingSkeleton
+            variant="grid"
+            gridClass={PLACES_GRID_CLASS}
+            minColumnWidth={PLACES_GRID_MIN_COL}
+          />
+        }
+      >
+        <WorkspaceCollectionGrid
+          className={PLACES_GRID_CLASS}
+          minColumnWidth={PLACES_GRID_MIN_COL}
+          items={pendingSuggestions}
+          getItemKey={(suggestion) => suggestion.id}
+          renderItem={(suggestion) => (
+            <PlaceSuggestionCard
+              suggestion={suggestion}
+              onAccept={() => onAcceptSuggestion(suggestion)}
+              onReject={() =>
+                onRejectSuggestion(suggestion.id, suggestion.name)
+              }
+              canRespond={canEdit}
+              disableActions={!currentUser}
+              isProcessing={processingSuggestionId === suggestion.id}
             />
-          ) : (
-            <ChromaCollectionGrid
-              className={PLACES_GRID_CLASS}
-              minColumnWidth={PLACES_GRID_MIN_COL}
-            >
-              {pendingSuggestions.map((suggestion) => (
-                <PlaceSuggestionCard
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  onAccept={() => onAcceptSuggestion(suggestion)}
-                  onReject={() =>
-                    onRejectSuggestion(suggestion.id, suggestion.name)
-                  }
-                  canRespond={canEdit}
-                  disableActions={!currentUser}
-                  isProcessing={processingSuggestionId === suggestion.id}
-                />
-              ))}
-            </ChromaCollectionGrid>
           )}
-        </CollectionSection>
-      )}
+          empty={null}
+        />
+      </WorkspaceIncomingSection>
 
       {sections.queue.length > 0 && (
         <CollectionSection

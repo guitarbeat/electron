@@ -178,6 +178,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const [highlightedItemIndex, setHighlightedItemIndex] = useState<number>(0);
 
   const isDraggingRef = useRef(false);
+  const suppressToggleClickRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const dragStartTimeRef = useRef(0);
   const dragPointerIdRef = useRef<number | null>(null);
@@ -214,6 +215,18 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const closeMenu = useCallback(() => {
     setIsActive(false);
   }, []);
+
+  const handleToggleClick = useCallback(() => {
+    if (suppressToggleClickRef.current) {
+      suppressToggleClickRef.current = false;
+      return;
+    }
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      return;
+    }
+    toggleMenu();
+  }, [toggleMenu]);
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
@@ -270,7 +283,12 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         const wasDragging = isDraggingRef.current;
 
         if (!wasDragging && clickDuration < clickTimeThreshold) {
-          toggleMenu();
+          if (shouldUseDockedLayout()) {
+            // Docked layouts rely on the button click handler.
+          } else {
+            toggleMenu();
+            suppressToggleClickRef.current = true;
+          }
         }
 
         if (wasDragging && menuRef.current) {
@@ -402,6 +420,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         title={isActive ? "Close quick actions" : "Open quick actions"}
         aria-expanded={isActive}
         aria-haspopup="menu"
+        onClick={handleToggleClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();

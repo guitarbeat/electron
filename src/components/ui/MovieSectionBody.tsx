@@ -6,7 +6,6 @@ import type {
   User,
 } from "@/shared/types";
 import { CollectionSection } from "@/ui/CollectionLayout";
-import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import SuggestionStack from "@/components/movies/SuggestionStack";
 import MovieCard from "@/components/movies/MovieCard";
 import MovieDeckStack from "@/components/movies/MovieDeckStack";
@@ -14,12 +13,11 @@ import type { MovieSections } from "@/components/movies/lib/movieSections";
 import { getAllMovies } from "@/components/movies/lib/movieSections";
 import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
 import { shouldUseMovieScrollDeck } from "@/components/movies/lib/movieBrowseLayout";
+import WorkspaceCollectionGlobalEmpty from "@/components/ui/WorkspaceCollectionGlobalEmpty";
 import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
 import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
+import WorkspaceIncomingSection from "@/components/ui/WorkspaceIncomingSection";
 import WorkspaceIncomingSkeleton from "@/ui/WorkspaceIncomingSkeleton";
-import {
-  WorkspaceGlobalEmpty,
-} from "@/components/ui/WorkspaceEmptyState";
 import { useViewport } from "@/app/ViewportContext";
 import {
   MOVIES_POSTER_GRID_MIN_COL,
@@ -168,53 +166,40 @@ const MovieSectionBody: React.FC<Props> = ({
 
   if (isListEmpty) {
     return (
-      <ChromaCollectionGrid
+      <WorkspaceCollectionGlobalEmpty
+        tab="movies"
         className={gridSurfaceClass(browseLayout)}
         minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
-      >
-        <WorkspaceGlobalEmpty
-          tab="movies"
-          onAction={onAddMovieFocus}
-          actionLabel={
-            emptyActionLabel ??
-            (currentUser ? "Add a movie" : "Suggest a movie")
-          }
-          actionBusy={emptyActionBusy}
-        />
-      </ChromaCollectionGrid>
+        onAction={onAddMovieFocus}
+        actionLabel={
+          emptyActionLabel ??
+          (currentUser ? "Add a movie" : "Suggest a movie")
+        }
+        actionBusy={emptyActionBusy}
+      />
     );
   }
 
   return (
     <div className="workspace-section-body">
-      {(isSuggestionsLoading || sections.suggestions.length > 0) && (
-        <CollectionSection
-          heading={sectionLabels.incoming}
-          count={
-            isSuggestionsLoading && sections.suggestions.length === 0
-              ? undefined
-              : sections.suggestions.length
-          }
-          showCount={
-            !isSuggestionsLoading &&
-            sections.suggestions.length > 1
-          }
-          tone="incoming"
-          id={sectionIds.incoming}
-        >
-          {isSuggestionsLoading && sections.suggestions.length === 0 ? (
-            <WorkspaceIncomingSkeleton variant="stack" />
-          ) : (
-            <SuggestionStack
-              suggestions={sections.suggestions}
-              currentUser={currentUser}
-              processingSuggestionId={processingSuggestionId}
-              onAccept={onAcceptSuggestion}
-              onReject={onRejectSuggestion}
-            />
-          )}
-        </CollectionSection>
-      )}
+      <WorkspaceIncomingSection
+        heading={sectionLabels.incoming}
+        sectionId={sectionIds.incoming}
+        isLoading={isSuggestionsLoading}
+        itemCount={sections.suggestions.length}
+        showCount={
+          !isSuggestionsLoading && sections.suggestions.length > 1
+        }
+        skeleton={<WorkspaceIncomingSkeleton variant="stack" />}
+      >
+        <SuggestionStack
+          suggestions={sections.suggestions}
+          currentUser={currentUser}
+          processingSuggestionId={processingSuggestionId}
+          onAccept={onAcceptSuggestion}
+          onReject={onRejectSuggestion}
+        />
+      </WorkspaceIncomingSection>
 
       {allMovies.length > 0 && (
         <CollectionSection

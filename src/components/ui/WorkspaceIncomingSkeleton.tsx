@@ -7,7 +7,7 @@ interface WorkspaceIncomingSkeletonProps {
   variant: WorkspaceIncomingSkeletonVariant;
   hint?: string;
   gridClass?: string;
-  minColumnWidth?: number;
+  minColumnWidth?: string;
 }
 
 const WorkspaceIncomingSkeleton: React.FC<WorkspaceIncomingSkeletonProps> = ({

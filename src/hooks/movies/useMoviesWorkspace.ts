@@ -218,7 +218,9 @@ export const useMoviesWorkspace = ({
   );
 
   const acceptSuggestionToWatchlist = useCallback(
-    async (suggestionId: string): Promise<MovieSuggestion> => {
+    async (
+      suggestionId: string,
+    ): Promise<{ suggestion: MovieSuggestion; isDuplicate: boolean }> => {
       if (!currentUser) {
         throw new Error("Profile required");
       }

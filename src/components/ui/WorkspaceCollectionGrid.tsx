@@ -3,7 +3,7 @@ import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 
 interface WorkspaceCollectionGridProps<T> {
   className: string;
-  minColumnWidth: number;
+  minColumnWidth: string;
   items: readonly T[];
   renderItem: (item: T) => React.ReactNode;
   getItemKey: (item: T) => string;
