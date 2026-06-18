@@ -18,10 +18,6 @@
   isolation: isolate;
 }
 
-.workspace-unified-shell::before {
-  display: none;
-}
-
 .workspace-unified-shell > * {
   position: relative;
   z-index: 1;

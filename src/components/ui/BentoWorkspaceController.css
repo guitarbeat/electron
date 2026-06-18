@@ -17,10 +17,6 @@
   box-shadow: none;
 }
 
-.bento-ctrl::before {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .bento-ctrl {
     backdrop-filter: none;
@@ -415,22 +411,6 @@
     padding: 0.28rem 0.5rem;
     font-size: 0.75rem;
   }
-}
-
-/* ── Y2K skin ─────────────────────────────────────────────────────── */
-
-.theme-y2k .bento-ctrl {
-  border: 0;
-  background: transparent;
-}
-
-.theme-y2k .bento-ctrl::before {
-  display: none;
-}
-
-.theme-y2k .bento-ctrl__search .workspace-search__search-form--stack:focus-within {
-  border-color: transparent;
-  box-shadow: none;
 }
 
 @media (max-width: 600px) {

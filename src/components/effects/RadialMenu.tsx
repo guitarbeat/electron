@@ -96,10 +96,6 @@ const getViewportBox = () => {
 
 const getMenuMetrics = () => getRadialMenuMetricsForWidth(window.innerWidth);
 
-const getDockedPosition = () => {
-  return getDockedPositionForViewport(getViewportBox(), getMenuMetrics());
-};
-
 const readStoredPosition = (): { x: number; y: number } | null => {
   if (typeof window === "undefined") return null;
   try {
@@ -112,6 +108,17 @@ const readStoredPosition = (): { x: number; y: number } | null => {
   } catch {
     return null;
   }
+};
+
+const getInitialMenuPosition = () => {
+  if (typeof window === "undefined") {
+    return { x: 0, y: 0 };
+  }
+
+  const stored = readStoredPosition();
+  return stored
+    ? clampToViewport(stored)
+    : getDockedPositionForViewport(getViewportBox(), getMenuMetrics());
 };
 
 const clampToViewport = (pos: { x: number; y: number }) => {
@@ -140,15 +147,6 @@ const getFanQuadrant = (pos: {
   return "br";
 };
 
-const getInitialMenuPosition = () => {
-  if (typeof window === "undefined") {
-    return { x: 0, y: 0 };
-  }
-
-  const stored = readStoredPosition();
-  return stored ? clampToViewport(stored) : getDockedPosition();
-};
-
 const getInitialDiscoveryState = () => {
   if (typeof window === "undefined") {
     return true;
@@ -167,19 +165,15 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   onOpenSpin,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
   const [isActive, setIsActive] = useState(false);
   const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
   const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
   const [isDragging, setIsDragging] = useState(false);
 
   const isDraggingRef = useRef(false);
-  const suppressToggleClickRef = useRef(false);
-  const dragStartPosRef = useRef({ x: 0, y: 0 });
-  const dragStartTimeRef = useRef(0);
+  const dragStartRef = useRef({ x: 0, y: 0 });
   const dragPointerIdRef = useRef<number | null>(null);
   const dragThreshold = 8;
-  const clickTimeThreshold = 260;
 
   const fanQuadrant = getFanQuadrant(menuPos);
 
@@ -206,26 +200,13 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     setIsActive(false);
   }, []);
 
-  const handleToggleClick = useCallback(() => {
-    if (suppressToggleClickRef.current) {
-      suppressToggleClickRef.current = false;
-      return;
-    }
-    if (isDraggingRef.current) {
-      isDraggingRef.current = false;
-      return;
-    }
-    toggleMenu();
-  }, [toggleMenu]);
-
   const beginTogglePointer = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
       if (event.button !== 0) {
         return;
       }
 
-      dragStartPosRef.current = { x: event.clientX, y: event.clientY };
-      dragStartTimeRef.current = Date.now();
+      dragStartRef.current = { x: event.clientX, y: event.clientY };
       dragPointerIdRef.current = event.pointerId;
       isDraggingRef.current = false;
       event.currentTarget.setPointerCapture(event.pointerId);
@@ -235,15 +216,12 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   const moveTogglePointer = useCallback(
     (event: React.PointerEvent<HTMLButtonElement>) => {
-      if (
-        dragStartTimeRef.current === 0 ||
-        dragPointerIdRef.current !== event.pointerId
-      ) {
+      if (dragPointerIdRef.current !== event.pointerId) {
         return;
       }
 
-      const deltaX = event.clientX - dragStartPosRef.current.x;
-      const deltaY = event.clientY - dragStartPosRef.current.y;
+      const deltaX = event.clientX - dragStartRef.current.x;
+      const deltaY = event.clientY - dragStartRef.current.y;
       const distance = Math.hypot(deltaX, deltaY);
 
       if (distance > dragThreshold && !isDraggingRef.current) {
@@ -281,32 +259,29 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         event.currentTarget.releasePointerCapture(event.pointerId);
       }
 
-      if (dragStartTimeRef.current > 0) {
-        const clickDuration = Date.now() - dragStartTimeRef.current;
-        const wasDragging = isDraggingRef.current;
-
-        if (!wasDragging && clickDuration < clickTimeThreshold) {
-          toggleMenu();
-          suppressToggleClickRef.current = true;
-        }
-
-        if (wasDragging && menuRef.current) {
-          const left = parseFloat(menuRef.current.style.left || "0");
-          const top = parseFloat(menuRef.current.style.top || "0");
-          const clamped = clampToViewport({ x: left, y: top });
-          menuRef.current.style.left = `${clamped.x}px`;
-          menuRef.current.style.top = `${clamped.y}px`;
-          setMenuPos(clamped);
-          persistMenuPosition(clamped);
-        }
-
-        isDraggingRef.current = false;
-        setIsDragging(false);
-        dragStartTimeRef.current = 0;
-        dragPointerIdRef.current = null;
+      if (dragPointerIdRef.current === null) {
+        return;
       }
+
+      const wasDragging = isDraggingRef.current;
+
+      if (!wasDragging) {
+        toggleMenu();
+      } else if (menuRef.current) {
+        const left = parseFloat(menuRef.current.style.left || "0");
+        const top = parseFloat(menuRef.current.style.top || "0");
+        const clamped = clampToViewport({ x: left, y: top });
+        menuRef.current.style.left = `${clamped.x}px`;
+        menuRef.current.style.top = `${clamped.y}px`;
+        setMenuPos(clamped);
+        persistMenuPosition(clamped);
+      }
+
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      dragPointerIdRef.current = null;
     },
-    [clickTimeThreshold, toggleMenu],
+    [toggleMenu],
   );
 
   useEffect(() => {
@@ -355,7 +330,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   const menuItems = [
     {
-      index: 0,
       colorClass: "teal",
       label: "Messages",
       description: "Chat, notes, and check-ins",
@@ -363,7 +337,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       icon: <MessageIcon size={20} style={{ color: "white" }} />,
     },
     {
-      index: 1,
       colorClass: "violet",
       label: "Quiz",
       description: "Take the retro personality quiz",
@@ -371,14 +344,13 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       icon: <QuizIcon />,
     },
     {
-      index: 2,
       colorClass: "amber",
       label: "Spin",
       description: "Swipe to merge, spin to pick a movie",
       onClick: () => handleMenuItemClick(onOpenSpin),
       icon: <SpinIcon />,
     },
-  ];
+  ] as const;
 
   const toggleLabel = isActive ? "Close quick actions" : "Open quick actions";
   const toggleHint = "Drag to reposition • Click to toggle quick actions";
@@ -394,14 +366,12 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       }}
     >
       <button
-        ref={toggleRef}
         type="button"
         className={`toggle ${isActive ? "toggle--active" : ""} ${isDragging ? "toggle--dragging" : ""} ${!hasDiscovered ? "discover-pulse" : ""}`}
         aria-label={`${toggleLabel}. ${toggleHint}`}
         title={toggleHint}
         aria-expanded={isActive}
         aria-haspopup="menu"
-        onClick={handleToggleClick}
         onPointerDown={beginTogglePointer}
         onPointerMove={moveTogglePointer}
         onPointerUp={finishTogglePointer}
@@ -417,10 +387,10 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       </button>
 
       <ul role="menu" aria-label="Quick actions">
-        {menuItems.map((item) => (
+        {menuItems.map((item, index) => (
           <li
-            key={item.index}
-            style={{ "--i": item.index } as React.CSSProperties}
+            key={item.label}
+            style={{ "--i": index } as React.CSSProperties}
             className={`${item.colorClass} round-button`}
           >
             <button

@@ -98,12 +98,7 @@ body[data-theme='places'] {
   animation: none;
 }
 
-.bento-ctrl::after {
-  display: none;
-}
-
 .ui-card,
-.bento-ctrl,
 .places-map-card,
 .ui-control-surface {
   position: relative;
@@ -132,7 +127,6 @@ body[data-theme='places'] {
 
 @media (prefers-reduced-motion: reduce) {
   body::after,
-  .bento-ctrl::after,
   .ui-card::before {
     opacity: calc(var(--texture-grain-strength) * 0.35);
   }

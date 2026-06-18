@@ -31,6 +31,55 @@ interface Props {
 const pluralize = (n: number, s: string, p = `${s}s`) =>
   `${n} ${n === 1 ? s : p}`;
 
+type StatusChip = {
+  tone: "offline" | "update" | "warning" | "syncing" | "install";
+  label: string;
+  detail: string;
+  action?: () => void;
+  actionLabel?: string;
+  Icon: typeof WifiOff;
+};
+
+interface StatusChipBannerProps {
+  chip: StatusChip;
+  className: string;
+  onDismiss: () => void;
+}
+
+const StatusChipBanner: FC<StatusChipBannerProps> = ({
+  chip,
+  className,
+  onDismiss,
+}) => (
+  <div className={className} role="status">
+    <chip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
+    <span className="ans__chip-copy">
+      <strong>{chip.label}</strong>
+      <span>{chip.detail}</span>
+    </span>
+    {chip.action && chip.actionLabel ? (
+      <button
+        type="button"
+        className="ans__chip-action"
+        onClick={chip.action}
+        aria-label={chip.actionLabel}
+        title={chip.actionLabel}
+      >
+        {chip.actionLabel}
+      </button>
+    ) : null}
+    <button
+      type="button"
+      className="ans__chip-dismiss"
+      onClick={onDismiss}
+      aria-label={`Dismiss ${chip.label.toLowerCase()} status`}
+      title={`Dismiss ${chip.label.toLowerCase()} status`}
+    >
+      <X size={13} strokeWidth={2.3} aria-hidden="true" />
+    </button>
+  </div>
+);
+
 const AppNavStrip: FC<Props> = ({
   activeTab,
   onTabChange,
@@ -42,7 +91,7 @@ const AppNavStrip: FC<Props> = ({
   const { isMobile } = useViewport();
   const [dismissedKeys, setDismissedKeys] = useState<Record<string, true>>({});
 
-  const statusChip = useMemo(() => {
+  const statusChip = useMemo((): StatusChip | null => {
     if (!status) return null;
     if (!status.isOnline)
       return {
@@ -152,71 +201,21 @@ const AppNavStrip: FC<Props> = ({
         {showChipInline && statusChip ? (
           <>
             <span className="ans__sep ans__sep--wide" aria-hidden="true" />
-            <div
+            <StatusChipBanner
+              chip={statusChip}
               className={`ans__chip ans__chip--inline ans__chip--${statusChip.tone}`}
-              role="status"
-            >
-              <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
-              <span className="ans__chip-copy">
-                <strong>{statusChip.label}</strong>
-                <span>{statusChip.detail}</span>
-              </span>
-              {statusChip.action && statusChip.actionLabel ? (
-                <button
-                  type="button"
-                  className="ans__chip-action"
-                  onClick={statusChip.action}
-                  aria-label={statusChip.actionLabel}
-                  title={statusChip.actionLabel}
-                >
-                  {statusChip.actionLabel}
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="ans__chip-dismiss"
-                onClick={dismissChip}
-                aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
-                title={`Dismiss ${statusChip.label.toLowerCase()} status`}
-              >
-                <X size={13} strokeWidth={2.3} aria-hidden="true" />
-              </button>
-            </div>
+              onDismiss={dismissChip}
+            />
           </>
         ) : null}
       </nav>
 
       {showChipBelow && statusChip ? (
-        <div
+        <StatusChipBanner
+          chip={statusChip}
           className={`ans__chip ans__chip--mobile-row ans__chip--${statusChip.tone}`}
-          role="status"
-        >
-          <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
-          <span className="ans__chip-copy">
-            <strong>{statusChip.label}</strong>
-            <span>{statusChip.detail}</span>
-          </span>
-          {statusChip.action && statusChip.actionLabel && (
-            <button
-              type="button"
-              className="ans__chip-action"
-              onClick={statusChip.action}
-              aria-label={statusChip.actionLabel}
-              title={statusChip.actionLabel}
-            >
-              {statusChip.actionLabel}
-            </button>
-          )}
-          <button
-            type="button"
-            className="ans__chip-dismiss"
-            onClick={dismissChip}
-            aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
-            title={`Dismiss ${statusChip.label.toLowerCase()} status`}
-          >
-            <X size={13} strokeWidth={2.3} aria-hidden="true" />
-          </button>
-        </div>
+          onDismiss={dismissChip}
+        />
       ) : null}
     </div>
   );
