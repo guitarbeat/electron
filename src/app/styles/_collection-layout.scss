@@ -166,32 +166,28 @@ section[id^="places-section-"] {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  margin: 0 0 0.9rem;
-  font-family: var(--font-heading);
-  font-size: clamp(0.78rem, 0.68rem + 0.35vw, 0.96rem);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-primary));
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-accent-light, var(--color-accent)) 35%, transparent);
+  margin: 0 0 0.65rem;
+  font-family: var(--font-interface, var(--font-body, sans-serif));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--color-text-secondary);
+  text-shadow: none;
 
   &::after {
     content: '';
     flex: 1;
     min-width: 1.5rem;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-accent) 55%, transparent) 0%,
-      transparent 100%
-    );
+    background: color-mix(in srgb, var(--color-border) 70%, transparent);
     border-radius: 1px;
-    opacity: 0.55;
+    opacity: 0.45;
   }
 
   @media (max-width: 640px) {
-    margin-bottom: 0.5rem;
-    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.82rem);
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
   }
 }
 
@@ -221,18 +217,13 @@ section[id^="places-section-"] {
 }
 
 .workspace-section-heading--incoming {
-  color: color-mix(in srgb, var(--color-accent) 82%, var(--color-text-primary));
+  color: var(--color-text-primary);
 }
 
 .workspace-section-heading--completed {
   color: var(--color-success, #34d399);
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-success, #34d399) 25%, transparent);
 
   &::after {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-success, #34d399) 55%, transparent) 0%,
-      transparent 100%
-    );
+    background: color-mix(in srgb, var(--color-success, #34d399) 35%, transparent);
   }
 }

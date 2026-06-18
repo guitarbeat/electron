@@ -40,9 +40,6 @@ const ViewModeControls: React.FC<ViewModeControlsProps> = ({
   viewModeAriaLabel,
 }) => (
   <div className="bento-ctrl__sort-row">
-    <span className="bento-ctrl__sort-label" aria-hidden="true">
-      View
-    </span>
     <MagicToggle<string>
       options={viewModes}
       activeValue={activeViewMode}
@@ -83,7 +80,7 @@ function BentoWorkspaceController({
   const { isMobile } = useViewport();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const hasViewModes =
-    Boolean(viewModes?.length) &&
+    (viewModes?.length ?? 0) > 1 &&
     Boolean(activeViewMode) &&
     Boolean(onViewModeChange);
 
@@ -107,17 +104,6 @@ function BentoWorkspaceController({
           />
         </div>
         <div className="bento-ctrl__topbar-right app-header__right">
-          {onOpenKeyboardHelp && isMobile ? (
-            <button
-              type="button"
-              className="bento-ctrl__topbar-icon-btn"
-              onClick={onOpenKeyboardHelp}
-              aria-label="Keyboard shortcuts"
-              title="Keyboard shortcuts (?)"
-            >
-              <kbd className="bento-ctrl__topbar-icon-kbd">?</kbd>
-            </button>
-          ) : null}
           <ProfileMenu onOpenChange={setIsMenuOpen} />
         </div>
       </header>

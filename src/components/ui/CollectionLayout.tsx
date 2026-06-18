@@ -69,6 +69,10 @@ const CollectionGrid: React.FC<CollectionGridProps> = ({
 interface CollectionSectionProps extends React.HTMLAttributes<HTMLElement> {
   heading: React.ReactNode;
   count?: number;
+  /** When false, renders content only (keeps section id for scroll targets). */
+  showHeading?: boolean;
+  /** When false, hides the count pill even if `count` is set. */
+  showCount?: boolean;
   tone?: "default" | "incoming" | "completed";
   titleClassName?: string;
 }
@@ -76,6 +80,8 @@ interface CollectionSectionProps extends React.HTMLAttributes<HTMLElement> {
 const CollectionSection: React.FC<CollectionSectionProps> = ({
   heading,
   count,
+  showHeading = true,
+  showCount,
   tone = "default",
   className = "",
   titleClassName = "",
@@ -96,6 +102,8 @@ const CollectionSection: React.FC<CollectionSectionProps> = ({
     typeof heading === "string" || typeof heading === "number"
       ? String(heading)
       : "Section";
+  const shouldShowCount =
+    showCount ?? (typeof count === "number" && showHeading);
 
   return (
     <section
@@ -103,28 +111,30 @@ const CollectionSection: React.FC<CollectionSectionProps> = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: spacing.sm,
+        gap: showHeading ? spacing.sm : 0,
         ...style,
       }}
       {...props}
     >
-      <h3
-        className={headingClassName}
-        aria-label={
-          typeof count === "number"
-            ? `${headingLabel}, ${count} items`
-            : undefined
-        }
-      >
-        <span className="workspace-section-heading__content">
-          <span className="workspace-section-heading__label">{heading}</span>
-          {typeof count === "number" ? (
-            <span className="workspace-section-heading__count" aria-hidden="true">
-              {count}
-            </span>
-          ) : null}
-        </span>
-      </h3>
+      {showHeading ? (
+        <h3
+          className={headingClassName}
+          aria-label={
+            typeof count === "number"
+              ? `${headingLabel}, ${count} items`
+              : undefined
+          }
+        >
+          <span className="workspace-section-heading__content">
+            <span className="workspace-section-heading__label">{heading}</span>
+            {shouldShowCount ? (
+              <span className="workspace-section-heading__count" aria-hidden="true">
+                {count}
+              </span>
+            ) : null}
+          </span>
+        </h3>
+      ) : null}
       {children}
     </section>
   );

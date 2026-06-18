@@ -99,12 +99,10 @@ const SuggestionStack: React.FC<SuggestionStackProps> = ({
       {stackItems.length > 1 ? (
         <p className="suggestion-stack__hint">
           {isMobile
-            ? currentUser
-              ? "Tap the card to see the next one"
-              : "Tap the card to browse suggestions"
+            ? "Tap to see the next one"
             : currentUser
-              ? "Drag or tap the poster to peek at more"
-              : "Tap the poster to flip through suggestions"}
+              ? "Drag or tap to peek at more"
+              : "Tap to flip through suggestions"}
         </p>
       ) : null}
 
@@ -115,10 +113,6 @@ const SuggestionStack: React.FC<SuggestionStackProps> = ({
             : "Sign in to accept or reject suggestions"}
         </p>
       ) : null}
-
-      <p className="suggestion-stack__count">
-        {stackItems.length} incoming
-      </p>
     </div>
   );
 };

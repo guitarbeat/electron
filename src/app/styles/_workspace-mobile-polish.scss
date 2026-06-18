@@ -108,16 +108,11 @@ html {
   }
 
   .workspace-section-heading {
-    font-family: var(--font-interface, var(--font-body, sans-serif));
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-shadow: none;
     margin-bottom: 0.35rem;
   }
 
   .workspace-section-heading::after {
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
   .collection-grid.watchlist-content {

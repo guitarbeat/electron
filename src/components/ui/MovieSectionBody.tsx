@@ -195,6 +195,10 @@ const MovieSectionBody: React.FC<Props> = ({
               ? undefined
               : sections.suggestions.length
           }
+          showCount={
+            !isSuggestionsLoading &&
+            sections.suggestions.length > 1
+          }
           tone="incoming"
           id={sectionIds.incoming}
         >
@@ -215,7 +219,7 @@ const MovieSectionBody: React.FC<Props> = ({
       {allMovies.length > 0 && (
         <CollectionSection
           heading={sectionLabels.queue}
-          count={allMovies.length}
+          showHeading={false}
           id={sectionIds.queue}
         >
           {renderMovies(allMovies)}
