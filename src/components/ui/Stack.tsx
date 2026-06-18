@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   motion,
   useMotionValue,
@@ -136,18 +142,27 @@ const Stack: React.FC<StackProps> = ({
     setStack((prev) => {
       if (items.length === 0) return [];
 
+      // ⚡ Bolt Optimization:
+      // Replaced multi-pass chained array methods (.map().filter().map())
+      // with a single O(N) loop to reduce memory allocations and improve iteration time
       const itemById = new Map(items.map((item) => [item.id, item]));
-      const preserved = prev
-        .filter((card) => itemById.has(card.id))
-        .map((card) => ({
-          id: card.id,
-          content: itemById.get(card.id)!.content,
-        }));
+      const preserved: StackCard[] = [];
+      const preservedIds = new Set<string>();
 
-      const preservedIds = new Set(preserved.map((card) => card.id));
-      const added = items
-        .filter((item) => !preservedIds.has(item.id))
-        .map((item) => ({ id: item.id, content: item.content }));
+      for (const card of prev) {
+        const item = itemById.get(card.id);
+        if (item) {
+          preserved.push({ id: card.id, content: item.content });
+          preservedIds.add(card.id);
+        }
+      }
+
+      const added: StackCard[] = [];
+      for (const item of items) {
+        if (!preservedIds.has(item.id)) {
+          added.push({ id: item.id, content: item.content });
+        }
+      }
 
       if (preserved.length === 0 && added.length > 0) {
         return added;
@@ -221,11 +236,7 @@ const Stack: React.FC<StackProps> = ({
 
   const containerClassName = useMemo(
     () =>
-      [
-        "stack-container",
-        themed ? "stack-container--themed" : "",
-        className,
-      ]
+      ["stack-container", themed ? "stack-container--themed" : "", className]
         .filter(Boolean)
         .join(" "),
     [className, themed],
