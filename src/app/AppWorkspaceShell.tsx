@@ -2,6 +2,9 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
+import WorkspaceFeatureSection, {
+  WorkspaceFeatureSectionLoading,
+} from "@/components/ui/WorkspaceFeatureSection";
 import BentoWorkspaceController, {
   type WorkspaceChromeHeaderProps,
 } from "@/components/ui/BentoWorkspaceController";
@@ -86,18 +89,13 @@ const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
 
         <React.Suspense
           fallback={
-            <section
+            <WorkspaceFeatureSection
               id="spin-match-section"
-              className="spin-match-workspace-section"
-              aria-label="Spin match game"
+              ariaLabel="Spin match game"
+              title="Spin & Match"
             >
-              <p
-                className="spin-match-workspace-section__loading"
-                aria-live="polite"
-              >
-                Loading spin match…
-              </p>
-            </section>
+              <WorkspaceFeatureSectionLoading label="Loading spin match…" />
+            </WorkspaceFeatureSection>
           }
         >
           <SpinMatchWorkspaceSection />

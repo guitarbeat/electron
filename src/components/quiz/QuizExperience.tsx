@@ -2,6 +2,7 @@ import type { FC } from "react";
 import QuizFlow from "@/components/quiz/QuizFlow";
 import { useQuiz } from "@/hooks/useQuiz";
 import type { User } from "@/shared/types";
+import { WorkspaceFeatureSectionLoading } from "@/components/ui/WorkspaceFeatureSection";
 
 export interface QuizExperienceProps {
   currentUser: User | null;
@@ -22,9 +23,7 @@ const QuizExperience: FC<QuizExperienceProps> = ({
 
   if (isLoading || !quizData) {
     return (
-      <p className="quiz-workspace-section__loading" aria-live="polite">
-        Loading personality quiz…
-      </p>
+      <WorkspaceFeatureSectionLoading label="Loading personality quiz…" />
     );
   }
 

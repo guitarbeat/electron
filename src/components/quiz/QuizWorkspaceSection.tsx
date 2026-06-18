@@ -2,16 +2,17 @@ import type { FC } from "react";
 import QuizExperience, {
   type QuizExperienceProps,
 } from "@/components/quiz/QuizExperience";
-import "./QuizWorkspaceSection.css";
+import WorkspaceFeatureSection from "@/components/ui/WorkspaceFeatureSection";
 
 const QuizWorkspaceSection: FC<QuizExperienceProps> = (props) => (
-  <section
+  <WorkspaceFeatureSection
     id="quiz-section"
-    className="quiz-workspace-section"
-    aria-label="Personality quiz"
+    ariaLabel="Personality quiz"
+    title="Personality Quiz"
+    bodyClassName="workspace-feature-section__body--quiz"
   >
     <QuizExperience {...props} />
-  </section>
+  </WorkspaceFeatureSection>
 );
 
 export default QuizWorkspaceSection;

@@ -29,8 +29,7 @@ html {
 
 /* ── Search field: min 44px on mobile ───────────────────────────── */
 @media (max-width: 640px) {
-  .watchlist-top-controls__search-field,
-  .places-add-input {
+  .watchlist-top-controls__search-field {
     min-height: 2.75rem;
   }
 }

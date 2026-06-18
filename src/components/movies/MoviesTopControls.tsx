@@ -11,7 +11,6 @@ import React, {
 import type { User } from '@/shared/types';
 import Button from '@/ui/Button';
 import MagicToggle from '@/components/ui/MagicToggle';
-import { Input } from '@/ui/FormFields';
 import { PlusIcon } from '@/common/Icons';
 import {
   searchMovieAutocomplete,
@@ -31,7 +30,7 @@ import {
 } from './lib/movieAutocomplete';
 import { useViewport } from '@/app/ViewportContext';
 import WorkspaceSearchShell from '@/components/ui/WorkspaceSearchShell';
-import WorkspaceSearchClear from '@/components/ui/WorkspaceSearchClear';
+import WorkspaceSearchField from '@/components/ui/WorkspaceSearchField';
 import WorkspaceSearchActions from '@/components/ui/WorkspaceSearchActions';
 import {
   WorkspaceAutocompleteCopy,
@@ -41,7 +40,11 @@ import {
   WorkspaceAutocompletePoster,
   WorkspaceAutocompleteStatus,
 } from '@/components/ui/WorkspaceAutocomplete';
-import { useWorkspaceAutocompleteDismiss } from '@/components/ui/lib/useWorkspaceAutocompleteDismiss';
+import {
+  useAutocompleteFocusBoundary,
+  useWorkspaceAutocompleteDismiss,
+  useWorkspaceSearchInputHandle,
+} from '@/components/ui/lib/useWorkspaceAutocompleteDismiss';
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
@@ -93,7 +96,6 @@ const MoviesTopControls = React.forwardRef<
   const isBusy = isAdding || isSubmittingRecommendation;
   const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
   const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
-  const focusBoundaryFrameRef = useRef<number | null>(null);
   const autocompleteRequestIdRef = useRef(0);
   const dropdownInteractionPendingRef = useRef(false);
   const autocompleteListId = useId();
@@ -121,35 +123,6 @@ const MoviesTopControls = React.forwardRef<
       : "Add a note"
     : "Recommend";
 
-  useImperativeHandle(
-    forwardedRef,
-    () => ({
-      focusSearchInput: () => {
-        const input = internalSearchInputRef.current;
-        if (!input) return;
-        if (document.activeElement !== input) input.focus();
-      },
-    }),
-    [],
-  );
-
-  const clearFocusBoundaryCheck = useCallback(() => {
-    if (focusBoundaryFrameRef.current !== null) {
-      window.cancelAnimationFrame(focusBoundaryFrameRef.current);
-      focusBoundaryFrameRef.current = null;
-    }
-  }, []);
-
-  const openAutocomplete = useCallback(() => {
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteMounted(true);
-    setIsAutocompleteOpen(true);
-    setActiveAutocompleteIndex(-1);
-  }, []);
-
   const hideAutocomplete = useCallback(() => {
     if (autocompleteCloseTimerRef.current !== null) {
       window.clearTimeout(autocompleteCloseTimerRef.current);
@@ -160,6 +133,32 @@ const MoviesTopControls = React.forwardRef<
     setIsAutocompleteLoading(false);
     setAutocompleteTypeFilter('all');
     setIsAutocompleteMounted(false);
+  }, []);
+
+  const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
+    useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete, {
+      shouldSkipClose: () => dropdownInteractionPendingRef.current,
+      onFocusStateChange: setIsAutocompleteRegionFocused,
+    });
+
+  const focusSearchInput = useWorkspaceSearchInputHandle(internalSearchInputRef);
+
+  useImperativeHandle(
+    forwardedRef,
+    () => ({
+      focusSearchInput,
+    }),
+    [focusSearchInput],
+  );
+
+  const openAutocomplete = useCallback(() => {
+    if (autocompleteCloseTimerRef.current !== null) {
+      window.clearTimeout(autocompleteCloseTimerRef.current);
+      autocompleteCloseTimerRef.current = null;
+    }
+    setIsAutocompleteMounted(true);
+    setIsAutocompleteOpen(true);
+    setActiveAutocompleteIndex(-1);
   }, []);
 
   const resetAutocomplete = useCallback(() => {
@@ -233,7 +232,6 @@ const MoviesTopControls = React.forwardRef<
     };
   }, [isMobile]);
 
-  useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
   useEffect(() => () => {
     if (autocompleteCloseTimerRef.current !== null) {
       window.clearTimeout(autocompleteCloseTimerRef.current);
@@ -351,107 +349,84 @@ const MoviesTopControls = React.forwardRef<
         onSubmit={handleFormSubmit}
         shellRef={autocompleteRegionRef}
         onShellFocusCapture={() => {
-          clearFocusBoundaryCheck();
-          setIsAutocompleteRegionFocused(true);
+          onFocusCapture();
         }}
-        onShellBlurCapture={() => {
-          clearFocusBoundaryCheck();
-          focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
-            focusBoundaryFrameRef.current = null;
-            if (dropdownInteractionPendingRef.current) return;
-            const nextIsFocused = Boolean(
-              autocompleteRegionRef.current?.contains(document.activeElement),
-            );
-            setIsAutocompleteRegionFocused(nextIsFocused);
-            if (!nextIsFocused) hideAutocomplete();
-          });
-        }}
+        onShellBlurCapture={onBlurCapture}
         error={suggestionError && !showRecommendationComposer ? suggestionError : null}
         input={
-          <>
-            <Input
-              ref={internalSearchInputRef}
-              className="watchlist-top-controls__search-field"
-              value={searchQuery}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setSearchQuery(nextValue);
-                if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
-                  setSelectedAutocompleteResult(null);
-                }
-              }}
-              onFocus={() => {
-                setIsAutocompleteRegionFocused(true);
-                if (hasAutocompleteFeedback) openAutocomplete();
-              }}
-              onKeyDown={(event) => {
-                if (event.nativeEvent.isComposing) return;
+          <WorkspaceSearchField
+            inputRef={internalSearchInputRef}
+            value={searchQuery}
+            onChange={(nextValue) => {
+              setSearchQuery(nextValue);
+              if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
+                setSelectedAutocompleteResult(null);
+              }
+            }}
+            onFocus={() => {
+              setIsAutocompleteRegionFocused(true);
+              if (hasAutocompleteFeedback) openAutocomplete();
+            }}
+            onKeyDown={(event) => {
+              if (event.nativeEvent.isComposing) return;
 
-                if (event.key === 'ArrowDown') {
-                  if (filteredAutocompleteResults.length === 0) return;
-                  event.preventDefault();
-                  setIsAutocompleteOpen(true);
-                  setActiveAutocompleteIndex((currentIndex) =>
-                    getNextMovieAutocompleteIndex(currentIndex, 'next', filteredAutocompleteResults.length)
-                  );
-                  return;
-                }
-                if (event.key === 'ArrowUp') {
-                  if (filteredAutocompleteResults.length === 0) return;
-                  event.preventDefault();
-                  setIsAutocompleteOpen(true);
-                  setActiveAutocompleteIndex((currentIndex) =>
-                    getNextMovieAutocompleteIndex(currentIndex, 'previous', filteredAutocompleteResults.length)
-                  );
-                  return;
-                }
-                if (event.key === 'Escape') {
-                  if (isAutocompleteOpen) { event.preventDefault(); hideAutocomplete(); }
-                  return;
-                }
-                if (event.key === 'Enter' && isAutocompleteOpen) {
-                  const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
-                    activeAutocompleteIndex,
-                    filteredAutocompleteResults.length
-                  );
-                  if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) return;
-                  event.preventDefault();
-                  selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
-                  return;
-                }
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  clearFocusBoundaryCheck();
-                  hideAutocomplete();
-                  internalSearchInputRef.current?.blur();
-                  void onSubmit();
-                }
-              }}
-              placeholder="What's on tonight? Search a movie or show to add."
-              aria-label="Search movies and shows to add"
-              role="combobox"
-              aria-autocomplete="list"
-              aria-expanded={isAutocompleteOpen}
-              aria-controls={autocompleteListId}
-              aria-activedescendant={
+              if (event.key === 'ArrowDown') {
+                if (filteredAutocompleteResults.length === 0) return;
+                event.preventDefault();
+                setIsAutocompleteOpen(true);
+                setActiveAutocompleteIndex((currentIndex) =>
+                  getNextMovieAutocompleteIndex(currentIndex, 'next', filteredAutocompleteResults.length)
+                );
+                return;
+              }
+              if (event.key === 'ArrowUp') {
+                if (filteredAutocompleteResults.length === 0) return;
+                event.preventDefault();
+                setIsAutocompleteOpen(true);
+                setActiveAutocompleteIndex((currentIndex) =>
+                  getNextMovieAutocompleteIndex(currentIndex, 'previous', filteredAutocompleteResults.length)
+                );
+                return;
+              }
+              if (event.key === 'Escape') {
+                if (isAutocompleteOpen) { event.preventDefault(); hideAutocomplete(); }
+                return;
+              }
+              if (event.key === 'Enter' && isAutocompleteOpen) {
+                const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
+                  activeAutocompleteIndex,
+                  filteredAutocompleteResults.length
+                );
+                if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) return;
+                event.preventDefault();
+                selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
+                return;
+              }
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                clearFocusBoundaryCheck();
+                hideAutocomplete();
+                internalSearchInputRef.current?.blur();
+                void onSubmit();
+              }
+            }}
+            placeholder="What's on tonight? Search a movie or show to add."
+            ariaLabel="Search movies and shows to add"
+            combobox={{
+              expanded: isAutocompleteOpen,
+              controlsId: autocompleteListId,
+              activeDescendantId:
                 isAutocompleteOpen && activeAutocompleteIndex >= 0
                   ? `${autocompleteListId}-option-${activeAutocompleteIndex}`
-                  : undefined
-              }
-              autoComplete="off"
-              fullWidth
-            />
-            {searchQuery ? (
-              <WorkspaceSearchClear
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedAutocompleteResult(null);
-                  resetAutocomplete();
-                  internalSearchInputRef.current?.focus();
-                }}
-              />
-            ) : null}
-          </>
+                  : undefined,
+            }}
+            onClear={() => {
+              setSearchQuery("");
+              setSelectedAutocompleteResult(null);
+              resetAutocomplete();
+              internalSearchInputRef.current?.focus();
+            }}
+          />
         }
         autocomplete={
           isAutocompleteMounted && hasAutocompleteFeedback ? (

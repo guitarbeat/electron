@@ -393,8 +393,7 @@
     border: 0;
   }
 
-  .bento-ctrl--mobile .bento-ctrl__search .watchlist-top-controls__search-field,
-  .bento-ctrl--mobile .bento-ctrl__search .places-add-input {
+  .bento-ctrl--mobile .bento-ctrl__search .watchlist-top-controls__search-field {
     min-height: 2.5rem;
     font-size: 1rem;
   }

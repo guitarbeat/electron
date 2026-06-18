@@ -5,6 +5,7 @@ import {
   QuizEditorPanel,
   QuizExperiencePanel,
 } from "@/app/lazyFeaturePanels";
+import WorkspaceFeatureSection from "@/components/ui/WorkspaceFeatureSection";
 import type { User } from "@/shared/types";
 
 export interface AppModalConfig {
@@ -84,13 +85,20 @@ export function buildFeatureModals(
       maxHeight: 900,
       contentStyle: scrollContentStyle,
       content: renderSuspended(
-        <QuizExperiencePanel
-          currentUser={currentUser}
-          quizCompleted={quizCompleted}
-          onComplete={onQuizComplete}
-          onRetake={onQuizRetake}
-          onEdit={currentUser ? onQuizEdit : undefined}
-        />,
+        <WorkspaceFeatureSection
+          id="quiz-section"
+          ariaLabel="Personality quiz"
+          variant="embedded"
+          bodyClassName="workspace-feature-section__body--quiz"
+        >
+          <QuizExperiencePanel
+            currentUser={currentUser}
+            quizCompleted={quizCompleted}
+            onComplete={onQuizComplete}
+            onRetake={onQuizRetake}
+            onEdit={currentUser ? onQuizEdit : undefined}
+          />
+        </WorkspaceFeatureSection>,
         "Loading personality quiz",
       ),
     },

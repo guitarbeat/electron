@@ -1,15 +1,16 @@
 import type { FC } from "react";
 import SpinSwipeGame from "@/components/spin-match/SpinSwipeGame";
-import "./SpinMatchWorkspaceSection.css";
+import WorkspaceFeatureSection from "@/components/ui/WorkspaceFeatureSection";
 
 const SpinMatchWorkspaceSection: FC = () => (
-  <section
+  <WorkspaceFeatureSection
     id="spin-match-section"
-    className="spin-match-workspace-section"
-    aria-label="Spin match game"
+    ariaLabel="Spin match game"
+    title="Spin & Match"
+    bodyClassName="workspace-feature-section__body--spin"
   >
     <SpinSwipeGame />
-  </section>
+  </WorkspaceFeatureSection>
 );
 
 export default SpinMatchWorkspaceSection;
