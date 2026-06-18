@@ -4,6 +4,7 @@ import {
   MessageBoardPanel,
   QuizEditorPanel,
   QuizExperiencePanel,
+  SpinSwipeGamePanel,
 } from "@/app/lazyFeaturePanels";
 import WorkspaceFeatureSection from "@/components/ui/WorkspaceFeatureSection";
 import type { User } from "@/shared/types";
@@ -36,11 +37,13 @@ export interface BuildFeatureModalsParams {
   showMessages: boolean;
   showQuizEditor: boolean;
   showQuizExperience: boolean;
+  showSpinMatch: boolean;
   quizCompleted: boolean;
   currentUser: User | null;
   setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizExperience: (open: boolean) => void;
+  setShowSpinMatch: (open: boolean) => void;
   onQuizComplete: () => void;
   onQuizRetake: () => void;
   onQuizEdit: () => void;
@@ -53,11 +56,13 @@ export function buildFeatureModals(
     showMessages,
     showQuizEditor,
     showQuizExperience,
+    showSpinMatch,
     quizCompleted,
     currentUser,
     setShowMessages,
     setShowQuizEditor,
     setShowQuizExperience,
+    setShowSpinMatch,
     onQuizComplete,
     onQuizRetake,
     onQuizEdit,
@@ -113,6 +118,27 @@ export function buildFeatureModals(
       content: renderSuspended(
         <QuizEditorPanel onClose={() => setShowQuizEditor(false)} />,
         "Loading quiz editor",
+      ),
+    },
+    {
+      key: "spin-match",
+      isOpen: showSpinMatch,
+      onClose: () => setShowSpinMatch(false),
+      title: "Spin & Match",
+      ariaLabel: "Spin match game",
+      maxWidth: 720,
+      maxHeight: 900,
+      contentStyle: scrollContentStyle,
+      content: renderSuspended(
+        <WorkspaceFeatureSection
+          id="spin-match-section"
+          ariaLabel="Spin match game"
+          variant="embedded"
+          bodyClassName="workspace-feature-section__body--spin"
+        >
+          <SpinSwipeGamePanel />
+        </WorkspaceFeatureSection>,
+        "Loading spin match",
       ),
     },
   ];

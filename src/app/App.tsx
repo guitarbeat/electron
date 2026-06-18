@@ -33,7 +33,6 @@ import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
-import { scrollToWorkspaceSection } from "@/utils/scrollToWorkspaceSection";
 import MinigameModal from "@/ui/MinigameModal";
 import "./App.scss";
 
@@ -122,6 +121,7 @@ const App: React.FC = () => {
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
+  const [showSpinMatch, setShowSpinMatch] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () =>
       typeof window !== "undefined" &&
@@ -222,7 +222,7 @@ const App: React.FC = () => {
   }, [updateQuizCompletion]);
 
   const openSpinMatch = useCallback(() => {
-    scrollToWorkspaceSection("spin-match-section");
+    setShowSpinMatch(true);
   }, []);
 
   const featureModals = useMemo(
@@ -231,11 +231,13 @@ const App: React.FC = () => {
         showMessages,
         showQuizEditor,
         showQuizExperience,
+        showSpinMatch,
         quizCompleted,
         currentUser,
         setShowMessages,
         setShowQuizEditor,
         setShowQuizExperience,
+        setShowSpinMatch,
         onQuizComplete: handleQuizComplete,
         onQuizRetake: handleQuizRetake,
         onQuizEdit: handleQuizEdit,
@@ -249,6 +251,7 @@ const App: React.FC = () => {
       showMessages,
       showQuizEditor,
       showQuizExperience,
+      showSpinMatch,
     ],
   );
 
@@ -295,15 +298,13 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        {!isMobile ? (
-          <React.Suspense fallback={null}>
-            <RadialMenu
-              onOpenMessages={() => setShowMessages(true)}
-              onOpenQuiz={openQuizExperience}
-              onOpenSpin={openSpinMatch}
-            />
-          </React.Suspense>
-        ) : null}
+        <React.Suspense fallback={null}>
+          <RadialMenu
+            onOpenMessages={() => setShowMessages(true)}
+            onOpenQuiz={openQuizExperience}
+            onOpenSpin={openSpinMatch}
+          />
+        </React.Suspense>
 
         <div className="app-shell__canvas app-shell__canvas--main">
           <div

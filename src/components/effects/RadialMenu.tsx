@@ -171,7 +171,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const [isActive, setIsActive] = useState(false);
   const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
   const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
-  const [highlightedItemIndex, setHighlightedItemIndex] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
 
   const isDraggingRef = useRef(false);
@@ -199,13 +198,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   const toggleMenu = useCallback(() => {
     setMenuPos((prev) => clampToViewport(prev));
-    setIsActive((prev) => {
-      const next = !prev;
-      if (next) {
-        setHighlightedItemIndex(0);
-      }
-      return next;
-    });
+    setIsActive((prev) => !prev);
     markDiscovered();
   }, [markDiscovered]);
 
@@ -387,7 +380,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     },
   ];
 
-  const highlightedItem = menuItems[highlightedItemIndex] ?? menuItems[0];
   const toggleLabel = isActive ? "Close quick actions" : "Open quick actions";
   const toggleHint = "Drag to reposition • Click to toggle quick actions";
 
@@ -424,24 +416,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         {isActive ? <CrossIcon size={18} /> : <QuickActionsIcon size={18} />}
       </button>
 
-      {isActive ? (
-        <div
-          className={`menu-context-bubble menu-context-bubble--${highlightedItem.colorClass}`}
-          aria-hidden="true"
-        >
-          <span className="menu-context-bubble__eyebrow">Quick action</span>
-          <span className="menu-context-bubble__title-row">
-            <span className="menu-context-bubble__icon">
-              {highlightedItem.icon}
-            </span>
-            <span className="menu-context-bubble__title-copy">
-              <strong>{highlightedItem.label}</strong>
-              <span>{highlightedItem.description}</span>
-            </span>
-          </span>
-        </div>
-      ) : null}
-
       <ul role="menu" aria-label="Quick actions">
         {menuItems.map((item) => (
           <li
@@ -452,17 +426,14 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
             <button
               type="button"
               onClick={item.onClick}
-              onMouseEnter={() => setHighlightedItemIndex(item.index)}
-              onFocus={() => setHighlightedItemIndex(item.index)}
-              aria-label={item.label}
+              aria-label={`${item.label}. ${item.description}`}
               title={item.label}
               className="menu-item-button"
               role="menuitem"
             >
               <span className="menu-item-button__icon">{item.icon}</span>
               <span className="menu-item-button__tooltip" aria-hidden="true">
-                <strong>{item.label}</strong>
-                <span>{item.description}</span>
+                {item.label}
               </span>
             </button>
           </li>

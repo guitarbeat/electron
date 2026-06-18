@@ -2,9 +2,6 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import WorkspaceFeatureSection, {
-  WorkspaceFeatureSectionLoading,
-} from "@/components/ui/WorkspaceFeatureSection";
 import BentoWorkspaceController, {
   type WorkspaceChromeHeaderProps,
 } from "@/components/ui/BentoWorkspaceController";
@@ -16,9 +13,6 @@ import {
 
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
-const SpinMatchWorkspaceSection = React.lazy(
-  () => import("@/components/spin-match/SpinMatchWorkspaceSection"),
-);
 
 const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 
@@ -86,20 +80,6 @@ const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
         >
           <div ref={setSearchPortalEl} />
         </BentoWorkspaceController>
-
-        <React.Suspense
-          fallback={
-            <WorkspaceFeatureSection
-              id="spin-match-section"
-              ariaLabel="Spin match game"
-              title="Spin & Match"
-            >
-              <WorkspaceFeatureSectionLoading label="Loading spin match…" />
-            </WorkspaceFeatureSection>
-          }
-        >
-          <SpinMatchWorkspaceSection />
-        </React.Suspense>
 
         <section
           className={`workspace-surface workspace-surface--${activeTab}`}

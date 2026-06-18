@@ -345,7 +345,6 @@ const MoviesTopControls = React.forwardRef<
   return (
     <>
       <WorkspaceSearchShell
-        icon="🎬"
         isAutocompleteActive={isAutocompleteElevated}
         onSubmit={handleFormSubmit}
         shellRef={autocompleteRegionRef}
