@@ -420,6 +420,7 @@ const MoviesTopControls = React.forwardRef<
                     internalSearchInputRef.current?.focus();
                   }}
                   aria-label="Clear search"
+                  title="Clear search"
                 >
                   ✕
                 </button>
