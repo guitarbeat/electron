@@ -187,6 +187,7 @@ const AppNavStrip: FC<Props> = ({
                 className="ans__chip-action"
                 onClick={statusChip.action}
                 aria-label={statusChip.actionLabel}
+                title={statusChip.actionLabel}
               >
                 {statusChip.actionLabel}
               </button>
@@ -196,6 +197,7 @@ const AppNavStrip: FC<Props> = ({
               className="ans__chip-dismiss"
               onClick={dismissChip}
               aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
+              title={`Dismiss ${statusChip.label.toLowerCase()} status`}
             >
               <X size={13} strokeWidth={2.3} aria-hidden="true" />
             </button>

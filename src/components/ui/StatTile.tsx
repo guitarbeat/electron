@@ -28,6 +28,7 @@ const StatTile: React.FC<StatTileProps> = ({ tile }) => {
       className={`bento-stat-tile bento-stat-tile--${tile.tone ?? "default"}`}
       onClick={handleClick}
       aria-label={`${tile.count} ${tile.label} — tap to jump to section`}
+      title={`Jump to ${tile.label} section`}
     >
       <span className="bento-stat-tile__icon" aria-hidden="true">
         {tile.icon}

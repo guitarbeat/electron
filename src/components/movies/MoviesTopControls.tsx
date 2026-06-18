@@ -569,6 +569,7 @@ const MoviesTopControls = React.forwardRef<
                       internalSearchInputRef.current?.focus();
                     }}
                     aria-label="Clear search"
+                    title="Clear search"
                     style={{
                       position: "absolute",
                       right: "12px",
