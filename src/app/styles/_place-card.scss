@@ -233,10 +233,10 @@
   gap: 0.25rem;
 }
 
-/* Title — mirrors .movie-item-title with Papyrus and uppercase */
+/* Title — mirrors .movie-item-title display typography */
 .place-item-title {
   margin: 0;
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: 0.82rem;
   font-weight: var(--font-weight-bold);
   line-height: 1.25;

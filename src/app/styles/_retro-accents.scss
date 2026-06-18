@@ -11,37 +11,6 @@
   --retro-bevel-ink: color-mix(in srgb, var(--color-background) 88%, black);
 }
 
-.workspace-section-heading {
-  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-primary));
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-accent-light, var(--color-accent)) 35%, transparent);
-
-  &::after {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-accent) 55%, transparent) 0%,
-      transparent 100%
-    );
-    opacity: 0.55;
-  }
-}
-
-.workspace-section-heading--incoming {
-  color: color-mix(in srgb, var(--color-accent) 82%, var(--color-text-primary));
-}
-
-.workspace-section-heading--completed {
-  color: var(--color-success, #34d399);
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--color-success, #34d399) 25%, transparent);
-
-  &::after {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-success, #34d399) 55%, transparent) 0%,
-      transparent 100%
-    );
-  }
-}
-
 .app-workspace-stack--movies,
 .app-workspace-stack--places {
   .watchlist-top-controls__search-button.ui-button {

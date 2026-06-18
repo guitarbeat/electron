@@ -73,7 +73,7 @@
   border: 0;
   padding: 0;
   background:
-    radial-gradient(circle at center, rgba(28, 18, 12, 0.44) 0%, rgba(11, 8, 7, 0.82) 100%);
+    radial-gradient(circle at center, color-mix(in srgb, var(--color-background) 56%, transparent) 0%, var(--color-overlay) 100%);
   opacity: 0;
   backdrop-filter: blur(0);
   transition: opacity 240ms ease, backdrop-filter 240ms ease;
@@ -191,11 +191,11 @@
   min-height: 1.85rem;
   padding: 0.36rem 0.7rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 236, 206, 0.2);
+  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 100%),
-    rgba(17, 12, 8, 0.56);
-  color: rgba(250, 241, 228, 0.94);
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 12%, transparent) 0%, transparent 100%),
+    color-mix(in srgb, var(--color-background) 72%, transparent);
+  color: var(--color-text-primary);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -205,7 +205,7 @@
 }
 
 .movie-details-modal__poster-pill--status {
-  border-color: rgba(255, 205, 135, 0.26);
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
 .movie-details-modal__poster-footer {
@@ -226,8 +226,8 @@
   min-height: 1.85rem;
   padding: 0.34rem 0.68rem;
   border-radius: 999px;
-  background: rgba(12, 8, 6, 0.58);
-  color: rgba(240, 228, 209, 0.84);
+  background: color-mix(in srgb, var(--color-background) 68%, transparent);
+  color: color-mix(in srgb, var(--color-text-primary) 84%, transparent);
   font-size: 0.75rem;
   letter-spacing: 0.03em;
   backdrop-filter: blur(12px);
@@ -366,7 +366,7 @@
 }
 
 .movie-details-modal__section-caption {
-  color: rgba(224, 210, 182, 0.64);
+  color: var(--color-text-tertiary);
   font-size: 0.76rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -374,7 +374,7 @@
 
 .movie-details-modal__plot {
   margin: 0;
-  color: rgba(240, 228, 209, 0.92);
+  color: color-mix(in srgb, var(--color-text-primary) 92%, transparent);
   font-size: 1rem;
   line-height: 1.72;
   white-space: pre-wrap;
@@ -385,10 +385,10 @@
   gap: 0.65rem;
   padding: 1rem 1.05rem;
   border-radius: 1.2rem;
-  border: 1px solid rgba(255, 236, 206, 0.1);
+  border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 100%),
-    rgba(255, 255, 255, 0.03);
+    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 6%, transparent) 0%, transparent 100%),
+    color-mix(in srgb, var(--color-surface-1) 35%, transparent);
 }
 
 .movie-details-modal__memory-card-header {
@@ -401,7 +401,7 @@
 
 .movie-details-modal__memory-author,
 .movie-details-modal__memory-row-author {
-  color: rgba(250, 243, 232, 0.95);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -409,7 +409,7 @@
 
 .movie-details-modal__memory-date,
 .movie-details-modal__memory-row-date {
-  color: rgba(224, 210, 182, 0.62);
+  color: var(--color-text-tertiary);
   font-size: 0.73rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -417,7 +417,7 @@
 
 .movie-details-modal__memory-note {
   margin: 0;
-  color: rgba(242, 230, 210, 0.92);
+  color: color-mix(in srgb, var(--color-text-primary) 92%, transparent);
   font-size: 1rem;
   line-height: 1.72;
   white-space: pre-wrap;
@@ -426,8 +426,8 @@
 .movie-details-modal__memory-empty {
   padding: 0.95rem 1rem;
   border-radius: 1rem;
-  border: 1px dashed rgba(255, 236, 206, 0.16);
-  color: rgba(224, 210, 182, 0.74);
+  border: 1px dashed color-mix(in srgb, var(--color-border) 72%, transparent);
+  color: var(--color-text-secondary);
   font-size: 0.92rem;
   line-height: 1.6;
 }
@@ -440,7 +440,7 @@
 
 .movie-details-modal__composer-copy {
   margin: 0;
-  color: rgba(224, 210, 182, 0.82);
+  color: var(--color-text-secondary);
   font-size: 0.92rem;
   line-height: 1.6;
 }
@@ -456,7 +456,7 @@
   gap: 0.75rem;
   align-items: start;
   padding-top: 0.7rem;
-  border-top: 1px solid rgba(255, 236, 206, 0.08);
+  border-top: 1px solid color-mix(in srgb, var(--color-border-subtle) 85%, transparent);
 }
 
 .movie-details-modal__memory-row-copy {
