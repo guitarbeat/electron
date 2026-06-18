@@ -40,8 +40,10 @@ const getDatabaseUrl = (): string =>
   cleanEnvValue(
     process.env.DATABASE_URL ||
       process.env.POSTGRES_URL ||
-      process.env.POSTGRES_PRISMA_URL ||
-      process.env.VITE_DATABASE_URL
+      process.env.POSTGRES_PRISMA_URL
+    // NOTE: VITE_DATABASE_URL is intentionally excluded here. VITE_* variables
+    // are bundled into the client-side JavaScript by Vite, which would expose
+    // the connection string to every browser. Use DATABASE_URL (server-only).
   );
 
 const needsSsl = (url: string): boolean => {
@@ -68,7 +70,7 @@ const getPool = (): pg.Pool => {
     }
     const poolConfig: pg.PoolConfig = { connectionString: databaseUrl };
     if (needsSsl(databaseUrl)) {
-      poolConfig.ssl = { rejectUnauthorized: false };
+      poolConfig.ssl = { rejectUnauthorized: true };
     }
     pool = new Pool(poolConfig);
     poolUrl = databaseUrl;
