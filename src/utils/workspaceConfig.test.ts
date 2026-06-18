@@ -1,6 +1,25 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { workspaceSectionLabel } from "./workspaceSectionLabels.ts";
+import {
+  getWorkspaceMeta,
+  workspaceSectionLabel,
+} from "./workspaceConfig.ts";
+
+test("getWorkspaceMeta returns movie workspace copy", () => {
+  const meta = getWorkspaceMeta("movies");
+
+  assert.equal(meta.title, "Movies");
+  assert.equal(meta.icon, "🎬");
+  assert.equal("description" in meta, false);
+});
+
+test("getWorkspaceMeta returns places workspace copy", () => {
+  const meta = getWorkspaceMeta("places");
+
+  assert.equal(meta.title, "Date Ideas");
+  assert.equal(meta.icon, "📍");
+  assert.equal("description" in meta, false);
+});
 
 test("workspaceSectionLabel returns desktop movie labels", () => {
   assert.equal(workspaceSectionLabel("movies", "queue", false), "Movies");

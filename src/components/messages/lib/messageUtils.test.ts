@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { shouldSubmitMessageOnKeyDown } from "./messageKeyboard.ts";
+import { shouldSubmitMessageOnKeyDown } from "./messageUtils.ts";
 
 test("shouldSubmitMessageOnKeyDown", async (t) => {
   await t.test("submits on Enter", () => {
@@ -9,8 +9,6 @@ test("shouldSubmitMessageOnKeyDown", async (t) => {
       shouldSubmitMessageOnKeyDown({
         key: "Enter",
         shiftKey: false,
-        metaKey: false,
-        ctrlKey: false,
       }),
       true,
     );
@@ -23,8 +21,6 @@ test("shouldSubmitMessageOnKeyDown", async (t) => {
         shouldSubmitMessageOnKeyDown({
           key: "Enter",
           shiftKey: true,
-          metaKey: false,
-          ctrlKey: false,
         }),
         false,
       );
@@ -36,8 +32,6 @@ test("shouldSubmitMessageOnKeyDown", async (t) => {
       shouldSubmitMessageOnKeyDown({
         key: "a",
         shiftKey: false,
-        metaKey: false,
-        ctrlKey: false,
       }),
       false,
     );
@@ -48,8 +42,6 @@ test("shouldSubmitMessageOnKeyDown", async (t) => {
       shouldSubmitMessageOnKeyDown({
         key: "Enter",
         shiftKey: false,
-        metaKey: false,
-        ctrlKey: false,
         isComposing: true,
       }),
       false,

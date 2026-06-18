@@ -24,8 +24,8 @@ import { useViewport } from "@/app/ViewportContext";
 import {
   MOVIES_POSTER_GRID_MIN_COL,
   workspaceSectionIds,
+  workspaceSectionLabels,
 } from "@/utils/workspaceConfig";
-import { workspaceSectionLabels } from "@/utils/workspaceSectionLabels";
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;

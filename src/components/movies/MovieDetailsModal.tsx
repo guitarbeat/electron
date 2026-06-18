@@ -7,7 +7,7 @@ import MemoryList from "@/memories/MemoryList";
 import { INITIAL_VISIBLE_COUNT } from "@/memories/lib/memoryUtils";
 import type { Movie, SharedMemory, User } from "@/shared/types";
 import { formatMemoryTimestamp } from "@/utils";
-import { MAX_MOVIE_NOTE_LENGTH } from "./lib/movieConstants";
+import { MAX_MOVIE_NOTE_LENGTH } from "./lib/movieSections";
 import { submitMemory } from "./lib/memorySubmit";
 import type { MovieTransitionOrigin } from "./MovieCard";
 

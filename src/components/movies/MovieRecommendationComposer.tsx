@@ -7,7 +7,7 @@ import type { User } from "@/shared/types";
 import {
   MAX_GUEST_SUGGESTER_NAME_LENGTH,
   MAX_RECOMMENDATION_REASON_LENGTH,
-} from "./lib/movieConstants";
+} from "./lib/movieSections";
 
 interface MovieRecommendationComposerProps {
   currentUser: User | null;

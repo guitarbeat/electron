@@ -1,5 +1,6 @@
 import React from "react";
-import { USER_PHOTOS } from "./WatcherBadgeConstants.ts";
+import { cn } from "@/components/ui/lib/utils";
+import { USER_PHOTOS } from "./userPhotos.ts";
 
 interface WatcherBadgePhotoProps {
   user: string;
@@ -58,15 +59,13 @@ export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   showLabel = false,
   className = "",
 }) => {
-  const badgeClassName = [
+  const badgeClassName = cn(
     "watcher-badge",
     `watcher-badge--${variant}`,
     `watcher-badge--${size}`,
     `watcher-badge--${user.toLowerCase()}`,
     className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  );
 
   return (
     <div className={badgeClassName}>

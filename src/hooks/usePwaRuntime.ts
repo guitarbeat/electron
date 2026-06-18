@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { usePwaInstall } from "@/app/usePwaInstall";
+import { usePwaInstall } from "@/app/PwaInstallProvider";
 import { useToast } from "@/app/useProviders";
 import {
   flushPendingSync,

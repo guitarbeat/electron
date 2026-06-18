@@ -13,8 +13,8 @@ import {
   PLACES_GRID_CLASS,
   PLACES_GRID_MIN_COL,
   workspaceSectionIds,
+  workspaceSectionLabels,
 } from "@/utils/workspaceConfig";
-import { workspaceSectionLabels } from "@/utils/workspaceSectionLabels";
 
 interface PlacesSectionBodyProps {
   sections: PlaceSections;

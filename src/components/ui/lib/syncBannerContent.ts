@@ -22,162 +22,207 @@ interface SyncBannerInput {
   label?: string;
 }
 
+type SyncBannerIssue =
+  | "blocked"
+  | "outbox"
+  | "network"
+  | "missing_database"
+  | "database_failure"
+  | "shared_state_load"
+  | "generic";
+
 const missingDatabasePattern =
   /DATABASE_URL is not configured|missing DATABASE_URL|VITE_DATABASE.*development/i;
 
 const databaseFailurePattern =
   /Neon|Postgres|database|rate limit|HTTP (401|403|404|429)|could not be (loaded|saved)|Health check could not list shared state/i;
 
-const buildDebugHints = ({ isBlocked, label }: SyncBannerInput): string[] => {
+const sharedStateLoadPattern =
+  /Neon|Postgres|shared state could not be loaded/i;
+
+const isOutboxLabel = (text: string): boolean =>
+  text === SYNC_WARNING_OUTBOX || /waiting to sync to the server/i.test(text);
+
+const isNetworkLabel = (text: string): boolean =>
+  text === SYNC_WARNING_CLIENT_NETWORK ||
+  /Could not reach the app sync API/i.test(text);
+
+const classifySyncBannerIssue = ({
+  isBlocked,
+  label,
+}: SyncBannerInput): SyncBannerIssue => {
   if (isBlocked) {
-    return [
-      "Cause: remote sync conflict (local and shared edits diverged).",
-      "Verify: reload the app and confirm both tabs show the latest shared state.",
-      "Next step: retry sync after refresh.",
-    ];
+    return "blocked";
   }
 
   const text = label ?? "";
 
-  if (
-    text === SYNC_WARNING_OUTBOX ||
-    /waiting to sync to the server/i.test(text)
-  ) {
-    return [
-      "Cause: one or more changes are still queued for the server.",
-      "Verify: stay online and use Retry sync, or wait for the next successful save.",
-      "State: local edits are preserved until the queue clears.",
-    ];
+  if (isOutboxLabel(text)) {
+    return "outbox";
   }
 
-  if (
-    text === SYNC_WARNING_CLIENT_NETWORK ||
-    /Could not reach the app sync API/i.test(text)
-  ) {
-    return [
-      "Cause: this browser could not reach /api/state (dev server offline, wrong origin, or offline).",
-      "Verify: run pnpm dev and open the URL printed in the terminal (not :5000 on macOS — AirPlay uses that port).",
-      "State: showing cached local data until the API responds.",
-    ];
+  if (isNetworkLabel(text)) {
+    return "network";
   }
 
   if (missingDatabasePattern.test(text)) {
-    return [
-      "Cause: shared backend is not configured.",
-      "Verify: set DATABASE_URL (server), or VITE_DATABASE_URL during local Vite, then restart dev server.",
-      "State: writes are currently local-only until config is fixed.",
-    ];
+    return "missing_database";
   }
 
   if (databaseFailurePattern.test(text)) {
-    return [
-      "Cause: the shared Postgres database rejected the request, the URL was wrong, or rate limits applied.",
-      "Verify: DATABASE_URL points to the Neon pooled connection string; retry after cooldown.",
-      "State: writes may be local-only until Neon accepts requests.",
-    ];
+    return "database_failure";
   }
 
-  if (/Neon|Postgres|shared state could not be loaded/i.test(text)) {
-    return [
-      "Cause: shared state uses Neon Postgres.",
-      "Verify: environment variables, server logs, and https://status.neon.tech.",
-      "State: writes are local-only until reads succeed.",
-    ];
+  if (sharedStateLoadPattern.test(text)) {
+    return "shared_state_load";
   }
 
-  return [
+  return "generic";
+};
+
+/** Copy payloads use a different branch order than user-facing hints. */
+const classifySyncBannerCopyIssue = ({
+  isBlocked,
+  label,
+}: SyncBannerInput): SyncBannerIssue => {
+  if (isBlocked) {
+    return "blocked";
+  }
+
+  const text = label ?? "";
+
+  if (databaseFailurePattern.test(text)) {
+    return "database_failure";
+  }
+
+  if (isNetworkLabel(text)) {
+    return "network";
+  }
+
+  if (missingDatabasePattern.test(text)) {
+    return "missing_database";
+  }
+
+  return "generic";
+};
+
+const DEBUG_HINTS: Record<SyncBannerIssue, string[]> = {
+  blocked: [
+    "Cause: remote sync conflict (local and shared edits diverged).",
+    "Verify: reload the app and confirm both tabs show the latest shared state.",
+    "Next step: retry sync after refresh.",
+  ],
+  outbox: [
+    "Cause: one or more changes are still queued for the server.",
+    "Verify: stay online and use Retry sync, or wait for the next successful save.",
+    "State: local edits are preserved until the queue clears.",
+  ],
+  network: [
+    "Cause: this browser could not reach /api/state (dev server offline, wrong origin, or offline).",
+    "Verify: run pnpm dev and open the URL printed in the terminal (not :5000 on macOS — AirPlay uses that port).",
+    "State: showing cached local data until the API responds.",
+  ],
+  missing_database: [
+    "Cause: shared backend is not configured.",
+    "Verify: set DATABASE_URL (server), or VITE_DATABASE_URL during local Vite, then restart dev server.",
+    "State: writes are currently local-only until config is fixed.",
+  ],
+  database_failure: [
+    "Cause: the shared Postgres database rejected the request, the URL was wrong, or rate limits applied.",
+    "Verify: DATABASE_URL points to the Neon pooled connection string; retry after cooldown.",
+    "State: writes may be local-only until Neon accepts requests.",
+  ],
+  shared_state_load: [
+    "Cause: shared state uses Neon Postgres.",
+    "Verify: environment variables, server logs, and https://status.neon.tech.",
+    "State: writes are local-only until reads succeed.",
+  ],
+  generic: [
     "Cause: shared state could not be synchronized.",
     "Verify: server logs, .env.local, and browser Network requests to /api/state.",
     "State: writes are currently local-only until sync recovers.",
-  ];
+  ],
 };
 
-const buildFriendlyContent = ({
-  isBlocked,
-  label,
-}: SyncBannerInput): Pick<
-  SyncBannerContent,
-  "title" | "description" | "whatItMeans" | "whatToDo"
-> => {
-  if (isBlocked) {
-    return {
-      title: "Sync conflict",
-      description: "A change from another device clashed with a local change.",
-      whatItMeans: "Nothing is lost — your local changes are still here.",
-      whatToDo:
-        "Refresh the page, then hit Retry sync to resolve the conflict.",
-    };
-  }
-
-  const text = label ?? "";
-
-  if (
-    text === SYNC_WARNING_OUTBOX ||
-    /waiting to sync to the server/i.test(text)
-  ) {
-    return {
-      title: "Saving in background…",
-      description:
-        "A recent change is still waiting to reach the shared backup.",
-      whatItMeans: "Everything is safe on this device right now.",
-      whatToDo:
-        "Stay connected and it will sync automatically, or tap Retry sync to push it now.",
-    };
-  }
-
-  if (
-    text === SYNC_WARNING_CLIENT_NETWORK ||
-    /Could not reach the app sync API/i.test(text)
-  ) {
-    return {
-      title: "Can't reach the server",
-      description: "The app couldn't connect to its sync service.",
-      whatItMeans:
-        "You're seeing your last saved data. Any new changes stay local for now.",
-      whatToDo: "Check your connection, then tap Retry sync.",
-    };
-  }
-
-  if (missingDatabasePattern.test(text)) {
-    return {
-      title: "Shared backup not set up",
-      description: "The app is running without a shared storage backend.",
-      whatItMeans:
-        "Changes only save on this device and won't appear for the other person.",
-      whatToDo: "Add DATABASE_URL to the environment to enable sharing.",
-    };
-  }
-
-  if (databaseFailurePattern.test(text)) {
-    return {
-      title: "Shared backup unavailable",
-      description:
-        "The sync service declined the connection — possibly credentials or permissions.",
-      whatItMeans:
-        "Your changes are safe locally. The other person may not see updates yet.",
-      whatToDo:
-        "Tap Retry sync to try again. If it keeps failing, check the Neon database URL.",
-    };
-  }
-
-  return {
+const FRIENDLY_CONTENT: Record<
+  SyncBannerIssue,
+  Pick<SyncBannerContent, "title" | "description" | "whatItMeans" | "whatToDo">
+> = {
+  blocked: {
+    title: "Sync conflict",
+    description: "A change from another device clashed with a local change.",
+    whatItMeans: "Nothing is lost — your local changes are still here.",
+    whatToDo: "Refresh the page, then hit Retry sync to resolve the conflict.",
+  },
+  outbox: {
+    title: "Saving in background…",
+    description: "A recent change is still waiting to reach the shared backup.",
+    whatItMeans: "Everything is safe on this device right now.",
+    whatToDo:
+      "Stay connected and it will sync automatically, or tap Retry sync to push it now.",
+  },
+  network: {
+    title: "Can't reach the server",
+    description: "The app couldn't connect to its sync service.",
+    whatItMeans:
+      "You're seeing your last saved data. Any new changes stay local for now.",
+    whatToDo: "Check your connection, then tap Retry sync.",
+  },
+  missing_database: {
+    title: "Shared backup not set up",
+    description: "The app is running without a shared storage backend.",
+    whatItMeans:
+      "Changes only save on this device and won't appear for the other person.",
+    whatToDo: "Add DATABASE_URL to the environment to enable sharing.",
+  },
+  database_failure: {
+    title: "Shared backup unavailable",
+    description:
+      "The sync service declined the connection — possibly credentials or permissions.",
+    whatItMeans:
+      "Your changes are safe locally. The other person may not see updates yet.",
+    whatToDo:
+      "Tap Retry sync to try again. If it keeps failing, check the Neon database URL.",
+  },
+  shared_state_load: {
     title: "Sync paused",
     description: "The shared backup couldn't be reached.",
     whatItMeans: "Your changes are safe on this device for now.",
     whatToDo: "Tap Retry sync to try again.",
-  };
+  },
+  generic: {
+    title: "Sync paused",
+    description: "The shared backup couldn't be reached.",
+    whatItMeans: "Your changes are safe on this device for now.",
+    whatToDo: "Tap Retry sync to try again.",
+  },
+};
+
+const formatTimestamp = (): string => {
+  const now = new Date();
+  return now.toLocaleString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 };
 
 const buildCopyPayload = ({
-  isBlocked,
+  issue,
   label,
   occurredAt,
-}: SyncBannerInput & { occurredAt: string }): string => {
+}: SyncBannerInput & {
+  issue: SyncBannerIssue;
+  occurredAt: string;
+}): string => {
   const text = label ?? "";
   const header = `[SYNC ERROR] ${occurredAt}`;
   const appCtx = `App: electron — shared movie night app (React + Vite frontend, serverless Node API)`;
 
-  if (isBlocked) {
+  if (issue === "blocked") {
     return [
       header,
       appCtx,
@@ -192,7 +237,7 @@ const buildCopyPayload = ({
     ].join("\n");
   }
 
-  if (databaseFailurePattern.test(text)) {
+  if (issue === "database_failure") {
     return [
       header,
       appCtx,
@@ -219,10 +264,7 @@ const buildCopyPayload = ({
     ].join("\n");
   }
 
-  if (
-    text === SYNC_WARNING_CLIENT_NETWORK ||
-    /Could not reach the app sync API/i.test(text)
-  ) {
+  if (issue === "network") {
     return [
       header,
       appCtx,
@@ -245,7 +287,7 @@ const buildCopyPayload = ({
     ].join("\n");
   }
 
-  if (missingDatabasePattern.test(text)) {
+  if (issue === "missing_database") {
     return [
       header,
       appCtx,
@@ -274,45 +316,35 @@ const buildCopyPayload = ({
   ].join("\n");
 };
 
-const formatTimestamp = (): string => {
-  const now = new Date();
-  return now.toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-};
-
 export const getSyncBannerContent = ({
   isBlocked,
   label,
 }: SyncBannerInput): SyncBannerContent => {
   const occurredAt = formatTimestamp();
-  const friendly = buildFriendlyContent({ isBlocked, label });
-
-  if (isBlocked) {
-    return {
-      badge: "Action needed",
-      ...friendly,
-      debugHints: buildDebugHints({ isBlocked, label }),
-      copyPayload: buildCopyPayload({ isBlocked, label, occurredAt }),
-      accent: "rgba(255, 189, 89, 0.16)",
-      border: "rgba(255, 189, 89, 0.45)",
-      tone: "assertive",
-      occurredAt,
-    };
-  }
+  const issue = classifySyncBannerIssue({ isBlocked, label });
+  const copyIssue = classifySyncBannerCopyIssue({ isBlocked, label });
+  const styling = isBlocked
+    ? {
+        badge: "Action needed",
+        accent: "rgba(255, 189, 89, 0.16)",
+        border: "rgba(255, 189, 89, 0.45)",
+      }
+    : {
+        badge: "Sync paused",
+        accent: "rgba(255, 87, 87, 0.1)",
+        border: "rgba(255, 120, 120, 0.35)",
+      };
 
   return {
-    badge: "Sync paused",
-    ...friendly,
-    debugHints: buildDebugHints({ isBlocked, label }),
-    copyPayload: buildCopyPayload({ isBlocked, label, occurredAt }),
-    accent: "rgba(255, 87, 87, 0.1)",
-    border: "rgba(255, 120, 120, 0.35)",
+    ...styling,
+    ...FRIENDLY_CONTENT[issue],
+    debugHints: DEBUG_HINTS[issue],
+    copyPayload: buildCopyPayload({
+      issue: copyIssue,
+      isBlocked,
+      label,
+      occurredAt,
+    }),
     tone: "assertive",
     occurredAt,
   };

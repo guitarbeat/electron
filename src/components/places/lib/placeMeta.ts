@@ -57,4 +57,3 @@ export const getPlaceMeta = (name: string): CategoryMeta => {
   return { icon: "📍", color: colors.accent, label: "Place" };
 };
 
-export const getPlaceIcon = (name: string): string => getPlaceMeta(name).icon;

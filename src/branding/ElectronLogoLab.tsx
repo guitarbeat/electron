@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { LOGO_LAB_QUERY_PARAM, LOGO_VARIANT_QUERY_PARAM } from "@/app/logoLab";
 import Card from "@/ui/Card";
 import ElectronMark from "./ElectronMark.tsx";
-import { DEFAULT_ELECTRON_FAVICON_PATH } from "./LogoAssets";
+const DEFAULT_ELECTRON_FAVICON_PATH = "/favicon-32x32.png";
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   ELECTRON_MARK_META,

@@ -8,7 +8,7 @@ import {
   type WorkspaceSectionCounts,
   type WorkspaceSectionIds,
   type WorkspaceSectionKey,
-} from "@/utils/workspaceSectionLabels";
+} from "@/utils/workspaceConfig";
 
 const SECTION_KEYS: WorkspaceSectionKey[] = ["incoming", "queue", "completed"];
 
