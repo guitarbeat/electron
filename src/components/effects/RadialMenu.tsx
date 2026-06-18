@@ -399,6 +399,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
         type="button"
         className={`toggle ${isActive ? "toggle--active" : ""} ${!hasDiscovered ? "discover-pulse" : ""}`}
         aria-label={isActive ? "Close quick actions" : "Open quick actions"}
+        title={isActive ? "Close quick actions" : "Open quick actions"}
         aria-expanded={isActive}
         aria-haspopup="menu"
         onKeyDown={(event) => {

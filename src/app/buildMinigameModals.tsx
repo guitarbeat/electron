@@ -6,7 +6,6 @@ import {
   SpinSwipeGamePanel,
   SpinWheelGamePanel,
 } from "@/app/lazyFeaturePanels";
-import { spacing } from "@/theme/tokens";
 
 export interface AppModalConfig {
   key: string;
