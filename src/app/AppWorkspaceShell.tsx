@@ -3,7 +3,9 @@ import React, { useCallback, useMemo, useState } from "react";
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
 import BentoWorkspaceController from "@/components/ui/BentoWorkspaceController";
+import WorkspaceKeyboardHelp from "@/components/ui/WorkspaceKeyboardHelp";
 import { useViewport } from "@/app/ViewportContext";
+import { useWorkspaceKeyboardHelp } from "@/hooks/useWorkspaceKeyboardHelp";
 import {
   BentoSlotContext,
   type RegisteredBentoSlotConfig,
@@ -25,6 +27,7 @@ interface AppWorkspaceShellProps {
 
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
   const { isMobile } = useViewport();
+  const keyboardHelp = useWorkspaceKeyboardHelp();
   const [tabConfigs, setTabConfigs] = useState<
     Partial<Record<MainTab, RegisteredBentoSlotConfig>>
   >({});
@@ -54,6 +57,16 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {activeTab === "movies" ? "Movies workspace" : "Places workspace"}
+      </p>
+      <p className="sr-only">
+        Press question mark for keyboard shortcuts.
+      </p>
+      <WorkspaceKeyboardHelp
+        isOpen={keyboardHelp.isOpen}
+        onClose={keyboardHelp.close}
+      />
       <main
         id="main-content"
         className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
@@ -62,6 +75,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
       >
         <BentoWorkspaceController
           stats={bento.stats}
+          statsLoading={bento.statsLoading}
           sorts={bento.sorts}
           activeSortOrder={bento.activeSortOrder}
           onSortChange={bento.onSortChange}
@@ -70,6 +84,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({ activeTab }) => {
           activeViewMode={bento.activeViewMode}
           onViewModeChange={bento.onViewModeChange}
           viewModeAriaLabel={bento.viewModeAriaLabel}
+          onOpenKeyboardHelp={keyboardHelp.open}
         >
           <div ref={setSearchPortalEl} />
         </BentoWorkspaceController>

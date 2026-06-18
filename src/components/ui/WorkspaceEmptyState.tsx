@@ -56,16 +56,20 @@ export const WorkspaceSectionEmpty: FC<WorkspaceSectionEmptyProps> = ({
 interface WorkspaceGlobalEmptyProps {
   tab: MainTab;
   onAction?: () => void;
+  actionLabel?: string;
   children?: ReactNode;
 }
 
 export const WorkspaceGlobalEmpty: FC<WorkspaceGlobalEmptyProps> = ({
   tab,
   onAction,
+  actionLabel: actionLabelOverride,
   children,
 }) => {
   const { isMobile } = useViewport();
-  const { icon, title, copy, actionLabel } = WORKSPACE_GLOBAL_EMPTY[tab];
+  const { icon, title, copy, actionLabel: defaultActionLabel } =
+    WORKSPACE_GLOBAL_EMPTY[tab];
+  const actionLabel = actionLabelOverride ?? defaultActionLabel;
 
   return (
     <CollectionEmptyState

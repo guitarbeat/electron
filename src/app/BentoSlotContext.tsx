@@ -5,6 +5,7 @@ import type { MainTab } from "@/shared/types";
 
 export interface BentoSlotConfig<TSort extends string = string> {
   stats: BentoStatTileConfig[];
+  statsLoading?: boolean;
   sorts: MagicToggleOption<TSort>[];
   activeSortOrder: TSort;
   onSortChange: (order: TSort) => void;

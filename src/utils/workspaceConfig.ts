@@ -26,12 +26,13 @@ const RECENT_ALPHA = [
   {
     value: "recent" as const,
     desktopLabel: "🕐 Recent",
-    mobileLabel: "🕐",
+    mobileLabel: "Recent",
     ariaLabel: "Recent",
   },
   {
     value: "alpha" as const,
     desktopLabel: "A→Z",
+    mobileLabel: "A→Z",
     ariaLabel: "Alphabetical",
   },
 ];
@@ -43,7 +44,7 @@ export const MOVIE_COLLECTION_SORTS = buildSortChips([
   {
     value: "rating",
     desktopLabel: "★ Rating",
-    mobileLabel: "★",
+    mobileLabel: "Rating",
     ariaLabel: "Rating",
   },
 ]);
@@ -68,6 +69,7 @@ export const WORKSPACE_GLOBAL_EMPTY: Record<MainTab, WorkspaceEmptyCopy> = {
     icon: "🗺️",
     title: "No places yet",
     copy: "Add a restaurant, café, park, or anywhere else you'd like to visit together.",
+    actionLabel: "Add a place",
   },
 };
 

@@ -54,9 +54,15 @@ const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
           <div className="watchlist-top-controls__search-input-wrap">
             {input}
             {!isMobile && showShortcutHint ? (
-              <span className="watchlist-top-controls__search-kbd" aria-hidden="true">
-                /
-              </span>
+              <>
+                <span className="sr-only">Press slash to focus search</span>
+                <kbd
+                  className="watchlist-top-controls__search-kbd"
+                  aria-hidden="true"
+                >
+                  /
+                </kbd>
+              </>
             ) : null}
           </div>
           {autocomplete}

@@ -2,6 +2,18 @@ import type { MainTab } from "@/shared/types";
 
 export type WorkspaceSectionKey = "incoming" | "queue" | "completed";
 
+export type WorkspaceSectionAvailability = Partial<
+  Record<WorkspaceSectionKey, boolean>
+>;
+
+/** Map bento stat tile id → section key (`watched` / `visited` → completed). */
+export function workspaceTileSectionKey(tileId: string): WorkspaceSectionKey {
+  if (tileId === "incoming" || tileId === "queue") {
+    return tileId;
+  }
+  return "completed";
+}
+
 export type WorkspaceSectionIds = Record<WorkspaceSectionKey, string>;
 
 export interface WorkspaceSectionCounts {
@@ -36,6 +48,14 @@ export function workspaceSectionLabel(
   return isMobile ? labels.mobile : labels.desktop;
 }
 
+/** Full section name for navigation affordances (tooltips, aria). */
+export function workspaceSectionNavLabel(
+  tab: MainTab,
+  section: WorkspaceSectionKey,
+): string {
+  return workspaceSectionLabel(tab, section, false);
+}
+
 export function workspaceSectionLabels(
   tab: MainTab,
   isMobile: boolean,
@@ -50,6 +70,7 @@ export function workspaceSectionLabels(
 export interface WorkspaceStatTile {
   id: string;
   label: string;
+  navLabel: string;
   count: number;
   sectionId: string;
   tone: "default" | "incoming" | "completed";
@@ -68,27 +89,24 @@ export function buildWorkspaceStatTiles({
 }): WorkspaceStatTile[] {
   const completedId = tab === "movies" ? "watched" : "visited";
 
+  const tile = (
+    id: string,
+    section: WorkspaceSectionKey,
+    sectionId: string,
+    count: number,
+    tone: WorkspaceStatTile["tone"],
+  ): WorkspaceStatTile => ({
+    id,
+    label: workspaceSectionLabel(tab, section, isMobile),
+    navLabel: workspaceSectionNavLabel(tab, section),
+    count,
+    sectionId,
+    tone,
+  });
+
   return [
-    {
-      id: "incoming",
-      label: workspaceSectionLabel(tab, "incoming", isMobile),
-      count: counts.incoming,
-      sectionId: sectionIds.incoming,
-      tone: "incoming",
-    },
-    {
-      id: "queue",
-      label: workspaceSectionLabel(tab, "queue", isMobile),
-      count: counts.queue,
-      sectionId: sectionIds.queue,
-      tone: "default",
-    },
-    {
-      id: completedId,
-      label: workspaceSectionLabel(tab, "completed", isMobile),
-      count: counts.completed,
-      sectionId: sectionIds.completed,
-      tone: "completed",
-    },
+    tile("incoming", "incoming", sectionIds.incoming, counts.incoming, "incoming"),
+    tile("queue", "queue", sectionIds.queue, counts.queue, "default"),
+    tile(completedId, "completed", sectionIds.completed, counts.completed, "completed"),
   ];
 }

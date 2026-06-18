@@ -1,12 +1,18 @@
 import React, { useCallback } from "react";
+import { scrollToWorkspaceSection } from "@/utils/scrollToWorkspaceSection";
+import { useViewport } from "@/app/ViewportContext";
 import "./StatTile.css";
 
 export interface BentoStatTileConfig {
   id: string;
   label: string;
+  navLabel?: string;
+  shortcutKey?: string;
   count: number;
   sectionId: string;
   tone?: "default" | "incoming" | "completed";
+  isActive?: boolean;
+  isDisabled?: boolean;
 }
 
 interface StatTileProps {
@@ -14,20 +20,43 @@ interface StatTileProps {
 }
 
 const StatTile: React.FC<StatTileProps> = ({ tile }) => {
+  const { isMobile } = useViewport();
+  const isDisabled = tile.isDisabled ?? tile.count === 0;
+  const navLabel = tile.navLabel ?? tile.label;
+
   const handleClick = useCallback(() => {
-    const el = document.getElementById(tile.sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (isDisabled) {
+      return;
     }
-  }, [tile.sectionId]);
+    scrollToWorkspaceSection(tile.sectionId);
+  }, [isDisabled, tile.sectionId]);
 
   return (
     <button
       type="button"
-      className={`bento-stat-tile bento-stat-tile--${tile.tone ?? "default"}`}
+      className={`bento-stat-tile bento-stat-tile--${tile.tone ?? "default"}${
+        tile.isActive ? " is-active" : ""
+      }${isDisabled ? " is-disabled" : ""}`}
       onClick={handleClick}
-      aria-label={`${tile.count} ${tile.label} — jump to section`}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
+      aria-current={tile.isActive ? "true" : undefined}
+      title={navLabel !== tile.label ? navLabel : undefined}
+      aria-label={
+        isDisabled
+          ? `${tile.count} ${navLabel} — section empty`
+          : tile.count === 0
+            ? `Jump to ${navLabel} section`
+            : tile.shortcutKey && !isMobile
+              ? `${tile.count} ${navLabel} — jump to section, press ${tile.shortcutKey}`
+              : `${tile.count} ${navLabel} — jump to section`
+      }
     >
+      {!isMobile && tile.shortcutKey && !isDisabled ? (
+        <span className="bento-stat-tile__key" aria-hidden="true">
+          {tile.shortcutKey}
+        </span>
+      ) : null}
       <span className="bento-stat-tile__body">
         <span
           className="bento-stat-tile__count"

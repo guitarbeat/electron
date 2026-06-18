@@ -4,6 +4,7 @@ import { CollectionSection } from "@/ui/CollectionLayout";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import PlaceSuggestionCard from "./PlaceSuggestionCard";
 import PlacesGrid from "./PlacesGrid";
+import PlacesSuggestionsSkeleton from "./PlacesSuggestionsSkeleton";
 import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
 import { WorkspaceGlobalEmpty } from "@/components/ui/WorkspaceEmptyState";
 import { useViewport } from "@/app/ViewportContext";
@@ -18,6 +19,7 @@ import { workspaceSectionLabels } from "@/utils/workspaceSectionLabels";
 interface PlacesSectionBodyProps {
   sections: PlaceSections;
   isLoading: boolean;
+  isSuggestionsLoading?: boolean;
   pendingSuggestions: PlaceSuggestion[];
   currentUser: User | null;
   processingSuggestionId: string | null;
@@ -32,11 +34,13 @@ interface PlacesSectionBodyProps {
   onDelete: (place: Place) => void;
   onEdit: (place: Place) => void;
   mapSlot?: React.ReactNode;
+  onAddPlaceFocus?: () => void;
 }
 
 const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
   sections,
   isLoading,
+  isSuggestionsLoading = false,
   pendingSuggestions,
   currentUser,
   processingSuggestionId,
@@ -51,6 +55,7 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
   onDelete,
   onEdit,
   mapSlot,
+  onAddPlaceFocus,
 }) => {
   const { isMobile } = useViewport();
   const sectionLabels = workspaceSectionLabels("places", isMobile);
@@ -58,9 +63,15 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
 
   const allPlaces = [...sections.queue, ...sections.completed];
   const hasPlaces = allPlaces.length > 0;
-  const showInitialLoading = isLoading && !hasPlaces && pendingSuggestions.length === 0;
+  const showInitialLoading =
+    (isLoading || isSuggestionsLoading) &&
+    !hasPlaces &&
+    pendingSuggestions.length === 0;
   const showGlobalEmpty =
-    !isLoading && !hasPlaces && pendingSuggestions.length === 0;
+    !isLoading &&
+    !isSuggestionsLoading &&
+    !hasPlaces &&
+    pendingSuggestions.length === 0;
 
   if (showInitialLoading) {
     return <WorkspaceCollectionLoading tab="places" />;
@@ -72,7 +83,11 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
         className={PLACES_GRID_CLASS}
         minColumnWidth={PLACES_GRID_MIN_COL}
       >
-        <WorkspaceGlobalEmpty tab="places" />
+        <WorkspaceGlobalEmpty
+          tab="places"
+          onAction={onAddPlaceFocus}
+          actionLabel={canEdit ? "Add a place" : "Suggest a place"}
+        />
       </ChromaCollectionGrid>
     );
   }
@@ -81,36 +96,46 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
     <div className="workspace-section-body">
       {mapSlot}
 
-      {pendingSuggestions.length > 0 && (
+      {(isSuggestionsLoading || pendingSuggestions.length > 0) && (
         <CollectionSection
           heading={sectionLabels.incoming}
+          count={
+            isSuggestionsLoading && pendingSuggestions.length === 0
+              ? undefined
+              : pendingSuggestions.length
+          }
           tone="incoming"
           id={sectionIds.incoming}
         >
-          <ChromaCollectionGrid
-            className={PLACES_GRID_CLASS}
-            minColumnWidth={PLACES_GRID_MIN_COL}
-          >
-            {pendingSuggestions.map((suggestion) => (
-              <PlaceSuggestionCard
-                key={suggestion.id}
-                suggestion={suggestion}
-                onAccept={() => onAcceptSuggestion(suggestion)}
-                onReject={() =>
-                  onRejectSuggestion(suggestion.id, suggestion.name)
-                }
-                canRespond={canEdit}
-                disableActions={!currentUser}
-                isProcessing={processingSuggestionId === suggestion.id}
-              />
-            ))}
-          </ChromaCollectionGrid>
+          {isSuggestionsLoading && pendingSuggestions.length === 0 ? (
+            <PlacesSuggestionsSkeleton />
+          ) : (
+            <ChromaCollectionGrid
+              className={PLACES_GRID_CLASS}
+              minColumnWidth={PLACES_GRID_MIN_COL}
+            >
+              {pendingSuggestions.map((suggestion) => (
+                <PlaceSuggestionCard
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  onAccept={() => onAcceptSuggestion(suggestion)}
+                  onReject={() =>
+                    onRejectSuggestion(suggestion.id, suggestion.name)
+                  }
+                  canRespond={canEdit}
+                  disableActions={!currentUser}
+                  isProcessing={processingSuggestionId === suggestion.id}
+                />
+              ))}
+            </ChromaCollectionGrid>
+          )}
         </CollectionSection>
       )}
 
       {sections.queue.length > 0 && (
         <CollectionSection
           heading={sectionLabels.queue}
+          count={sections.queue.length}
           id={sectionIds.queue}
         >
           <PlacesGrid
@@ -131,6 +156,7 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
       {sections.completed.length > 0 && (
         <CollectionSection
           heading={sectionLabels.completed}
+          count={sections.completed.length}
           tone="completed"
           id={sectionIds.completed}
         >

@@ -62,6 +62,7 @@ const PlacesList: React.FC = () => {
     addPlaceSuggestion,
     acceptPlaceSuggestion,
     rejectPlaceSuggestion,
+    isLoading: isSuggestionsLoading,
     isDegraded: isSuggestionsDegraded,
     isSyncBlocked: isSuggestionsSyncBlocked,
     syncWarning: suggestionsSyncWarning,
@@ -85,6 +86,8 @@ const PlacesList: React.FC = () => {
     () => buildPlaceSections(places, pendingSuggestions, sortOrder),
     [places, pendingSuggestions, sortOrder],
   );
+  const hasPlaces =
+    sections.queue.length > 0 || sections.completed.length > 0;
 
   const handlePlaceSortChange = useCallback((order: PlaceSortOrder) => {
     setSortOrder(order);
@@ -103,6 +106,15 @@ const PlacesList: React.FC = () => {
     sorts: PLACE_COLLECTION_SORTS.desktop,
     mobileSorts: PLACE_COLLECTION_SORTS.mobile,
     ariaLabel: "Places workspace controls",
+    sectionSpyEnabled: !isLoading,
+    statsLoading: isLoading,
+    sectionSpyTopInset: hasPlaces ? "38%" : undefined,
+    sectionAvailability: {
+      incoming:
+        isSuggestionsLoading || pendingSuggestions.length > 0,
+      queue: sections.queue.length > 0,
+      completed: sections.completed.length > 0,
+    },
   });
 
   const syncBanner = useWorkspaceSyncBanner({
@@ -154,6 +166,16 @@ const PlacesList: React.FC = () => {
   const focusPlacesSearch = useCallback(() => {
     placesTopControlsRef.current?.focusSearchInput();
   }, []);
+
+  const handlePlacesEmptyAction = useCallback(() => {
+    focusPlacesSearch();
+    if (!currentUser) {
+      showToast({
+        message: "Type a place name in search, then press Suggest.",
+        type: "info",
+      });
+    }
+  }, [currentUser, focusPlacesSearch, showToast]);
 
   useFocusSearchShortcut(focusPlacesSearch);
 
@@ -317,6 +339,7 @@ const PlacesList: React.FC = () => {
         <PlacesSectionBody
           sections={sections}
           isLoading={isLoading}
+          isSuggestionsLoading={isSuggestionsLoading}
           pendingSuggestions={pendingSuggestions}
           currentUser={currentUser}
           processingSuggestionId={processingSuggestionId}
@@ -335,6 +358,7 @@ const PlacesList: React.FC = () => {
           onDelete={setPlaceToDelete}
           onEdit={setPlaceToEdit}
           mapSlot={mapSlot}
+          onAddPlaceFocus={handlePlacesEmptyAction}
         />
 
         {placeToDelete && (

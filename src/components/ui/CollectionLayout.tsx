@@ -68,12 +68,14 @@ const CollectionGrid: React.FC<CollectionGridProps> = ({
 
 interface CollectionSectionProps extends React.HTMLAttributes<HTMLElement> {
   heading: React.ReactNode;
+  count?: number;
   tone?: "default" | "incoming" | "completed";
   titleClassName?: string;
 }
 
 const CollectionSection: React.FC<CollectionSectionProps> = ({
   heading,
+  count,
   tone = "default",
   className = "",
   titleClassName = "",
@@ -90,6 +92,11 @@ const CollectionSection: React.FC<CollectionSectionProps> = ({
     .filter(Boolean)
     .join(" ");
 
+  const headingLabel =
+    typeof heading === "string" || typeof heading === "number"
+      ? String(heading)
+      : "Section";
+
   return (
     <section
       className={className}
@@ -101,7 +108,23 @@ const CollectionSection: React.FC<CollectionSectionProps> = ({
       }}
       {...props}
     >
-      <h3 className={headingClassName}>{heading}</h3>
+      <h3
+        className={headingClassName}
+        aria-label={
+          typeof count === "number"
+            ? `${headingLabel}, ${count} items`
+            : undefined
+        }
+      >
+        <span className="workspace-section-heading__content">
+          <span className="workspace-section-heading__label">{heading}</span>
+          {typeof count === "number" ? (
+            <span className="workspace-section-heading__count" aria-hidden="true">
+              {count}
+            </span>
+          ) : null}
+        </span>
+      </h3>
       {children}
     </section>
   );

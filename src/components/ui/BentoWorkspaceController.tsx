@@ -32,9 +32,22 @@ const ViewModeControls: React.FC<ViewModeControlsProps> = ({
   </div>
 );
 
+const StatTilesSkeleton: React.FC = () => (
+  <>
+    {(["incoming", "queue", "completed"] as const).map((id) => (
+      <div
+        key={id}
+        className="bento-stat-tile bento-stat-tile--skeleton skeleton"
+        aria-hidden="true"
+      />
+    ))}
+  </>
+);
+
 interface BentoWorkspaceControllerProps<TSort extends string = string> {
   children: React.ReactNode;
   stats: BentoStatTileConfig[];
+  statsLoading?: boolean;
   sorts: MagicToggleOption<TSort>[];
   activeSortOrder: TSort;
   onSortChange: (order: TSort) => void;
@@ -43,11 +56,13 @@ interface BentoWorkspaceControllerProps<TSort extends string = string> {
   activeViewMode?: string;
   onViewModeChange?: (mode: string) => void;
   viewModeAriaLabel?: string;
+  onOpenKeyboardHelp?: () => void;
 }
 
 function BentoWorkspaceController<TSort extends string>({
   children,
   stats,
+  statsLoading = false,
   sorts,
   activeSortOrder,
   onSortChange,
@@ -56,6 +71,7 @@ function BentoWorkspaceController<TSort extends string>({
   activeViewMode,
   onViewModeChange,
   viewModeAriaLabel,
+  onOpenKeyboardHelp,
 }: BentoWorkspaceControllerProps<TSort>) {
   const { isMobile } = useViewport();
   const hasViewModes =
@@ -70,20 +86,24 @@ function BentoWorkspaceController<TSort extends string>({
     >
       <div className="bento-ctrl__search">{children}</div>
 
-      {stats.length > 0 && (
+      {statsLoading || stats.length > 0 ? (
         <>
           <div className="bento-ctrl__sep" aria-hidden="true" />
           <div
             className="bento-ctrl__stats"
             role="group"
             aria-label="Jump to section"
+            aria-keyshortcuts="1 2 3"
+            aria-busy={statsLoading || undefined}
           >
-            {stats.map((tile) => (
-              <StatTile key={tile.id} tile={tile} />
-            ))}
+            {statsLoading ? (
+              <StatTilesSkeleton />
+            ) : (
+              stats.map((tile) => <StatTile key={tile.id} tile={tile} />)
+            )}
           </div>
         </>
-      )}
+      ) : null}
 
       {sorts.length > 0 && (
         <div
@@ -110,6 +130,21 @@ function BentoWorkspaceController<TSort extends string>({
           ) : null}
         </div>
       )}
+
+      {onOpenKeyboardHelp && !isMobile ? (
+        <div className="bento-ctrl__shortcuts-row">
+          <button
+            type="button"
+            className="bento-ctrl__shortcuts-btn"
+            onClick={onOpenKeyboardHelp}
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+          >
+            <kbd className="bento-ctrl__shortcuts-kbd">?</kbd>
+            <span>Shortcuts</span>
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -1,20 +1,11 @@
 import { useEffect } from "react";
+import { shouldIgnoreWorkspaceShortcut } from "@/utils/keyboardShortcutGuards";
 
 /** Focus the workspace search field when the user presses `/` outside text inputs. */
 export function useFocusSearchShortcut(focusSearch: () => void): void {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target;
-      if (
-        event.key !== "/" ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement ||
-        (target instanceof HTMLElement && target.isContentEditable)
-      ) {
+      if (event.key !== "/" || shouldIgnoreWorkspaceShortcut(event)) {
         return;
       }
 

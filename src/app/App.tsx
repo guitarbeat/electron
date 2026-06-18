@@ -31,6 +31,7 @@ import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import VignetteOverlay from "@/components/effects/VignetteOverlay";
 import { useAudio } from "@/hooks/useAudio";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
+import { useWorkspaceTabShortcuts } from "@/hooks/useWorkspaceTabShortcuts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
@@ -152,6 +153,7 @@ const App: React.FC = () => {
     isMobile,
     onTabSwitch: playSwitch,
   });
+  useWorkspaceTabShortcuts(handleTabChange);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
   );

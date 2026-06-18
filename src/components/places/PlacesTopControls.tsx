@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/ui/Button";
 import { Input } from "@/ui/FormFields";
 import { PlusIcon, Spinner } from "@/common/Icons";
@@ -42,7 +42,10 @@ const PlacesTopControls = React.forwardRef<
     forwardedRef,
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
+    const autocompleteRegionRef = useRef<HTMLDivElement>(null);
+    const focusBoundaryFrameRef = useRef<number | null>(null);
     const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
+    const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
     const isBusy = isAdding || Boolean(isSuggesting);
     const hasQuery = searchQuery.trim().length > 0;
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -55,14 +58,60 @@ const PlacesTopControls = React.forwardRef<
     const showAddAction = hasQuery && canEdit;
     const showSuggestAction = hasQuery && Boolean(onSuggest);
     const autocompleteId = React.useId();
+    const hasAutocompletePanel = hasQuery && isAutocompleteOpen;
+    const showSuggestionList = hasAutocompletePanel && visibleSuggestions.length > 0;
+    const showNoMatchHint =
+      hasAutocompletePanel && visibleSuggestions.length === 0;
+
+    const clearFocusBoundaryCheck = useCallback(() => {
+      if (focusBoundaryFrameRef.current !== null) {
+        window.cancelAnimationFrame(focusBoundaryFrameRef.current);
+        focusBoundaryFrameRef.current = null;
+      }
+    }, []);
+
+    const openAutocomplete = useCallback(() => {
+      if (!hasQuery) {
+        return;
+      }
+      setIsAutocompleteOpen(true);
+      setActiveAutocompleteIndex(-1);
+    }, [hasQuery]);
+
+    const hideAutocomplete = useCallback(() => {
+      setIsAutocompleteOpen(false);
+      setActiveAutocompleteIndex(-1);
+    }, []);
 
     useEffect(() => {
       setActiveAutocompleteIndex(-1);
     }, [normalizedQuery, visibleSuggestions.length]);
 
+    useEffect(() => {
+      if (!hasQuery) {
+        hideAutocomplete();
+      }
+    }, [hasQuery, hideAutocomplete]);
+
+    useEffect(() => {
+      const handlePointerDown = (event: PointerEvent) => {
+        const target = event.target;
+        if (!(target instanceof Node)) {
+          return;
+        }
+        if (!autocompleteRegionRef.current?.contains(target)) {
+          hideAutocomplete();
+        }
+      };
+
+      document.addEventListener("pointerdown", handlePointerDown);
+      return () => document.removeEventListener("pointerdown", handlePointerDown);
+    }, [hideAutocomplete]);
+
     const selectSuggestion = (suggestion: PlaceSuggestion) => {
       setSearchQuery(suggestion.name);
       setActiveAutocompleteIndex(-1);
+      hideAutocomplete();
       inputRef.current?.focus();
     };
 
@@ -75,17 +124,38 @@ const PlacesTopControls = React.forwardRef<
           if (document.activeElement !== input) {
             input.focus();
           }
+          openAutocomplete();
         },
       }),
-      [],
+      [openAutocomplete],
     );
 
     return (
       <WorkspaceSearchShell
         icon="📍"
-        isAutocompleteActive={hasQuery && visibleSuggestions.length > 0}
+        isAutocompleteActive={showSuggestionList || showNoMatchHint}
+        shellRef={autocompleteRegionRef}
+        onShellFocusCapture={() => {
+          clearFocusBoundaryCheck();
+          if (hasQuery) {
+            openAutocomplete();
+          }
+        }}
+        onShellBlurCapture={() => {
+          clearFocusBoundaryCheck();
+          focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
+            focusBoundaryFrameRef.current = null;
+            const nextIsFocused = Boolean(
+              autocompleteRegionRef.current?.contains(document.activeElement),
+            );
+            if (!nextIsFocused) {
+              hideAutocomplete();
+            }
+          });
+        }}
         onSubmit={(event) => {
           event.preventDefault();
+          hideAutocomplete();
           inputRef.current?.blur();
           if (!canEdit && onSuggest) {
             void onSuggest();
@@ -101,13 +171,24 @@ const PlacesTopControls = React.forwardRef<
               ref={inputRef}
               className="watchlist-top-controls__search-field places-add-input"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim()) {
+                  openAutocomplete();
+                }
+              }}
+              onFocus={() => {
+                if (hasQuery) {
+                  openAutocomplete();
+                }
+              }}
               onKeyDown={(event) => {
                 if (event.nativeEvent.isComposing) return;
 
                 if (event.key === "ArrowDown") {
                   if (visibleSuggestions.length === 0) return;
                   event.preventDefault();
+                  openAutocomplete();
                   setActiveAutocompleteIndex((currentIndex) =>
                     currentIndex < visibleSuggestions.length - 1
                       ? currentIndex + 1
@@ -118,6 +199,7 @@ const PlacesTopControls = React.forwardRef<
                 if (event.key === "ArrowUp") {
                   if (visibleSuggestions.length === 0) return;
                   event.preventDefault();
+                  openAutocomplete();
                   setActiveAutocompleteIndex((currentIndex) =>
                     currentIndex > 0
                       ? currentIndex - 1
@@ -127,6 +209,7 @@ const PlacesTopControls = React.forwardRef<
                 }
                 if (
                   event.key === "Enter" &&
+                  isAutocompleteOpen &&
                   activeAutocompleteIndex >= 0 &&
                   visibleSuggestions[activeAutocompleteIndex]
                 ) {
@@ -136,27 +219,29 @@ const PlacesTopControls = React.forwardRef<
                   );
                   return;
                 }
-                if (event.key === "Escape" && searchQuery) {
-                  event.preventDefault();
-                  setSearchQuery("");
-                  setActiveAutocompleteIndex(-1);
-                  inputRef.current?.blur();
+                if (event.key === "Escape") {
+                  if (isAutocompleteOpen && hasQuery) {
+                    event.preventDefault();
+                    if (showSuggestionList || showNoMatchHint) {
+                      hideAutocomplete();
+                      return;
+                    }
+                  }
+                  if (searchQuery) {
+                    event.preventDefault();
+                    setSearchQuery("");
+                    setActiveAutocompleteIndex(-1);
+                    hideAutocomplete();
+                    inputRef.current?.blur();
+                  }
                 }
               }}
               placeholder="Search places to add or suggest"
               aria-label="Place name"
-              role={
-                visibleSuggestions.length > 0 ? "combobox" : undefined
-              }
-              aria-autocomplete={
-                visibleSuggestions.length > 0 ? "list" : undefined
-              }
-              aria-expanded={
-                visibleSuggestions.length > 0 ? true : undefined
-              }
-              aria-controls={
-                visibleSuggestions.length > 0 ? autocompleteId : undefined
-              }
+              role={hasAutocompletePanel ? "combobox" : undefined}
+              aria-autocomplete={hasAutocompletePanel ? "list" : undefined}
+              aria-expanded={showSuggestionList ? true : undefined}
+              aria-controls={showSuggestionList ? autocompleteId : undefined}
               aria-activedescendant={
                 activeAutocompleteIndex >= 0
                   ? `${autocompleteId}-option-${activeAutocompleteIndex}`
@@ -169,6 +254,7 @@ const PlacesTopControls = React.forwardRef<
               <WorkspaceSearchClear
                 onClick={() => {
                   setSearchQuery("");
+                  hideAutocomplete();
                   inputRef.current?.focus();
                 }}
               />
@@ -176,7 +262,7 @@ const PlacesTopControls = React.forwardRef<
           </>
         }
         autocomplete={
-          hasQuery && visibleSuggestions.length > 0 ? (
+          showSuggestionList ? (
             <div
               id={autocompleteId}
               className="watchlist-top-controls__autocomplete is-open"
@@ -191,9 +277,7 @@ const PlacesTopControls = React.forwardRef<
                   role="option"
                   aria-selected={index === activeAutocompleteIndex}
                   className={`watchlist-top-controls__autocomplete-option${
-                    index === activeAutocompleteIndex
-                      ? " is-active"
-                      : ""
+                    index === activeAutocompleteIndex ? " is-active" : ""
                   }`}
                   onPointerDown={(e) => {
                     e.preventDefault();
@@ -210,6 +294,17 @@ const PlacesTopControls = React.forwardRef<
                   </span>
                 </button>
               ))}
+            </div>
+          ) : showNoMatchHint ? (
+            <div
+              className="watchlist-top-controls__autocomplete is-open"
+              role="status"
+            >
+              <p className="watchlist-top-controls__autocomplete-status">
+                {canEdit
+                  ? "No matching suggestions — use Add to save this place."
+                  : "No matching suggestions — use Suggest to share this place."}
+              </p>
             </div>
           ) : null
         }

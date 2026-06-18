@@ -37,6 +37,11 @@ export function useAppTabNavigation({
         () => {
           startTransition(() => {
             setActiveTab(tab);
+            window.requestAnimationFrame(() => {
+              document
+                .getElementById("main-content")
+                ?.focus({ preventScroll: true });
+            });
           });
         },
         prefersReducedMotion || isMobile,

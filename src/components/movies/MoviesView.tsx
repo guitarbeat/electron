@@ -39,10 +39,10 @@ import {
   workspaceSectionIds,
 } from "@/utils/workspaceConfig";
 
-const MOBILE_MOVIE_VIEW_MODES = MOVIE_BROWSE_LAYOUTS.map(({ value }) => ({
+const MOBILE_MOVIE_VIEW_MODES = MOVIE_BROWSE_LAYOUTS.map(({ value, label }) => ({
   value,
-  label: value === "grid" ? "⊞" : "↕",
-  ariaLabel: value === "grid" ? "Grid view" : "Scroll view",
+  label: value === "grid" ? "Grid" : "Scroll",
+  ariaLabel: label,
 }));
 
 const resolveSearchTitle = (
@@ -136,6 +136,13 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     activeViewMode: browseLayout,
     onViewModeChange: handleBrowseLayoutChange,
     viewModeAriaLabel: "Movie browse layout",
+    sectionSpyEnabled: !isLoading,
+    statsLoading: isLoading,
+    sectionAvailability: {
+      incoming: isSuggestionsLoading || sections.suggestions.length > 0,
+      queue: sections.queue.length > 0,
+      completed: sections.completed.length > 0,
+    },
   });
 
   useEffect(() => {
@@ -175,6 +182,15 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
+  const handleEmptyStateAction = useCallback(() => {
+    focusSearchInput();
+    if (!currentUser) {
+      setToast({
+        message: "Type a movie or show title in search, then press Suggest.",
+        type: "info",
+      });
+    }
+  }, [currentUser, focusSearchInput, setToast]);
   useFocusSearchShortcut(focusSearchInput);
   const clearSearchAndRefocus = useCallback(() => {
     setSearchQuery("");
@@ -400,7 +416,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         processingSuggestionId={processingSuggestionId}
         successMovieId={successMovieId}
         movieMemories={movieMemories}
-        onAddMovieFocus={focusSearchInput}
+        onAddMovieFocus={handleEmptyStateAction}
         onAcceptSuggestion={handleAcceptSuggestion}
         onRejectSuggestion={handleRejectSuggestion}
         onDeleteRequest={setMovieToDelete}

@@ -173,7 +173,11 @@ const MovieSectionBody: React.FC<Props> = ({
         className={gridSurfaceClass(browseLayout)}
         minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
       >
-        <WorkspaceGlobalEmpty tab="movies" onAction={onAddMovieFocus} />
+        <WorkspaceGlobalEmpty
+          tab="movies"
+          onAction={onAddMovieFocus}
+          actionLabel={currentUser ? "Add a movie" : "Suggest a movie"}
+        />
       </ChromaCollectionGrid>
     );
   }
@@ -183,6 +187,11 @@ const MovieSectionBody: React.FC<Props> = ({
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
         <CollectionSection
           heading={sectionLabels.incoming}
+          count={
+            isSuggestionsLoading && sections.suggestions.length === 0
+              ? undefined
+              : sections.suggestions.length
+          }
           tone="incoming"
           id={sectionIds.incoming}
         >
@@ -203,6 +212,7 @@ const MovieSectionBody: React.FC<Props> = ({
       {sections.queue.length > 0 && (
         <CollectionSection
           heading={sectionLabels.queue}
+          count={sections.queue.length}
           id={sectionIds.queue}
         >
           {renderMovies(sections.queue, "queue")}
@@ -212,6 +222,7 @@ const MovieSectionBody: React.FC<Props> = ({
       {sections.completed.length > 0 && (
         <CollectionSection
           heading={sectionLabels.completed}
+          count={sections.completed.length}
           tone="completed"
           id={sectionIds.completed}
         >

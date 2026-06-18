@@ -40,5 +40,22 @@ test("buildWorkspaceStatTiles maps section counts", () => {
   assert.equal(tiles.length, 3);
   assert.equal(tiles[0]?.count, 2);
   assert.equal(tiles[1]?.label, "Up Next");
+  assert.equal(tiles[1]?.navLabel, "Up Next");
   assert.equal(tiles[2]?.sectionId, "movies-section-watched");
+});
+
+test("buildWorkspaceStatTiles uses full nav labels on mobile", () => {
+  const tiles = buildWorkspaceStatTiles({
+    tab: "movies",
+    isMobile: true,
+    sectionIds: {
+      incoming: "movies-section-incoming",
+      queue: "movies-section-queue",
+      completed: "movies-section-watched",
+    },
+    counts: { incoming: 1, queue: 2, completed: 3 },
+  });
+
+  assert.equal(tiles[1]?.label, "Queue");
+  assert.equal(tiles[1]?.navLabel, "Up Next");
 });
