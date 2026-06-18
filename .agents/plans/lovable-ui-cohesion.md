@@ -48,7 +48,7 @@ Three coordinated fixes: stop the radial menu bubbles from clipping off-screen, 
   - Keep `mono` as-is.
   - Add a new `display` entry: `['Papyrus', 'serif']` — used **only** for the brand wordmark.
 - **`src/app/App.scss`** — at the `:root` block (~line 2999–3005 and ~10540), replace `--font-body` and `--font-heading` with the Inter stack; keep `--font-display: 'Papyrus', serif` for the brand. Remove the second Papyrus override block at line 10500 ("Papyrus Manuscript Refresh") since the new tokens supersede it.
-- **`src/app/AppHeader.css`** — remove every `font-family: var(--font-body, 'Papyrus', serif)` and let elements inherit from the new body stack. Keep `.app-header__brand` on `'Papyrus', serif` so "Electron" stays distinctive.
+- **`src/app/WorkspaceTopbar.css`** — remove every `font-family: var(--font-body, 'Papyrus', serif)` and let elements inherit from the new body stack. Brand Papyrus lives in `AppNavStrip.css` under `.ans__brand`.
 - Strip the explicit `font-family: 'Papyrus' / fantasy` declarations from:
   - `.movie-poster-cat-title` (App.scss ~line 8115)
   - `.place-item-title` (~9711)
@@ -69,5 +69,5 @@ Three coordinated fixes: stop the radial menu bubbles from clipping off-screen, 
 - `src/components/watchlist/index.tsx` — drop mobile rail branch, use single grid
 - `src/theme/tokens.ts` — new font stacks, Papyrus → display only
 - `src/app/App.scss` — root font vars, strip Papyrus from non-brand selectors, remove rail/grid-span overrides
-- `src/app/AppHeader.css` — strip Papyrus from chrome elements (keep `.app-header__brand`)
+- `src/app/WorkspaceTopbar.css` — strip Papyrus from profile-menu chrome elements (brand stays in `AppNavStrip.css`)
 

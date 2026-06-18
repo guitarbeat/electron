@@ -25,7 +25,7 @@ Default theme uses dark navy `#07091a` backgrounds, `#f472b6` (pink) and `#7dd3f
 - `src/components/ui/BentoWorkspaceController.css` — stat tiles, separator, sort chips (was all `rgba(245,185,90,…)`)
 - `src/components/effects/RadialMenu.css` — tooltip/context-bubble/toggle backgrounds
 - `src/app/WorkspaceErrorBoundary.tsx` — inline styles on error card
-- `src/app/AppHeader.css` — profile menu bg `#1a1410` → `#0a0f2e`; fallback `#c88d59` → `#f472b6`
+- `src/app/WorkspaceTopbar.css` — profile menu bg `#1a1410` → `#0a0f2e`; fallback `#c88d59` → `#f472b6`
 - `src/components/ui/AppNavStrip.css` — brand gradient fallback + `--ans-fg` text colors
 
 ## Y2K skin exception
