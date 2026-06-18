@@ -65,8 +65,8 @@ const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
               </>
             ) : null}
           </div>
-          {autocomplete}
         </div>
+        {autocomplete}
         {actions}
       </form>
 

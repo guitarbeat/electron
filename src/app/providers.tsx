@@ -142,13 +142,22 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
           zIndex: 250,
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
           gap: spacing.sm,
           width: "min(720px, calc(100vw - 1rem))",
           pointerEvents: "none",
         }}
       >
         {toasts.map((toast) => (
-          <div key={toast.id} style={{ pointerEvents: "auto" }}>
+          <div
+            key={toast.id}
+            style={{
+              pointerEvents: "auto",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <Toast
               message={toast.message}
               type={toast.type}
