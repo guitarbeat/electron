@@ -65,7 +65,63 @@
   transition: opacity 0.3s ease;
 }
 
+.ans__brand-text {
+  font-family: inherit;
+}
+
 .ans:hover .ans__brand-glyph { opacity: 1; }
+
+.ans__tabs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ans__tabs .magic-toggle {
+  min-width: 0;
+}
+
+.ans__tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.ans__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: calc(var(--ans-h) - var(--ans-pad) * 2);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-surface-2) 70%, transparent);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.ans__icon-btn:hover {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-text-primary);
+}
+
+.ans__icon-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.ans__icon-btn:active {
+  transform: scale(0.96);
+}
 
 /* Separators */
 .ans__sep {
@@ -79,6 +135,21 @@
 
 .ans__sep--wide { margin: 0 0.3rem; }
 
+
+.ans__chip--inline {
+  max-width: min(42vw, 16rem);
+  margin-left: 0.1rem;
+}
+
+.ans__chip--inline .ans__chip-copy span {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .ans__chip--inline .ans__chip-copy span {
+    display: inline;
+  }
+}
 
 /* Status chip — inline PWA/sync indicator */
 .ans__chip {

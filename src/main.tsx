@@ -2,11 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "@total-typescript/ts-reset";
 import "@/shared/pwaInstallWindow";
+import { readInitialMainTab } from "@/app/appViewState";
 import { preloadCriticalAppModules } from "@/app/preloadAppModules";
 import { applyTheme } from "@/theme/applyTheme";
 import App from "./app/App";
 
-applyTheme("movies");
+const initialTab = readInitialMainTab();
+applyTheme(initialTab);
+document.body.dataset.theme = initialTab;
 void preloadCriticalAppModules();
 
 const isStandalone =

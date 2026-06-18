@@ -5,9 +5,6 @@ import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 let criticalPreloadPromise: Promise<void> | null = null;
 let deferredPreloadPromise: Promise<void> | null = null;
 
-const runPreloads = (modules: ReadonlyArray<() => Promise<unknown>>) =>
-  Promise.allSettled(modules.map((load) => load())).then(() => undefined);
-
 const staggerPreloads = (
   modules: ReadonlyArray<() => Promise<unknown>>,
 ): Promise<void> =>
@@ -23,11 +20,11 @@ const staggerPreloads = (
       const load = modules[index];
       index += 1;
       void Promise.resolve(load()).finally(() => {
-        scheduleIdleWork(loadNext, 1200);
+        scheduleIdleWork(loadNext, 600);
       });
     };
 
-    scheduleIdleWork(loadNext, 800);
+    scheduleIdleWork(loadNext, 400);
   });
 
 /** Warm the active workspace tab chunk. */
@@ -36,11 +33,9 @@ export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> =>
     ? import("@/components/places/PlacesList")
     : import("@/components/movies/MoviesView");
 
-const criticalModulesForTab = (tab: MainTab) =>
-  [
-    () => import("@/app/AppWorkspaceShell"),
-    () => preloadWorkspaceTab(tab),
-  ] as const;
+/** Warm the workspace shell chunk (header + bento layout). */
+export const preloadAppWorkspaceShell = (): Promise<unknown> =>
+  import("@/app/AppWorkspaceShell");
 
 const DEFERRED_MODULES = [
   () => import("@/app/CohesionAudit"),
@@ -55,15 +50,19 @@ const DEFERRED_MODULES = [
   () => import("@/components/spin-wheel/SpinWheelGame"),
 ] as const;
 
-/** Warm the modules needed for the first interactive shell paint. */
+/**
+ * Warm modules for first paint. Only the workspace shell blocks readiness;
+ * the active tab chunk loads in parallel via Suspense.
+ */
 export const preloadCriticalAppModules = (): Promise<void> => {
   if (criticalPreloadPromise) {
     return criticalPreloadPromise;
   }
 
-  criticalPreloadPromise = runPreloads(
-    criticalModulesForTab(readInitialMainTab()),
-  );
+  const tab = readInitialMainTab();
+  criticalPreloadPromise = preloadAppWorkspaceShell().then(() => {
+    void preloadWorkspaceTab(tab);
+  });
   return criticalPreloadPromise;
 };
 

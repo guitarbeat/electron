@@ -38,7 +38,21 @@
 /* ── Zones ────────────────────────────────────────────────────────── */
 
 .bento-ctrl__search {
-  padding: 0.6rem 0.65rem 0;
+  padding: 0.55rem 0.65rem 0;
+}
+
+.bento-ctrl__search .watchlist-top-controls__stage {
+  gap: 0.55rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bento-ctrl__search .watchlist-top-controls__search-form--stack {
+  border-top: 0;
+  padding-top: 0;
+  gap: 0.55rem;
 }
 
 .bento-ctrl__search .watchlist-top-controls__search-shell {

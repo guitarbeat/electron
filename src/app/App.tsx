@@ -23,7 +23,7 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
 import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
-import { useAppSession, useUser, useTheme } from "@/app/useProviders";
+import { useUser, useTheme } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import AppHeader from "@/app/AppHeader";
 import LoadingScreen from "@/app/LoadingScreen";
@@ -36,7 +36,6 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
 import "./App.scss";
-import "./app-skin.scss";
 
 const AppWorkspaceShell = React.lazy(
   () => import("@/app/AppWorkspaceShell"),
@@ -127,7 +126,6 @@ const ThemedMoire: React.FC<{ enabled: boolean }> = ({ enabled }) => {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { isSessionLoading } = useAppSession();
   const {
     isOnline,
     isStandalone,
@@ -198,15 +196,24 @@ const App: React.FC = () => {
       }
     });
 
-    const cancelDeferredPreload = scheduleIdleWork(() => {
-      void preloadDeferredAppModules();
-    });
-
     return () => {
       cancelled = true;
-      cancelDeferredPreload();
     };
   }, []);
+
+  useEffect(() => {
+    void import("./app-skin.scss");
+  }, []);
+
+  useEffect(() => {
+    if (!isBootReady) {
+      return undefined;
+    }
+
+    return scheduleIdleWork(() => {
+      void preloadDeferredAppModules();
+    }, 300);
+  }, [isBootReady]);
 
   useEffect(() => {
     if (prefersReducedMotion || isMobile) {
@@ -321,7 +328,7 @@ const App: React.FC = () => {
     );
   }
 
-  if (isSessionLoading || !isBootReady) {
+  if (!isBootReady) {
     return (
       <ThemeProvider themeName={activeTab}>
         <LoadingScreen />

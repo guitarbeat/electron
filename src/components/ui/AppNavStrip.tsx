@@ -1,7 +1,14 @@
-import { type FC, useRef, useEffect, useMemo, useState } from "react";
-import { RefreshCw, SatelliteDish, WifiOff, X } from "lucide-react";
+import { type FC, type ReactNode, useMemo, useState } from "react";
+import {
+  CircleDot,
+  HelpCircle,
+  MessageCircle,
+  RefreshCw,
+  SatelliteDish,
+  WifiOff,
+  X,
+} from "lucide-react";
 import type { MainTab } from "@/shared/types";
-import { hasFinePointer, prefersReducedMotion } from "@/utils/motionPreference";
 import MagicToggle from "./MagicToggle";
 import { useViewport } from "@/app/ViewportContext";
 import "./AppNavStrip.css";
@@ -41,58 +48,8 @@ const AppNavStrip: FC<Props> = ({
   onApplyUpdate,
   onRetrySync,
 }) => {
-  const navRef = useRef<HTMLElement>(null);
   const { isMobile } = useViewport();
   const [dismissedKeys, setDismissedKeys] = useState<Record<string, true>>({});
-
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-
-    if (prefersReducedMotion() || !hasFinePointer()) {
-      return undefined;
-    }
-
-    let cancelled = false;
-    let cleanups: Array<() => void> = [];
-
-    void import("gsap").then(({ gsap }) => {
-      if (cancelled || !navRef.current) return;
-
-      const btns = Array.from(
-        navRef.current.querySelectorAll<HTMLElement>(".ans__btn"),
-      );
-      cleanups = btns.map((el) => {
-        const onMove = (e: MouseEvent) => {
-          const r = el.getBoundingClientRect();
-          gsap.to(el, {
-            x: (e.clientX - r.left - r.width / 2) * 0.3,
-            y: (e.clientY - r.top - r.height / 2) * 0.3,
-            ease: "power2.out",
-            duration: 0.35,
-          });
-        };
-        const onLeave = () =>
-          gsap.to(el, {
-            x: 0,
-            y: 0,
-            ease: "elastic.out(1,0.3)",
-            duration: 1.1,
-          });
-        el.addEventListener("mousemove", onMove);
-        el.addEventListener("mouseleave", onLeave);
-        return () => {
-          el.removeEventListener("mousemove", onMove);
-          el.removeEventListener("mouseleave", onLeave);
-        };
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      cleanups.forEach((fn) => fn());
-    };
-  }, [activeTab]);
 
   const statusChip = useMemo(() => {
     if (!status) return null;
@@ -156,7 +113,9 @@ const AppNavStrip: FC<Props> = ({
       return false;
     }
   })();
-  const showChip = Boolean(isMobile && statusChip && !isChipDismissed);
+  const showChip = Boolean(statusChip && !isChipDismissed);
+  const showChipBelow = Boolean(isMobile && showChip);
+  const showChipInline = Boolean(!isMobile && showChip);
 
   const dismissChip = () => {
     if (!dismissKey) return;
@@ -168,72 +127,130 @@ const AppNavStrip: FC<Props> = ({
     setDismissedKeys((prev) => ({ ...prev, [dismissKey]: true }));
   };
 
+  const utilityButtons = [
+    onOpenSpin
+      ? {
+          key: "spin",
+          label: "Open spin wheel",
+          title: "Spin wheel",
+          onClick: onOpenSpin,
+          icon: <CircleDot size={16} strokeWidth={2.2} aria-hidden="true" />,
+        }
+      : null,
+    isMobile && onOpenMessages
+      ? {
+          key: "messages",
+          label: "Open messages",
+          title: "Messages",
+          onClick: onOpenMessages,
+          icon: <MessageCircle size={16} strokeWidth={2.2} aria-hidden="true" />,
+        }
+      : null,
+    isMobile && onOpenQuiz
+      ? {
+          key: "quiz",
+          label: "Open couple quiz",
+          title: "Couple quiz",
+          onClick: onOpenQuiz,
+          icon: <HelpCircle size={16} strokeWidth={2.2} aria-hidden="true" />,
+        }
+      : null,
+  ].filter(Boolean) as Array<{
+    key: string;
+    label: string;
+    title: string;
+    onClick: () => void;
+    icon: ReactNode;
+  }>;
+
   return (
-    <div className={`ans-wrap${showChip ? " ans-wrap--has-chip" : ""}`}>
-      <nav ref={navRef} className="ans" aria-label="Primary navigation">
+    <div className={`ans-wrap${showChipBelow ? " ans-wrap--has-chip" : ""}`}>
+      <nav className="ans" aria-label="Primary navigation">
         <span className="ans__brand" aria-label="Electron">
           <span className="ans__brand-glyph" aria-hidden="true">
             ◈
           </span>
-          Electron
+          <span className="ans__brand-text">Electron</span>
         </span>
 
         <span className="ans__sep" aria-hidden="true" />
 
-        <MagicToggle<MainTab>
-          options={[
-            {
-              value: "movies",
-              label: isMobile ? "🎬" : "🎬 Movies",
-              ariaLabel: "Movies",
-            },
-            {
-              value: "places",
-              label: isMobile ? "📍" : "📍 Places",
-              ariaLabel: "Places",
-            },
-          ]}
-          activeValue={activeTab}
-          onChange={onTabChange}
-          ariaLabel="Main navigation tabs"
-        />
+        <div className="ans__tabs">
+          <MagicToggle<MainTab>
+            options={[
+              {
+                value: "movies",
+                label: isMobile ? "🎬" : "Movies",
+                ariaLabel: "Movies",
+              },
+              {
+                value: "places",
+                label: isMobile ? "📍" : "Places",
+                ariaLabel: "Places",
+              },
+            ]}
+            activeValue={activeTab}
+            onChange={onTabChange}
+            ariaLabel="Main navigation tabs"
+          />
+        </div>
 
-        {onOpenSpin ? (
-          <button
-            type="button"
-            className="ans__icon-btn"
-            onClick={onOpenSpin}
-            aria-label="Open spin wheel"
-            title="Spin wheel"
-          >
-            🎡
-          </button>
+        {utilityButtons.length > 0 ? (
+          <>
+            <span className="ans__sep ans__sep--wide" aria-hidden="true" />
+            <div className="ans__tools" role="group" aria-label="Quick actions">
+              {utilityButtons.map((button) => (
+                <button
+                  key={button.key}
+                  type="button"
+                  className="ans__icon-btn"
+                  onClick={button.onClick}
+                  aria-label={button.label}
+                  title={button.title}
+                >
+                  {button.icon}
+                </button>
+              ))}
+            </div>
+          </>
         ) : null}
 
-        {isMobile && onOpenMessages ? (
-          <button
-            type="button"
-            className="ans__icon-btn"
-            onClick={onOpenMessages}
-            aria-label="Open messages"
-          >
-            💬
-          </button>
-        ) : null}
-
-        {isMobile && onOpenQuiz ? (
-          <button
-            type="button"
-            className="ans__icon-btn"
-            onClick={onOpenQuiz}
-            aria-label="Open couple quiz"
-          >
-            ❓
-          </button>
+        {showChipInline && statusChip ? (
+          <>
+            <span className="ans__sep ans__sep--wide" aria-hidden="true" />
+            <div
+              className={`ans__chip ans__chip--inline ans__chip--${statusChip.tone}`}
+              role="status"
+            >
+              <statusChip.Icon size={14} strokeWidth={2.2} aria-hidden="true" />
+              <span className="ans__chip-copy">
+                <strong>{statusChip.label}</strong>
+                <span>{statusChip.detail}</span>
+              </span>
+              {statusChip.action && statusChip.actionLabel ? (
+                <button
+                  type="button"
+                  className="ans__chip-action"
+                  onClick={statusChip.action}
+                  aria-label={statusChip.actionLabel}
+                >
+                  {statusChip.actionLabel}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="ans__chip-dismiss"
+                onClick={dismissChip}
+                aria-label={`Dismiss ${statusChip.label.toLowerCase()} status`}
+              >
+                <X size={13} strokeWidth={2.3} aria-hidden="true" />
+              </button>
+            </div>
+          </>
         ) : null}
       </nav>
 
-      {showChip && statusChip ? (
+      {showChipBelow && statusChip ? (
         <div
           className={`ans__chip ans__chip--mobile-row ans__chip--${statusChip.tone}`}
           role="status"
