@@ -45,7 +45,7 @@ const isOutboxLabel = (text: string): boolean =>
 
 const isNetworkLabel = (text: string): boolean =>
   text === SYNC_WARNING_CLIENT_NETWORK ||
-  /Could not reach the app sync API/i.test(text);
+  /Could not reach the app sync API|Saving on this device/i.test(text);
 
 const classifySyncBannerIssue = ({
   isBlocked,
@@ -162,11 +162,10 @@ const FRIENDLY_CONTENT: Record<
       "Stay connected and it will sync automatically, or tap Retry sync to push it now.",
   },
   network: {
-    title: "Can't reach the server",
-    description: "The app couldn't connect to its sync service.",
-    whatItMeans:
-      "You're seeing your last saved data. Any new changes stay local for now.",
-    whatToDo: "Check your connection, then tap Retry sync.",
+    title: "Saved on this device",
+    description: "You're offline — changes stay here until you're back online.",
+    whatItMeans: "Your watchlist and notes are safe locally.",
+    whatToDo: "When you're online again, tap Retry sync.",
   },
   missing_database: {
     title: "Shared backup not set up",
@@ -185,16 +184,64 @@ const FRIENDLY_CONTENT: Record<
       "Tap Retry sync to try again. If it keeps failing, check the Neon database URL.",
   },
   shared_state_load: {
-    title: "Sync paused",
-    description: "The shared backup couldn't be reached.",
+    title: "Sync unavailable",
+    description: "The shared backup couldn't be reached right now.",
     whatItMeans: "Your changes are safe on this device for now.",
     whatToDo: "Tap Retry sync to try again.",
   },
   generic: {
-    title: "Sync paused",
-    description: "The shared backup couldn't be reached.",
+    title: "Sync unavailable",
+    description: "The shared backup couldn't be reached right now.",
     whatItMeans: "Your changes are safe on this device for now.",
     whatToDo: "Tap Retry sync to try again.",
+  },
+};
+
+const ISSUE_STYLING: Record<
+  SyncBannerIssue,
+  Pick<SyncBannerContent, "badge" | "accent" | "border" | "tone">
+> = {
+  blocked: {
+    badge: "Action needed",
+    accent: "rgba(255, 189, 89, 0.16)",
+    border: "rgba(255, 189, 89, 0.45)",
+    tone: "assertive",
+  },
+  outbox: {
+    badge: "Saving…",
+    accent: "rgba(255, 189, 89, 0.12)",
+    border: "rgba(255, 189, 89, 0.32)",
+    tone: "polite",
+  },
+  network: {
+    badge: "Offline",
+    accent: "rgba(125, 211, 252, 0.12)",
+    border: "rgba(125, 211, 252, 0.28)",
+    tone: "polite",
+  },
+  missing_database: {
+    badge: "Local only",
+    accent: "rgba(125, 211, 252, 0.1)",
+    border: "rgba(125, 211, 252, 0.25)",
+    tone: "polite",
+  },
+  database_failure: {
+    badge: "Sync issue",
+    accent: "rgba(255, 87, 87, 0.1)",
+    border: "rgba(255, 120, 120, 0.35)",
+    tone: "assertive",
+  },
+  shared_state_load: {
+    badge: "Sync paused",
+    accent: "rgba(255, 189, 89, 0.12)",
+    border: "rgba(255, 189, 89, 0.32)",
+    tone: "polite",
+  },
+  generic: {
+    badge: "Sync paused",
+    accent: "rgba(255, 189, 89, 0.12)",
+    border: "rgba(255, 189, 89, 0.32)",
+    tone: "polite",
   },
 };
 
@@ -316,6 +363,39 @@ const buildCopyPayload = ({
   ].join("\n");
 };
 
+const isDevBuild = (): boolean => {
+  if (
+    typeof import.meta !== "undefined" &&
+    import.meta.env &&
+    "DEV" in import.meta.env
+  ) {
+    return Boolean(import.meta.env.DEV);
+  }
+
+  return process.env.NODE_ENV !== "production";
+};
+
+export const shouldShowSyncBanner = ({
+  isBlocked,
+  label,
+}: SyncBannerInput): boolean => {
+  if (isBlocked) {
+    return true;
+  }
+
+  const issue = classifySyncBannerIssue({ isBlocked, label });
+
+  if (issue === "missing_database") {
+    return false;
+  }
+
+  if (issue === "network" && isDevBuild()) {
+    return false;
+  }
+
+  return true;
+};
+
 export const getSyncBannerContent = ({
   isBlocked,
   label,
@@ -323,20 +403,9 @@ export const getSyncBannerContent = ({
   const occurredAt = formatTimestamp();
   const issue = classifySyncBannerIssue({ isBlocked, label });
   const copyIssue = classifySyncBannerCopyIssue({ isBlocked, label });
-  const styling = isBlocked
-    ? {
-        badge: "Action needed",
-        accent: "rgba(255, 189, 89, 0.16)",
-        border: "rgba(255, 189, 89, 0.45)",
-      }
-    : {
-        badge: "Sync paused",
-        accent: "rgba(255, 87, 87, 0.1)",
-        border: "rgba(255, 120, 120, 0.35)",
-      };
 
   return {
-    ...styling,
+    ...ISSUE_STYLING[issue],
     ...FRIENDLY_CONTENT[issue],
     debugHints: DEBUG_HINTS[issue],
     copyPayload: buildCopyPayload({
@@ -345,7 +414,6 @@ export const getSyncBannerContent = ({
       label,
       occurredAt,
     }),
-    tone: "assertive",
     occurredAt,
   };
 };

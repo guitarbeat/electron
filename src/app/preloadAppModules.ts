@@ -38,16 +38,15 @@ export const preloadAppWorkspaceShell = (): Promise<unknown> =>
   import("@/app/AppWorkspaceShell");
 
 const DEFERRED_MODULES = [
-  () => import("@/app/CohesionAudit"),
-  () => import("@/components/quiz/QuizExperience"),
-  () => import("@/branding/ElectronLogoLab"),
-  () => import("@/components/effects/moire/Moire"),
-  () => import("@/components/effects/RetroEffects"),
   () => import("@/components/effects/RadialMenu"),
   () => import("@/components/messages/MessageBoard"),
-  () => import("@/components/quiz/QuizEditor"),
   () => import("@/components/spin-match/SpinSwipeGame"),
+  () => import("@/components/quiz/QuizExperience"),
+  () => import("@/components/effects/RetroEffects"),
+  () => import("@/components/quiz/QuizEditor"),
   () => import("@/components/spin-wheel/SpinWheelGame"),
+  () => import("@/app/CohesionAudit"),
+  () => import("@/branding/ElectronLogoLab"),
 ] as const;
 
 /**

@@ -349,6 +349,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .menu::after,
+  .menu li,
+  .menu li .item-tooltip,
+  .toggle {
+    transition: none !important;
+    animation: none !important;
+  }
+
   .toggle.discover-pulse {
     animation: none;
   }

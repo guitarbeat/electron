@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Button from "./Button";
 import { colors, radius, spacing, typography } from "@/theme/tokens";
-import { getSyncBannerContent } from "./lib/syncBannerContent";
+import { getSyncBannerContent, shouldShowSyncBanner } from "./lib/syncBannerContent";
 import { isMockMode } from "@/services/state";
 
 interface SyncBannerProps {
@@ -56,9 +56,26 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
     return () => window.clearTimeout(id);
   }, [copied]);
 
-  if (isInMockMode) {
+  if (isInMockMode || !shouldShowSyncBanner({ isBlocked, label })) {
     return null;
   }
+
+  const isAssertive = content.tone === "assertive";
+  const surfaceColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 10%, transparent)"
+    : content.accent;
+  const borderColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 28%, transparent)"
+    : content.border;
+  const badgeColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 72%, white 28%)"
+    : "color-mix(in srgb, var(--color-text-primary) 88%, white 12%)";
+  const timestampColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 45%, var(--color-text-secondary) 55%)"
+    : colors.textSecondary;
+  const detailsColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 55%, var(--color-text-primary) 45%)"
+    : colors.textSecondary;
 
   const summary = label?.trim() || content.description;
 
@@ -72,8 +89,8 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         gap: spacing.xs,
         padding: `${spacing.sm} ${spacing.md}`,
         borderRadius: radius.md,
-        background: "color-mix(in srgb, var(--color-error) 10%, transparent)",
-        border: "1px solid color-mix(in srgb, var(--color-error) 28%, transparent)",
+        background: surfaceColor,
+        border: `1px solid ${borderColor}`,
         color: colors.textPrimary,
       }}
     >
@@ -101,7 +118,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
                 fontWeight: 700,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color: "color-mix(in srgb, var(--color-error) 72%, white 28%)",
+                color: badgeColor,
               }}
             >
               {content.badge}
@@ -109,8 +126,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
             <span
               style={{
                 fontSize: typography.fontSize.xs,
-                color:
-                  "color-mix(in srgb, var(--color-error) 45%, var(--color-text-secondary) 55%)",
+                color: timestampColor,
               }}
             >
               <IncidentTimestamp key={incidentKey} />
@@ -165,8 +181,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
             background: "rgba(0,0,0,0.25)",
             fontSize: "0.7rem",
             lineHeight: 1.6,
-            color:
-              "color-mix(in srgb, var(--color-error) 55%, var(--color-text-primary) 45%)",
+            color: detailsColor,
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
             userSelect: "text",

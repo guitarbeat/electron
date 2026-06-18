@@ -27,7 +27,6 @@ import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import VignetteOverlay from "@/components/effects/VignetteOverlay";
 import { useAudio } from "@/hooks/useAudio";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -271,8 +270,6 @@ const App: React.FC = () => {
         <div className="app-shell app-shell--viewport bg-main">
           {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
 
-          <VignetteOverlay />
-
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
       </ThemeProvider>
@@ -289,11 +286,14 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider themeName={activeTab}>
-      <React.Suspense fallback={null}>
-        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-      </React.Suspense>
-      <div className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}>
-        <VignetteOverlay />
+      {cursorTrailEnabled ? (
+        <React.Suspense fallback={null}>
+          <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
+        </React.Suspense>
+      ) : null}
+      <div
+        className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
+      >
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>

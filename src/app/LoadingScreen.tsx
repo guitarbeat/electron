@@ -13,7 +13,7 @@ const LoadingScreen: React.FC = () => (
   >
     <div className="session-loading-screen__content">
       <span className="session-loading-screen__brand" aria-hidden="true">
-        ◈ Electron
+        ◈
       </span>
       <span className="session-loading-screen__spinner" aria-hidden="true" />
     </div>
