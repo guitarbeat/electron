@@ -15,6 +15,15 @@ export const parseMainTab = (
   return null;
 };
 
+/** Read the main tab from the current URL hash, if present. */
+export const readHashMainTab = (): MainTab | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return parseMainTab(window.location.hash.replace(/^#/, ""));
+};
+
 export const readStoredAppViewState = (): StoredAppViewState | null => {
   if (typeof window === "undefined") {
     return null;
@@ -28,7 +37,7 @@ export const readStoredAppViewState = (): StoredAppViewState | null => {
 
     const parsed = JSON.parse(raw) as Partial<StoredAppViewState>;
     return {
-      activeTab: parsed.activeTab === "places" ? "places" : "movies",
+      activeTab: parseMainTab(parsed.activeTab) ?? "movies",
       showMessages: Boolean(parsed.showMessages),
     };
   } catch {
@@ -44,7 +53,7 @@ export const readInitialAppViewState = (): StoredAppViewState => {
 
   const stored = readStoredAppViewState();
   const search = new URLSearchParams(window.location.search);
-  const fromHash = parseMainTab(window.location.hash.replace(/^#/, ""));
+  const fromHash = readHashMainTab();
   const fromQuery = parseMainTab(search.get("tab"));
 
   return {

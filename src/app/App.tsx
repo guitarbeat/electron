@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import {
   APP_VIEW_STATE_KEY,
-  parseMainTab,
+  readHashMainTab,
   readInitialAppViewState,
   stripLaunchUrlShortcuts,
   type StoredAppViewState,
@@ -131,6 +131,24 @@ type ViewTransitionCapableDocument = Document & {
   startViewTransition?: (callback: () => void | Promise<void>) => {
     finished: Promise<void>;
   };
+};
+
+const runWithViewTransition = (
+  update: () => void,
+  disabled: boolean,
+): void => {
+  if (disabled) {
+    update();
+    return;
+  }
+
+  const transitionDocument = document as ViewTransitionCapableDocument;
+  if (typeof transitionDocument.startViewTransition === "function") {
+    transitionDocument.startViewTransition(update);
+    return;
+  }
+
+  update();
 };
 
 const App: React.FC = () => {
@@ -274,33 +292,22 @@ const App: React.FC = () => {
 
       void preloadWorkspaceTab(tab);
 
-      const nextTab = () => {
-        startTransition(() => {
-          setActiveTab(tab);
-        });
-      };
-
-      const transitionDocument = document as ViewTransitionCapableDocument;
-      if (
-        prefersReducedMotion ||
-        isMobile ||
-        typeof transitionDocument.startViewTransition !== "function"
-      ) {
-        nextTab();
-        return;
-      }
-
-      transitionDocument.startViewTransition(() => {
-        nextTab();
-      });
+      runWithViewTransition(
+        () => {
+          startTransition(() => {
+            setActiveTab(tab);
+          });
+        },
+        prefersReducedMotion || isMobile,
+      );
     },
     [activeTab, isMobile, playSwitch, prefersReducedMotion],
   );
 
   // Keep URL hash in sync with active tab
   useEffect(() => {
-    const current = window.location.hash.replace(/^#/, "");
-    if (current !== activeTab) {
+    const hashTab = readHashMainTab();
+    if (hashTab !== activeTab) {
       window.history.replaceState(null, "", `#${activeTab}`);
     }
   }, [activeTab]);
@@ -308,7 +315,7 @@ const App: React.FC = () => {
   // Respond to back/forward navigation and direct hash links
   useEffect(() => {
     const onHashChange = () => {
-      const tab = parseMainTab(window.location.hash.replace(/^#/, ""));
+      const tab = readHashMainTab();
       if (tab) handleTabChange(tab);
     };
     window.addEventListener("hashchange", onHashChange);

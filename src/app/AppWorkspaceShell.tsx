@@ -8,6 +8,13 @@ import { BentoSlotContext, type BentoSlotConfig } from "./BentoSlotContext";
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
+const EMPTY_BENTO_CONFIG: BentoSlotConfig = {
+  stats: [],
+  sorts: [],
+  activeSortOrder: "recent",
+  onSortChange: () => {},
+};
+
 interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
@@ -22,6 +29,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     null,
   );
 
+  const bento = bentoConfig ?? EMPTY_BENTO_CONFIG;
   const workspaceContent =
     activeTab === "movies" ? (
       <MoviesView isMobile={isMobile} />
@@ -38,15 +46,15 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         style={{ position: "relative" }}
       >
         <BentoWorkspaceController
-          stats={bentoConfig?.stats ?? []}
-          sorts={bentoConfig?.sorts ?? []}
-          activeSortOrder={bentoConfig?.activeSortOrder ?? "recent"}
-          onSortChange={bentoConfig?.onSortChange ?? (() => {})}
-          ariaLabel={bentoConfig?.ariaLabel}
-          viewModes={bentoConfig?.viewModes}
-          activeViewMode={bentoConfig?.activeViewMode}
-          onViewModeChange={bentoConfig?.onViewModeChange}
-          viewModeAriaLabel={bentoConfig?.viewModeAriaLabel}
+          stats={bento.stats}
+          sorts={bento.sorts}
+          activeSortOrder={bento.activeSortOrder}
+          onSortChange={bento.onSortChange}
+          ariaLabel={bento.ariaLabel}
+          viewModes={bento.viewModes}
+          activeViewMode={bento.activeViewMode}
+          onViewModeChange={bento.onViewModeChange}
+          viewModeAriaLabel={bento.viewModeAriaLabel}
         >
           <div ref={setSearchPortalEl} />
         </BentoWorkspaceController>
