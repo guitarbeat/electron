@@ -20,6 +20,10 @@ interface SpinWheelGameProps {
 const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
+
+  useEffect(() => {
+    void import("@/app/skins/spin-wheel-skin.scss");
+  }, []);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);

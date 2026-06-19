@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { useUser } from "@/app/useProviders";
 import type { Message } from "@/shared/types";
-import { areDeeplyEqual, compareCreatedAtAsc, sanitizeInput } from "@/utils";
+import { compareCreatedAtAsc, sanitizeInput } from "@/utils";
+import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import {
   addMessage as addMessageService,
   deleteMessage as deleteMessageService,
@@ -19,7 +20,7 @@ export const useMessages = () => {
     error,
     isLoading,
     refresh,
-  } = usePolling(readMessages, POLLING_INTERVAL, areDeeplyEqual, {
+  } = usePolling(readMessages, POLLING_INTERVAL, areScopeSnapshotsEqual, {
     key: "messages",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);

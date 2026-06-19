@@ -120,7 +120,7 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
           minColumnWidth={PLACES_GRID_MIN_COL}
           items={pendingSuggestions}
           getItemKey={(suggestion) => suggestion.id}
-          renderItem={(suggestion) => (
+          renderItem={(suggestion, _index) => (
             <PlaceSuggestionCard
               suggestion={suggestion}
               onAccept={() => onAcceptSuggestion(suggestion)}

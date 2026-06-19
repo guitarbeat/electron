@@ -39,6 +39,7 @@ export const preloadAppWorkspaceShell = (): Promise<unknown> =>
 
 const DEFERRED_MODULES = [
   () => import("@/components/effects/RadialMenu"),
+  () => import("@/components/effects/FishTankSection"),
   () => import("@/components/messages/MessageBoard"),
   () => import("@/components/spin-match/SpinSwipeGame"),
   () => import("@/components/quiz/QuizExperience"),

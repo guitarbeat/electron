@@ -472,6 +472,10 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
 
+  useEffect(() => {
+    void import("@/app/skins/spin-wheel-skin.scss");
+  }, []);
+
   const [phase, setPhase] = useState<Phase>("swipe");
   const [kept, setKept] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);

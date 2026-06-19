@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import type {
   Movie,
   MovieSuggestion,
@@ -64,6 +64,70 @@ interface Props {
 const gridSurfaceClass = (browseLayout: MovieBrowseLayout) =>
   `workspace-content${browseLayout === "grid" ? " workspace-content--poster-grid" : ""}`;
 
+interface MovieGridCardProps {
+  movie: Movie;
+  index: number;
+  currentUser: User | null;
+  isMobile: boolean;
+  successMovieId: string | null;
+  memories: SharedMemory[];
+  actions: MovieBodyActions;
+  onDeleteRequest: (movie: Movie) => void;
+  onToggleError: (msg: string) => void;
+}
+
+const MovieGridCard = memo(function MovieGridCard({
+  movie,
+  index,
+  currentUser,
+  isMobile,
+  successMovieId,
+  memories,
+  actions,
+  onDeleteRequest,
+  onToggleError,
+}: MovieGridCardProps) {
+  return (
+    <MovieCard
+      movie={movie}
+      currentUser={currentUser}
+      isCompact={isMobile}
+      priorityPoster={index < 6}
+      onToggle={() => {
+        actions.toggleWatched(movie.id);
+      }}
+      onToggleError={onToggleError}
+      onRename={async (title) => {
+        await actions.renameMovie(movie.id, title);
+      }}
+      onDelete={() => onDeleteRequest(movie)}
+      isHighlighted={successMovieId === movie.id}
+      memories={memories}
+      onAddMemory={
+        currentUser
+          ? async (note) => {
+              await actions.addMemory(
+                movie.id,
+                movie.title,
+                currentUser,
+                note,
+              );
+            }
+          : undefined
+      }
+      onUpdateMemory={async (memoryId, note) => {
+        await actions.updateMemory(memoryId, { note });
+      }}
+      onDeleteMemory={async (memoryId) => {
+        await actions.deleteMemory(memoryId);
+      }}
+      onTogglePin={async (memoryId) => {
+        await actions.togglePin(memoryId);
+      }}
+    />
+  );
+});
+
 const MovieSectionBody: React.FC<Props> = ({
   sections,
   isLoading,
@@ -101,41 +165,17 @@ const MovieSectionBody: React.FC<Props> = ({
       minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
       items={movies}
       getItemKey={(movie) => movie.id}
-      renderItem={(movie) => (
-        <MovieCard
+      renderItem={(movie, index) => (
+        <MovieGridCard
           movie={movie}
+          index={index}
           currentUser={currentUser}
-          onToggle={() => {
-            actions.toggleWatched(movie.id);
-          }}
-          onToggleError={onToggleError}
-          onRename={async (title) => {
-            await actions.renameMovie(movie.id, title);
-          }}
-          onDelete={() => onDeleteRequest(movie)}
-          isHighlighted={successMovieId === movie.id}
+          isMobile={isMobile}
+          successMovieId={successMovieId}
           memories={movieMemories.get(movie.id) ?? []}
-          onAddMemory={
-            currentUser
-              ? async (note) => {
-                  await actions.addMemory(
-                    movie.id,
-                    movie.title,
-                    currentUser,
-                    note,
-                  );
-                }
-              : undefined
-          }
-          onUpdateMemory={async (memoryId, note) => {
-            await actions.updateMemory(memoryId, { note });
-          }}
-          onDeleteMemory={async (memoryId) => {
-            await actions.deleteMemory(memoryId);
-          }}
-          onTogglePin={async (memoryId) => {
-            await actions.togglePin(memoryId);
-          }}
+          actions={actions}
+          onDeleteRequest={onDeleteRequest}
+          onToggleError={onToggleError}
         />
       )}
       empty={null}

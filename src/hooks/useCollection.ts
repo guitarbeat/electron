@@ -5,6 +5,7 @@ import type {
   StateScope,
   StateScopeDataMap,
 } from "@/services/state/stateTypes";
+import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import { areDeeplyEqual } from "@/utils";
 import { User } from "@/shared/types";
 
@@ -47,7 +48,7 @@ export const useCollection = <T>(
     error,
     isLoading,
     refresh,
-  } = usePolling(readFunc, pollingInterval, areDeeplyEqual, {
+  } = usePolling(readFunc, pollingInterval, areScopeSnapshotsEqual, {
     key: scope,
     isPaused,
   });

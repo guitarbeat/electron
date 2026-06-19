@@ -4,6 +4,7 @@ import { useCardTilt } from "@/hooks/useCardTilt";
 interface CardTiltShellProps {
   children: React.ReactNode;
   className?: string;
+  disabled?: boolean;
 }
 
 export const CardTiltSheen: React.FC = () => (
@@ -13,8 +14,9 @@ export const CardTiltSheen: React.FC = () => (
 const CardTiltShell: React.FC<CardTiltShellProps> = ({
   children,
   className,
+  disabled = false,
 }) => {
-  const tilt = useCardTilt();
+  const tilt = useCardTilt({ disabled });
 
   return (
     <div

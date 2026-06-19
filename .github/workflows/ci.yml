@@ -25,3 +25,6 @@ jobs:
 
       - name: Verify
         run: pnpm verify
+
+      - name: Check bundle size budget
+        run: pnpm check-bundle-size

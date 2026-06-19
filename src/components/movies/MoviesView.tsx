@@ -102,6 +102,30 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     () => buildMovieSections(movies, pendingSuggestions),
     [movies, pendingSuggestions],
   );
+  const movieBodyActions = useMemo(
+    () => ({
+      toggleWatched,
+      renameMovie,
+      addMemory,
+      updateMemory,
+      deleteMemory: deleteMemoryRecord,
+      togglePin: toggleMemoryPin,
+    }),
+    [
+      addMemory,
+      deleteMemoryRecord,
+      renameMovie,
+      toggleMemoryPin,
+      toggleWatched,
+      updateMemory,
+    ],
+  );
+  const handleToggleError = useCallback(
+    (message: string) => {
+      setToast({ message, type: "error" });
+    },
+    [setToast],
+  );
   const allMovieCount = sections.queue.length + sections.completed.length;
   const scrollBrowseAllowed = shouldUseMovieScrollDeck(
     allMovieCount,
@@ -432,15 +456,8 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         onAcceptSuggestion={handleAcceptSuggestion}
         onRejectSuggestion={handleRejectSuggestion}
         onDeleteRequest={setMovieToDelete}
-        onToggleError={(message) => setToast({ message, type: "error" })}
-        actions={{
-          toggleWatched,
-          renameMovie,
-          addMemory,
-          updateMemory,
-          deleteMemory: deleteMemoryRecord,
-          togglePin: toggleMemoryPin,
-        }}
+        onToggleError={handleToggleError}
+        actions={movieBodyActions}
         browseLayout={browseLayout}
       />
         {movieToDelete && (

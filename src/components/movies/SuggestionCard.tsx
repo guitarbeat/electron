@@ -1,6 +1,6 @@
 import React from "react";
 import type { MovieSuggestion } from "@/shared/types";
-import { fetchOmdbMetadata } from "@/services/metadata/omdb";
+import { fetchOmdbMetadataCached } from "@/services/metadata/omdbMetadataCache";
 import MediaPoster from "@/ui/MediaPoster";
 import SuggestionCardBase from "@/ui/SuggestionCardBase";
 import MediaCardMetadata from "@/ui/MediaCardMetadata";
@@ -33,7 +33,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
     let cancelled = false;
     const controller = new AbortController();
 
-    fetchOmdbMetadata(
+    fetchOmdbMetadataCached(
       suggestion.title,
       suggestion.type,
       suggestion.imdbID,

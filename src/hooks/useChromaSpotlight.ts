@@ -24,6 +24,8 @@ export function useChromaSpotlight({
   const pos = useRef({ x: 0, y: 0 });
   const enabled = useRef(true);
   const gsapRef = useRef<typeof import("gsap").gsap | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const pendingPoint = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -64,6 +66,9 @@ export function useChromaSpotlight({
     return () => {
       cancelled = true;
       unsubscribe();
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
     };
   }, [radius]);
 
@@ -92,11 +97,25 @@ export function useChromaSpotlight({
       const root = rootRef.current;
       if (!root) return;
       const rect = root.getBoundingClientRect();
-      moveTo(e.clientX - rect.left, e.clientY - rect.top);
-      gsapRef.current?.to(fadeRef.current, {
-        opacity: 0,
-        duration: 0.25,
-        overwrite: true,
+      pendingPoint.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+
+      if (frameRef.current !== null) {
+        return;
+      }
+
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        const point = pendingPoint.current;
+        if (!point) return;
+        moveTo(point.x, point.y);
+        gsapRef.current?.to(fadeRef.current, {
+          opacity: 0,
+          duration: 0.25,
+          overwrite: true,
+        });
       });
     },
     [moveTo],

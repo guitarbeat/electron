@@ -1,5 +1,4 @@
 import React from "react";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { Movie, SharedMemory, User } from "@/shared/types";
 import { executeAction, getErrorMessage, consoleError } from "@/utils";
 import Card from "@/ui/Card";
@@ -40,6 +39,8 @@ interface MovieCardProps {
   onDeleteMemory?: (memoryId: string) => Promise<void>;
   onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
+  isCompact?: boolean;
+  priorityPoster?: boolean;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({
@@ -55,6 +56,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
   onDeleteMemory,
   onTogglePin,
   isHighlighted = false,
+  isCompact = false,
+  priorityPoster = false,
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
@@ -63,7 +66,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isUpdating, setIsUpdating] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const isMobile = isCompact;
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
   const actionState = React.useMemo(
@@ -114,7 +117,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""}`}
         data-movie-id={movie.id}
       >
-        <CardTiltShell>
+        <CardTiltShell disabled={isCompact}>
           <Card
             ref={cardRef}
             variant="default"
@@ -136,6 +139,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 posterUrl={movie.posterUrl}
                 year={movie.year}
                 id={movie.id}
+                priority={priorityPoster}
               />
 
               <MediaCardWatcherStack
@@ -210,7 +214,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   );
 };
 
-export default MovieCard;
+export default React.memo(MovieCard);
 
 interface MovieActionsProps {
   movie: Movie;

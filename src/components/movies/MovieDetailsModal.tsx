@@ -1,6 +1,7 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
+import { loadFeatureFonts } from "@/utils/loadFeatureFonts";
 import { useModalBase } from "@/ui/ModalSystem";
 import MemoryComposer from "@/memories/MemoryComposer";
 import MemoryList from "@/memories/MemoryList";
@@ -128,6 +129,15 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     isVisible,
     onClose,
   );
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    void loadFeatureFonts();
+    void import("@/app/skins/memories-skin.scss");
+  }, [isOpen]);
 
   React.useEffect(() => {
     setHasPosterError(false);

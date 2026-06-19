@@ -7,7 +7,8 @@
 import { useState, useCallback } from "react";
 import { usePolling } from "@/services/polling";
 import { QuizQuestion, QuizCharacter } from "@/components/quiz/lib/types";
-import { areDeeplyEqual, consoleError } from "@/utils";
+import { consoleError } from "@/utils";
+import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import { mutateScope, readScope, retryScopeSync } from "@/services/state";
 import type { QuizData } from "@/services/state/stateTypes";
 
@@ -22,7 +23,7 @@ export const useQuiz = (isPaused: boolean = false) => {
     error,
     isLoading,
     refresh,
-  } = usePolling(readQuiz, POLLING_INTERVAL, areDeeplyEqual, {
+  } = usePolling(readQuiz, POLLING_INTERVAL, areScopeSnapshotsEqual, {
     key: "quiz",
     isPaused,
   });

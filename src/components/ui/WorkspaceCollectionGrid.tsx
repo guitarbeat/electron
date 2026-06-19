@@ -5,7 +5,7 @@ interface WorkspaceCollectionGridProps<T> {
   className: string;
   minColumnWidth: string;
   items: readonly T[];
-  renderItem: (item: T) => React.ReactNode;
+  renderItem: (item: T, index: number) => React.ReactNode;
   getItemKey: (item: T) => string;
   empty: React.ReactNode;
 }
@@ -24,9 +24,9 @@ function WorkspaceCollectionGrid<T>({
       minColumnWidth={minColumnWidth}
     >
       {items.length > 0
-        ? items.map((item) => (
+        ? items.map((item, index) => (
             <React.Fragment key={getItemKey(item)}>
-              {renderItem(item)}
+              {renderItem(item, index)}
             </React.Fragment>
           ))
         : empty}

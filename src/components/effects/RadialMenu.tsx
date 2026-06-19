@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { CrossIcon, MessageIcon, QuickActionsIcon } from "@/common/Icons";
+import { MessageIcon } from "@/common/Icons";
+import RadialFabToggleIcon from "@/components/effects/RadialFabToggleIcon";
+import { useAudio } from "@/hooks/useAudio";
 import {
   clampPositionToViewport,
   getDockedPositionForViewport,
@@ -169,6 +171,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   const [menuPos, setMenuPos] = useState(getInitialMenuPosition);
   const [hasDiscovered, setHasDiscovered] = useState(getInitialDiscoveryState);
   const [isDragging, setIsDragging] = useState(false);
+  const { playClick, playPop, playSwitch } = useAudio();
 
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -192,9 +195,16 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
 
   const toggleMenu = useCallback(() => {
     setMenuPos((prev) => clampToViewport(prev));
-    setIsActive((prev) => !prev);
+    setIsActive((prev) => {
+      if (prev) {
+        playClick();
+      } else {
+        playPop();
+      }
+      return !prev;
+    });
     markDiscovered();
-  }, [markDiscovered]);
+  }, [markDiscovered, playClick, playPop]);
 
   const closeMenu = useCallback(() => {
     setIsActive(false);
@@ -241,7 +251,6 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
       const newY = event.clientY - toggleOffset;
       menuRef.current.style.left = `${newX}px`;
       menuRef.current.style.top = `${newY}px`;
-      setMenuPos({ x: newX, y: newY });
     },
     [dragThreshold],
   );
@@ -324,6 +333,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
   }, [closeMenu]);
 
   const handleMenuItemClick = (callback?: () => void) => {
+    playSwitch();
     callback?.();
     setIsActive(false);
   };
@@ -383,7 +393,7 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
           }
         }}
       >
-        {isActive ? <CrossIcon size={18} /> : <QuickActionsIcon size={18} />}
+        <RadialFabToggleIcon isActive={isActive} />
       </button>
 
       <ul role="menu" aria-label="Quick actions">

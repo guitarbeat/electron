@@ -121,6 +121,7 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
+  const [showFishTank, setShowFishTank] = useState(false);
   const [cursorTrailEnabled] = useState<boolean>(
     () =>
       typeof window !== "undefined" &&
@@ -178,6 +179,14 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    if (!isBootReady || isMobile) {
+      return undefined;
+    }
+
+    return scheduleIdleWork(() => setShowFishTank(true), 1200);
+  }, [isBootReady, isMobile]);
+
+  useEffect(() => {
     return scheduleIdleWork(() => setShowAnalytics(true), 4000);
   }, []);
 
@@ -222,6 +231,10 @@ const App: React.FC = () => {
 
   const openSpinMatch = useCallback(() => {
     setShowSpinMatch(true);
+  }, []);
+
+  const openMessages = useCallback(() => {
+    setShowMessages(true);
   }, []);
 
   const featureModals = useMemo(
@@ -300,7 +313,7 @@ const App: React.FC = () => {
 
         <React.Suspense fallback={null}>
           <RadialMenu
-            onOpenMessages={() => setShowMessages(true)}
+            onOpenMessages={openMessages}
             onOpenQuiz={openQuizExperience}
             onOpenSpin={openSpinMatch}
           />
@@ -333,7 +346,7 @@ const App: React.FC = () => {
                 </React.Suspense>
               </WorkspaceErrorBoundary>
               <React.Suspense fallback={null}>
-                {!isMobile ? <FishTankSection /> : null}
+                {showFishTank ? <FishTankSection /> : null}
               </React.Suspense>
             </div>
           </div>

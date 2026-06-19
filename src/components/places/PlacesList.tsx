@@ -28,6 +28,10 @@ import { useWorkspaceSyncBanner } from "@/hooks/useWorkspaceSyncBanner";
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
 const PlacesList: React.FC = () => {
+  useEffect(() => {
+    void import("@/app/skins/places-skin.scss");
+  }, []);
+
   const mapRef = useRef<PlacesMapHandle>(null);
   const placesBodyRef = useRef<HTMLDivElement>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);

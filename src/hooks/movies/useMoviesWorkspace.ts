@@ -18,6 +18,7 @@ import {
   normalizeMovieTitle,
   sanitizeInput,
 } from "../../utils";
+import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import { trackMetric } from "@/services/analytics";
 import { readScope, retryScopeSync } from "../../services/state";
 import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner";
@@ -122,7 +123,7 @@ export const useMoviesWorkspace = ({
   const { data: memoriesSnapshot, refresh: refreshMemories } = usePolling(
     readMemories,
     POLLING_INTERVAL,
-    areDeeplyEqual,
+    areScopeSnapshotsEqual,
     {
       key: "memories",
       isPaused,

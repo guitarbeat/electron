@@ -318,7 +318,52 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
+.toggle__icon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  filter: drop-shadow(
+    0 0 10px color-mix(in oklab, var(--moire-accent, #f472b6) 36%, transparent)
+  );
+}
 
+.toggle__icon-layer {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity 220ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toggle__icon-gem {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.toggle__icon-close {
+  opacity: 0;
+  transform: scale(0.72) rotate(-40deg);
+}
+
+.toggle__icon--open .toggle__icon-gem {
+  opacity: 0;
+  transform: scale(0.68) rotate(14deg);
+}
+
+.toggle__icon--open .toggle__icon-close {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.menu.active .toggle .toggle__icon {
+  filter: drop-shadow(
+    0 0 14px color-mix(in oklab, var(--moire-accent, #fe8922) 44%, transparent)
+  );
+}
 
 @keyframes radial-discover-pulse {
   0% {
@@ -355,6 +400,10 @@
   .toggle {
     transition: none !important;
     animation: none !important;
+  }
+
+  .toggle__icon-layer {
+    transition: none;
   }
 
   .toggle.discover-pulse {

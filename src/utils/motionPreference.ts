@@ -13,7 +13,7 @@ export const hasFinePointer = (): boolean =>
   window.matchMedia("(pointer: fine)").matches;
 
 export const isChromaSpotlightEnabled = (): boolean =>
-  !prefersReducedMotion() && hasHoverCapability();
+  !prefersReducedMotion() && hasHoverCapability() && hasFinePointer();
 
 /** Subscribe to motion/hover preference changes. Returns an unsubscribe function. */
 export const subscribeMotionPreferences = (

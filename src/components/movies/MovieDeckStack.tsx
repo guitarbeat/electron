@@ -75,6 +75,10 @@ const DeckCard: React.FC<DeckCardProps> = ({
         <img
           src={movie.posterUrl}
           alt={movie.title}
+          width={CARD_W}
+          height={CARD_H}
+          loading={index === 0 ? "eager" : "lazy"}
+          decoding="async"
           style={{
             width: "100%",
             height: "100%",

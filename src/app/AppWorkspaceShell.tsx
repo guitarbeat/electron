@@ -5,6 +5,8 @@ import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
 import BentoWorkspaceController, {
   type WorkspaceChromeHeaderProps,
 } from "@/components/ui/BentoWorkspaceController";
+import ProfilePinPanel from "@/components/ui/ProfilePinPanel";
+import { ProfilePinProvider } from "@/app/ProfilePinContext";
 import { useViewport } from "@/app/ViewportContext";
 import {
   BentoSlotContext,
@@ -54,43 +56,47 @@ const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
-      <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {activeTab === "movies" ? "Movies workspace" : "Places workspace"}
-      </p>
-      <main
-        id="main-content"
-        className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
-        tabIndex={-1}
-        style={{ position: "relative" }}
-      >
-        <BentoWorkspaceController
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          pwaStatus={pwaStatus}
-          onInstallApp={onInstallApp}
-          onApplyUpdate={onApplyUpdate}
-          onRetrySync={onRetrySync}
-          ariaLabel={bento.ariaLabel}
-          viewModes={bento.viewModes}
-          activeViewMode={bento.activeViewMode}
-          onViewModeChange={bento.onViewModeChange}
-          viewModeAriaLabel={bento.viewModeAriaLabel}
+      <ProfilePinProvider>
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
+          {activeTab === "movies" ? "Movies workspace" : "Places workspace"}
+        </p>
+        <main
+          id="main-content"
+          className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
+          tabIndex={-1}
+          style={{ position: "relative" }}
         >
-          <div ref={setSearchPortalEl} />
-        </BentoWorkspaceController>
+          <BentoWorkspaceController
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            pwaStatus={pwaStatus}
+            onInstallApp={onInstallApp}
+            onApplyUpdate={onApplyUpdate}
+            onRetrySync={onRetrySync}
+            ariaLabel={bento.ariaLabel}
+            viewModes={bento.viewModes}
+            activeViewMode={bento.activeViewMode}
+            onViewModeChange={bento.onViewModeChange}
+            viewModeAriaLabel={bento.viewModeAriaLabel}
+          >
+            <div ref={setSearchPortalEl} />
+          </BentoWorkspaceController>
 
-        <section
-          className={`workspace-surface workspace-surface--${activeTab}`}
-          style={{ position: "relative", zIndex: 1, minWidth: 0 }}
-          aria-label={
-            activeTab === "movies" ? "Movies workspace" : "Places workspace"
-          }
-        >
-          <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>
-            {workspaceContent}
-          </React.Suspense>
-        </section>
-      </main>
+          <ProfilePinPanel />
+
+          <section
+            className={`workspace-surface workspace-surface--${activeTab}`}
+            style={{ position: "relative", zIndex: 1, minWidth: 0 }}
+            aria-label={
+              activeTab === "movies" ? "Movies workspace" : "Places workspace"
+            }
+          >
+            <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>
+              {workspaceContent}
+            </React.Suspense>
+          </section>
+        </main>
+      </ProfilePinProvider>
     </BentoSlotContext.Provider>
   );
 };

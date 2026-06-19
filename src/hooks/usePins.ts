@@ -22,6 +22,9 @@ export const usePins = (isPaused: boolean = false) => {
     }
 
     const intervalId = window.setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) {
+        return;
+      }
       void refreshSession();
     }, PINS_POLL_INTERVAL);
 

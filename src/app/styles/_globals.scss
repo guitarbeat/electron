@@ -53,8 +53,8 @@
   --shadow-floating: 0 28px 48px rgba(2, 4, 18, 0.45), 0 0 36px rgba(244, 114, 182, 0.06);
   --focus-ring: color-mix(in srgb, var(--color-accent) 70%, transparent);
   --font-display: 'Papyrus', 'Marker Felt', serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-heading: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-sans: var(--font-body);
   --font-interface: var(--font-body);
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
