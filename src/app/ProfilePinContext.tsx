@@ -12,20 +12,24 @@ import type { User } from "@/shared/types";
 import { usePins } from "@/hooks/usePins";
 import { consoleError, getErrorMessage } from "@/utils";
 
-interface ProfilePinContextValue {
+interface ProfileSelectionContextValue {
   currentUser: User | null;
   isDisabled: boolean;
   isSavingPin: boolean;
-  isVerifying: boolean;
   selectionError: string | null;
   userHasPin: (user: User) => boolean;
   userNeedsPin: (user: User) => boolean;
   selectProfile: (profile: User) => void;
   handleLogout: () => void;
   openPinSettings: () => void;
+}
+
+interface PinPanelContextValue {
   pendingUser: User | null;
   pinSettingsUser: User | null;
   pinMode: "set" | "change";
+  isVerifying: boolean;
+  isSavingPin: boolean;
   handlePinSubmit: (pin: string) => Promise<boolean>;
   handlePinSettingsCancel: () => void;
   handlePinSettingsSubmit: (
@@ -35,14 +39,35 @@ interface ProfilePinContextValue {
   clearPendingUser: () => void;
 }
 
-const ProfilePinContext = createContext<ProfilePinContextValue | null>(null);
+const ProfileSelectionContext =
+  createContext<ProfileSelectionContextValue | null>(null);
 
-export const useProfilePin = (): ProfilePinContextValue => {
-  const context = useContext(ProfilePinContext);
+const PinPanelContext = createContext<PinPanelContextValue | null>(null);
+
+export const useProfileSelection = (): ProfileSelectionContextValue => {
+  const context = useContext(ProfileSelectionContext);
   if (!context) {
-    throw new Error("useProfilePin must be used within ProfilePinProvider");
+    throw new Error(
+      "useProfileSelection must be used within ProfilePinProvider",
+    );
   }
   return context;
+};
+
+export const usePinPanel = (): PinPanelContextValue => {
+  const context = useContext(PinPanelContext);
+  if (!context) {
+    throw new Error("usePinPanel must be used within ProfilePinProvider");
+  }
+  return context;
+};
+
+/** @deprecated Use useProfileSelection or usePinPanel */
+export const useProfilePin = (): ProfileSelectionContextValue &
+  PinPanelContextValue => {
+  const selection = useProfileSelection();
+  const panel = usePinPanel();
+  return { ...selection, ...panel };
 };
 
 export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
@@ -57,29 +82,33 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [selectionError, setSelectionError] = useState<string | null>(null);
 
-  const isDisabled = isLoading || isVerifying;
   const pinMode: "set" | "change" =
     pinSettingsUser && userHasPin(pinSettingsUser) ? "change" : "set";
 
-  const handleLogout = useCallback(() => {
-    if (isDisabled) return;
+  const handleLogout = useCallback(async () => {
+    setSelectionError(null);
+    await setCurrentUser(null);
+  }, [setCurrentUser]);
+
+  const handleLogoutGuarded = useCallback(() => {
+    if (isLoading || isVerifying) return;
     setSelectionError(null);
     void (async () => {
       try {
-        await setCurrentUser(null);
+        await handleLogout();
       } catch (err) {
         setSelectionError(
           getErrorMessage(err, "Unable to update the profile session."),
         );
       }
     })();
-  }, [isDisabled, setCurrentUser]);
+  }, [handleLogout, isLoading, isVerifying]);
 
   const selectProfile = useCallback(
     (profile: User) => {
-      if (isDisabled) return;
+      if (isLoading || isVerifying) return;
       if (profile === currentUser) {
-        handleLogout();
+        handleLogoutGuarded();
         return;
       }
       setSelectionError(null);
@@ -102,8 +131,9 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     },
     [
       currentUser,
-      handleLogout,
-      isDisabled,
+      handleLogoutGuarded,
+      isLoading,
+      isVerifying,
       setCurrentUser,
       userHasPin,
       userNeedsPin,
@@ -126,10 +156,10 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
   );
 
   const openPinSettings = useCallback(() => {
-    if (!currentUser || isDisabled || isSavingPin) return;
+    if (!currentUser || isLoading || isVerifying || isSavingPin) return;
     setSelectionError(null);
     setPinSettingsUser(currentUser);
-  }, [currentUser, isDisabled, isSavingPin]);
+  }, [currentUser, isLoading, isSavingPin, isVerifying]);
 
   const clearPendingUser = useCallback(() => {
     setPendingUser(null);
@@ -141,8 +171,8 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       pinSettingsUser && userNeedsPin(pinSettingsUser) ? pinSettingsUser : null;
     setPinSettingsUser(null);
     setSelectionError(null);
-    if (required) handleLogout();
-  }, [handleLogout, pinSettingsUser, userNeedsPin]);
+    if (required) handleLogoutGuarded();
+  }, [handleLogoutGuarded, pinSettingsUser, userNeedsPin]);
 
   const handlePinSettingsSubmit = useCallback(
     async (pin: string, newPin?: string): Promise<boolean> => {
@@ -166,40 +196,25 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     [pinMode, pinSettingsUser, setUserPin, verifyUserPin],
   );
 
-  const value = useMemo(
+  const selectionValue = useMemo(
     () => ({
       currentUser,
-      isDisabled,
+      isDisabled: isLoading || isVerifying,
       isSavingPin,
-      isVerifying,
       selectionError,
       userHasPin,
       userNeedsPin,
       selectProfile,
-      handleLogout,
+      handleLogout: handleLogoutGuarded,
       openPinSettings,
-      pendingUser,
-      pinSettingsUser,
-      pinMode,
-      handlePinSubmit,
-      handlePinSettingsCancel,
-      handlePinSettingsSubmit,
-      clearPendingUser,
     }),
     [
-      clearPendingUser,
       currentUser,
-      handleLogout,
-      handlePinSettingsCancel,
-      handlePinSettingsSubmit,
-      handlePinSubmit,
-      isDisabled,
+      handleLogoutGuarded,
+      isLoading,
       isSavingPin,
       isVerifying,
       openPinSettings,
-      pendingUser,
-      pinMode,
-      pinSettingsUser,
       selectProfile,
       selectionError,
       userHasPin,
@@ -207,9 +222,36 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     ],
   );
 
+  const pinPanelValue = useMemo(
+    () => ({
+      pendingUser,
+      pinSettingsUser,
+      pinMode,
+      isVerifying,
+      isSavingPin,
+      handlePinSubmit,
+      handlePinSettingsCancel,
+      handlePinSettingsSubmit,
+      clearPendingUser,
+    }),
+    [
+      clearPendingUser,
+      handlePinSettingsCancel,
+      handlePinSettingsSubmit,
+      handlePinSubmit,
+      isSavingPin,
+      isVerifying,
+      pendingUser,
+      pinMode,
+      pinSettingsUser,
+    ],
+  );
+
   return (
-    <ProfilePinContext.Provider value={value}>
-      {children}
-    </ProfilePinContext.Provider>
+    <ProfileSelectionContext.Provider value={selectionValue}>
+      <PinPanelContext.Provider value={pinPanelValue}>
+        {children}
+      </PinPanelContext.Provider>
+    </ProfileSelectionContext.Provider>
   );
 };

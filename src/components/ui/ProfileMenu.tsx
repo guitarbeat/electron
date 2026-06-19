@@ -1,6 +1,12 @@
 import { useEffect, useState, type FC } from "react";
 import type { User } from "@/shared/types";
-import { useProfilePin } from "@/app/ProfilePinContext";
+import { useProfileSelection } from "@/app/ProfilePinContext";
+import {
+  LockIcon,
+  LogoutIcon,
+  SoundOffIcon,
+  SoundOnIcon,
+} from "@/common/Icons";
 import { USER_OPTIONS } from "@/utils";
 import {
   isSoundEnabled,
@@ -9,124 +15,15 @@ import {
 } from "@/utils/soundPreference";
 import UserAvatar from "@/ui/UserAvatar";
 
-const LockIcon: FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    aria-hidden="true"
-  >
-    <rect
-      x="5"
-      y="11"
-      width="14"
-      height="10"
-      rx="2"
-      stroke="currentColor"
-      strokeWidth="2"
-    />
-    <path
-      d="M8 11V7a4 4 0 018 0v4"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const SoundOnIcon: FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path
-      d="M11 5L6 9H3v6h3l5 4V5z"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M15.54 8.46a5 5 0 010 7.07"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <path
-      d="M17.66 6.34a8 8 0 010 11.32"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const SoundOffIcon: FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path
-      d="M11 5L6 9H3v6h3l5 4V5z"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M23 9l-6 6"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <path
-      d="M17 9l6 6"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const LogoutIcon: FC<{ size?: number }> = ({ size = 14 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path
-      d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <polyline
-      points="16,17 21,12 16,7"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <line
-      x1="21"
-      y1="12"
-      x2="9"
-      y2="12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+const getPinSettingsLabel = (
+  currentUser: User,
+  userNeedsPin: (user: User) => boolean,
+  userHasPin: (user: User) => boolean,
+): string => {
+  if (userNeedsPin(currentUser)) return "Finish PIN setup";
+  if (userHasPin(currentUser)) return "Change PIN";
+  return "Set PIN";
+};
 
 const ProfileMenu: FC = () => {
   const {
@@ -138,10 +35,17 @@ const ProfileMenu: FC = () => {
     selectProfile,
     openPinSettings,
     userNeedsPin,
-  } = useProfilePin();
+  } = useProfileSelection();
   const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
 
-  useEffect(() => subscribeSoundPreference(() => setSoundEnabledState(isSoundEnabled())), []);
+  useEffect(
+    () => subscribeSoundPreference(() => setSoundEnabledState(isSoundEnabled())),
+    [],
+  );
+
+  const pinSettingsLabel = currentUser
+    ? getPinSettingsLabel(currentUser, userNeedsPin, userHasPin)
+    : null;
 
   return (
     <div className="app-header__profile-picker">
@@ -194,7 +98,7 @@ const ProfileMenu: FC = () => {
 
       <button
         type="button"
-        className="app-header__profile-pin-btn"
+        className="app-header__chrome-icon-btn"
         onClick={() => setSoundEnabled(!soundEnabled)}
         aria-label={soundEnabled ? "Mute UI sounds" : "Enable UI sounds"}
         aria-pressed={soundEnabled}
@@ -203,26 +107,14 @@ const ProfileMenu: FC = () => {
         {soundEnabled ? <SoundOnIcon size={14} /> : <SoundOffIcon size={14} />}
       </button>
 
-      {currentUser ? (
+      {currentUser && pinSettingsLabel ? (
         <button
           type="button"
-          className="app-header__profile-pin-btn"
+          className="app-header__chrome-icon-btn"
           onClick={openPinSettings}
           disabled={isDisabled || isSavingPin}
-          aria-label={
-            userNeedsPin(currentUser)
-              ? "Finish PIN setup"
-              : userHasPin(currentUser)
-                ? "Change PIN"
-                : "Set PIN"
-          }
-          title={
-            userNeedsPin(currentUser)
-              ? "Finish PIN setup"
-              : userHasPin(currentUser)
-                ? "Change PIN"
-                : "Set PIN"
-          }
+          aria-label={pinSettingsLabel}
+          title={pinSettingsLabel}
         >
           <LockIcon size={14} />
         </button>

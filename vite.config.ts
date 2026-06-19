@@ -70,7 +70,7 @@ export default defineConfig(({ mode }) => {
       ...(analyzeBundle
         ? [
             visualizer({
-              filename: 'stats.html',
+              filename: '.agents/scratch/stats.html',
               gzipSize: true,
               brotliSize: true,
               open: false,

@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import type {
   Movie,
   MovieSuggestion,
@@ -64,6 +64,8 @@ interface Props {
 const gridSurfaceClass = (browseLayout: MovieBrowseLayout) =>
   `workspace-content${browseLayout === "grid" ? " workspace-content--poster-grid" : ""}`;
 
+const EMPTY_MEMORIES: SharedMemory[] = [];
+
 interface MovieGridCardProps {
   movie: Movie;
   index: number;
@@ -87,43 +89,66 @@ const MovieGridCard = memo(function MovieGridCard({
   onDeleteRequest,
   onToggleError,
 }: MovieGridCardProps) {
+  const onToggle = useCallback(() => {
+    actions.toggleWatched(movie.id);
+  }, [actions, movie.id]);
+
+  const onRename = useCallback(
+    async (title: string) => {
+      await actions.renameMovie(movie.id, title);
+    },
+    [actions, movie.id],
+  );
+
+  const onDelete = useCallback(() => {
+    onDeleteRequest(movie);
+  }, [movie, onDeleteRequest]);
+
+  const onAddMemory = useCallback(
+    async (note: string) => {
+      if (!currentUser) return;
+      await actions.addMemory(movie.id, movie.title, currentUser, note);
+    },
+    [actions, currentUser, movie.id, movie.title],
+  );
+
+  const onUpdateMemory = useCallback(
+    async (memoryId: string, note: string) => {
+      await actions.updateMemory(memoryId, { note });
+    },
+    [actions],
+  );
+
+  const onDeleteMemory = useCallback(
+    async (memoryId: string) => {
+      await actions.deleteMemory(memoryId);
+    },
+    [actions],
+  );
+
+  const onTogglePin = useCallback(
+    async (memoryId: string) => {
+      await actions.togglePin(memoryId);
+    },
+    [actions],
+  );
+
   return (
     <MovieCard
       movie={movie}
       currentUser={currentUser}
       isCompact={isMobile}
       priorityPoster={index < 6}
-      onToggle={() => {
-        actions.toggleWatched(movie.id);
-      }}
+      onToggle={onToggle}
       onToggleError={onToggleError}
-      onRename={async (title) => {
-        await actions.renameMovie(movie.id, title);
-      }}
-      onDelete={() => onDeleteRequest(movie)}
+      onRename={onRename}
+      onDelete={onDelete}
       isHighlighted={successMovieId === movie.id}
       memories={memories}
-      onAddMemory={
-        currentUser
-          ? async (note) => {
-              await actions.addMemory(
-                movie.id,
-                movie.title,
-                currentUser,
-                note,
-              );
-            }
-          : undefined
-      }
-      onUpdateMemory={async (memoryId, note) => {
-        await actions.updateMemory(memoryId, { note });
-      }}
-      onDeleteMemory={async (memoryId) => {
-        await actions.deleteMemory(memoryId);
-      }}
-      onTogglePin={async (memoryId) => {
-        await actions.togglePin(memoryId);
-      }}
+      onAddMemory={currentUser ? onAddMemory : undefined}
+      onUpdateMemory={onUpdateMemory}
+      onDeleteMemory={onDeleteMemory}
+      onTogglePin={onTogglePin}
     />
   );
 });
@@ -172,7 +197,7 @@ const MovieSectionBody: React.FC<Props> = ({
           currentUser={currentUser}
           isMobile={isMobile}
           successMovieId={successMovieId}
-          memories={movieMemories.get(movie.id) ?? []}
+          memories={movieMemories.get(movie.id) ?? EMPTY_MEMORIES}
           actions={actions}
           onDeleteRequest={onDeleteRequest}
           onToggleError={onToggleError}

@@ -1,7 +1,10 @@
 import { areDeeplyEqual } from "../../utils/index.ts";
 import type { ScopeSnapshot } from "./stateTypes";
 
-/** Fast path when version + metadata match; still compares data if the reference changed. */
+/**
+ * Fast path when version + metadata match; still compares data if the reference changed.
+ * Safe when the API bumps version on every data mutation (including 304 outbox replay in stateClient).
+ */
 export const areScopeSnapshotsEqual = <T>(
   prev: ScopeSnapshot<T> | undefined,
   next: ScopeSnapshot<T>,

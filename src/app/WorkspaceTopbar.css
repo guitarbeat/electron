@@ -172,7 +172,8 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
-.app-header__profile-pin-btn {
+.app-header__profile-pin-btn,
+.app-header__chrome-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -393,7 +394,8 @@
     display: none;
   }
 
-  .app-header__profile-pin-btn {
+  .app-header__profile-pin-btn,
+.app-header__chrome-icon-btn {
     width: 1.85rem;
     height: 1.85rem;
   }

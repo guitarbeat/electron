@@ -1,10 +1,9 @@
 import type { FC } from "react";
-import { useEffect } from "react";
 import QuizFlow from "@/components/quiz/QuizFlow";
 import { useQuiz } from "@/hooks/useQuiz";
+import { useFeatureFonts } from "@/hooks/useFeatureFonts";
 import type { User } from "@/shared/types";
 import { WorkspaceFeatureSectionLoading } from "@/components/ui/WorkspaceFeatureSection";
-import { loadFeatureFonts } from "@/utils/loadFeatureFonts";
 
 export interface QuizExperienceProps {
   currentUser: User | null;
@@ -22,10 +21,7 @@ const QuizExperience: FC<QuizExperienceProps> = ({
   onEdit,
 }) => {
   const { quizData, isLoading } = useQuiz();
-
-  useEffect(() => {
-    void loadFeatureFonts();
-  }, []);
+  useFeatureFonts();
 
   if (isLoading || !quizData) {
     return (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { isSoundEnabled } from "@/utils/soundPreference";
 
 let sharedAudioContext: AudioContext | null = null;
@@ -6,6 +6,7 @@ let audioContextUnavailable = false;
 let userGestureAudioUnlocked = false;
 let unlockListenersInstalled = false;
 let unlockGestureHandler: (() => void) | null = null;
+let outputFilter: BiquadFilterNode | null = null;
 let masterGainNode: GainNode | null = null;
 
 const MASTER_GAIN = 0.82;
@@ -120,13 +121,22 @@ const getAudioContextForPlayback = (): AudioContext | null => {
   return sharedAudioContext;
 };
 
-const ensureMasterGain = (ctx: AudioContext): GainNode => {
+const ensureOutputChain = (ctx: AudioContext): AudioNode => {
   if (!masterGainNode || masterGainNode.context !== ctx) {
     masterGainNode = ctx.createGain();
     masterGainNode.gain.value = MASTER_GAIN;
     masterGainNode.connect(ctx.destination);
   }
-  return masterGainNode;
+
+  if (!outputFilter || outputFilter.context !== ctx) {
+    outputFilter = ctx.createBiquadFilter();
+    outputFilter.type = "lowpass";
+    outputFilter.frequency.value = 2600;
+    outputFilter.Q.value = 0.6;
+    outputFilter.connect(masterGainNode);
+  }
+
+  return outputFilter;
 };
 
 const shouldSkipDuplicateSound = (key: string): boolean => {
@@ -162,13 +172,9 @@ const scheduleTone = (
   }: ToneOptions,
 ): void => {
   const now = startTime ?? ctx.currentTime;
+  const destination = ensureOutputChain(ctx);
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-
-  filter.type = "lowpass";
-  filter.frequency.value = 2600;
-  filter.Q.value = 0.6;
 
   osc.type = type;
   osc.frequency.setValueAtTime(frequency, now);
@@ -181,18 +187,12 @@ const scheduleTone = (
   gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
   osc.connect(gain);
-  gain.connect(filter);
-  filter.connect(ensureMasterGain(ctx));
+  gain.connect(destination);
 
   osc.start(now);
   osc.stop(now + duration + 0.01);
 };
 
-/**
- * Shared audio hook — Y2K aesthetic.
- * Browsers require a user gesture before AudioContext can run; we defer
- * construction until the first pointer/key/touch, then play UI sounds.
- */
 export const useAudio = () => {
   useEffect(() => {
     installUnlockListeners();
@@ -209,9 +209,6 @@ export const useAudio = () => {
     [],
   );
 
-  /**
-   * Play a single synthesized tone with a soft attack and smooth decay.
-   */
   const playTone = useCallback(
     (
       frequency: number,
@@ -240,9 +237,6 @@ export const useAudio = () => {
     [getCtx],
   );
 
-  /**
-   * D5 (587 Hz) soft tap — clean digital keypress.
-   */
   const playClick = useCallback(() => {
     const now = performance.now();
     if (now - lastClickAt < CLICK_DEBOUNCE_MS) {
@@ -252,9 +246,6 @@ export const useAudio = () => {
     playTone(587, null, "sine", 0.032, 0.02, 0.002);
   }, [playTone]);
 
-  /**
-   * Ascending spring bloop — 330 Hz → 660 Hz in 80 ms.
-   */
   const playPop = useCallback(() => {
     if (shouldSkipDuplicateSound("pop")) {
       return;
@@ -262,9 +253,6 @@ export const useAudio = () => {
     playTone(330, 660, "sine", 0.08, 0.04, 0.003);
   }, [playTone]);
 
-  /**
-   * Two-step perfect-4th ping — E4 then A4.
-   */
   const playSwitch = useCallback(() => {
     if (shouldSkipDuplicateSound("switch")) {
       return;
@@ -292,9 +280,6 @@ export const useAudio = () => {
     });
   }, [getCtx]);
 
-  /**
-   * Four-note ascending pentatonic chime — C5 → E5 → G5 → C6.
-   */
   const playSuccess = useCallback(() => {
     if (shouldSkipDuplicateSound("success")) {
       return;
@@ -324,9 +309,6 @@ export const useAudio = () => {
     });
   }, [getCtx]);
 
-  /**
-   * Warm descending digital tone — gentle error feedback.
-   */
   const playError = useCallback(() => {
     if (shouldSkipDuplicateSound("error")) {
       return;
@@ -356,9 +338,6 @@ export const useAudio = () => {
     });
   }, [getCtx]);
 
-  /**
-   * Descending ding-ding — soft attention chime.
-   */
   const playWarning = useCallback(() => {
     if (shouldSkipDuplicateSound("warning")) {
       return;
@@ -386,9 +365,6 @@ export const useAudio = () => {
     });
   }, [getCtx]);
 
-  /**
-   * PIN keypad tap — subtle pitch steps per digit for tactile feedback.
-   */
   const playKey = useCallback(
     (digit = 5) => {
       const clamped = Math.max(0, Math.min(9, digit));

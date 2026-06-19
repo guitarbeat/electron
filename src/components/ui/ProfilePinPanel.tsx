@@ -1,8 +1,12 @@
 import React from "react";
-import { useProfilePin } from "@/app/ProfilePinContext";
+import {
+  usePinPanel,
+  useProfileSelection,
+} from "@/app/ProfilePinContext";
 import PinDialog from "@/common/PinDialog";
 
 const ProfilePinPanel: React.FC = () => {
+  const { userNeedsPin } = useProfileSelection();
   const {
     pendingUser,
     pinSettingsUser,
@@ -13,8 +17,7 @@ const ProfilePinPanel: React.FC = () => {
     handlePinSettingsCancel,
     handlePinSettingsSubmit,
     clearPendingUser,
-    userNeedsPin,
-  } = useProfilePin();
+  } = usePinPanel();
 
   if (pendingUser) {
     return (

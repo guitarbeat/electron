@@ -17,7 +17,7 @@ import SyncBanner from "@/components/ui/SyncBanner";
 import Button from "@/ui/Button";
 import { spacing, colors } from "@/theme/tokens";
 import { ArrowLeftIcon, EyeIcon } from "@/common/Icons";
-import { loadFeatureFonts } from "@/utils/loadFeatureFonts";
+import { useFeatureFonts } from "@/hooks/useFeatureFonts";
 import "./retro-ad.css";
 import "./QuizEditor.css";
 
@@ -159,9 +159,7 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   const { showToast } = useToast();
   const isMobile = useMediaQuery(mediaBreakpoints.md);
 
-  useEffect(() => {
-    void loadFeatureFonts();
-  }, []);
+  useFeatureFonts();
 
   // Use undo/redo for local state
   const {

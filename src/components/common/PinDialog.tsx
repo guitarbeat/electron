@@ -1,24 +1,29 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useReducer, useRef } from "react";
 import type { User } from "@/shared/types";
 import { isFocusWithin } from "@/components/ui/lib/modalPrimitives";
 import { useAudio } from "@/hooks/useAudio";
+import Button from "@/components/ui/Button";
 import { getErrorMessage, consoleError } from "@/utils";
+import {
+  PIN_LENGTH,
+  createPinFlowState,
+  getPinFlowTitle,
+  getPinSubmitLabel,
+  needsPinSubmitButton,
+  pinFlowReducer,
+  type PinFlowMode,
+} from "./pinFlowReducer";
 import "./PinDialog.css";
 
 interface PinDialogProps {
   isOpen: boolean;
   user: User;
-  mode: "enter" | "set" | "change";
+  mode: PinFlowMode;
   onSubmit: (pin: string, newPin?: string) => Promise<boolean>;
   onCancel: () => void;
   isLoading?: boolean;
   isRequiredSetup?: boolean;
 }
-
-const PIN_LENGTH = 4;
-
-const initialStep = (mode: PinDialogProps["mode"]) =>
-  mode === "enter" ? "current" : mode === "set" ? "new" : "current";
 
 const PinDialog: React.FC<PinDialogProps> = ({
   isOpen,
@@ -31,37 +36,31 @@ const PinDialog: React.FC<PinDialogProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const [pin, setPin] = useState("");
-  const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
-  const [error, setError] = useState("");
-  const [step, setStep] = useState<"current" | "new" | "confirm">(() =>
-    initialStep(mode),
+  const [flow, dispatch] = useReducer(
+    pinFlowReducer,
+    mode,
+    createPinFlowState,
   );
-  const [isShaking, setIsShaking] = useState(false);
   const { playKeypad, playError } = useAudio();
 
   useEffect(() => {
-    if (!isOpen) return;
-    setPin("");
-    setNewPin("");
-    setConfirmPin("");
-    setError("");
-    setIsShaking(false);
-    setStep(initialStep(mode));
+    dispatch({ type: "reset", mode });
   }, [isOpen, mode, user]);
 
   useEffect(() => {
     if (!isOpen) return;
     const id = window.setTimeout(() => inputRef.current?.focus(), 100);
     return () => window.clearTimeout(id);
-  }, [isOpen, step]);
+  }, [isOpen, flow.phase]);
 
   useEffect(() => {
-    if (!isShaking) return;
-    const id = window.setTimeout(() => setIsShaking(false), 450);
+    if (!flow.isShaking) return;
+    const id = window.setTimeout(
+      () => dispatch({ type: "clear-shake" }),
+      450,
+    );
     return () => window.clearTimeout(id);
-  }, [isShaking]);
+  }, [flow.isShaking]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -75,199 +74,154 @@ const PinDialog: React.FC<PinDialogProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onCancel]);
 
-  const triggerError = (message: string, reset?: () => void) => {
-    setError(message);
-    setIsShaking(true);
+  const reportError = (message: string, clearDigits = false) => {
+    dispatch({ type: "set-error", message });
     playError();
-    reset?.();
+    if (clearDigits) {
+      dispatch({ type: "clear-digits" });
+    }
   };
 
   useEffect(() => {
-    if (mode !== "enter" || pin.length !== PIN_LENGTH || isLoading) return;
+    if (flow.mode !== "enter" || flow.digits.length !== PIN_LENGTH || isLoading) {
+      return;
+    }
     const id = window.setTimeout(async () => {
-      setError("");
+      dispatch({ type: "clear-error" });
       try {
-        const success = await onSubmit(pin);
+        const success = await onSubmit(flow.digits);
         if (!success) {
-          triggerError("Incorrect PIN", () => setPin(""));
+          reportError("Incorrect PIN", true);
         }
       } catch (submitError) {
         consoleError("PIN submit failed:", submitError);
-        triggerError(
+        reportError(
           getErrorMessage(submitError, "Unable to verify PIN. Please try again."),
-          () => setPin(""),
+          true,
         );
       }
     }, 100);
     return () => window.clearTimeout(id);
-  }, [pin, mode, isLoading, onSubmit, playError]);
+  }, [flow.digits, flow.mode, isLoading, onSubmit, playError]);
 
-  const { value: currentValue, setValue: setCurrentValue, title } = useMemo(() => {
-    if (step === "current") {
-      return {
-        value: pin,
-        setValue: setPin,
-        title:
-          mode === "enter"
-            ? `Sign in as ${user}`
-            : "Enter current PIN",
-      };
-    }
-    if (step === "new") {
-      return {
-        value: newPin,
-        setValue: setNewPin,
-        title:
-          mode === "set"
-            ? isRequiredSetup
-              ? `Set a PIN for ${user}`
-              : `Create PIN for ${user}`
-            : "Choose new PIN",
-      };
-    }
-    return {
-      value: confirmPin,
-      setValue: setConfirmPin,
-      title: "Confirm new PIN",
-    };
-  }, [confirmPin, isRequiredSetup, mode, newPin, pin, step, user]);
+  const appendDigit = (value: number) => {
+    if (flow.digits.length >= PIN_LENGTH) return;
+    dispatch({ type: "digit", value });
+    playKeypad(value);
+  };
 
-  const needsSubmitButton = mode !== "enter";
-  const submitLabel =
-    step === "confirm"
-      ? isRequiredSetup
-        ? "Save PIN"
-        : "Save"
-      : "Continue";
+  const backspace = () => {
+    if (flow.digits.length === 0) return;
+    dispatch({ type: "backspace" });
+    playKeypad("del");
+  };
+
+  const handlePinInput = (nextValue: string) => {
+    const sanitized = nextValue.replace(/\D/g, "").slice(0, PIN_LENGTH);
+    if (sanitized === flow.digits) return;
+
+    if (sanitized.length > flow.digits.length) {
+      const digit = Number(sanitized[sanitized.length - 1]);
+      if (!Number.isNaN(digit)) playKeypad(digit);
+    } else if (sanitized.length < flow.digits.length) {
+      playKeypad("del");
+    }
+
+    dispatch({ type: "set-digits", digits: sanitized });
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (mode === "enter") {
-      return;
-    }
+    if (flow.mode === "enter") return;
 
-    setError("");
+    dispatch({ type: "clear-error" });
 
     try {
-      if (mode === "set") {
-        if (step === "new") {
-          if (currentValue.length !== PIN_LENGTH) {
-            triggerError(`Enter ${PIN_LENGTH} digits`);
-            return;
-          }
-          setStep("confirm");
-          setError("");
+      if (flow.phase === "set-new" || flow.phase === "change-new") {
+        if (flow.digits.length !== PIN_LENGTH) {
+          reportError(`Enter ${PIN_LENGTH} digits`);
           return;
         }
-        if (confirmPin !== newPin) {
-          triggerError("PINs do not match", () => setConfirmPin(""));
-          return;
-        }
-        const success = await onSubmit(newPin);
-        if (!success) triggerError("Unable to save PIN");
+        dispatch({
+          type:
+            flow.phase === "set-new"
+              ? "advance-set-new"
+              : "advance-change-new",
+        });
         return;
       }
 
-      if (step === "current") {
-        if (currentValue.length !== PIN_LENGTH) {
-          triggerError(`Enter ${PIN_LENGTH} digits`);
+      if (flow.phase === "set-confirm") {
+        if (flow.digits !== flow.newPin) {
+          reportError("PINs do not match", true);
           return;
         }
-        const success = await onSubmit(pin);
+        const success = await onSubmit(flow.newPin);
+        if (!success) reportError("Unable to save PIN");
+        return;
+      }
+
+      if (flow.phase === "change-current") {
+        if (flow.digits.length !== PIN_LENGTH) {
+          reportError(`Enter ${PIN_LENGTH} digits`);
+          return;
+        }
+        const success = await onSubmit(flow.digits);
         if (!success) {
-          triggerError("Incorrect PIN", () => setPin(""));
+          reportError("Incorrect PIN", true);
           return;
         }
-        setStep("new");
-        setError("");
+        dispatch({ type: "advance-change-current" });
         return;
       }
 
-      if (step === "new") {
-        if (currentValue.length !== PIN_LENGTH) {
-          triggerError(`Enter ${PIN_LENGTH} digits`);
+      if (flow.phase === "change-confirm") {
+        if (flow.digits !== flow.newPin) {
+          reportError("PINs do not match", true);
           return;
         }
-        setStep("confirm");
-        setError("");
-        return;
+        const success = await onSubmit(flow.currentPin, flow.newPin);
+        if (!success) reportError("Unable to update PIN");
       }
-
-      if (confirmPin !== newPin) {
-        triggerError("PINs do not match", () => setConfirmPin(""));
-        return;
-      }
-
-      const success = await onSubmit(pin, newPin);
-      if (!success) triggerError("Unable to update PIN");
     } catch (submitError) {
       consoleError("PIN submit failed:", submitError);
-      triggerError(
+      reportError(
         getErrorMessage(submitError, "Unable to save PIN. Please try again."),
       );
     }
   };
 
-  const handleNumberClick = (num: number) => {
-    if (currentValue.length < PIN_LENGTH) {
-      setCurrentValue(currentValue + num.toString());
-      setError("");
-      playKeypad(num);
-    }
-  };
-
-  const handleBackspace = () => {
-    if (currentValue.length > 0) {
-      setCurrentValue(currentValue.slice(0, -1));
-      setError("");
-      playKeypad("del");
-    }
-  };
-
-  const handlePinInput = (nextValue: string) => {
-    const sanitized = nextValue.replace(/\D/g, "").slice(0, PIN_LENGTH);
-    if (sanitized.length > currentValue.length) {
-      const digit = Number(sanitized[sanitized.length - 1]);
-      if (!Number.isNaN(digit)) {
-        playKeypad(digit);
-      }
-    } else if (sanitized.length < currentValue.length) {
-      playKeypad("del");
-    }
-    setCurrentValue(sanitized);
-    setError("");
-  };
-
   if (!isOpen) return null;
 
+  const title = getPinFlowTitle(flow, user, isRequiredSetup);
+  const submitLabel = getPinSubmitLabel(flow, isRequiredSetup);
+
   return (
-    <section
-      className="pin-panel"
-      role="region"
-      aria-labelledby="pin-dialog-title"
-    >
+    <section className="pin-panel" role="region" aria-labelledby="pin-dialog-title">
       <form ref={formRef} className="pin-panel__form" onSubmit={handleSubmit}>
         <div className="pin-panel__header">
           <h2 id="pin-dialog-title" className="pin-panel__title">
             {title}
           </h2>
-          <button
+          <Button
             type="button"
-            className="pin-panel__cancel"
+            variant="ghost"
+            size="sm"
+            className="pin-panel__cancel-btn"
             onClick={onCancel}
             disabled={isLoading}
           >
             {isRequiredSetup ? "Log out" : "Cancel"}
-          </button>
+          </Button>
         </div>
 
         <div
-          className={`pin-panel__dots${isShaking ? " pin-panel__dots--shake" : ""}`}
+          className={`pin-panel__dots${flow.isShaking ? " pin-panel__dots--shake" : ""}`}
           aria-hidden="true"
         >
           {Array.from({ length: PIN_LENGTH }).map((_, index) => {
-            const filled = index < currentValue.length;
-            const active = currentValue.length === index;
+            const filled = index < flow.digits.length;
+            const active = flow.digits.length === index;
             return (
               <div
                 key={index}
@@ -275,7 +229,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   "pin-panel__dot",
                   filled ? "pin-panel__dot--filled" : "",
                   active ? "pin-panel__dot--active" : "",
-                  error ? "pin-panel__dot--error" : "",
+                  flow.error ? "pin-panel__dot--error" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -295,7 +249,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                   key="del"
                   type="button"
                   className="pin-panel__key pin-panel__key--del"
-                  onClick={handleBackspace}
+                  onClick={backspace}
                   aria-label="Delete last digit"
                   disabled={isLoading}
                 >
@@ -308,7 +262,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
                 key={num}
                 type="button"
                 className="pin-panel__key"
-                onClick={() => handleNumberClick(num as number)}
+                onClick={() => appendDigit(num as number)}
                 disabled={isLoading}
               >
                 {num}
@@ -319,32 +273,36 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
         <input
           ref={inputRef}
-          className="pin-panel__sr-input"
+          className="sr-only"
           type="password"
           inputMode="numeric"
           pattern="[0-9]*"
           maxLength={PIN_LENGTH}
-          value={currentValue}
+          value={flow.digits}
           onChange={(event) => handlePinInput(event.target.value)}
           disabled={isLoading}
           autoComplete="off"
           aria-label="PIN entry"
         />
 
-        {error ? (
+        {flow.error ? (
           <p className="pin-panel__error" role="alert">
-            {error}
+            {flow.error}
           </p>
         ) : null}
 
-        {needsSubmitButton ? (
-          <button
+        {needsPinSubmitButton(flow.mode) ? (
+          <Button
             type="submit"
-            className="pin-panel__submit"
-            disabled={currentValue.length !== PIN_LENGTH || isLoading}
+            variant="primary"
+            size="md"
+            fullWidth
+            disabled={flow.digits.length !== PIN_LENGTH || isLoading}
+            isLoading={isLoading}
+            loadingText="Saving…"
           >
-            {isLoading ? "Saving…" : submitLabel}
-          </button>
+            {submitLabel}
+          </Button>
         ) : null}
       </form>
     </section>
