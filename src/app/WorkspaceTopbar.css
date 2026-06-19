@@ -377,19 +377,15 @@
     gap: 0.25rem;
   }
 
-  .app-header__profile-list--inline {
+  .app-header__profile-toggle .magic-toggle {
     gap: 0.25rem;
   }
 
-  .app-header__profile-option--inline {
+  .app-header__profile-toggle .magic-toggle__btn {
     padding: 0.28rem 0.45rem 0.28rem 0.28rem;
   }
 
-  .app-header__profile-option--inline .app-header__option-name {
-    display: none;
-  }
-
-  .app-header__profile-option--inline.is-logout .app-header__option-name {
+  .app-header__profile-toggle .app-header__option-name {
     display: none;
   }
 
@@ -442,6 +438,7 @@
 
 .app-header__option-avatar {
   flex-shrink: 0;
+  position: relative;
 }
 
 .app-header__option-avatar .app-header__avatar-image,
@@ -553,9 +550,7 @@
     padding: 0.75rem;
   }
 
-  .app-header__profile-option {
-    padding: 0.75rem;
-  }
+  /* removed unused app-header__profile-option */
 
   .app-header__menu-action {
     padding: 0.75rem;
@@ -608,4 +603,33 @@
     width: 2rem;
     height: 2rem;
   }
+}
+
+.app-header__avatar-logout-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: var(--color-background);
+  border: 1.5px solid var(--color-surface-2);
+  z-index: 1;
+}
+
+.app-header__profile-toggle .magic-toggle__btn.is-active:hover {
+  color: var(--color-error);
+}
+
+.app-header__profile-toggle .magic-toggle__btn.is-active:hover .app-header__option-name {
+  color: var(--color-error);
+}
+
+.app-header__profile-toggle .magic-toggle__btn.is-active:hover .app-header__avatar-logout-badge {
+  transform: scale(1.15);
+  transition: transform 0.15s ease;
 }

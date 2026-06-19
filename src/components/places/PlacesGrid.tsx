@@ -35,7 +35,7 @@ const PlacesGrid: React.FC<PlacesGridProps> = ({
     minColumnWidth={PLACES_GRID_MIN_COL}
     items={places}
     getItemKey={(place) => place.id}
-    renderItem={(place, _index) => (
+    renderItem={(place, ) => (
       <PlaceCard
         place={place}
         canEdit={canEdit}

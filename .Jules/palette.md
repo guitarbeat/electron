@@ -9,3 +9,8 @@
 ## 2024-06-17 - [Visual feedback and Screen Reader label in Map]
 **Learning:** For floating or icon-based buttons that change state (like a drop-pin button that toggles 'Drop new pin' and 'Cancel drop pin'), dynamically updating the `aria-label` attribute accurately communicates the action's current intent to screen readers. For primary save actions, pairing disabled state with a visual `Spinner` inside the button provides immediate and satisfying visual feedback to users that an async action is happening.
 **Action:** When working on toggle buttons with no text or map overlays, ensure `aria-label` updates depending on active state. Always include loading indicators alongside "Saving..." text for form submissions to improve perceived performance.
+
+## 2024-06-19 - Consolidated Profile Menu into MagicToggle
+- Replaced multiple scattered profile option buttons with a single unified `MagicToggle` component in `ProfileMenu.tsx`.
+- Extracted and modified CSS in `WorkspaceTopbar.css` and `_workspace-mobile.scss` to handle the new unified DOM structure.
+- Ensured disabled states, hover states, and the logout hover badge all continue to work correctly and visibly.
