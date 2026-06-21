@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { useUser } from "@/app/useProviders";
 import type {
+  Movie,
   MovieSuggestion,
   MoviesViewProps,
 } from "@/shared/types";

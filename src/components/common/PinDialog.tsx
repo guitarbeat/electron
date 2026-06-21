@@ -243,7 +243,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   return (
     <section
       className="pin-panel"
-
+      role="region"
       aria-labelledby="pin-dialog-title"
     >
       <form ref={formRef} className="pin-panel__form" onSubmit={handleSubmit}>

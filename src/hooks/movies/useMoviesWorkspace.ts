@@ -13,7 +13,8 @@ import { useMovies } from "./useMovies";
 import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/useProviders";
 import {
-    compareCreatedAtDesc,
+  areDeeplyEqual,
+  compareCreatedAtDesc,
   normalizeMovieTitle,
   sanitizeInput,
 } from "../../utils";

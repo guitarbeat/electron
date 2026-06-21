@@ -8,7 +8,6 @@ import {
   subscribeSoundPreference,
 } from "@/utils/soundPreference";
 import UserAvatar from "@/ui/UserAvatar";
-import MagicToggle from "@/ui/MagicToggle";
 
 const LockIcon: FC<{ size?: number }> = ({ size = 14 }) => (
   <svg
@@ -146,44 +145,51 @@ const ProfileMenu: FC = () => {
 
   return (
     <div className="app-header__profile-picker">
-      <div className="app-header__profile-toggle">
-        <MagicToggle<string>
-          options={([...USER_OPTIONS] as User[]).map((profile) => {
-            const isActive = currentUser === profile;
-            const hasPin = userHasPin(profile);
-            return {
-              value: profile,
-              label: (
-                <div className="app-header__option-content">
-                  <span className="app-header__option-avatar">
-                    <UserAvatar user={profile} />
-                    {isActive ? (
-                      <span
-                        className="app-header__avatar-logout-badge"
-                        aria-hidden="true"
-                      >
-                        <LogoutIcon size={10} />
-                      </span>
-                    ) : null}
+      <div
+        className="app-header__profile-list app-header__profile-list--inline"
+        role="group"
+        aria-label="Select profile"
+      >
+        {([...USER_OPTIONS] as User[]).map((profile) => {
+          const isActive = currentUser === profile;
+          const hasPin = userHasPin(profile);
+          return (
+            <button
+              key={profile}
+              type="button"
+              className={`app-header__profile-option app-header__profile-option--inline${
+                isActive ? " is-active is-logout" : ""
+              }${hasPin ? " has-pin" : ""}`}
+              onClick={() => selectProfile(profile)}
+              disabled={isDisabled}
+              aria-pressed={isActive}
+              aria-label={
+                isActive
+                  ? `Log out as ${profile}`
+                  : hasPin
+                    ? `Sign in as ${profile} (PIN protected)`
+                    : `Sign in as ${profile}`
+              }
+              title={isActive ? `Log out as ${profile}` : undefined}
+            >
+              <span className="app-header__option-avatar">
+                <UserAvatar user={profile} />
+                {isActive ? (
+                  <span
+                    className="app-header__avatar-logout-badge"
+                    aria-hidden="true"
+                  >
+                    <LogoutIcon size={12} />
                   </span>
-                  <span className="app-header__option-name">
-                    {isActive ? "Log out" : profile}
-                  </span>
-                  {!isActive && hasPin ? <LockIcon size={12} /> : null}
-                </div>
-              ),
-              disabled: isDisabled,
-              ariaLabel: isActive
-                ? `Log out as ${profile}`
-                : hasPin
-                  ? `Sign in as ${profile} (PIN protected)`
-                  : `Sign in as ${profile}`,
-            };
-          })}
-          activeValue={currentUser ?? ""}
-          onChange={(val) => selectProfile(val as User)}
-          ariaLabel="Select profile"
-        />
+                ) : null}
+              </span>
+              <span className="app-header__option-name">
+                {isActive ? "Log out" : profile}
+              </span>
+              {!isActive && hasPin ? <LockIcon size={12} /> : null}
+            </button>
+          );
+        })}
       </div>
 
       <button
