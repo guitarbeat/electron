@@ -197,7 +197,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const submitLabel = getPinSubmitLabel(flow, isRequiredSetup);
 
   return (
-    <section className="pin-panel" role="region" aria-labelledby="pin-dialog-title">
+    <section className="pin-panel"  aria-labelledby="pin-dialog-title">
       <form ref={formRef} className="pin-panel__form" onSubmit={handleSubmit}>
         <div className="pin-panel__header">
           <h2 id="pin-dialog-title" className="pin-panel__title">

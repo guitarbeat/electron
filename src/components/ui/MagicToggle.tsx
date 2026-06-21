@@ -7,6 +7,7 @@ export interface MagicToggleOption<T extends string> {
   /** Used when label is icon-only or abbreviated on small screens. */
   ariaLabel?: string;
   disabled?: boolean;
+  className?: string;
 }
 
 interface MagicToggleProps<T extends string> {
@@ -50,7 +51,7 @@ function MagicToggle<T extends string>({
       ref={containerRef}
     >
       <div
-        className="magic-toggle__indicator"
+        className={`magic-toggle__indicator ${options.find((opt) => opt.value === activeValue)?.className?.includes("is-logout") ? "is-logout" : ""}`}
         style={{
           transform: `translateX(${indicatorStyle.left}px)`,
           width: `${indicatorStyle.width}px`,
@@ -63,7 +64,7 @@ function MagicToggle<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={`magic-toggle__btn ${isActive ? "is-active" : ""} ${option.disabled ? "is-disabled" : ""}`}
+            className={`magic-toggle__btn ${isActive ? "is-active" : ""} ${option.disabled ? "is-disabled" : ""} ${option.className || ""}`.trim()}
             disabled={option.disabled}
             onPointerDown={(e) => {
               e.preventDefault();
