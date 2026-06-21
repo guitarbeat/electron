@@ -135,21 +135,10 @@
   font-size: 0.8125rem;
 }
 
-.app-header__profile-option--inline.is-logout {
-  border-color: color-mix(in srgb, var(--color-error, #f87171) 28%, transparent);
-  background: color-mix(in srgb, var(--color-error, #f87171) 8%, transparent);
-}
 
-.app-header__profile-option--inline.is-logout:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-error, #f87171) 14%, transparent);
-  border-color: color-mix(in srgb, var(--color-error, #f87171) 40%, transparent);
-}
 
-.app-header__profile-option--inline.is-logout .app-header__option-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
+
+
 
 .app-header__option-avatar {
   position: relative;
@@ -389,8 +378,14 @@
   .app-header__profile-option--inline .app-header__option-name {
     display: none;
   }
+  .app-header__profile-picker .magic-toggle__btn .app-header__option-name {
+    display: none;
+  }
 
   .app-header__profile-option--inline.is-logout .app-header__option-name {
+    display: none;
+  }
+  .magic-toggle__btn.is-logout .app-header__option-name {
     display: none;
   }
 

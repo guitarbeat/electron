@@ -44,6 +44,23 @@
   );
 }
 
+
+
+.magic-toggle__btn.is-logout {
+  color: var(--color-error);
+}
+.magic-toggle__btn.is-logout.is-active {
+  color: var(--color-error);
+}
+.magic-toggle__btn.is-logout:hover {
+  color: color-mix(in srgb, var(--color-error) 80%, black);
+}
+.magic-toggle__indicator.is-logout {
+  background: color-mix(in srgb, var(--color-error) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-error) 50%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-error) 25%, transparent);
+}
+
 .magic-toggle__btn.is-active {
   color: color-mix(
     in srgb,

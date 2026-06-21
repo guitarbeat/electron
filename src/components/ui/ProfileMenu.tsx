@@ -1,3 +1,4 @@
+import MagicToggle from "@/components/ui/MagicToggle";
 import { useEffect, useState, type FC } from "react";
 import type { User } from "@/shared/types";
 import { useProfileSelection } from "@/app/ProfilePinContext";
@@ -49,52 +50,45 @@ const ProfileMenu: FC = () => {
 
   return (
     <div className="app-header__profile-picker">
-      <div
-        className="app-header__profile-list app-header__profile-list--inline"
-        role="group"
-        aria-label="Select profile"
-      >
-        {([...USER_OPTIONS] as User[]).map((profile) => {
+
+      <MagicToggle<User | "none">
+        options={([...USER_OPTIONS] as User[]).map((profile) => {
           const isActive = currentUser === profile;
           const hasPin = userHasPin(profile);
-          return (
-            <button
-              key={profile}
-              type="button"
-              className={`app-header__profile-option app-header__profile-option--inline${
-                isActive ? " is-active is-logout" : ""
-              }${hasPin ? " has-pin" : ""}`}
-              onClick={() => selectProfile(profile)}
-              disabled={isDisabled}
-              aria-pressed={isActive}
-              aria-label={
-                isActive
-                  ? `Log out as ${profile}`
-                  : hasPin
-                    ? `Sign in as ${profile} (PIN protected)`
-                    : `Sign in as ${profile}`
-              }
-              title={isActive ? `Log out as ${profile}` : undefined}
-            >
-              <span className="app-header__option-avatar">
-                <UserAvatar user={profile} />
-                {isActive ? (
-                  <span
-                    className="app-header__avatar-logout-badge"
-                    aria-hidden="true"
-                  >
-                    <LogoutIcon size={12} />
-                  </span>
-                ) : null}
+          return {
+            value: profile,
+            label: (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span className="app-header__option-avatar">
+                  <UserAvatar user={profile} />
+                  {isActive ? (
+                    <span className="app-header__avatar-logout-badge" aria-hidden="true">
+                      <LogoutIcon size={12} />
+                    </span>
+                  ) : null}
+                </span>
+                <span className="app-header__option-name">
+                  {isActive ? "Log out" : profile}
+                </span>
+                {!isActive && hasPin ? <LockIcon size={12} /> : null}
               </span>
-              <span className="app-header__option-name">
-                {isActive ? "Log out" : profile}
-              </span>
-              {!isActive && hasPin ? <LockIcon size={12} /> : null}
-            </button>
-          );
+            ),
+            ariaLabel: isActive
+              ? `Log out as ${profile}`
+              : hasPin
+                ? `Sign in as ${profile} (PIN protected)`
+                : `Sign in as ${profile}`,
+            disabled: isDisabled,
+            className: isActive ? "is-logout" : "",
+          };
         })}
-      </div>
+        activeValue={currentUser || "none"}
+        onChange={(val) => {
+          if (val !== "none") selectProfile(val as User);
+        }}
+        ariaLabel="Select profile"
+      />
+
 
       <button
         type="button"
