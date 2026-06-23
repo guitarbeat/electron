@@ -10,3 +10,6 @@
 **Learning:** For floating or icon-based buttons that change state (like a drop-pin button that toggles 'Drop new pin' and 'Cancel drop pin'), dynamically updating the `aria-label` attribute accurately communicates the action's current intent to screen readers. For primary save actions, pairing disabled state with a visual `Spinner` inside the button provides immediate and satisfying visual feedback to users that an async action is happening.
 **Action:** When working on toggle buttons with no text or map overlays, ensure `aria-label` updates depending on active state. Always include loading indicators alongside "Saving..." text for form submissions to improve perceived performance.
 ## 2026-06-21 - Replaced custom split user profile widget with MagicToggle for UI consolidation.
+## 2024-06-23 - MagicToggle Semantic Abuse
+- Avoid using segmented controls (like MagicToggle) for disjointed actions (e.g. a toggle button and a modal trigger). Although it creates a visually grouped pill, it violates semantic a11y expectations since toggles imply mutually exclusive options.
+- If visual grouping is needed, build a separate MagicButtonGroup component without mutually exclusive state indicators or `aria-pressed` properties.

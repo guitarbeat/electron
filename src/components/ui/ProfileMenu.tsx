@@ -1,4 +1,5 @@
 import MagicToggle from "@/components/ui/MagicToggle";
+import MagicButtonGroup from "@/components/ui/MagicButtonGroup";
 import { useEffect, useState, type FC } from "react";
 import type { User } from "@/shared/types";
 import { useProfileSelection } from "@/app/ProfilePinContext";
@@ -90,29 +91,31 @@ const ProfileMenu: FC = () => {
       />
 
 
-      <button
-        type="button"
-        className="app-header__chrome-icon-btn"
-        onClick={() => setSoundEnabled(!soundEnabled)}
-        aria-label={soundEnabled ? "Mute UI sounds" : "Enable UI sounds"}
-        aria-pressed={soundEnabled}
-        title={soundEnabled ? "Mute UI sounds" : "Enable UI sounds"}
-      >
-        {soundEnabled ? <SoundOnIcon size={14} /> : <SoundOffIcon size={14} />}
-      </button>
-
-      {currentUser && pinSettingsLabel ? (
-        <button
-          type="button"
-          className="app-header__chrome-icon-btn"
-          onClick={openPinSettings}
-          disabled={isDisabled || isSavingPin}
-          aria-label={pinSettingsLabel}
-          title={pinSettingsLabel}
-        >
-          <LockIcon size={14} />
-        </button>
-      ) : null}
+      <MagicButtonGroup<"sound" | "pin">
+        options={[
+          {
+            value: "sound",
+            label: soundEnabled ? <SoundOnIcon size={14} /> : <SoundOffIcon size={14} />,
+            ariaLabel: soundEnabled ? "Mute UI sounds" : "Enable UI sounds",
+            disabled: false,
+          },
+          ...(currentUser && pinSettingsLabel
+            ? [
+                {
+                  value: "pin" as const,
+                  label: <LockIcon size={14} />,
+                  ariaLabel: pinSettingsLabel,
+                  disabled: isDisabled || isSavingPin,
+                },
+              ]
+            : []),
+        ]}
+        onClick={(val) => {
+          if (val === "sound") setSoundEnabled(!soundEnabled);
+          if (val === "pin") openPinSettings();
+        }}
+        ariaLabel="App settings"
+      />
 
       {selectionError ? (
         <p className="app-header__picker-error" role="alert">
