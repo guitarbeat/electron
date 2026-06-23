@@ -3,18 +3,18 @@ import test from "node:test";
 import { scheduleIdleWork } from "./scheduleIdleWork.ts";
 
 test("scheduleIdleWork", async (t) => {
-  const originalWindow = (global as any).window;
+  const originalWindow = (global as unknown as { window: unknown }).window;
   const originalSetTimeout = globalThis.setTimeout;
   const originalClearTimeout = globalThis.clearTimeout;
 
   t.afterEach(() => {
-    (global as any).window = originalWindow;
+    (global as unknown as { window: unknown }).window = originalWindow;
     globalThis.setTimeout = originalSetTimeout;
     globalThis.clearTimeout = originalClearTimeout;
   });
 
   await t.test("returns no-op when window is undefined", () => {
-    delete (global as any).window;
+    delete (global as unknown as { window?: unknown }).window;
 
     let workCalled = false;
     const work = () => { workCalled = true; };
@@ -30,11 +30,11 @@ test("scheduleIdleWork", async (t) => {
     let ricCalled = false;
     let cicCalled = false;
     let workFn: (() => void) | undefined;
-    let ricOptions: any;
-    let cicId: any;
+    let ricOptions: { timeout?: number } | undefined;
+    let cicId: number | undefined;
 
-    (global as any).window = {
-      requestIdleCallback: (fn: () => void, options: any) => {
+    (global as unknown as { window: unknown }).window = {
+      requestIdleCallback: (fn: () => void, options: { timeout?: number }) => {
         ricCalled = true;
         workFn = fn;
         ricOptions = options;
@@ -64,25 +64,25 @@ test("scheduleIdleWork", async (t) => {
   });
 
   await t.test("falls back to setTimeout when requestIdleCallback is not available", () => {
-    (global as any).window = {};
+    (global as unknown as { window: unknown }).window = {};
 
     let stCalled = false;
     let ctCalled = false;
     let workFn: (() => void) | undefined;
-    let stTimeout: any;
-    let ctId: any;
+    let stTimeout: number | undefined;
+    let ctId: ReturnType<typeof setTimeout> | undefined;
 
     globalThis.setTimeout = ((fn: () => void, timeout: number) => {
       stCalled = true;
       workFn = fn;
       stTimeout = timeout;
-      return 456 as any;
-    }) as any;
+      return 456 as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof setTimeout;
 
-    globalThis.clearTimeout = ((id: any) => {
+    globalThis.clearTimeout = ((id: ReturnType<typeof setTimeout>) => {
       ctCalled = true;
       ctId = id;
-    }) as any;
+    }) as unknown as typeof clearTimeout;
 
     let workCalled = false;
     const work = () => { workCalled = true; };
@@ -101,13 +101,13 @@ test("scheduleIdleWork", async (t) => {
   });
 
   await t.test("uses requested timeout if smaller than 400ms for setTimeout fallback", () => {
-    (global as any).window = {};
+    (global as unknown as { window: unknown }).window = {};
 
-    let stTimeout: any;
+    let stTimeout: number | undefined;
     globalThis.setTimeout = ((fn: () => void, timeout: number) => {
       stTimeout = timeout;
-      return 456 as any;
-    }) as any;
+      return 456 as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof setTimeout;
     globalThis.clearTimeout = () => {};
 
     const work = () => {};
