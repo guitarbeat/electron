@@ -1,0 +1,2 @@
+## 2026-06-23 - Test useSyncExternalStore in Node
+When testing React hooks that rely on `useSyncExternalStore` natively in a `node:test` environment without full DOM or Testing Library, intercept `React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE.H.useSyncExternalStore` rather than mocking `React.useSyncExternalStore` directly, since hooks are imported as destructured module components.
