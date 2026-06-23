@@ -5,7 +5,7 @@ import { isTypingInField } from "./keyboardShortcutGuards.ts";
 describe("isTypingInField", () => {
   beforeEach(() => {
     // Setup minimal DOM mocks for node environment
-    const globalObj = global as any;
+    const globalObj = global as unknown as Record<string, unknown>;
 
     class MockElement {}
 
@@ -25,7 +25,7 @@ describe("isTypingInField", () => {
 
   afterEach(() => {
     // Teardown DOM mocks
-    const globalObj = global as any;
+    const globalObj = global as unknown as Record<string, unknown>;
     delete globalObj.HTMLElement;
     delete globalObj.HTMLInputElement;
     delete globalObj.HTMLTextAreaElement;
@@ -33,30 +33,35 @@ describe("isTypingInField", () => {
   });
 
   it("returns true for HTMLInputElement", () => {
-    const el = new (global as any).HTMLInputElement();
-    assert.strictEqual(isTypingInField(el as any), true);
+    const InputElement = (global as unknown as Record<string, new () => EventTarget>).HTMLInputElement;
+    const el = new InputElement();
+    assert.strictEqual(isTypingInField(el), true);
   });
 
   it("returns true for HTMLTextAreaElement", () => {
-    const el = new (global as any).HTMLTextAreaElement();
-    assert.strictEqual(isTypingInField(el as any), true);
+    const TextAreaElement = (global as unknown as Record<string, new () => EventTarget>).HTMLTextAreaElement;
+    const el = new TextAreaElement();
+    assert.strictEqual(isTypingInField(el), true);
   });
 
   it("returns true for HTMLSelectElement", () => {
-    const el = new (global as any).HTMLSelectElement();
-    assert.strictEqual(isTypingInField(el as any), true);
+    const SelectElement = (global as unknown as Record<string, new () => EventTarget>).HTMLSelectElement;
+    const el = new SelectElement();
+    assert.strictEqual(isTypingInField(el), true);
   });
 
   it("returns true for contenteditable HTMLElement", () => {
-    const el = new (global as any).HTMLElement();
+    const HTMLElementClass = (global as unknown as Record<string, new () => HTMLElement>).HTMLElement;
+    const el = new HTMLElementClass();
     el.isContentEditable = true;
-    assert.strictEqual(isTypingInField(el as any), true);
+    assert.strictEqual(isTypingInField(el), true);
   });
 
   it("returns false for non-contenteditable HTMLElement", () => {
-    const el = new (global as any).HTMLElement();
+    const HTMLElementClass = (global as unknown as Record<string, new () => HTMLElement>).HTMLElement;
+    const el = new HTMLElementClass();
     el.isContentEditable = false;
-    assert.strictEqual(isTypingInField(el as any), false);
+    assert.strictEqual(isTypingInField(el), false);
   });
 
   it("returns false for null", () => {
@@ -65,6 +70,6 @@ describe("isTypingInField", () => {
 
   it("returns false for unrelated object", () => {
     const el = { someKey: "someValue" };
-    assert.strictEqual(isTypingInField(el as any), false);
+    assert.strictEqual(isTypingInField(el as unknown as EventTarget), false);
   });
 });
