@@ -202,6 +202,10 @@ export const concurrentMap = async <T, R>(
     return [];
   }
 
+  if (items.length <= concurrency) {
+    return Promise.all(items.map(fn));
+  }
+
   const results = new Array<R>(items.length);
   let currentIndex = 0;
   let hasError = false;
