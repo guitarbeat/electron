@@ -9,3 +9,6 @@
 ## 2024-06-17 - [Visual feedback and Screen Reader label in Map]
 **Learning:** For floating or icon-based buttons that change state (like a drop-pin button that toggles 'Drop new pin' and 'Cancel drop pin'), dynamically updating the `aria-label` attribute accurately communicates the action's current intent to screen readers. For primary save actions, pairing disabled state with a visual `Spinner` inside the button provides immediate and satisfying visual feedback to users that an async action is happening.
 **Action:** When working on toggle buttons with no text or map overlays, ensure `aria-label` updates depending on active state. Always include loading indicators alongside "Saving..." text for form submissions to improve perceived performance.
+## 2026-06-23 - Input Placeholder Accessibility
+**Learning:** Input elements relying solely on `placeholder` attributes are insufficient for screen readers; always provide an explicit `aria-label` or associated `<label>` to guarantee accessibility.
+**Action:** When adding new input fields, always ensure an explicit label is present rather than relying solely on placeholder text.
