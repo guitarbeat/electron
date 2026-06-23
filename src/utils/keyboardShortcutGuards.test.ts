@@ -10,7 +10,9 @@ describe("isTypingInField", () => {
     class MockElement {}
 
     class MockHTMLElement extends MockElement {
-      isContentEditable = false;
+      get isContentEditable() {
+        return false;
+      }
     }
 
     class MockHTMLInputElement extends MockHTMLElement {}
@@ -53,14 +55,14 @@ describe("isTypingInField", () => {
   it("returns true for contenteditable HTMLElement", () => {
     const HTMLElementClass = (global as unknown as Record<string, new () => HTMLElement>).HTMLElement;
     const el = new HTMLElementClass();
-    el.isContentEditable = true;
+    Object.defineProperty(el, 'isContentEditable', { value: true, configurable: true });
     assert.strictEqual(isTypingInField(el), true);
   });
 
   it("returns false for non-contenteditable HTMLElement", () => {
     const HTMLElementClass = (global as unknown as Record<string, new () => HTMLElement>).HTMLElement;
     const el = new HTMLElementClass();
-    el.isContentEditable = false;
+    Object.defineProperty(el, 'isContentEditable', { value: false, configurable: true });
     assert.strictEqual(isTypingInField(el), false);
   });
 
