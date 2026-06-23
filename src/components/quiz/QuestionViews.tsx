@@ -26,7 +26,9 @@ export const MultipleChoiceQuestionView: React.FC<
             onClick={() => onSelect(index)}
             aria-pressed={selectedIndex === index}
           >
-            {selectedIndex === index ? "✅ " : "◻ "}
+            <span aria-hidden="true">
+              {selectedIndex === index ? "✅ " : "◻ "}
+            </span>
             {option.text}
           </button>
         ))}
