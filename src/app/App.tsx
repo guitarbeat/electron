@@ -48,11 +48,6 @@ const RetroEffects = React.lazy(() =>
     () => ({ default: () => null }) as { default: React.FC },
   ),
 );
-const RadialMenu = React.lazy(() =>
-  import("@/components/effects/RadialMenu").catch(
-    () => ({ default: () => null }) as { default: React.FC },
-  ),
-);
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
 const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));
 const modalBodyStyle = {
@@ -428,12 +423,6 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <RadialMenu
-          onOpenMessages={() => setShowMessages(true)}
-          onOpenQuiz={openQuizExperience}
-          onOpenSpin={openSpinMatch}
-        />
-
         <div className="app-shell__canvas app-shell__canvas--main">
           <div
             className={`app-workspace-stack app-workspace-stack--${activeTab}`}
@@ -457,6 +446,8 @@ const App: React.FC = () => {
                   onApplyUpdate={handleApplyUpdate}
                   onRetrySync={handleRetryPendingSync}
                   onOpenSpin={openSpinMatch}
+                  onOpenMessages={() => setShowMessages(true)}
+                  onOpenQuiz={openQuizExperience}
                 />
                 <WorkspaceErrorBoundary>
                   <AppWorkspaceShell
