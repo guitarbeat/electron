@@ -31,7 +31,7 @@ const installWindowMocks = (mediaQueries: Record<string, boolean> = {}) => {
     addListener: () => undefined,
     removeListener: () => undefined,
     dispatchEvent: () => false,
-  })) as typeof window.matchMedia;
+  })) as unknown as typeof window.matchMedia;
 
   const originalWindow = globalThis.window;
   Object.defineProperty(globalThis, "window", {
