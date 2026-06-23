@@ -190,13 +190,17 @@ export const undoMatchmakerSwipe = (
     if (swipeOrder.length > 0) {
       return swipeOrder[swipeOrder.length - 1];
     }
-    // Optimization: Convert swiped IDs to a Set outside the loop to change
-    // the time complexity from O(N * M) (where N is movie pool size and M is swiped count)
-    // to O(N + M) and avoid O(N^2) array regeneration and search overhead.
+    // Optimization: Convert swiped IDs to a Set outside the loop and iterate
+    // backwards to change the time complexity from O(N * M) (where N is movie pool size
+    // and M is swiped count) to O(N + M) and avoid O(N) array allocation overhead.
     const swipedIdsSet = new Set(getUserSwipedIds(game, user));
-    return [...game.moviePool]
-      .reverse()
-      .find((movieId) => swipedIdsSet.has(movieId));
+    for (let i = game.moviePool.length - 1; i >= 0; i--) {
+      const movieId = game.moviePool[i];
+      if (swipedIdsSet.has(movieId)) {
+        return movieId;
+      }
+    }
+    return undefined;
   })();
 
   if (!lastSwipedId) {
