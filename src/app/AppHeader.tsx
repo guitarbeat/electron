@@ -21,6 +21,8 @@ interface AppHeaderProps {
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
   onOpenSpin?: () => void;
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
 }
 
 const AppHeader: FC<AppHeaderProps> = ({
@@ -31,6 +33,8 @@ const AppHeader: FC<AppHeaderProps> = ({
   onApplyUpdate,
   onRetrySync,
   onOpenSpin,
+  onOpenMessages,
+  onOpenQuiz,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -58,6 +62,8 @@ const AppHeader: FC<AppHeaderProps> = ({
           onInstallApp={onInstallApp}
           onApplyUpdate={onApplyUpdate}
           onRetrySync={onRetrySync}
+          onOpenMessages={onOpenMessages}
+          onOpenQuiz={onOpenQuiz}
         />
       </div>
 

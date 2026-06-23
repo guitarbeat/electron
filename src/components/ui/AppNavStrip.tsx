@@ -23,6 +23,8 @@ interface Props {
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
 }
 
 const pluralize = (n: number, s: string, p = `${s}s`) =>
@@ -36,6 +38,8 @@ const AppNavStrip: FC<Props> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
+  onOpenMessages,
+  onOpenQuiz,
 }) => {
   const navRef = useRef<HTMLElement>(null);
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
@@ -44,7 +48,7 @@ const AppNavStrip: FC<Props> = ({
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
-    const btns = Array.from(nav.querySelectorAll<HTMLElement>(".ans__btn"));
+    const btns = Array.from(nav.querySelectorAll<HTMLElement>(".magic-toggle__btn"));
     const cleanups = btns.map((el) => {
       const onMove = (e: MouseEvent) => {
         const r = el.getBoundingClientRect();
@@ -152,17 +156,23 @@ const AppNavStrip: FC<Props> = ({
 
       <span className="ans__sep" aria-hidden="true" />
 
-      <MagicToggle<MainTab | "spin">
+      <MagicToggle<MainTab | "spin" | "messages" | "quiz">
         options={[
           { value: "movies", label: "🎬 Movies" },
           { value: "places", label: "📍 Places" },
+          ...(onOpenMessages ? [{ value: "messages" as const, label: "💬 Messages" }] : []),
+          ...(onOpenQuiz ? [{ value: "quiz" as const, label: "📝 Quiz" }] : []),
           ...(onOpenSpin ? [{ value: "spin" as const, label: "🎡 Spin" }] : []),
         ]}
         activeValue={activeTab}
         onChange={(val) => {
           if (val === "spin" && onOpenSpin) {
             onOpenSpin();
-          } else if (val !== "spin") {
+          } else if (val === "messages" && onOpenMessages) {
+            onOpenMessages();
+          } else if (val === "quiz" && onOpenQuiz) {
+            onOpenQuiz();
+          } else if (val !== "spin" && val !== "messages" && val !== "quiz") {
             onTabChange(val);
           }
         }}
