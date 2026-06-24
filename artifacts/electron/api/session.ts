@@ -19,7 +19,7 @@ async function handler(req: Request): Promise<Response> {
       pinProtectedUsers = pinCoverage.pinProtectedUsers;
       usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      console.warn('Failed to read PIN coverage for session state.', error);
+      // gracefully handled by falling back to default empty arrays
     }
 
     return jsonResponse({
