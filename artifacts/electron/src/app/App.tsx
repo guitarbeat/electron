@@ -73,6 +73,9 @@ const RadialMenu = React.lazy<
 const FishTankSection = React.lazy(
   () => import("@/components/effects/FishTankSection"),
 );
+const DotField = React.lazy(() =>
+  import("@/components/effects/DotField").catch(() => ({ default: () => null })),
+);
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
 const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));
 const modalBodyStyle = {
@@ -305,6 +308,28 @@ const App: React.FC = () => {
       <div
         className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
       >
+        {!prefersReducedMotion ? (
+          <React.Suspense fallback={null}>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 0,
+                pointerEvents: "none",
+              }}
+            >
+              <DotField
+                dotRadius={1.5}
+                dotSpacing={14}
+                bulgeStrength={67}
+                glowRadius={160}
+                sparkle={false}
+                waveAmplitude={0}
+              />
+            </div>
+          </React.Suspense>
+        ) : null}
+
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
