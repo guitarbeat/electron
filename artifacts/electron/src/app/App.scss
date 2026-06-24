@@ -1,0 +1,18 @@
+@use './styles/shell-layout';
+@use './styles/human-textures';
+@use './styles/workspace-surface';
+@use './styles/globals';
+@use './styles/motion';
+@use './styles/shell-loading';
+@use './styles/collection-layout';
+@use './styles/ui-primitives';
+@use './styles/watchlist';
+@use './styles/workspace-card-actions';
+@use './styles/theme-shell';
+@use '../theme/glass-effects' as *;
+@use '../theme/color-utils' as *;
+
+/*
+ * App.scss — entry point for global styles.
+ * Feature skins: src/app/styles/_*.scss
+ */

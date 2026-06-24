@@ -1,0 +1,268 @@
+/* AppNavStrip — unified brand + nav tabs + PWA status chip */
+
+.ans-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.ans-wrap--has-chip {
+  gap: 0.4rem;
+}
+
+.ans {
+  /* ── token scale (inherits active theme from applyTheme) ── */
+  --ans-accent: var(--color-accent);
+  --ans-fg: var(--color-text-secondary);
+  --ans-fg-active: var(--color-text-primary);
+  --ans-bg: color-mix(in srgb, var(--ans-accent) 9%, rgba(255, 255, 255, 0.04));
+  --ans-bg-active: color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 255, 255, 0.08));
+  --ans-border: color-mix(in srgb, var(--ans-accent) 22%, var(--color-border-subtle));
+  --ans-sep: color-mix(in srgb, var(--ans-accent) 15%, var(--color-border-subtle));
+  --ans-h:           2.75rem;
+  --ans-r:           999px;
+  --ans-pad:         0.28rem;
+  --ans-font:        var(--font-interface, var(--font-body, sans-serif));
+  --ans-font-size:   0.72rem;
+
+  display: inline-flex;
+  align-items: center;
+  height: var(--ans-h);
+  padding: var(--ans-pad);
+  gap: 0;
+  border: 1px solid var(--ans-border);
+  border-radius: var(--ans-r);
+  background: var(--ans-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+/* Brand wordmark */
+.ans__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.75rem;
+  font-family: Papyrus, 'Marker Felt', cursive;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  color: transparent;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.ans__brand-glyph {
+  font-size: 0.68em;
+  opacity: 0.65;
+  transition: opacity 0.3s ease;
+}
+
+.ans:hover .ans__brand-glyph { opacity: 1; }
+
+.ans__tabs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ans__tabs .magic-toggle {
+  min-width: 0;
+}
+
+/* Separators */
+.ans__sep {
+  display: block;
+  width: 1px;
+  height: 1rem;
+  background: var(--ans-sep);
+  flex-shrink: 0;
+  margin: 0 0.06rem;
+}
+
+.ans__sep--wide { margin: 0 0.3rem; }
+
+
+.ans__chip--inline {
+  max-width: min(42vw, 16rem);
+  margin-left: 0.1rem;
+}
+
+.ans__chip--inline .ans__chip-copy span {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .ans__chip--inline .ans__chip-copy span {
+    display: inline;
+  }
+}
+
+/* Status chip — inline PWA/sync indicator */
+.ans__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  max-width: min(48vw, 18rem);
+  min-height: calc(var(--ans-h) - var(--ans-pad) * 2);
+  padding: 0.18rem 0.24rem 0.18rem 0.62rem;
+  border-radius: calc(var(--ans-r) - var(--ans-pad));
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-surface-2) 42%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 65%, transparent);
+}
+
+.ans__chip--offline {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-error) 42%, transparent);
+}
+.ans__chip--warning,
+.ans__chip--update {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-warning) 42%, transparent);
+}
+.ans__chip--syncing,
+.ans__chip--install {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-success) 36%, transparent);
+}
+
+.ans__chip-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.05rem;
+  line-height: 1.05;
+}
+
+.ans__chip-copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--ans-font);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ans__chip-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--ans-font);
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.ans__chip-action {
+  flex: 0 0 auto;
+  min-height: 1.62rem;
+  padding: 0 0.58rem;
+  border: 0;
+  border-radius: var(--ans-r);
+  background: color-mix(in srgb, var(--color-surface-3) 55%, transparent);
+  color: var(--color-text-primary);
+  font-family: var(--ans-font);
+  font-size: 0.64rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ans__chip-dismiss {
+  display: inline-grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ans-r);
+  background: color-mix(in srgb, var(--color-surface-3) 48%, transparent);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .ans {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .ans__brand {
+    padding: 0 0.6rem;
+    font-size: 0.88rem;
+  }
+
+  .ans__chip {
+    max-width: min(47vw, 13rem);
+    padding-left: 0.58rem;
+  }
+  .ans__chip-copy span { display: none; }
+}
+
+@media (max-width: 640px) {
+  .ans {
+    --ans-h: 2.65rem;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    border-radius: 0.85rem;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--color-surface-1) 88%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ans::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ans__chip--mobile-row {
+    display: flex;
+    align-items: center;
+    gap: 0.42rem;
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.35rem 0.5rem 0.35rem 0.65rem;
+    border-radius: 0.65rem;
+    max-width: none;
+  }
+
+  .ans__chip--mobile-row .ans__chip-copy span {
+    display: inline;
+    font-size: 0.6875rem;
+  }
+
+  .ans__brand {
+    font-size: 0;
+    gap: 0;
+    padding: 0 0.35rem;
+  }
+
+  .ans__brand-glyph {
+    display: inline !important;
+    font-size: 1rem;
+    opacity: 1;
+  }
+
+  .ans__sep:first-of-type {
+    margin-inline: 0.15rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ans__brand { padding: 0 0.25rem; }
+}
+
+@media (max-width: 440px) {
+  .ans__sep:first-of-type { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ans__brand-glyph { transition: none; }
+}

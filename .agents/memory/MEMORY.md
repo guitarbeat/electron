@@ -1,0 +1,2 @@
+- [Electron artifact API routing](electron-api-routing.md) — electron app handles its own /api/* via Vite SSR; api-server artifact must not claim /api path
+- [Electron React deduplication](electron-react-dedup.md) — must use resolve.dedupe + alias to prevent multiple React instances with lazy-loaded chunks

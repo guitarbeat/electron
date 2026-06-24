@@ -1,0 +1,102 @@
+/* ============================================================================
+   Suggestion Card — poster-forward media cards
+   ============================================================================ */
+.suggestion-item-card.movie-item-card {
+  background: var(--color-surface-1, rgba(14, 22, 58, 0.82));
+  border-radius: var(--chrome-radius-sm, 0.9rem);
+  border: 1px solid var(--color-border, rgba(148, 163, 200, 0.3));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3));
+  overflow: hidden;
+  position: relative;
+}
+
+.suggestion-item-card__suggester-chip {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 3;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-overlay) 72%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+  pointer-events: none;
+  max-width: calc(100% - 1rem);
+}
+
+.suggestion-item-card__suggester-chip-eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
+  line-height: 1;
+}
+
+.suggestion-item-card__suggester-chip-name {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--color-background) 70%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-item-card__reason-overlay {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-style: italic;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--color-text-primary) 78%, transparent);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--color-background) 85%, transparent);
+}
+
+/* Compact accept/reject buttons inside the action rail */
+.suggestion-item-card .movie-item-action-rail {
+  padding: 0.45rem 0.55rem;
+}
+
+.suggestion-item-card .movie-actions__row--primary {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.suggestion-item-card .suggestion-item-card__button {
+  flex: 1;
+  width: auto;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.suggestion-item-card .suggestion-item-card__button.is-reject {
+  flex: 0 0 36px;
+}
+
+.suggestion-item-card .suggestion-item-card__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

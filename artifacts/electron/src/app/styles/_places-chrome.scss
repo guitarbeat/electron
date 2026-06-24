@@ -1,0 +1,102 @@
+/* ── Places workspace chrome ──────────────────────────────────────────────── */
+
+.places-top-controls__error,
+.workspace-search__error {
+  padding: 0.5rem 0.75rem;
+  background-color: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-error, #ef4444) 25%, transparent);
+  border-radius: var(--chrome-radius-md, 8px);
+  color: var(--color-error, #ef4444);
+  font-size: var(--type-caption-size);
+  line-height: 1.45;
+}
+
+/* ── Places layout ────────────────────────────────────────────────────────── */
+
+.places-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* Map loading placeholder */
+.places-map-placeholder {
+  height: var(--places-map-height, 380px);
+  border-radius: var(--chrome-radius-xl, 1rem);
+  background: rgba(0, 0, 0, 0.25);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.places-suggestions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.places-suggestions-scroll {
+  display: flex;
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+/* Empty state */
+.places-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.places-empty-state__title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+.places-empty-state__hint {
+  font-size: 0.82rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+}
+
+.places-map-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.places-map-card {
+  border-radius: var(--chrome-radius);
+  background:
+    linear-gradient(180deg, rgba(239, 250, 255, 0.1) 0%, transparent 24%),
+    radial-gradient(circle at 82% 12%, rgba(255, 219, 124, 0.18) 0%, transparent 28%),
+    radial-gradient(circle at 12% 84%, color-mix(in srgb, var(--color-secondary) 22%, transparent) 0%, transparent 34%),
+    radial-gradient(circle at 86% 84%, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, transparent 32%),
+    var(--chrome-surface);
+  border-color: color-mix(in srgb, var(--color-secondary) 42%, var(--chrome-border-color) 58%);
+}
+
+/* Responsive: tighter grid on very small screens */
+@media (max-width: 480px) {
+  .places-map-shell {
+    gap: 0.85rem;
+  }
+
+  .places-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 0.7rem;
+  }
+
+  .place-item-card {
+    max-width: none;
+  }
+}
