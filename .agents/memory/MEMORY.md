@@ -1,2 +1,4 @@
 - [Electron artifact API routing](electron-api-routing.md) — electron app handles its own /api/* via Vite SSR; api-server artifact must not claim /api path
 - [Electron React deduplication](electron-react-dedup.md) — must use resolve.dedupe + alias to prevent multiple React instances with lazy-loaded chunks
+- [Expo CORS fix](expo-cors-fix.md) — Expo web preview on *.expo.janeway.replit.dev blocks cross-origin calls to *.janeway.replit.dev; fix by adding cors: true to Vite server config.
+- [Electron-Mobile Mode B pattern](electron-mobile-mode-b.md) — Web app has hand-written fetch layer; mobile uses custom lib/api.ts calling EXPO_PUBLIC_DOMAIN, not @workspace/api-client-react.

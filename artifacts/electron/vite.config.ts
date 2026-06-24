@@ -211,6 +211,7 @@ export default defineConfig({
     strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
+    cors: true,
     watch: {
       ignored: [
         "**/.local/share/pnpm/store/**",
