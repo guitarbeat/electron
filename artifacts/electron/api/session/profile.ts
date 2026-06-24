@@ -20,6 +20,7 @@ import {
 } from '../_lib/pinAttemptStore.ts';
 import { withWebHandler } from '../_lib/webHandler.ts';
 import { isUser } from '../../src/utils/shared.ts';
+import { logger } from '../_lib/logger.ts';
 
 const SESSION_SECRET_CONFIG_ERROR = [
   'Profile login is unavailable because SESSION_SIGNING_SECRET is not configured.',
@@ -66,7 +67,7 @@ async function handler(req: Request): Promise<Response> {
         pinProtectedUsers = pinCoverage.pinProtectedUsers;
         usersMissingPins = pinCoverage.usersMissingPins;
       } catch (error) {
-        console.warn('Failed to read PIN coverage during logout.', error);
+        logger.error('Failed to read PIN coverage during logout.', error);
       }
 
       return jsonResponse(
@@ -117,7 +118,7 @@ async function handler(req: Request): Promise<Response> {
       pinProtectedUsers = pinCoverage.pinProtectedUsers;
       usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      console.warn('Failed to read PIN coverage during profile update.', error);
+      logger.error('Failed to read PIN coverage during profile update.', error);
     }
     const requiresPin = pinProtectedUsers.includes(user);
 
@@ -217,7 +218,7 @@ async function handler(req: Request): Promise<Response> {
       return serverErrorResponse(SESSION_SECRET_CONFIG_ERROR);
     }
 
-    console.error(`Failed to update profile session during ${req.method} ${req.url}:`, error);
+    logger.error(`Failed to update profile session during ${req.method} ${req.url}:`, error);
     return serverErrorResponse();
   }
 }
