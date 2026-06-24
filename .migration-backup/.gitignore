@@ -10,6 +10,7 @@ out-tsc
 
 # dependencies
 node_modules
+bun.lock
 
 # IDEs and editors
 /.idea
@@ -44,6 +45,29 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
+# Agent backups and ephemeral exports
+.migration-backup/
+.paintress/
+.agents/scratch/
+.agents/sessions/
+stats.html
+.canvas/
+.jules/
+.junie/
+
+# Build and framework caches
+.next/
+.vercel/
+.turbo/
+.vite/
+dist-ssr
+
 # Replit
 .cache/
 .local/
+
+# Secrets and local env (never commit)
+.env*
+env.txt
+.neon
+.vercel

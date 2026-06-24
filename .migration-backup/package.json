@@ -1,0 +1,82 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "dev": "vite",
+    "build": "vite build",
+    "build:workspace": "pnpm run check-types && pnpm build",
+    "preview": "vite preview",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node scripts/run-node-tests.mjs",
+    "bootstrap:state": "node scripts/bootstrap-shared-state.mjs",
+    "scss:prune:check": "node scripts/prune-dead-scss.mjs --file src/app/styles",
+    "verify": "pnpm check-types && pnpm lint && pnpm test && pnpm build",
+    "analyze": "ANALYZE=true vite build",
+    "check-bundle-size": "node scripts/check-bundle-size.mjs"
+  },
+  "private": true,
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@rollup/rollup-darwin-arm64": "^4.60.3",
+    "@types/dom-chromium-installation-events": "^101.0.4",
+    "@types/dompurify": "^3.2.0",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/web-app-manifest": "^1.0.9",
+    "@vitejs/plugin-react": "catalog:",
+    "eslint": "^9.39.4",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "prettier": "^3.8.3",
+    "rollup-plugin-visualizer": "^7.0.1",
+    "sass": "^1.101.0",
+    "sass-embedded": "^1.100.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.59.1",
+    "vercel": "^54.1.0",
+    "vite": "catalog:",
+    "xtend": "4.0.2"
+  },
+  "dependencies": {
+    "@khmyznikov/pwa-install": "^0.6.3",
+    "@neondatabase/serverless": "^1.1.0",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/pg": "^8.20.0",
+    "@types/three": "^0.184.1",
+    "@vercel/analytics": "^2.0.1",
+    "chroma-js": "^3.2.0",
+    "dompurify": "^3.4.10",
+    "gsap": "^3.15.0",
+    "isomorphic-dompurify": "^3.16.0",
+    "lit": "^3.3.3",
+    "lucide-react": "catalog:",
+    "maplibre-gl": "^5.24.0",
+    "motion": "^12.40.0",
+    "ogl": "^1.0.11",
+    "pg": "^8.20.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "three": "^0.184.0",
+    "ts-pattern": "^5.9.0",
+    "zod": "catalog:"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.60.3"
+  },
+  "pnpm": {
+    "autoInstallPeers": false,
+    "strictPeerDependencies": false
+  }
+}
