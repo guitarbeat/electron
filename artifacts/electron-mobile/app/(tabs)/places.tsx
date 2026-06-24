@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,10 +13,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PlaceCard } from "@/components/PlaceCard";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
+import type { Place, StateEnvelope } from "@/lib/types";
 
 export default function PlacesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["places"],
@@ -27,6 +29,40 @@ export default function PlacesScreen() {
   const places = data?.data ?? [];
   const visitedCount = places.filter((p) => !!p.visitedAt).length;
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+
+  const { mutate: toggleVisited } = useMutation({
+    mutationFn: (place: Place) => {
+      const isVisited = !!place.visitedAt;
+      const op = isVisited ? "mark_unvisited" : "mark_visited";
+      return api.state.mutate<Place[]>("places", op, { placeId: place.id }, data?.version ?? "0");
+    },
+    onMutate: async (place: Place) => {
+      await queryClient.cancelQueries({ queryKey: ["places"] });
+      const previous = queryClient.getQueryData<StateEnvelope<Place[]>>(["places"]);
+
+      queryClient.setQueryData<StateEnvelope<Place[]>>(["places"], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map((p) =>
+            p.id === place.id
+              ? { ...p, visitedAt: place.visitedAt ? undefined : new Date().toISOString() }
+              : p
+          ),
+        };
+      });
+
+      return { previous };
+    },
+    onError: (_err, _place, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["places"], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["places"] });
+    },
+  });
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -77,7 +113,9 @@ export default function PlacesScreen() {
           data={places}
           keyExtractor={(item) => item.id}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
-          renderItem={({ item }) => <PlaceCard place={item} />}
+          renderItem={({ item }) => (
+            <PlaceCard place={item} onToggleVisited={toggleVisited} />
+          )}
           refreshing={isRefetching}
           onRefresh={refetch}
           showsVerticalScrollIndicator={false}
