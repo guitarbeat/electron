@@ -80,6 +80,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
       }, 50);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isComposerOpen, noteInputRef]);
 
   return (

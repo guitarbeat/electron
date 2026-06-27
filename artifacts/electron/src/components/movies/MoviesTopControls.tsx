@@ -471,7 +471,7 @@ const MoviesTopControls = React.forwardRef<
                       };
                     })}
                     activeValue={autocompleteTypeFilter}
-                    onChange={setAutocompleteTypeFilter}
+                    onChange={(v) => setAutocompleteTypeFilter(v as 'all' | 'movie' | 'series')}
                     ariaLabel="Filter by type"
                   />
                 </div>
