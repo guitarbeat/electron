@@ -1,0 +1,154 @@
+/* ══════════════════════════════════════════════════════
+   Cute layer — animated border frame + warmth pass
+   ══════════════════════════════════════════════════════ */
+
+/* ── Animated gradient border around the whole viewport ── */
+
+@keyframes cute-border-spin {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes cute-shimmer {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 1; }
+}
+
+/* Fixed inset frame — sits above everything except modals */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 5px;
+  border-radius: 1.5rem;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
+    linear-gradient(
+      270deg,
+      #f472b6,
+      #c084fc,
+      #7dd3fc,
+      #c4b5fd,
+      #fb7185,
+      #f472b6
+    ) border-box;
+  background-size: 300% 300%;
+  animation:
+    cute-border-spin 10s ease infinite,
+    cute-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 99990;
+}
+
+/* Corner hearts — decorative */
+body::after {
+  content: '♥';
+  position: fixed;
+  top: 14px;
+  left: 18px;
+  font-size: 0.7rem;
+  color: color-mix(in srgb, var(--color-accent, #f472b6) 70%, white 30%);
+  pointer-events: none;
+  z-index: 99991;
+  animation: cute-shimmer 3s ease-in-out infinite;
+  line-height: 1;
+}
+
+/* ── Rounder cards all over ── */
+
+:root {
+  --radius-card: 1.25rem;
+  --radius-lg: 1.1rem;
+  --radius-md: 0.85rem;
+  --chrome-radius: 1.5rem;
+  --chrome-radius-lg: 2rem;
+}
+
+/* ── Warmer, softer glow on surfaces ── */
+
+.ui-card,
+.places-map-card,
+.ui-control-surface {
+  box-shadow:
+    0 8px 32px color-mix(in srgb, var(--color-accent) 18%, rgba(0,0,0,0.45)),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent) inset !important;
+}
+
+/* ── Pink-tinted scrollbars ── */
+
+* {
+  scrollbar-color: color-mix(in srgb, var(--color-accent) 28%, transparent) transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-accent) 26%, transparent);
+  border-radius: 99px;
+}
+
+/* ── Softer focus rings ── */
+
+:where(button, input, textarea, a, [role='button']):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 80%, white 20%);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+/* ── Section eyebrow labels get a heart bullet ── */
+
+.eyebrow-label::before,
+[class*="eyebrow"]::before {
+  content: '♥ ';
+  font-size: 0.65em;
+  color: var(--color-accent);
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+/* ── Movie cards — softer corners + warmer glow on hover ── */
+
+.movie-card {
+  border-radius: 1.2rem !important;
+  transition: box-shadow 0.18s ease, transform 0.18s ease !important;
+}
+
+.movie-card:hover {
+  box-shadow:
+    0 12px 36px color-mix(in srgb, var(--color-accent) 30%, rgba(0,0,0,0.5)),
+    0 0 0 1.5px color-mix(in srgb, var(--color-accent) 35%, transparent) !important;
+}
+
+/* ── Floating panel — extra softness ── */
+
+.fwp-panel {
+  border-radius: 1.5rem !important;
+}
+
+.fwp-toggle {
+  box-shadow:
+    0 8px 28px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.06) inset,
+    0 0 40px color-mix(in srgb, var(--color-accent) 30%, transparent) !important;
+}
+
+/* ── INCOMING badge ── */
+
+.incoming-label,
+[class*="incoming"] > span {
+  color: color-mix(in srgb, var(--color-accent) 90%, white 10%);
+}
+
+/* ── Heartbeat on the FAB heart when panel is closed ── */
+
+@keyframes cute-heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.15); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.1); }
+  70%       { transform: scale(1); }
+}
+
+.fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
+  animation: cute-heartbeat 2.8s ease-in-out infinite;
+  transform-origin: center;
+}
