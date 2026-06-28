@@ -7,6 +7,7 @@
   --font-y2k-display: 'Orbitron', 'Segoe UI', sans-serif;
   --font-y2k-mono:    'VT323', 'Courier New', monospace;
   --font-y2k-bubbly:  'Nunito', system-ui, sans-serif;
+  --font-electra:      'Papyrus', fantasy; /* 🏺 for Electra */
 
   /* Neon palette */
   --y2k-pink:   #ff2d78;
@@ -267,6 +268,12 @@ body::after {
   font-family: var(--font-y2k-display) !important;
   font-size: 0.55rem !important;
   letter-spacing: 0.1em !important;
+}
+
+.fwp-action__label {
+  font-family: var(--font-electra) !important; /* 🏺 */
+  font-size: 0.6rem !important;
+  letter-spacing: 0.04em !important;
 }
 
 /* ── MagicToggle (Grid/Scroll, Movies/Places) → neon active state ── */
