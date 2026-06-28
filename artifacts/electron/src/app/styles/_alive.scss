@@ -197,15 +197,10 @@ body {
 
 /* ── Holographic border breathes ─────────────────────────────────── */
 
-@keyframes border-breathe {
-  0%, 100% { opacity: 0.75; }
-  50%       { opacity: 1;    }
-}
-
 body::before {
   animation:
-    holo-spin   6s ease infinite,
-    border-breathe 3s ease-in-out infinite !important;
+    holo-spin  6s ease infinite,
+    holo-pulse 3s ease-in-out infinite !important;
 }
 
 /* ── Reduced motion — turn off everything ────────────────────────── */

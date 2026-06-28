@@ -286,7 +286,7 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider themeName={activeTab}>
-      {!prefersReducedMotion ? (
+      {!prefersReducedMotion && !isMobile ? (
         <React.Suspense fallback={null}>
           <AliveFX />
         </React.Suspense>
@@ -299,7 +299,7 @@ const App: React.FC = () => {
       <div
         className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
       >
-        {!prefersReducedMotion ? (
+        {!prefersReducedMotion && !isMobile ? (
           <React.Suspense fallback={null}>
             <div
               style={{

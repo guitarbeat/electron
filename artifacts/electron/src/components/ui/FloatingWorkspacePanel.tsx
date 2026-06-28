@@ -170,7 +170,7 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const dragPointerIdRef = useRef<number | null>(null);
-  const dragThreshold = 8;
+const DRAG_THRESHOLD = 8;
 
   const panelDir = getPanelDirection(pos);
   const hasViewModes = (viewModes?.length ?? 0) > 1 && Boolean(activeViewMode) && Boolean(onViewModeChange);
@@ -206,7 +206,7 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
     if (dragPointerIdRef.current !== e.pointerId) return;
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
-    if (Math.hypot(dx, dy) > dragThreshold && !isDraggingRef.current) {
+    if (Math.hypot(dx, dy) > DRAG_THRESHOLD && !isDraggingRef.current) {
       isDraggingRef.current = true;
       setIsDragging(true);
       setIsOpen(false);
@@ -218,7 +218,7 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
     const newY = e.clientY - FAB_SIZE / 2;
     fabRef.current.style.left = `${newX}px`;
     fabRef.current.style.top = `${newY}px`;
-  }, [dragThreshold]);
+  }, []);
 
   const onPointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     if (dragPointerIdRef.current !== null && dragPointerIdRef.current !== e.pointerId) return;
@@ -274,9 +274,7 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
   ] as const;
 
   return (
-    <>
-      {/* ── FAB anchor ── */}
-      <div
+    <div
         ref={fabRef}
         className={`fwp-fab fwp-fab--dir-${panelDir} ${isOpen ? "fwp-fab--open" : ""}`}
         style={{ left: pos.x, top: pos.y }}
@@ -312,7 +310,7 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
             <div className="fwp-panel__nav app-header__left">
               <AppNavStrip
                 activeTab={activeTab}
-                onTabChange={(tab) => { onTabChange(tab); }}
+                onTabChange={onTabChange}
                 status={pwaStatus}
                 onInstallApp={onInstallApp}
                 onApplyUpdate={onApplyUpdate}
@@ -359,7 +357,6 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
           </div>
         </div>
       </div>
-    </>
   );
 };
 

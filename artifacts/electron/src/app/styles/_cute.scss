@@ -253,12 +253,6 @@ body::after {
   height: 2.5px !important;
 }
 
-.fwp-toggle {
-  box-shadow:
-    0 8px 28px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(255,255,255,0.08) inset,
-    0 0 50px color-mix(in srgb, var(--y2k-pink) 35%, transparent) !important;
-}
 
 /* Heartbeat on FAB heart icon when closed */
 .fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
