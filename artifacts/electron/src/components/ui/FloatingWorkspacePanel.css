@@ -18,17 +18,19 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  /* HUD node: two-tone glass with a hot inner highlight */
+  border: 1.5px solid color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 55%, transparent);
   background:
-    radial-gradient(circle at 38% 32%, color-mix(in srgb, var(--color-accent) 22%, transparent) 0%, transparent 64%),
-    color-mix(in srgb, var(--color-surface-1) 88%, transparent);
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 65% 72%, color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 20%, transparent) 0%, transparent 60%),
+    color-mix(in srgb, var(--color-surface-1) 85%, #0a0514);
   box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
-    0 0 32px color-mix(in srgb, var(--color-accent) 18%, transparent);
-  backdrop-filter: blur(20px) saturate(1.8);
-  -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  color: var(--color-accent);
+    0 6px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 0 3px color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 12%, transparent);
+  backdrop-filter: blur(20px) saturate(2);
+  -webkit-backdrop-filter: blur(20px) saturate(2);
+  color: var(--y2k-pink, var(--color-accent));
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
@@ -39,30 +41,27 @@
   position: relative;
   z-index: 2;
   transition:
-    border-color 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease,
-    transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fwp-toggle:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 70%, transparent);
+  border-color: color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 80%, transparent);
   box-shadow:
-    0 10px 36px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 0 48px color-mix(in srgb, var(--color-accent) 28%, transparent);
-  transform: scale(1.06);
+    0 8px 32px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 0 3px color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 22%, transparent);
+  transform: scale(1.07);
 }
 
 .fwp-toggle--active {
-  background:
-    radial-gradient(circle at 38% 32%, color-mix(in srgb, var(--color-accent) 32%, transparent) 0%, transparent 64%),
-    color-mix(in srgb, var(--color-surface-1) 92%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent) 65%, transparent);
+  border-color: color-mix(in srgb, var(--y2k-cyan, var(--color-accent)) 70%, transparent);
+  color: var(--y2k-cyan, var(--color-accent));
   box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 0 56px color-mix(in srgb, var(--color-accent) 32%, transparent);
+    0 6px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 0 3px color-mix(in srgb, var(--y2k-cyan, var(--color-accent)) 20%, transparent);
 }
 
 .fwp-toggle--dragging {
@@ -89,45 +88,46 @@
 
 .fwp-panel {
   position: absolute;
-  width: min(92vw, 380px);
+  width: min(92vw, 340px);
   pointer-events: none;
   opacity: 0;
-  transform: scale(0.94);
+  transform: scale(0.92) translateY(4px);
   transform-origin: var(--fwp-origin, bottom left);
   transition:
-    opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--color-surface-1) 90%, transparent) 0%,
-    color-mix(in srgb, var(--color-surface-0) 85%, transparent) 100%
+    155deg,
+    color-mix(in srgb, var(--color-surface-1) 94%, #0a0514) 0%,
+    color-mix(in srgb, var(--color-surface-0) 90%, #0a0514) 100%
   );
-  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
-  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 28%, transparent);
+  border-radius: 1.5rem;
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 0 80px color-mix(in srgb, var(--color-accent) 10%, transparent);
-  backdrop-filter: blur(32px) saturate(2);
-  -webkit-backdrop-filter: blur(32px) saturate(2);
+    0 24px 64px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 60px color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 8%, transparent);
+  backdrop-filter: blur(40px) saturate(2.2);
+  -webkit-backdrop-filter: blur(40px) saturate(2.2);
   overflow: hidden;
 }
 
-/* Top accent line */
+/* Top accent line — holo */
 .fwp-panel::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-accent) 35%, var(--color-secondary, var(--color-accent)) 65%, transparent);
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, #ff2d78 20%, #bf5af2 40%, #00d4ff 60%, #39ff14 80%, transparent 100%);
+  opacity: 0.7;
   pointer-events: none;
   z-index: 1;
 }
 
 .fwp-panel--open {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1) translateY(0);
   pointer-events: auto;
 }
 

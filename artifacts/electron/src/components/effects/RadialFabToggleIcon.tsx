@@ -5,9 +5,6 @@ interface RadialFabToggleIconProps {
   size?: number;
 }
 
-/**
- * FAB toggle glyph: brand gem (nav ◈) at rest, morphs to close when the fan opens.
- */
 const RadialFabToggleIcon: React.FC<RadialFabToggleIconProps> = ({
   isActive,
   size = 22,
@@ -16,6 +13,7 @@ const RadialFabToggleIcon: React.FC<RadialFabToggleIconProps> = ({
     className={`toggle__icon${isActive ? " toggle__icon--open" : ""}`}
     aria-hidden="true"
   >
+    {/* Sparkle — shown when closed */}
     <svg
       className="toggle__icon-layer toggle__icon-gem"
       width={size}
@@ -24,26 +22,37 @@ const RadialFabToggleIcon: React.FC<RadialFabToggleIconProps> = ({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
+      {/* Four-point star */}
       <path
-        d="M12 20.5C12 20.5 3.5 14.5 3.5 8.5C3.5 6.015 5.515 4 8 4C9.573 4 10.965 4.8 11.75 6.015C11.875 6.208 12.125 6.208 12.25 6.015C13.035 4.8 14.427 4 16 4C18.485 4 20.5 6.015 20.5 8.5C20.5 14.5 12 20.5 12 20.5Z"
+        d="M12 2.5 C12 2.5 13 9 13 12 C13 15 12 21.5 12 21.5 C12 21.5 11 15 11 12 C11 9 12 2.5 12 2.5 Z"
         fill="currentColor"
-        fillOpacity="0.92"
+        fillOpacity="0.9"
       />
       <path
-        d="M12 20.5C12 20.5 3.5 14.5 3.5 8.5C3.5 6.015 5.515 4 8 4C9.573 4 10.965 4.8 11.75 6.015C11.875 6.208 12.125 6.208 12.25 6.015C13.035 4.8 14.427 4 16 4C18.485 4 20.5 6.015 20.5 8.5C20.5 14.5 12 20.5 12 20.5Z"
+        d="M2.5 12 C2.5 12 9 11 12 11 C15 11 21.5 12 21.5 12 C21.5 12 15 13 12 13 C9 13 2.5 12 2.5 12 Z"
+        fill="currentColor"
+        fillOpacity="0.9"
+      />
+      {/* Diagonal rays — lighter */}
+      <path
+        d="M5.5 5.5 C5.5 5.5 10 10 12 12 C14 14 18.5 18.5 18.5 18.5"
         stroke="currentColor"
-        strokeOpacity="0.3"
-        strokeWidth="0.75"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7.5 8.5C7.5 7.12 8.62 6 10 6"
-        stroke="white"
-        strokeOpacity="0.28"
-        strokeWidth="1.1"
+        strokeOpacity="0.35"
+        strokeWidth="1"
         strokeLinecap="round"
       />
+      <path
+        d="M18.5 5.5 C18.5 5.5 14 10 12 12 C10 14 5.5 18.5 5.5 18.5"
+        stroke="currentColor"
+        strokeOpacity="0.35"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+      {/* Center dot */}
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" fillOpacity="0.6" />
     </svg>
+
+    {/* Close X — shown when open */}
     <svg
       className="toggle__icon-layer toggle__icon-close"
       width={size}

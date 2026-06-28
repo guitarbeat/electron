@@ -42,11 +42,11 @@
 }
 
 @keyframes y2k-heartbeat {
-  0%, 100% { transform: scale(1);    }
-  14%       { transform: scale(1.18); }
-  28%       { transform: scale(1);    }
-  42%       { transform: scale(1.12); }
-  70%       { transform: scale(1);    }
+  0%   { transform: rotate(0deg)   scale(1);    }
+  25%  { transform: rotate(90deg)  scale(1.1);  }
+  50%  { transform: rotate(180deg) scale(1);    }
+  75%  { transform: rotate(270deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1);    }
 }
 
 @keyframes glitter {
@@ -176,28 +176,6 @@ body::before {
   opacity: 1;
 }
 
-/* ── FAB panel — Y2K chrome ── */
-
-.fwp-panel {
-  border-radius: 1.6rem;
-  border: 1.5px solid transparent;
-  background-image:
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--color-surface-1) 90%, transparent) 0%,
-      color-mix(in srgb, var(--color-surface-0) 85%, transparent) 100%
-    ),
-    linear-gradient(135deg, #ff2d78, #bf5af2, #00d4ff, #ff2d78);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-}
-
-.fwp-panel::before {
-  background: var(--holo-gradient) !important;
-  background-size: 200% 100% !important;
-  animation: holo-spin 4s linear infinite !important;
-  height: 2.5px !important;
-}
 
 /* Heartbeat on the heart icon when panel is closed */
 .fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
