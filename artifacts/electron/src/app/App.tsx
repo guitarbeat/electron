@@ -59,17 +59,6 @@ const RetroEffects = React.lazy<
     () => ({ default: () => null }),
   ),
 );
-const RadialMenu = React.lazy<
-  React.ComponentType<{
-    onOpenMessages?: () => void;
-    onOpenQuiz?: () => void;
-    onOpenSpin?: () => void;
-  }>
->(() =>
-  import("@/components/effects/RadialMenu").catch(
-    () => ({ default: () => null }),
-  ),
-);
 const FishTankSection = React.lazy(
   () => import("@/components/effects/FishTankSection"),
 );
@@ -334,14 +323,6 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <React.Suspense fallback={null}>
-          <RadialMenu
-            onOpenMessages={openMessages}
-            onOpenQuiz={openQuizExperience}
-            onOpenSpin={openSpinMatch}
-          />
-        </React.Suspense>
-
         <div className="app-shell__canvas app-shell__canvas--main">
           <div
             className={`app-workspace-stack app-workspace-stack--${activeTab}`}
@@ -365,6 +346,9 @@ const App: React.FC = () => {
                     onInstallApp={() => void handleInstallApp()}
                     onApplyUpdate={handleApplyUpdate}
                     onRetrySync={handleRetryPendingSync}
+                    onOpenMessages={openMessages}
+                    onOpenQuiz={openQuizExperience}
+                    onOpenSpin={openSpinMatch}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>

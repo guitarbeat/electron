@@ -7,6 +7,11 @@ import { preloadCriticalAppModules } from "@/app/preloadAppModules";
 import { applyTheme } from "@/theme/applyTheme";
 import App from "./app/App";
 
+// Dev convenience: ?mock=1 in URL sets mock data mode
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("mock") === "1") {
+  window.localStorage.setItem("useMockData", "true");
+}
+
 const initialTab = readInitialMainTab();
 applyTheme(initialTab);
 document.body.dataset.theme = initialTab;

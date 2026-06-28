@@ -2,12 +2,12 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import BentoWorkspaceController, {
-  type WorkspaceChromeHeaderProps,
-} from "@/components/ui/BentoWorkspaceController";
+import FloatingWorkspacePanel, {
+  type FloatingWorkspacePanelProps,
+} from "@/components/ui/FloatingWorkspacePanel";
+import type { WorkspaceChromeHeaderProps } from "@/components/ui/BentoWorkspaceController";
 import ProfilePinPanel from "@/components/ui/ProfilePinPanel";
 import { ProfilePinProvider } from "@/app/ProfilePinContext";
-import { useViewport } from "@/app/ViewportContext";
 import {
   BentoSlotContext,
   type RegisteredBentoSlotConfig,
@@ -18,15 +18,23 @@ const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
 const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 
-const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
+type AppWorkspaceShellProps = WorkspaceChromeHeaderProps & {
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
+  onOpenSpin?: () => void;
+};
+
+const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
   onTabChange,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
+  onOpenMessages,
+  onOpenQuiz,
+  onOpenSpin,
 }) => {
-  const { isMobile } = useViewport();
   const [tabConfigs, setTabConfigs] = useState<
     Partial<Record<MainTab, RegisteredBentoSlotConfig>>
   >({});
@@ -60,28 +68,13 @@ const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
         <p className="sr-only" aria-live="polite" aria-atomic="true">
           {activeTab === "movies" ? "Movies workspace" : "Places workspace"}
         </p>
+
         <main
           id="main-content"
-          className={`workspace-stage workspace-stage--simplified${isMobile ? " workspace-stage--mobile-shell" : ""}`}
+          className="workspace-stage workspace-stage--simplified workspace-stage--fullbleed"
           tabIndex={-1}
           style={{ position: "relative" }}
         >
-          <BentoWorkspaceController
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-            pwaStatus={pwaStatus}
-            onInstallApp={onInstallApp}
-            onApplyUpdate={onApplyUpdate}
-            onRetrySync={onRetrySync}
-            ariaLabel={bento.ariaLabel}
-            viewModes={bento.viewModes}
-            activeViewMode={bento.activeViewMode}
-            onViewModeChange={bento.onViewModeChange}
-            viewModeAriaLabel={bento.viewModeAriaLabel}
-          >
-            <div ref={setSearchPortalEl} />
-          </BentoWorkspaceController>
-
           <ProfilePinPanel />
 
           <section
@@ -96,6 +89,26 @@ const AppWorkspaceShell: React.FC<WorkspaceChromeHeaderProps> = ({
             </React.Suspense>
           </section>
         </main>
+
+        {/* Floating command panel — replaces the sticky topbar */}
+        <FloatingWorkspacePanel
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          pwaStatus={pwaStatus}
+          onInstallApp={onInstallApp}
+          onApplyUpdate={onApplyUpdate}
+          onRetrySync={onRetrySync}
+          ariaLabel={bento.ariaLabel}
+          viewModes={bento.viewModes}
+          activeViewMode={bento.activeViewMode}
+          onViewModeChange={bento.onViewModeChange}
+          viewModeAriaLabel={bento.viewModeAriaLabel}
+          onOpenMessages={onOpenMessages}
+          onOpenQuiz={onOpenQuiz}
+          onOpenSpin={onOpenSpin}
+        >
+          <div ref={setSearchPortalEl} style={{ width: "100%" }} />
+        </FloatingWorkspacePanel>
       </ProfilePinProvider>
     </BentoSlotContext.Provider>
   );

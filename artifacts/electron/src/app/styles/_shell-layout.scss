@@ -129,6 +129,12 @@
   gap: clamp(0.95rem, 0.8rem + 0.55vw, 1.3rem);
 }
 
+/* Fullbleed — no sticky header, content uses full viewport */
+.workspace-stage--fullbleed {
+  padding-top: 0 !important;
+  gap: 0;
+}
+
 .workspace-stage--simplified::before {
   content: '';
   position: absolute;
