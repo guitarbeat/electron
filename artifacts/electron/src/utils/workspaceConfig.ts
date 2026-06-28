@@ -25,6 +25,14 @@ const TAB_SECTION_LABELS = {
     queue: { desktop: "To Try", mobile: "Try" },
     completed: { desktop: "Visited", mobile: "Done" },
   },
+  memories: {
+    queue: { desktop: "Memories", mobile: "All" },
+    completed: { desktop: "Pinned", mobile: "Pinned" },
+  },
+  messages: {
+    queue: { desktop: "Messages", mobile: "All" },
+    completed: { desktop: "Archived", mobile: "Done" },
+  },
 } as const;
 
 export function workspaceSectionLabel(
@@ -36,7 +44,9 @@ export function workspaceSectionLabel(
     return isMobile ? INCOMING_LABELS.mobile : INCOMING_LABELS.desktop;
   }
 
-  const labels = TAB_SECTION_LABELS[tab][section];
+  const tabLabels = (TAB_SECTION_LABELS as Record<string, typeof TAB_SECTION_LABELS[keyof typeof TAB_SECTION_LABELS]>)[tab];
+  if (!tabLabels) return section;
+  const labels = tabLabels[section];
   return isMobile ? labels.mobile : labels.desktop;
 }
 
@@ -61,6 +71,16 @@ const SECTION_IDS: Record<MainTab, WorkspaceSectionIds> = {
     incoming: "places-section-incoming",
     queue: "places-section-queue",
     completed: "places-section-visited",
+  },
+  memories: {
+    incoming: "memories-section-incoming",
+    queue: "memories-section-queue",
+    completed: "memories-section-pinned",
+  },
+  messages: {
+    incoming: "messages-section-incoming",
+    queue: "messages-section-queue",
+    completed: "messages-section-archived",
   },
 };
 
@@ -91,6 +111,17 @@ export const WORKSPACE_GLOBAL_EMPTY: Record<MainTab, WorkspaceEmptyCopy> = {
     copy: "Add a restaurant, café, park, or anywhere else you'd like to visit together.",
     actionLabel: "Add a place",
   },
+  memories: {
+    icon: "📸",
+    title: "No memories yet",
+    copy: "Your shared memories from movies will appear here.",
+  },
+  messages: {
+    icon: "💬",
+    title: "No messages yet",
+    copy: "Send a message to start the conversation.",
+    actionLabel: "Send a message",
+  },
 };
 
 export const WORKSPACE_SECTION_EMPTY: Record<
@@ -105,6 +136,14 @@ export const WORKSPACE_SECTION_EMPTY: Record<
     completed: "No visited places yet",
     queue: "Search above to add your first spot",
   },
+  memories: {
+    completed: "No pinned memories yet",
+    queue: "No memories yet",
+  },
+  messages: {
+    completed: "No archived messages",
+    queue: "No messages yet",
+  },
 };
 
 export const WORKSPACE_LOADING_COPY: Record<
@@ -113,11 +152,15 @@ export const WORKSPACE_LOADING_COPY: Record<
 > = {
   movies: { emoji: "🍿", label: "Loading your movies…" },
   places: { emoji: "🗺️", label: "Loading your places…" },
+  memories: { emoji: "📸", label: "Loading your memories…" },
+  messages: { emoji: "💬", label: "Loading your messages…" },
 };
 
 export const WORKSPACE_TAB_CONTAINER: Record<MainTab, string> = {
   movies: "workspace-container",
   places: "workspace-container places-container",
+  memories: "workspace-container memories-container",
+  messages: "workspace-container messages-container",
 };
 
 const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
@@ -130,6 +173,16 @@ const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
     eyebrow: "Dates",
     title: "Date Ideas",
     icon: "📍",
+  },
+  memories: {
+    eyebrow: "Memories",
+    title: "Memories",
+    icon: "📸",
+  },
+  messages: {
+    eyebrow: "Messages",
+    title: "Messages",
+    icon: "💬",
   },
 };
 
@@ -144,5 +197,13 @@ export const WORKSPACE_SKELETON_KEYS = {
   places: {
     mobile: ["p1", "p2", "p3", "p4"],
     desktop: ["p1", "p2", "p3", "p4", "p5", "p6"],
+  },
+  memories: {
+    mobile: ["r1", "r2", "r3"],
+    desktop: ["r1", "r2", "r3", "r4", "r5", "r6"],
+  },
+  messages: {
+    mobile: ["g1", "g2", "g3"],
+    desktop: ["g1", "g2", "g3", "g4", "g5"],
   },
 } as const;

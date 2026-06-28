@@ -23,6 +23,7 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
 import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
+import type { ThemeName } from "@/theme/themes";
 import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import LoadingScreen from "@/app/LoadingScreen";
@@ -221,13 +222,13 @@ const App: React.FC = () => {
   }, []);
 
   const openMessages = useCallback(() => {
-    setShowMessages(true);
-  }, []);
+    handleTabChange("messages");
+  }, [handleTabChange]);
 
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
-        showMessages,
+        showMessages: false,
         showQuizEditor,
         showQuizExperience,
         showSpinMatch,
@@ -278,14 +279,14 @@ const App: React.FC = () => {
 
   if (!isBootReady) {
     return (
-      <ThemeProvider themeName={activeTab}>
+      <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
         <LoadingScreen />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider themeName={activeTab}>
+    <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
       {!prefersReducedMotion && !isMobile ? (
         <React.Suspense fallback={null}>
           <AliveFX />

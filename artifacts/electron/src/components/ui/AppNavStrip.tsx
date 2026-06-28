@@ -191,6 +191,16 @@ const AppNavStrip: FC<Props> = ({
                 label: isMobile ? "📍" : "Places",
                 ariaLabel: "Places",
               },
+              {
+                value: "memories",
+                label: isMobile ? "📸" : "Memories",
+                ariaLabel: "Memories",
+              },
+              {
+                value: "messages",
+                label: isMobile ? "💬" : "Messages",
+                ariaLabel: "Messages",
+              },
             ]}
             activeValue={activeTab}
             onChange={onTabChange}
