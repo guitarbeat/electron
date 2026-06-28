@@ -25,36 +25,22 @@ const RadialFabToggleIcon: React.FC<RadialFabToggleIconProps> = ({
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M12 3.25L19.35 8.65L17.65 17.35L12 20.75L6.35 17.35L4.65 8.65L12 3.25Z"
+        d="M12 20.5C12 20.5 3.5 14.5 3.5 8.5C3.5 6.015 5.515 4 8 4C9.573 4 10.965 4.8 11.75 6.015C11.875 6.208 12.125 6.208 12.25 6.015C13.035 4.8 14.427 4 16 4C18.485 4 20.5 6.015 20.5 8.5C20.5 14.5 12 20.5 12 20.5Z"
         fill="currentColor"
-        fillOpacity="0.94"
+        fillOpacity="0.92"
       />
       <path
-        d="M12 8.15a3.85 3.85 0 1 0 0 7.7a3.85 3.85 0 0 0 0-7.7Z"
-        fill="currentColor"
-        fillOpacity="0.26"
-      />
-      <path
-        d="M6.35 17.35L12 10.65l5.65 6.7"
+        d="M12 20.5C12 20.5 3.5 14.5 3.5 8.5C3.5 6.015 5.515 4 8 4C9.573 4 10.965 4.8 11.75 6.015C11.875 6.208 12.125 6.208 12.25 6.015C13.035 4.8 14.427 4 16 4C18.485 4 20.5 6.015 20.5 8.5C20.5 14.5 12 20.5 12 20.5Z"
         stroke="currentColor"
-        strokeOpacity="0.42"
-        strokeWidth="1.15"
-        strokeLinecap="round"
+        strokeOpacity="0.3"
+        strokeWidth="0.75"
         strokeLinejoin="round"
       />
       <path
-        d="M4.65 8.65L12 11.55l7.35-2.9"
-        stroke="currentColor"
+        d="M7.5 8.5C7.5 7.12 8.62 6 10 6"
+        stroke="white"
         strokeOpacity="0.28"
-        strokeWidth="1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 3.25v8.3M12 11.55v9.2"
-        stroke="currentColor"
-        strokeOpacity="0.18"
-        strokeWidth="0.9"
+        strokeWidth="1.1"
         strokeLinecap="round"
       />
     </svg>
