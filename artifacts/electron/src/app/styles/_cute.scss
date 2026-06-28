@@ -1,154 +1,357 @@
-/* ══════════════════════════════════════════════════════
-   Cute layer — animated border frame + warmth pass
-   ══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   Y2K layer — holographic border, chrome text, neon glow, glitter
+   ══════════════════════════════════════════════════════════════════ */
 
-/* ── Animated gradient border around the whole viewport ── */
+/* ── Y2K font tokens ── */
+:root {
+  --font-y2k-display: 'Orbitron', 'Segoe UI', sans-serif;
+  --font-y2k-mono:    'VT323', 'Courier New', monospace;
+  --font-y2k-bubbly:  'Nunito', system-ui, sans-serif;
 
-@keyframes cute-border-spin {
+  /* Neon palette */
+  --y2k-pink:   #ff2d78;
+  --y2k-cyan:   #00d4ff;
+  --y2k-lime:   #39ff14;
+  --y2k-violet: #bf5af2;
+  --y2k-gold:   #ffd700;
+
+  /* Holographic gradient — used everywhere */
+  --holo-gradient: linear-gradient(
+    135deg,
+    #ff2d78 0%,
+    #bf5af2 18%,
+    #00d4ff 36%,
+    #39ff14 54%,
+    #ffd700 72%,
+    #ff2d78 90%
+  );
+
+  /* Rounder everywhere */
+  --radius-card:     1.35rem;
+  --radius-lg:       1.1rem;
+  --radius-md:       0.9rem;
+  --chrome-radius:   1.6rem;
+  --chrome-radius-lg:2.1rem;
+}
+
+/* ── Animated holographic border frame ── */
+
+@keyframes holo-spin {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-@keyframes cute-shimmer {
-  0%, 100% { opacity: 0.55; }
+@keyframes holo-pulse {
+  0%, 100% { opacity: 0.7; }
   50%       { opacity: 1; }
 }
 
-/* Fixed inset frame — sits above everything except modals */
+@keyframes y2k-heartbeat {
+  0%, 100% { transform: scale(1);    }
+  14%       { transform: scale(1.18); }
+  28%       { transform: scale(1);    }
+  42%       { transform: scale(1.12); }
+  70%       { transform: scale(1);    }
+}
+
+@keyframes glitter {
+  0%, 100% { opacity: 0;   transform: scale(0.4) rotate(0deg);   }
+  30%       { opacity: 1;   transform: scale(1)   rotate(180deg); }
+  60%       { opacity: 0.6; transform: scale(0.8) rotate(270deg); }
+}
+
+@keyframes scanline {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+/* Fixed inset gradient border — Y2K holographic */
 body::before {
   content: '';
   position: fixed;
-  inset: 5px;
-  border-radius: 1.5rem;
-  border: 2px solid transparent;
+  inset: 4px;
+  border-radius: 1.6rem;
+  border: 2.5px solid transparent;
   background:
     linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
     linear-gradient(
       270deg,
-      #f472b6,
-      #c084fc,
-      #7dd3fc,
-      #c4b5fd,
-      #fb7185,
-      #f472b6
+      #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78
     ) border-box;
-  background-size: 300% 300%;
+  background-size: 400% 400%;
   animation:
-    cute-border-spin 10s ease infinite,
-    cute-shimmer 4s ease-in-out infinite;
+    holo-spin  6s ease infinite,
+    holo-pulse 3s ease-in-out infinite;
   pointer-events: none;
   z-index: 99990;
 }
 
-/* Corner hearts — decorative */
+/* Corner star glyph */
 body::after {
-  content: '♥';
+  content: '✦';
   position: fixed;
-  top: 14px;
-  left: 18px;
-  font-size: 0.7rem;
-  color: color-mix(in srgb, var(--color-accent, #f472b6) 70%, white 30%);
+  top: 12px;
+  left: 16px;
+  font-size: 0.65rem;
+  background: var(--holo-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   pointer-events: none;
   z-index: 99991;
-  animation: cute-shimmer 3s ease-in-out infinite;
-  line-height: 1;
+  animation: glitter 2s ease-in-out infinite;
 }
 
-/* ── Rounder cards all over ── */
+/* ── Floating glitter stars scattered around ── */
 
-:root {
-  --radius-card: 1.25rem;
-  --radius-lg: 1.1rem;
-  --radius-md: 0.85rem;
-  --chrome-radius: 1.5rem;
-  --chrome-radius-lg: 2rem;
+.app-shell--viewport {
+  overflow: visible;
 }
 
-/* ── Warmer, softer glow on surfaces ── */
+/* ── Section / eyebrow labels → Orbitron + holographic ── */
 
-.ui-card,
-.places-map-card,
-.ui-control-surface {
+[class*="eyebrow"],
+.eyebrow-label,
+[class*="section-label"],
+[class*="incoming"],
+[class*="INCOMING"],
+.workspace-section__eyebrow {
+  font-family: var(--font-y2k-display) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.14em !important;
+  background: var(--holo-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-size: 200% 200% !important;
+  animation: holo-spin 4s linear infinite !important;
+  filter: none !important;
+}
+
+/* ── Nav tab labels → Orbitron ── */
+
+.app-nav__label,
+.app-tab-label,
+[class*="nav-label"],
+[class*="tab-label"] {
+  font-family: var(--font-y2k-display) !important;
+  font-size: 0.6rem !important;
+  letter-spacing: 0.1em !important;
+}
+
+/* ── Section headings (INCOMING badge number, etc.) ── */
+
+.workspace-section__count,
+[class*="badge-count"],
+[class*="incoming-count"] {
+  font-family: var(--font-y2k-display) !important;
+}
+
+/* ── Movie card titles → bubbly Nunito ── */
+
+.movie-item__title,
+.movie-card__title,
+[class*="poster-title"],
+[class*="movie-title"] {
+  font-family: var(--font-y2k-bubbly) !important;
+  font-weight: 800 !important;
+}
+
+/* ── HIDE IMDB RATINGS ── */
+
+.movie-item-imdb-badge,
+.media-card__rating-badge,
+[class*="imdb"],
+[class*="rating-badge"] {
+  display: none !important;
+}
+
+/* Also hide the year+rating row when it only contains ratings */
+.movie-item__meta-row {
+  gap: 0.3rem;
+}
+
+/* ── Cards — holographic top shine + neon glow ── */
+
+.movie-card,
+.place-card,
+.places-item-card,
+.media-card,
+.ui-card {
+  border-radius: 1.35rem !important;
+  border: 1px solid transparent !important;
+  background-image:
+    linear-gradient(var(--color-surface-1, rgba(16,26,58,0.82)), var(--color-surface-1, rgba(16,26,58,0.82))),
+    linear-gradient(135deg, #ff2d78 0%, #bf5af2 50%, #00d4ff 100%) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
   box-shadow:
-    0 8px 32px color-mix(in srgb, var(--color-accent) 18%, rgba(0,0,0,0.45)),
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 14%, transparent) inset !important;
-}
-
-/* ── Pink-tinted scrollbars ── */
-
-* {
-  scrollbar-color: color-mix(in srgb, var(--color-accent) 28%, transparent) transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-accent) 26%, transparent);
-  border-radius: 99px;
-}
-
-/* ── Softer focus rings ── */
-
-:where(button, input, textarea, a, [role='button']):focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--color-accent) 80%, white 20%);
-  outline-offset: 3px;
-  border-radius: 0.5rem;
-}
-
-/* ── Section eyebrow labels get a heart bullet ── */
-
-.eyebrow-label::before,
-[class*="eyebrow"]::before {
-  content: '♥ ';
-  font-size: 0.65em;
-  color: var(--color-accent);
-  letter-spacing: 0;
-  vertical-align: middle;
-}
-
-/* ── Movie cards — softer corners + warmer glow on hover ── */
-
-.movie-card {
-  border-radius: 1.2rem !important;
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 18px color-mix(in srgb, var(--y2k-pink) 16%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.12) !important;
   transition: box-shadow 0.18s ease, transform 0.18s ease !important;
 }
 
-.movie-card:hover {
+.movie-card:hover,
+.place-card:hover {
   box-shadow:
-    0 12px 36px color-mix(in srgb, var(--color-accent) 30%, rgba(0,0,0,0.5)),
-    0 0 0 1.5px color-mix(in srgb, var(--color-accent) 35%, transparent) !important;
+    0 14px 40px rgba(0,0,0,0.55),
+    0 0 36px color-mix(in srgb, var(--y2k-cyan) 30%, transparent),
+    0 0 12px color-mix(in srgb, var(--y2k-pink) 22%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.18) !important;
+  transform: translateY(-2px) !important;
 }
 
-/* ── Floating panel — extra softness ── */
+/* Holographic sheen on hover */
+.movie-card::before,
+.place-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,0.04) 30%,
+    rgba(0,212,255,0.06) 45%,
+    rgba(255,45,120,0.06) 55%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.movie-card:hover::before,
+.place-card:hover::before {
+  opacity: 1;
+}
+
+/* ── FAB / floating panel — Y2K chrome ── */
 
 .fwp-panel {
-  border-radius: 1.5rem !important;
+  border-radius: 1.6rem !important;
+  border: 1.5px solid transparent !important;
+  background-image:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--color-surface-1) 90%, transparent) 0%,
+      color-mix(in srgb, var(--color-surface-0) 85%, transparent) 100%
+    ),
+    linear-gradient(135deg, #ff2d78, #bf5af2, #00d4ff, #ff2d78) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+}
+
+/* Top accent bar — holographic */
+.fwp-panel::before {
+  background: var(--holo-gradient) !important;
+  background-size: 200% 100% !important;
+  animation: holo-spin 4s linear infinite !important;
+  height: 2.5px !important;
 }
 
 .fwp-toggle {
   box-shadow:
     0 8px 28px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(255,255,255,0.06) inset,
-    0 0 40px color-mix(in srgb, var(--color-accent) 30%, transparent) !important;
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+    0 0 50px color-mix(in srgb, var(--y2k-pink) 35%, transparent) !important;
 }
 
-/* ── INCOMING badge ── */
-
-.incoming-label,
-[class*="incoming"] > span {
-  color: color-mix(in srgb, var(--color-accent) 90%, white 10%);
-}
-
-/* ── Heartbeat on the FAB heart when panel is closed ── */
-
-@keyframes cute-heartbeat {
-  0%, 100% { transform: scale(1); }
-  14%       { transform: scale(1.15); }
-  28%       { transform: scale(1); }
-  42%       { transform: scale(1.1); }
-  70%       { transform: scale(1); }
-}
-
+/* Heartbeat on FAB heart icon when closed */
 .fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
-  animation: cute-heartbeat 2.8s ease-in-out infinite;
+  animation: y2k-heartbeat 2.4s ease-in-out infinite;
   transform-origin: center;
+}
+
+/* ── Quick action buttons → Y2K chrome ── */
+
+.fwp-action {
+  border-radius: 1rem !important;
+  font-family: var(--font-y2k-display) !important;
+  font-size: 0.55rem !important;
+  letter-spacing: 0.1em !important;
+}
+
+/* ── MagicToggle (Grid/Scroll, Movies/Places) → neon active state ── */
+
+.magic-toggle__btn.is-active {
+  font-family: var(--font-y2k-display) !important;
+}
+
+.magic-toggle__indicator {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--y2k-pink) 40%, transparent),
+    color-mix(in srgb, var(--y2k-violet) 30%, transparent)
+  ) !important;
+  border-color: color-mix(in srgb, var(--y2k-pink) 60%, transparent) !important;
+  box-shadow:
+    0 2px 16px color-mix(in srgb, var(--y2k-pink) 50%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.14) !important;
+}
+
+/* ── Scrollbars → neon pink ── */
+
+* {
+  scrollbar-color: color-mix(in srgb, var(--y2k-pink) 35%, transparent) transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--y2k-pink),
+    var(--y2k-violet)
+  );
+  border-radius: 99px;
+}
+
+/* ── "DRAG OR TAP TO PEEK AT MORE" hint — VT323 retro terminal ── */
+
+[class*="peek"],
+[class*="drag-hint"],
+[class*="swipe-hint"] {
+  font-family: var(--font-y2k-mono) !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.12em !important;
+  color: color-mix(in srgb, var(--y2k-cyan) 70%, transparent) !important;
+}
+
+/* ── Focus rings → neon ── */
+
+:where(button, input, textarea, a, [role='button']):focus-visible {
+  outline: 2px solid var(--y2k-cyan) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--y2k-cyan) 50%, transparent) !important;
+}
+
+/* ── Subtle scanline texture overlay on the shell ── */
+
+.app-shell--viewport::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  [class*="eyebrow"],
+  .fwp-panel::before,
+  .fwp-toggle svg {
+    animation: none !important;
+  }
 }
