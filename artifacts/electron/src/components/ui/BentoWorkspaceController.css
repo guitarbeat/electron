@@ -4,17 +4,49 @@
    ══════════════════════════════════════════════════════════════════════ */
 
 .bento-ctrl {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(auto, max-content) minmax(0, 1fr) minmax(auto, max-content);
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "nav search profiles"
+    "sep sep sep"
+    "controls controls controls";
   gap: 0;
-  background: transparent;
-  border: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface-1) 88%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface-1) 80%, transparent) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
   border-radius: 0;
   overflow: visible;
   position: relative;
   z-index: 400;
   font-family: var(--font-interface, var(--font-body, sans-serif));
-  box-shadow: none;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 0 48px color-mix(in srgb, var(--color-accent) 15%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(32px) saturate(2);
+  -webkit-backdrop-filter: blur(32px) saturate(2);
+}
+
+.bento-ctrl::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent) 30%,
+    var(--color-secondary) 70%,
+    transparent
+  );
+  pointer-events: none;
+  z-index: 3;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -27,32 +59,43 @@
 /* ── Topbar (nav + profiles) ──────────────────────────────────────── */
 
 .bento-ctrl__topbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: contents;
+}
+
+.bento-ctrl__topbar-left {
+  grid-area: nav;
+  display: flex;
   align-items: center;
-  gap: clamp(0.7rem, 1.4vw, 1.15rem);
-  padding: clamp(0.55rem, 0.5rem + 0.3vw, 0.75rem) clamp(0.65rem, 0.8vw, 0.9rem) 0.35rem;
-  width: 100%;
   min-width: 0;
+  padding: clamp(0.55rem, 0.5rem + 0.3vw, 0.75rem) 0 clamp(0.55rem, 0.5rem + 0.3vw, 0.75rem) clamp(0.65rem, 0.6rem + 0.35vw, 0.9rem);
   position: relative;
   z-index: 2;
 }
 
-.bento-ctrl__topbar-left,
 .bento-ctrl__topbar-right {
+  grid-area: profiles;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   min-width: 0;
+  padding: clamp(0.55rem, 0.5rem + 0.3vw, 0.75rem) clamp(0.65rem, 0.6rem + 0.35vw, 0.9rem) clamp(0.55rem, 0.5rem + 0.3vw, 0.75rem) 0;
+  gap: 0.35rem;
+  position: relative;
+  z-index: 2;
 }
 
 .bento-ctrl__topbar-sep {
+  grid-area: sep;
   height: 1px;
   margin: 0 0.65rem;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(148, 163, 200, 0.22) 20%,
-    rgba(148, 163, 200, 0.22) 80%,
+    var(--color-accent) 20%,
+    var(--color-secondary) 80%,
     transparent
   );
+  opacity: 0.45;
 }
 
 .bento-ctrl__topbar-right {
@@ -76,9 +119,9 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease;
+    border-color 0.1s ease,
+    background 0.1s ease,
+    color 0.1s ease;
 }
 
 .bento-ctrl__topbar-icon-btn:hover {
@@ -108,22 +151,27 @@
 /* ── Search zone ──────────────────────────────────────────────────── */
 
 .bento-ctrl__search {
-  padding: 0.45rem 0.55rem 0.35rem;
+  grid-area: search;
+  padding: 0.3rem 0.5rem;
   position: relative;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
-.bento-ctrl__search .workspace-search__stage {
-  gap: 0.35rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+.bento-ctrl__search > *,
+.bento-ctrl__search .workspace-search__stage,
+.bento-ctrl__search .workspace-search__search-form,
+.bento-ctrl__search .workspace-search__search-form--stack {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .bento-ctrl__search .workspace-search__search-form--stack {
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   gap: 0.45rem;
   padding: 0;
   border: 0;
@@ -133,13 +181,31 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   transition: none;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
-.bento-ctrl__search .workspace-search__search-shell,
-.bento-ctrl__search .workspace-search__autocomplete,
-.bento-ctrl__search .workspace-search__search-actions {
+.bento-ctrl__search .workspace-search__search-form--stack .workspace-search__search-actions {
+  flex: 0 0 auto;
+}
+
+.bento-ctrl__search .workspace-search__search-form--stack .workspace-search__search-shell {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bento-ctrl__search .workspace-search__search-shell {
   width: 100%;
-  flex: 1 1 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bento-ctrl__search .workspace-search__autocomplete {
+  width: 100%;
+}
+
+.bento-ctrl__search .workspace-search__search-actions {
+  flex: 0 0 auto;
 }
 
 .bento-ctrl__search .workspace-search__search-form--stack:focus-within {
@@ -151,9 +217,15 @@
 .bento-ctrl__search .workspace-search__search-shell {
   min-height: 2.5rem;
   align-items: center;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, rgba(148, 163, 200, 0.22));
+  background: color-mix(in srgb, var(--color-accent) 5%, rgba(6, 8, 25, 0.45));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 4px 14px rgba(0, 0, 0, 0.28);
+  border-radius: 0.85rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 
 .bento-ctrl__search .workspace-search__search-icon {
@@ -179,6 +251,15 @@
   box-shadow: none;
   filter: none;
   opacity: 1;
+}
+
+.bento-ctrl__search .workspace-search__search-form--stack:focus-within .workspace-search__search-shell {
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 2px color-mix(in srgb, var(--color-accent) 18%, transparent),
+    0 4px 20px rgba(0, 0, 0, 0.28);
+  background: color-mix(in srgb, var(--color-accent) 8%, rgba(6, 8, 25, 0.55));
 }
 
 .bento-ctrl__search .workspace-search__search-field {
@@ -221,16 +302,18 @@
 /* ── View toolbar ─────────────────────────────────────────────────── */
 
 .bento-ctrl__controls {
+  grid-area: controls;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
   margin: 0 0.55rem 0.6rem;
   padding: 0.45rem 0.55rem;
   border-radius: 0.7rem;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0.08) 100%);
-  border: 1px solid rgba(148, 163, 200, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--color-surface-1) 75%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, rgba(148, 163, 200, 0.14));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .bento-ctrl__sort-row {
@@ -291,19 +374,22 @@
   bottom: 0.18rem;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--color-accent) 24%, transparent),
-    color-mix(in srgb, var(--color-accent) 12%, transparent)
+    color-mix(in srgb, var(--color-accent) 32%, transparent),
+    color-mix(in srgb, var(--color-accent) 16%, transparent)
   );
-  border: 1px solid color-mix(in srgb, var(--color-accent) 38%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
   box-shadow:
-    0 2px 10px color-mix(in srgb, var(--color-accent) 22%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 2px 14px color-mix(in srgb, var(--color-accent) 40%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-accent) 20%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
   .bento-ctrl--mobile {
+    display: flex;
+    flex-direction: column;
     gap: 0.25rem;
     padding: 0;
     border: 0;
@@ -319,8 +405,27 @@
   }
 
   .bento-ctrl--mobile .bento-ctrl__topbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
     gap: 0.35rem;
     padding: 0.15rem 0.1rem 0.1rem;
+  }
+
+  .bento-ctrl--mobile .bento-ctrl__topbar-left {
+    padding: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .bento-ctrl--mobile .bento-ctrl__topbar-right {
+    padding: 0;
+    flex: 0 0 auto;
+  }
+
+  .bento-ctrl--mobile .bento-ctrl__search {
+    display: block;
+    padding: 0 0.05rem;
   }
 
   .bento-ctrl--mobile .bento-ctrl__topbar-sep {
@@ -350,29 +455,35 @@
   }
 
   .bento-ctrl--mobile .bento-ctrl__search .workspace-search__search-shell {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
     min-height: 2.5rem;
-    border-radius: 0;
-    background: transparent;
-    border: 0;
+    border-radius: 0.75rem;
   }
 
   .bento-ctrl--mobile .bento-ctrl__search .workspace-search__search-field {
     min-height: 2.5rem;
-    font-size: 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .bento-ctrl--mobile .bento-ctrl__search .workspace-search__search-form--stack {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
   }
 
   .bento-ctrl--mobile .bento-ctrl__search .workspace-search__search-actions {
-    flex: 1 1 100%;
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.28rem;
+    flex: 0 0 auto;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
   }
 
   .bento-ctrl--mobile .bento-ctrl__search .workspace-search__search-actions .ui-button {
-    min-height: 2.75rem !important;
+    min-height: 2.5rem !important;
     font-size: 0.8125rem !important;
+    padding-inline: 0.65rem !important;
   }
 
   .bento-ctrl--mobile.bento-ctrl--places .bento-ctrl__search .workspace-search__search-icon {
@@ -422,8 +533,13 @@
 }
 
 @media (min-width: 768px) {
-  .bento-ctrl__topbar {
-    padding-inline: 1rem;
-    gap: 1.5rem;
+  .bento-ctrl__topbar-left {
+    padding-left: 1rem;
+  }
+  .bento-ctrl__topbar-right {
+    padding-right: 1rem;
+  }
+  .bento-ctrl__search {
+    padding-inline: 0.75rem;
   }
 }

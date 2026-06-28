@@ -32,36 +32,46 @@
 
 @media (min-width: 640px) {
   .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
-    grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
-    gap: 5px;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 8px;
   }
 }
 
 @media (min-width: 1024px) {
   .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
-    grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: 9px;
   }
 }
 
 @media (min-width: 1280px) {
   .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
-    grid-template-columns: repeat(auto-fill, minmax(4.35rem, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+    gap: 10px;
   }
 }
 
 .app-workspace-stack--movies .workspace-content--poster-grid .movie-item-container > .card-tilt-wrap > .movie-item-card,
 .app-workspace-stack--movies .workspace-content--poster-grid .movie-item-card {
   margin-bottom: 0 !important;
-  border-radius: 8px;
-  box-shadow: none;
+  border-radius: 10px;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
   background: transparent;
   position: relative;
+  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-container:hover .movie-item-card {
+  transform: scale(1.04) translateY(-2px);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.6),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 40%, transparent);
 }
 
 .app-workspace-stack--movies .workspace-content--poster-grid .movie-item-poster-wrap {
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
 }
 
