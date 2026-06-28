@@ -38,6 +38,7 @@ import "./App.scss";
 const AppWorkspaceShell = React.lazy(
   () => import("@/app/AppWorkspaceShell"),
 );
+const AliveFX = React.lazy(() => import("@/components/effects/AliveFX"));
 const LazyAnalytics = React.lazy(() =>
   Promise.resolve({ default: () => null }),
 );
@@ -112,11 +113,7 @@ const App: React.FC = () => {
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
   const [showFishTank, setShowFishTank] = useState(false);
-  const [cursorTrailEnabled] = useState<boolean>(
-    () =>
-      typeof window !== "undefined" &&
-      localStorage.getItem("cursorTrailEnabled") === "true",
-  );
+  const [cursorTrailEnabled] = useState<boolean>(() => !isMobile);
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
@@ -169,12 +166,12 @@ const App: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (!isBootReady || isMobile) {
+    if (!isBootReady) {
       return undefined;
     }
 
     return scheduleIdleWork(() => setShowFishTank(true), 1200);
-  }, [isBootReady, isMobile]);
+  }, [isBootReady]);
 
   useEffect(() => {
     return scheduleIdleWork(() => setShowAnalytics(true), 4000);
@@ -289,6 +286,11 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider themeName={activeTab}>
+      {!prefersReducedMotion ? (
+        <React.Suspense fallback={null}>
+          <AliveFX />
+        </React.Suspense>
+      ) : null}
       {cursorTrailEnabled ? (
         <React.Suspense fallback={null}>
           <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />

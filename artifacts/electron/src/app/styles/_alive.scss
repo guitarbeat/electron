@@ -1,0 +1,226 @@
+/* ══════════════════════════════════════════════════════════════════
+   Alive layer — ambient motion that makes the page breathe & drift
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Drifting background orbs ────────────────────────────────────── */
+
+@keyframes orb-a {
+  0%   { transform: translate(0px,    0px)   scale(1);    }
+  25%  { transform: translate(80px,  -60px)  scale(1.08); }
+  50%  { transform: translate(30px,  -140px) scale(0.95); }
+  75%  { transform: translate(-50px, -80px)  scale(1.05); }
+  100% { transform: translate(0px,    0px)   scale(1);    }
+}
+@keyframes orb-b {
+  0%   { transform: translate(0px, 0px)   scale(1);    }
+  33%  { transform: translate(-90px, 70px) scale(1.1);  }
+  66%  { transform: translate(40px, 120px) scale(0.9);  }
+  100% { transform: translate(0px, 0px)   scale(1);    }
+}
+@keyframes orb-c {
+  0%   { transform: translate(0px, 0px)    scale(1);    }
+  40%  { transform: translate(120px, 50px) scale(1.12); }
+  80%  { transform: translate(60px, -80px) scale(0.88); }
+  100% { transform: translate(0px, 0px)    scale(1);    }
+}
+@keyframes orb-d {
+  0%   { transform: translate(0px, 0px)     scale(1);   }
+  30%  { transform: translate(-60px, -90px) scale(1.06);}
+  60%  { transform: translate(-120px, 30px) scale(0.94);}
+  100% { transform: translate(0px, 0px)     scale(1);   }
+}
+
+.alive-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.alive-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.alive-orb--a {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #ff2d78, transparent 70%);
+  top: -100px; left: -80px;
+  animation: orb-a 18s ease-in-out infinite;
+}
+.alive-orb--b {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, #00d4ff, transparent 70%);
+  bottom: -80px; right: -60px;
+  animation: orb-b 22s ease-in-out infinite reverse;
+}
+.alive-orb--c {
+  width: 360px; height: 360px;
+  background: radial-gradient(circle, #bf5af2, transparent 70%);
+  top: 35%; right: 10%;
+  animation: orb-c 26s ease-in-out infinite;
+}
+.alive-orb--d {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #39ff14, transparent 70%);
+  bottom: 20%; left: 15%;
+  animation: orb-d 20s ease-in-out infinite reverse;
+}
+
+/* ── Card float — deck cards bob gently ─────────────────────────── */
+
+@keyframes card-float {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-5px);  }
+}
+
+@keyframes card-float-2 {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-7px);  }
+}
+
+/* Suggestion / incoming card — more prominent float */
+.deck-card,
+[class*="deck-card"],
+[class*="suggestion-card"] {
+  animation: card-float-2 4s ease-in-out infinite;
+}
+
+/* Stagger the movie grid cards */
+.movie-item:nth-child(1)  { animation: card-float 5.2s 0.0s ease-in-out infinite; }
+.movie-item:nth-child(2)  { animation: card-float 4.8s 0.4s ease-in-out infinite; }
+.movie-item:nth-child(3)  { animation: card-float 5.6s 0.8s ease-in-out infinite; }
+.movie-item:nth-child(4)  { animation: card-float 4.4s 1.2s ease-in-out infinite; }
+.movie-item:nth-child(5)  { animation: card-float 5.0s 1.6s ease-in-out infinite; }
+.movie-item:nth-child(6)  { animation: card-float 5.4s 0.2s ease-in-out infinite; }
+.movie-item:nth-child(7)  { animation: card-float 4.6s 0.6s ease-in-out infinite; }
+.movie-item:nth-child(8)  { animation: card-float 5.2s 1.0s ease-in-out infinite; }
+.movie-item:nth-child(9)  { animation: card-float 4.8s 1.4s ease-in-out infinite; }
+.movie-item:nth-child(n+10) { animation: card-float 5.0s 1.8s ease-in-out infinite; }
+
+/* ── Heartbeat on the suggestion / incoming card ─────────────────── */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow:
+      0 12px 40px rgba(0,0,0,0.5),
+      0 0 20px rgba(255, 45, 120, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 12px 40px rgba(0,0,0,0.5),
+      0 0 60px rgba(255, 45, 120, 0.38),
+      0 0 24px rgba(0, 212, 255, 0.2);
+  }
+}
+
+[class*="suggestion-card"],
+[class*="swipe-card"],
+[class*="deck-card"] {
+  animation: pulse-glow 3s ease-in-out infinite, card-float-2 4s ease-in-out infinite !important;
+}
+
+/* ── Animated background gradient shift ──────────────────────────── */
+
+@keyframes bg-shift {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+body {
+  background-size: 200% 200% !important;
+  animation: bg-shift 20s ease infinite !important;
+}
+
+/* ── Shimmer on text highlights ──────────────────────────────────── */
+
+@keyframes text-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* INCOMING label keeps its holo gradient but also shimmers */
+[class*="eyebrow"],
+.eyebrow-label {
+  background-size: 300% auto !important;
+  animation: text-shimmer 3s linear infinite !important;
+}
+
+/* ── Twinkling stars scattered in the viewport ───────────────────── */
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0;    transform: scale(0.5); }
+  50%       { opacity: 0.9;  transform: scale(1.2); }
+}
+
+/* CSS-only stars via body::before layering — use outline box-shadow trick */
+/* We use tiny fixed pseudo-stars by injecting via the alive-orbs container */
+.alive-orbs::before,
+.alive-orbs::after {
+  content: '✦ ✦ ✦ ✦ ✦ ✦';
+  position: absolute;
+  inset: 0;
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 8vh;
+  letter-spacing: 18vw;
+  pointer-events: none;
+  animation: twinkle 3.5s ease-in-out infinite;
+}
+
+.alive-orbs::after {
+  padding-top: 60vh;
+  letter-spacing: 14vw;
+  animation-delay: 1.75s;
+  animation-duration: 4.2s;
+}
+
+/* ── FAB heartbeat — always on ───────────────────────────────────── */
+
+@keyframes fwp-heartbeat {
+  0%, 100% { box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 40px rgba(255,45,120,0.25); }
+  50%       { box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 70px rgba(255,45,120,0.55); }
+}
+
+.fwp-toggle {
+  animation: fwp-heartbeat 2.4s ease-in-out infinite !important;
+}
+
+/* ── Holographic border breathes ─────────────────────────────────── */
+
+@keyframes border-breathe {
+  0%, 100% { opacity: 0.75; }
+  50%       { opacity: 1;    }
+}
+
+body::before {
+  animation:
+    holo-spin   6s ease infinite,
+    border-breathe 3s ease-in-out infinite !important;
+}
+
+/* ── Reduced motion — turn off everything ────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .alive-orb,
+  .alive-orbs::before,
+  .alive-orbs::after,
+  .movie-item,
+  [class*="deck-card"],
+  [class*="suggestion-card"],
+  .fwp-toggle,
+  body,
+  body::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
