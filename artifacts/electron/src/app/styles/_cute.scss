@@ -1,51 +1,44 @@
 /* ══════════════════════════════════════════════════════════════════
-   Y2K layer — holographic border, chrome text, neon glow, glitter
+   Y2K layer — holographic border, chrome text, neon glow
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── Y2K font tokens ── */
+/* ── Design tokens ── */
 :root {
   --font-y2k-display: 'Orbitron', 'Segoe UI', sans-serif;
   --font-y2k-mono:    'VT323', 'Courier New', monospace;
   --font-y2k-bubbly:  'Nunito', system-ui, sans-serif;
-  --font-electra:      'Papyrus', fantasy; /* 🏺 for Electra */
+  --font-electra:     'Papyrus', fantasy; /* 🏺 for Electra */
 
-  /* Neon palette */
   --y2k-pink:   #ff2d78;
   --y2k-cyan:   #00d4ff;
   --y2k-lime:   #39ff14;
   --y2k-violet: #bf5af2;
   --y2k-gold:   #ffd700;
 
-  /* Holographic gradient — used everywhere */
   --holo-gradient: linear-gradient(
     135deg,
-    #ff2d78 0%,
-    #bf5af2 18%,
-    #00d4ff 36%,
-    #39ff14 54%,
-    #ffd700 72%,
-    #ff2d78 90%
+    #ff2d78 0%, #bf5af2 18%, #00d4ff 36%,
+    #39ff14 54%, #ffd700 72%, #ff2d78 90%
   );
 
-  /* Rounder everywhere */
-  --radius-card:     1.35rem;
-  --radius-lg:       1.1rem;
-  --radius-md:       0.9rem;
-  --chrome-radius:   1.6rem;
-  --chrome-radius-lg:2.1rem;
+  --radius-card:      1.35rem;
+  --radius-lg:        1.1rem;
+  --radius-md:        0.9rem;
+  --chrome-radius:    1.6rem;
+  --chrome-radius-lg: 2.1rem;
 }
 
-/* ── Animated holographic border frame ── */
+/* ── Keyframes ── */
 
 @keyframes holo-spin {
-  0%   { background-position: 0% 50%; }
+  0%   { background-position: 0%   50%; }
   50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  100% { background-position: 0%   50%; }
 }
 
 @keyframes holo-pulse {
   0%, 100% { opacity: 0.7; }
-  50%       { opacity: 1; }
+  50%       { opacity: 1;   }
 }
 
 @keyframes y2k-heartbeat {
@@ -62,12 +55,8 @@
   60%       { opacity: 0.6; transform: scale(0.8) rotate(270deg); }
 }
 
-@keyframes scanline {
-  0%   { background-position: 0 0; }
-  100% { background-position: 0 100%; }
-}
+/* ── Holographic border frame ── */
 
-/* Fixed inset gradient border — Y2K holographic */
 body::before {
   content: '';
   position: fixed;
@@ -76,47 +65,17 @@ body::before {
   border: 2.5px solid transparent;
   background:
     linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
-    linear-gradient(
-      270deg,
-      #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78
-    ) border-box;
+    linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78) border-box;
   background-size: 400% 400%;
-  animation:
-    holo-spin  6s ease infinite,
-    holo-pulse 3s ease-in-out infinite;
+  animation: holo-spin 6s ease infinite, holo-pulse 3s ease-in-out infinite;
   pointer-events: none;
   z-index: 99990;
 }
 
-/* Corner star glyph */
-body::after {
-  content: '✦';
-  position: fixed;
-  top: 12px;
-  left: 16px;
-  font-size: 0.65rem;
-  background: var(--holo-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  pointer-events: none;
-  z-index: 99991;
-  animation: glitter 2s ease-in-out infinite;
-}
-
-/* ── Floating glitter stars scattered around ── */
-
-.app-shell--viewport {
-  overflow: visible;
-}
-
-/* ── Section / eyebrow labels → Orbitron + holographic ── */
+/* ── Section / eyebrow labels → Orbitron + holo gradient ── */
 
 [class*="eyebrow"],
 .eyebrow-label,
-[class*="section-label"],
-[class*="incoming"],
-[class*="INCOMING"],
 .workspace-section__eyebrow {
   font-family: var(--font-y2k-display) !important;
   font-size: 0.65rem !important;
@@ -127,39 +86,32 @@ body::after {
   -webkit-text-fill-color: transparent !important;
   background-size: 200% 200% !important;
   animation: holo-spin 4s linear infinite !important;
-  filter: none !important;
 }
 
 /* ── Nav tab labels → Orbitron ── */
 
 .app-nav__label,
-.app-tab-label,
-[class*="nav-label"],
-[class*="tab-label"] {
-  font-family: var(--font-y2k-display) !important;
-  font-size: 0.6rem !important;
-  letter-spacing: 0.1em !important;
+.app-tab-label {
+  font-family: var(--font-y2k-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
 }
 
-/* ── Section headings (INCOMING badge number, etc.) ── */
+/* ── Counts / badges → Orbitron ── */
 
-.workspace-section__count,
-[class*="badge-count"],
-[class*="incoming-count"] {
-  font-family: var(--font-y2k-display) !important;
+.workspace-section__count {
+  font-family: var(--font-y2k-display);
 }
 
-/* ── Movie card titles → bubbly Nunito ── */
+/* ── Movie card titles → Nunito ── */
 
 .movie-item__title,
-.movie-card__title,
-[class*="poster-title"],
-[class*="movie-title"] {
-  font-family: var(--font-y2k-bubbly) !important;
-  font-weight: 800 !important;
+.movie-card__title {
+  font-family: var(--font-y2k-bubbly);
+  font-weight: 800;
 }
 
-/* ── HIDE IMDB RATINGS ── */
+/* ── Hide IMDB ratings ── */
 
 .movie-item-imdb-badge,
 .media-card__rating-badge,
@@ -168,30 +120,25 @@ body::after {
   display: none !important;
 }
 
-/* Also hide the year+rating row when it only contains ratings */
-.movie-item__meta-row {
-  gap: 0.3rem;
-}
-
-/* ── Cards — holographic top shine + neon glow ── */
+/* ── Cards — holographic border + neon glow ── */
 
 .movie-card,
 .place-card,
 .places-item-card,
 .media-card,
 .ui-card {
-  border-radius: 1.35rem !important;
-  border: 1px solid transparent !important;
+  border-radius: var(--radius-card);
+  border: 1px solid transparent;
   background-image:
     linear-gradient(var(--color-surface-1, rgba(16,26,58,0.82)), var(--color-surface-1, rgba(16,26,58,0.82))),
-    linear-gradient(135deg, #ff2d78 0%, #bf5af2 50%, #00d4ff 100%) !important;
-  background-origin: border-box !important;
-  background-clip: padding-box, border-box !important;
+    linear-gradient(135deg, #ff2d78 0%, #bf5af2 50%, #00d4ff 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
   box-shadow:
     0 8px 32px rgba(0,0,0,0.5),
     0 0 18px color-mix(in srgb, var(--y2k-pink) 16%, transparent),
-    inset 0 1px 0 rgba(255,255,255,0.12) !important;
-  transition: box-shadow 0.18s ease, transform 0.18s ease !important;
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .movie-card:hover,
@@ -200,11 +147,10 @@ body::after {
     0 14px 40px rgba(0,0,0,0.55),
     0 0 36px color-mix(in srgb, var(--y2k-cyan) 30%, transparent),
     0 0 12px color-mix(in srgb, var(--y2k-pink) 22%, transparent),
-    inset 0 1px 0 rgba(255,255,255,0.18) !important;
-  transform: translateY(-2px) !important;
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  transform: translateY(-2px);
 }
 
-/* Holographic sheen on hover */
 .movie-card::before,
 .place-card::before {
   content: '';
@@ -230,23 +176,22 @@ body::after {
   opacity: 1;
 }
 
-/* ── FAB / floating panel — Y2K chrome ── */
+/* ── FAB panel — Y2K chrome ── */
 
 .fwp-panel {
-  border-radius: 1.6rem !important;
-  border: 1.5px solid transparent !important;
+  border-radius: 1.6rem;
+  border: 1.5px solid transparent;
   background-image:
     linear-gradient(
       160deg,
       color-mix(in srgb, var(--color-surface-1) 90%, transparent) 0%,
       color-mix(in srgb, var(--color-surface-0) 85%, transparent) 100%
     ),
-    linear-gradient(135deg, #ff2d78, #bf5af2, #00d4ff, #ff2d78) !important;
-  background-origin: border-box !important;
-  background-clip: padding-box, border-box !important;
+    linear-gradient(135deg, #ff2d78, #bf5af2, #00d4ff, #ff2d78);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
-/* Top accent bar — holographic */
 .fwp-panel::before {
   background: var(--holo-gradient) !important;
   background-size: 200% 100% !important;
@@ -254,32 +199,31 @@ body::after {
   height: 2.5px !important;
 }
 
-
-/* Heartbeat on FAB heart icon when closed */
+/* Heartbeat on the heart icon when panel is closed */
 .fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
   animation: y2k-heartbeat 2.4s ease-in-out infinite;
   transform-origin: center;
 }
 
-/* ── Quick action buttons → Y2K chrome ── */
+/* ── Quick action buttons ── */
 
 .fwp-action {
-  border-radius: 1rem !important;
-  font-family: var(--font-y2k-display) !important;
-  font-size: 0.55rem !important;
-  letter-spacing: 0.1em !important;
+  border-radius: 1rem;
+  font-family: var(--font-y2k-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
 }
 
 .fwp-action__label {
-  font-family: var(--font-electra) !important; /* 🏺 */
-  font-size: 0.6rem !important;
-  letter-spacing: 0.04em !important;
+  font-family: var(--font-electra); /* 🏺 */
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
 }
 
-/* ── MagicToggle (Grid/Scroll, Movies/Places) → neon active state ── */
+/* ── View mode toggle ── */
 
 .magic-toggle__btn.is-active {
-  font-family: var(--font-y2k-display) !important;
+  font-family: var(--font-y2k-display);
 }
 
 .magic-toggle__indicator {
@@ -294,22 +238,18 @@ body::after {
     inset 0 1px 0 rgba(255,255,255,0.14) !important;
 }
 
-/* ── Scrollbars → neon pink ── */
+/* ── Scrollbars ── */
 
 * {
   scrollbar-color: color-mix(in srgb, var(--y2k-pink) 35%, transparent) transparent;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    var(--y2k-pink),
-    var(--y2k-violet)
-  );
+  background: linear-gradient(180deg, var(--y2k-pink), var(--y2k-violet));
   border-radius: 99px;
 }
 
-/* ── "DRAG OR TAP TO PEEK AT MORE" hint — VT323 retro terminal ── */
+/* ── Drag/swipe hints → VT323 terminal ── */
 
 [class*="peek"],
 [class*="drag-hint"],
@@ -320,15 +260,15 @@ body::after {
   color: color-mix(in srgb, var(--y2k-cyan) 70%, transparent) !important;
 }
 
-/* ── Focus rings → neon ── */
+/* ── Focus rings ── */
 
 :where(button, input, textarea, a, [role='button']):focus-visible {
-  outline: 2px solid var(--y2k-cyan) !important;
-  outline-offset: 3px !important;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--y2k-cyan) 50%, transparent) !important;
+  outline: 2px solid var(--y2k-cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--y2k-cyan) 50%, transparent);
 }
 
-/* ── Subtle scanline texture overlay on the shell ── */
+/* ── Subtle scanlines ── */
 
 .app-shell--viewport::after {
   content: '';
@@ -338,8 +278,8 @@ body::after {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.06) 2px,
-    rgba(0, 0, 0, 0.06) 4px
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
   );
   pointer-events: none;
   z-index: 1;
@@ -349,7 +289,6 @@ body::after {
 
 @media (prefers-reduced-motion: reduce) {
   body::before,
-  body::after,
   [class*="eyebrow"],
   .fwp-panel::before,
   .fwp-toggle svg {
