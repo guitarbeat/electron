@@ -194,9 +194,25 @@ export default defineConfig({
     chunkSizeWarningLimit: 1100,
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    target: "es2020",
+    cssCodeSplit: true,
+    modulePreload: { polyfill: true },
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/")) {
+            return "react-vendor";
+          }
+          // Match framer-motion and the motion package (its runtime core).
+          // Trailing slash prevents false matches on packages like @emotion/motion-utils.
+          // Note: motion-vendor is a chunk output name, not a node_modules path,
+          // so path-based exclusions for it are unnecessary.
+          if (
+            id.includes("node_modules/framer-motion/") ||
+            id.includes("node_modules/motion/")
+          ) {
+            return "framer-vendor";
+          }
           if (id.includes("node_modules/maplibre-gl")) {
             return "map-vendor";
           }

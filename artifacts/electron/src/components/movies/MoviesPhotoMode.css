@@ -1,0 +1,91 @@
+/*
+ * MoviesPhotoMode.css
+ * Transforms the movie card grid into a photo-dominant layout.
+ * The poster image fills the card entirely; the action rail overlays the
+ * bottom of the poster and slides up on hover (desktop) / always shows on mobile.
+ */
+
+/* ── Tighter grid — more columns, smaller gap ── */
+.watchlist-content {
+  grid-template-columns: repeat(auto-fill, minmax(min(clamp(7rem, 28vw, 10rem), calc(33% - 0.4rem)), 1fr)) !important;
+  gap: 7px !important;
+}
+
+/* ── Card is purely the poster — no chrome, no shadow resting state ── */
+.watchlist-content > .movie-item-card {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  position: relative !important;
+}
+
+/* Watched: keep the green top stripe, just drop the card-level glow */
+.watchlist-content > .movie-item-card--watched {
+  box-shadow: none !important;
+}
+
+/* ── Poster-wrap — rounded corners match card ── */
+.watchlist-content > .movie-item-card .movie-item-poster-wrap {
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+/* ── Overlay: always slightly visible (title readable) ── */
+.watchlist-content > .movie-item-card .movie-item-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.45) 38%,
+    transparent 70%
+  ) !important;
+  padding: 0.5rem 0.55rem !important;
+}
+
+/* ── Action rail: keep visible and static ── */
+.watchlist-content > .movie-item-card .movie-item-action-rail {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 6 !important;
+  border-top: none !important;
+  padding: 0.5rem 0.5rem 0.55rem !important;
+  /* Dark gradient background so buttons are legible over the poster */
+  background:
+    linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.88) 30%) !important;
+}
+
+/* Compact primary button */
+.watchlist-content > .movie-item-card .movie-item-primary-action {
+  min-height: 34px !important;
+  font-size: 0.75rem !important;
+  padding-inline: 0.7rem !important;
+  border-radius: 0.6rem !important;
+}
+
+/* Compact secondary row (notes / edit / delete) */
+.watchlist-content > .movie-item-card .movie-actions {
+  gap: 0.3rem !important;
+}
+.watchlist-content > .movie-item-card .movie-actions__row {
+  gap: 0.3rem !important;
+}
+
+/* ── Watcher badges stay at top-right of poster ── */
+.watchlist-content > .movie-item-card .movie-item-watchers {
+  z-index: 7 !important;
+}
+
+/* ── Full-width items (empty state, error) ── */
+.watchlist-content > .watchlist-empty-state,
+.watchlist-content > .watchlist-error {
+  grid-column: 1 / -1 !important;
+}
+
+/* ── Very small screens: 2 columns ── */
+@media (max-width: 380px) {
+  .watchlist-content {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+}

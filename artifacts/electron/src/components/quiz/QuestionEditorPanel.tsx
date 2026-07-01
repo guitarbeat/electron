@@ -257,6 +257,8 @@ const ImageChoiceEditor: React.FC<{
                 <img
                   src={option.imageUrl}
                   alt={option.alt}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -520,6 +522,8 @@ export const ImageOptionsSummary: React.FC<{
           <img
             src={opt.imageUrl}
             alt={opt.alt}
+            loading="lazy"
+            decoding="async"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         )}

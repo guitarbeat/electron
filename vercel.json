@@ -4,6 +4,28 @@
       "includeFiles": "{api/_lib,src}/**/*.ts"
     }
   },
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [{"key": "Cache-Control", "value": "no-cache"}]
+    },
+    {
+      "source": "/(.*\\.js)",
+      "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
+    },
+    {
+      "source": "/(.*\\.css)",
+      "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
+    },
+    {
+      "source": "/index.html",
+      "headers": [{"key": "Cache-Control", "value": "no-cache"}]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/state/:scope/mutate",
