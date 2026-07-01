@@ -5,6 +5,7 @@ import type {
   MultipleChoiceQuestion as MultipleChoiceQuestionType,
   XYAxisQuestion as XYAxisQuestionType,
 } from "./lib/types";
+import WebPImg from "./lib/WebPImg";
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;
@@ -157,38 +158,17 @@ export const ImageChoiceQuestionView: React.FC<
             aria-pressed={selectedIndex === index}
             aria-label={option.alt}
           >
-            {(() => {
-              const isFilePath =
-                option.imageUrl && !option.imageUrl.startsWith("data:");
-              const isPngOrJpg =
-                isFilePath && /\.(png|jpe?g)$/i.test(option.imageUrl);
-              const webpUrl = isPngOrJpg
-                ? option.imageUrl.replace(/\.(png|jpe?g)$/i, ".webp")
-                : null;
-              const imgEl = (
-                <img
-                  src={option.imageUrl}
-                  alt={option.alt}
-                  loading="lazy"
-                  decoding="async"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
-              );
-              if (webpUrl) {
-                return (
-                  <picture>
-                    <source srcSet={webpUrl} type="image/webp" />
-                    {imgEl}
-                  </picture>
-                );
-              }
-              return imgEl;
-            })()}
+            <WebPImg
+              src={option.imageUrl}
+              alt={option.alt}
+              loading="eager"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
             {selectedIndex === index && (
               <div className="quiz-retro-img-checkmark">✓</div>
             )}

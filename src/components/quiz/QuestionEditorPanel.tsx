@@ -17,30 +17,7 @@ import Button from "@/ui/Button";
 import { Input, Textarea } from "@/ui/FormFields";
 import { useToast } from "@/app/useProviders";
 import { spacing, colors, typography } from "@/theme/tokens";
-
-const WebPImg: React.FC<{
-  src: string;
-  alt: string;
-  style?: React.CSSProperties;
-}> = ({ src, alt, style }) => {
-  const isFilePath = src && !src.startsWith("data:");
-  const webpSrc =
-    isFilePath && /\.(png|jpe?g)$/i.test(src)
-      ? src.replace(/\.(png|jpe?g)$/i, ".webp")
-      : null;
-  const img = (
-    <img src={src} alt={alt} loading="lazy" decoding="async" style={style} />
-  );
-  if (webpSrc) {
-    return (
-      <picture>
-        <source srcSet={webpSrc} type="image/webp" />
-        {img}
-      </picture>
-    );
-  }
-  return img;
-};
+import WebPImg from "./lib/WebPImg";
 
 const QUADRANT_INFO = [
   { key: "topLeft", icon: "⬆⬅", name: "Top-Left", position: "left + top" },
