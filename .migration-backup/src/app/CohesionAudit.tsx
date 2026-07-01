@@ -46,13 +46,12 @@ const surfaceVars = [
 
 const radiusEntries = Object.entries(radius);
 
-const useResolvedVar = (cssVar: string, deps: unknown[] = []): string => {
+const useResolvedVar = (cssVar: string, theme: string): string => {
   const [value, setValue] = useState("");
 
   useEffect(() => {
     setValue(getComputedStyle(document.body).getPropertyValue(cssVar).trim());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cssVar, ...deps]);
+  }, [cssVar, theme]);
 
   return value;
 };
@@ -61,7 +60,7 @@ const ColorSwatch: React.FC<{ cssVar: string; theme: ThemeName }> = ({
   cssVar,
   theme,
 }) => {
-  const value = useResolvedVar(cssVar, [theme]);
+  const value = useResolvedVar(cssVar, theme);
 
   return (
     <div className="cohesion-audit__swatch">
