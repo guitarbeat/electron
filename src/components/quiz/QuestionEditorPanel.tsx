@@ -18,6 +18,30 @@ import { Input, Textarea } from "@/ui/FormFields";
 import { useToast } from "@/app/useProviders";
 import { spacing, colors, typography } from "@/theme/tokens";
 
+const WebPImg: React.FC<{
+  src: string;
+  alt: string;
+  style?: React.CSSProperties;
+}> = ({ src, alt, style }) => {
+  const isFilePath = src && !src.startsWith("data:");
+  const webpSrc =
+    isFilePath && /\.(png|jpe?g)$/i.test(src)
+      ? src.replace(/\.(png|jpe?g)$/i, ".webp")
+      : null;
+  const img = (
+    <img src={src} alt={alt} loading="lazy" decoding="async" style={style} />
+  );
+  if (webpSrc) {
+    return (
+      <picture>
+        <source srcSet={webpSrc} type="image/webp" />
+        {img}
+      </picture>
+    );
+  }
+  return img;
+};
+
 const QUADRANT_INFO = [
   { key: "topLeft", icon: "⬆⬅", name: "Top-Left", position: "left + top" },
   { key: "topRight", icon: "⬆➡", name: "Top-Right", position: "right + top" },
@@ -257,7 +281,7 @@ const ImageChoiceEditor: React.FC<{
               title="Upload image for option"
             >
               {option.imageUrl ? (
-                <img
+                <WebPImg
                   src={option.imageUrl}
                   alt={option.alt}
                   style={{
@@ -520,7 +544,7 @@ export const ImageOptionsSummary: React.FC<{
     {options.map((opt, i) => (
       <div key={i} className="quiz-editor__summary-thumb">
         {opt.imageUrl && (
-          <img
+          <WebPImg
             src={opt.imageUrl}
             alt={opt.alt}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
