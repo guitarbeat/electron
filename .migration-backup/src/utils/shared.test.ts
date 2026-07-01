@@ -15,13 +15,7 @@ import {
   encodeStorageData,
   decodeStorageData,
   sanitizeInput,
-<<<<<<< HEAD
-  encodeStorageData,
-  decodeStorageData,
-  formatMemoryTimestamp,
   normalizeMovieTitle,
-=======
->>>>>>> origin/jules-test-shallow-clone-array-11988199443323867772
 } from "./shared.ts";
 
 test("areDeeplyEqual", async (t) => {
@@ -965,7 +959,6 @@ test('shuffleArray', async (t) => {
   });
 });
 
-<<<<<<< HEAD
 test("normalizeMovieTitle", async (t) => {
   await t.test("trims leading and trailing spaces", () => {
     assert.equal(normalizeMovieTitle("  The Matrix  "), "the matrix");
@@ -1042,7 +1035,8 @@ test("debounce", async (t) => {
     } finally {
       t.mock.timers.reset();
     }
-=======
+  });
+});
 
 test("shallowCloneArray", async (t) => {
   await t.test("returns a new array instance", () => {
@@ -1078,6 +1072,5 @@ test("shallowCloneArray", async (t) => {
 
     assert.notStrictEqual(cloned, original);
     assert.strictEqual(cloned[0], obj);
->>>>>>> origin/jules-test-shallow-clone-array-11988199443323867772
   });
 });
