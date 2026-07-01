@@ -202,6 +202,10 @@ export const concurrentMap = async <T, R>(
     return [];
   }
 
+  if (items.length <= concurrency) {
+    return Promise.all(items.map(fn));
+  }
+
   const results = new Array<R>(items.length);
   let currentIndex = 0;
   let hasError = false;
@@ -313,6 +317,9 @@ export const copyTextToClipboard = async (value: string): Promise<void> => {
 
 export const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
+
+export const shallowCloneArray = <T extends object>(arr: T[]): T[] =>
+  [...arr];
 
 export const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];

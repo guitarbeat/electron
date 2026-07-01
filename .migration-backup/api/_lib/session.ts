@@ -27,22 +27,12 @@ type SessionPayload = ProfileSessionPayload | PinAttemptPayload;
 const clean = (value: string | undefined): string =>
   (value || '').trim().replace(/^["']|["']$/g, '');
 
-let _fallbackSecret: string | null = null;
-const getFallbackSecret = (): string => {
-  if (!_fallbackSecret) {
-    console.warn(
-      '[session] SESSION_SIGNING_SECRET is not configured. A random secret is being used instead. ' +
-      'All active sessions will be invalidated on every server restart. ' +
-      'Set SESSION_SIGNING_SECRET to a stable value in production.'
-    );
-    _fallbackSecret = randomBytes(32).toString('hex');
-  }
-  return _fallbackSecret;
-};
-
 const getSessionSigningSecret = (): string => {
   const configured = clean(process.env.SESSION_SIGNING_SECRET || process.env.SESSION_SECRET);
-  return configured || getFallbackSecret();
+  if (!configured) {
+    throw new Error('SESSION_SIGNING_SECRET is not configured.');
+  }
+  return configured;
 };
 
 const base64urlEncode = (value: string): string =>

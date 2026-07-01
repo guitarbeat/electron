@@ -1,0 +1,65 @@
+/**
+ * Responsive Breakpoints
+ * 
+ * Define all media query breakpoints as SCSS variables for consistency
+ * and easier maintenance across the codebase.
+ */
+
+// Small mobile phones
+$breakpoint-xs: 380px;
+$breakpoint-sm: 420px;
+
+// Standard mobile
+$breakpoint-md: 480px;
+
+// Tablet / large mobile
+$breakpoint-lg: 640px;
+
+// Mid-range tablet
+$breakpoint-xl: 720px;
+
+// Large tablet / desktop
+$breakpoint-2xl: 1024px;
+
+// Large desktop
+$breakpoint-3xl: 1100px;
+
+// Container max-width
+$container-max-width: 1480px;
+
+// Convenience mixins for media queries
+@mixin breakpoint-down($bp) {
+  @if $bp == 'xs' {
+    @media (max-width: $breakpoint-xs) { @content; }
+  } @else if $bp == 'sm' {
+    @media (max-width: $breakpoint-sm) { @content; }
+  } @else if $bp == 'md' {
+    @media (max-width: $breakpoint-md) { @content; }
+  } @else if $bp == 'lg' {
+    @media (max-width: $breakpoint-lg) { @content; }
+  } @else if $bp == 'xl' {
+    @media (max-width: $breakpoint-xl) { @content; }
+  } @else if $bp == '2xl' {
+    @media (max-width: $breakpoint-2xl) { @content; }
+  } @else if $bp == '3xl' {
+    @media (max-width: $breakpoint-3xl) { @content; }
+  }
+}
+
+@mixin breakpoint-up($bp) {
+  @if $bp == 'xs' {
+    @media (min-width: $breakpoint-xs + 1) { @content; }
+  } @else if $bp == 'sm' {
+    @media (min-width: $breakpoint-sm + 1) { @content; }
+  } @else if $bp == 'md' {
+    @media (min-width: $breakpoint-md + 1) { @content; }
+  } @else if $bp == 'lg' {
+    @media (min-width: $breakpoint-lg + 1) { @content; }
+  } @else if $bp == 'xl' {
+    @media (min-width: $breakpoint-xl + 1) { @content; }
+  } @else if $bp == '2xl' {
+    @media (min-width: $breakpoint-2xl + 1) { @content; }
+  } @else if $bp == '3xl' {
+    @media (min-width: $breakpoint-3xl + 1) { @content; }
+  }
+}

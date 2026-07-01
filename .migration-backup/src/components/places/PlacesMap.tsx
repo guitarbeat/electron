@@ -576,6 +576,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(
                 value={newPlaceName}
                 onChange={(e) => setNewPlaceName(e.target.value)}
                 placeholder="Name this place…"
+                aria-label="New place name"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && canSave) void handleSavePin();
                 }}

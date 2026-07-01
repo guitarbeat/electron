@@ -1,45 +1,30 @@
-import React, { memo, useCallback } from "react";
-import type {
-  Movie,
-  MovieSuggestion,
-  SharedMemory,
-  User,
-} from "@/shared/types";
-import { CollectionSection } from "@/ui/CollectionLayout";
-import SuggestionStack from "@/components/movies/SuggestionStack";
-import MovieCard from "@/components/movies/MovieCard";
-import MovieDeckStack from "@/components/movies/MovieDeckStack";
-import type { MovieSections } from "@/components/movies/lib/movieSections";
-import { getAllMovies } from "@/components/movies/lib/movieSections";
-import type { MovieBrowseLayout } from "@/components/movies/lib/movieBrowseLayout";
-import { shouldUseMovieScrollDeck } from "@/components/movies/lib/movieBrowseLayout";
-import { WorkspaceCollectionGlobalEmpty } from "@/components/ui/WorkspaceEmptyState";
-import WorkspaceCollectionLoading from "@/components/ui/WorkspaceCollectionLoading";
-import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
-import WorkspaceIncomingSection from "@/components/ui/WorkspaceIncomingSection";
-import WorkspaceIncomingSkeleton from "@/ui/WorkspaceIncomingSkeleton";
-import { useViewport } from "@/app/ViewportContext";
+import React from 'react';
+import type { Movie, MovieSuggestion, SharedMemory, User } from '@/shared/types';
+import { MovieCardSkeleton } from '@/ui/LegacySkeleton';
 import {
-  MOVIES_POSTER_GRID_MIN_COL,
-  workspaceSectionIds,
-  workspaceSectionLabels,
-} from "@/utils/workspaceConfig";
+  CollectionEmptyState,
+  CollectionGrid,
+  CollectionSection,
+} from '@/ui/CollectionLayout';
+import Button from '@/ui/LegacyButton';
+import { spacing } from '@/theme/tokens';
+import SuggestionCard from '@/components/movies/SuggestionCard';
+import MovieCard from '@/components/movies/MovieCard';
+import type { MovieSections } from '@/components/movies/lib/movieSections';
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
   renameMovie: (id: string, title: string) => void | unknown;
-  addMemory: (
-    movieId: string | undefined,
-    movieTitle: string,
-    author: string,
-    note: string,
-  ) => Promise<unknown>;
-  updateMemory: (
-    memoryId: string,
-    updates: { note?: string; movieId?: string; movieTitle?: string },
-  ) => Promise<unknown>;
+  addMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<unknown>;
+  updateMemory: (memoryId: string, updates: { note?: string; movieId?: string; movieTitle?: string }) => Promise<unknown>;
   deleteMemory: (memoryId: string) => Promise<void>;
   togglePin: (memoryId: string) => Promise<unknown>;
+}
+
+export interface MovieSectionIds {
+  incoming?: string;
+  queue?: string;
+  completed?: string;
 }
 
 interface Props {
@@ -47,234 +32,139 @@ interface Props {
   isLoading: boolean;
   isSuggestionsLoading: boolean;
   currentUser: User | null;
+  isMobile: boolean;
   processingSuggestionId: string | null;
   successMovieId: string | null;
   movieMemories: Map<string, SharedMemory[]>;
   onAddMovieFocus: () => void;
-  emptyActionLabel?: string;
-  emptyActionBusy?: boolean;
   onAcceptSuggestion: (s: MovieSuggestion) => void;
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
-  browseLayout?: MovieBrowseLayout;
+  sectionIds?: MovieSectionIds;
 }
 
-const gridSurfaceClass = (browseLayout: MovieBrowseLayout) =>
-  `workspace-content${browseLayout === "grid" ? " workspace-content--poster-grid" : ""}`;
-
-const EMPTY_MEMORIES: SharedMemory[] = [];
-
-interface MovieGridCardProps {
-  movie: Movie;
-  index: number;
-  currentUser: User | null;
-  isMobile: boolean;
-  successMovieId: string | null;
-  memories: SharedMemory[];
-  actions: MovieBodyActions;
-  onDeleteRequest: (movie: Movie) => void;
-  onToggleError: (msg: string) => void;
-}
-
-const MovieGridCard = memo(function MovieGridCard({
-  movie,
-  index,
-  currentUser,
-  isMobile,
-  successMovieId,
-  memories,
-  actions,
-  onDeleteRequest,
-  onToggleError,
-}: MovieGridCardProps) {
-  const onToggle = useCallback(() => {
-    actions.toggleWatched(movie.id);
-  }, [actions, movie.id]);
-
-  const onRename = useCallback(
-    async (title: string) => {
-      await actions.renameMovie(movie.id, title);
-    },
-    [actions, movie.id],
-  );
-
-  const onDelete = useCallback(() => {
-    onDeleteRequest(movie);
-  }, [movie, onDeleteRequest]);
-
-  const onAddMemory = useCallback(
-    async (note: string) => {
-      if (!currentUser) return;
-      await actions.addMemory(movie.id, movie.title, currentUser, note);
-    },
-    [actions, currentUser, movie.id, movie.title],
-  );
-
-  const onUpdateMemory = useCallback(
-    async (memoryId: string, note: string) => {
-      await actions.updateMemory(memoryId, { note });
-    },
-    [actions],
-  );
-
-  const onDeleteMemory = useCallback(
-    async (memoryId: string) => {
-      await actions.deleteMemory(memoryId);
-    },
-    [actions],
-  );
-
-  const onTogglePin = useCallback(
-    async (memoryId: string) => {
-      await actions.togglePin(memoryId);
-    },
-    [actions],
-  );
-
-  return (
-    <MovieCard
-      movie={movie}
-      currentUser={currentUser}
-      isCompact={isMobile}
-      priorityPoster={index < 6}
-      onToggle={onToggle}
-      onToggleError={onToggleError}
-      onRename={onRename}
-      onDelete={onDelete}
-      isHighlighted={successMovieId === movie.id}
-      memories={memories}
-      onAddMemory={currentUser ? onAddMemory : undefined}
-      onUpdateMemory={onUpdateMemory}
-      onDeleteMemory={onDeleteMemory}
-      onTogglePin={onTogglePin}
-    />
-  );
-});
+const SK_MOBILE = ['m1', 'm2', 'm3', 'm4'];
+const SK_DESKTOP = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'];
 
 const MovieSectionBody: React.FC<Props> = ({
   sections,
   isLoading,
   isSuggestionsLoading,
   currentUser,
+  isMobile,
   processingSuggestionId,
   successMovieId,
   movieMemories,
   onAddMovieFocus,
-  emptyActionLabel,
-  emptyActionBusy,
   onAcceptSuggestion,
   onRejectSuggestion,
   onDeleteRequest,
   onToggleError,
   actions,
-  browseLayout = "grid",
+  sectionIds,
 }) => {
-  const { isMobile } = useViewport();
-  const sectionLabels = workspaceSectionLabels("movies", isMobile);
-  const sectionIds = workspaceSectionIds("movies");
-  const browseLayoutClass =
-    browseLayout === "grid" ? " workspace-content--poster-grid" : "";
+  const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
+  const isEmpty = (arr: unknown[]) => arr.length === 0;
 
-  const allMovies = getAllMovies(sections);
+  const GRID = isMobile
+    ? 'clamp(8.5rem, 42vw, 12rem)'
+    : 'clamp(6.5rem, 10vw, 9rem)';
+  const GRID_GAP = isMobile
+    ? 'clamp(0.45rem, 1.5vw, 0.65rem)'
+    : 'clamp(0.3rem, 0.6vw, 0.5rem)';
 
   const showInitialLoading =
-    (isLoading || isSuggestionsLoading) &&
-    allMovies.length === 0 &&
-    sections.suggestions.length === 0;
+    isLoading && isSuggestionsLoading &&
+    isEmpty(sections.queue) && isEmpty(sections.suggestions) && isEmpty(sections.completed);
 
-  const movieGrid = (movies: Movie[]) => (
-    <WorkspaceCollectionGrid
-      className={gridSurfaceClass(browseLayout)}
-      minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
-      items={movies}
-      getItemKey={(movie) => movie.id}
-      renderItem={(movie, index) => (
-        <MovieGridCard
-          movie={movie}
-          index={index}
-          currentUser={currentUser}
-          isMobile={isMobile}
-          successMovieId={successMovieId}
-          memories={movieMemories.get(movie.id) ?? EMPTY_MEMORIES}
-          actions={actions}
-          onDeleteRequest={onDeleteRequest}
-          onToggleError={onToggleError}
-        />
+  const movieGrid = (movies: Movie[], emptyLabel: string) => (
+    <div
+      className="watchlist-content"
+      style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${GRID}, 1fr))`, gap: GRID_GAP }}
+    >
+      {movies.length > 0 ? (
+        movies.map((movie) => (
+          <MovieCard
+            key={movie.id}
+            movie={movie}
+            currentUser={currentUser}
+            onToggle={() => { actions.toggleWatched(movie.id); }}
+            onToggleError={onToggleError}
+            onRename={async (title) => { await actions.renameMovie(movie.id, title); }}
+            onDelete={() => onDeleteRequest(movie)}
+            isHighlighted={successMovieId === movie.id}
+            memories={movieMemories.get(movie.id) ?? []}
+            onAddMemory={
+              currentUser
+                ? async (note) => { await actions.addMemory(movie.id, movie.title, currentUser, note); }
+                : undefined
+            }
+            onUpdateMemory={async (memoryId, note) => { await actions.updateMemory(memoryId, { note }); }}
+            onDeleteMemory={async (memoryId) => { await actions.deleteMemory(memoryId); }}
+            onTogglePin={async (memoryId) => { await actions.togglePin(memoryId); }}
+          />
+        ))
+      ) : (
+        <CollectionEmptyState
+          padding={isMobile ? spacing.md : spacing['2xl']}
+          className={`watchlist-empty-watched-state${isMobile ? ' collection-empty-state--tight' : ''}`}
+        >
+          <span className="watchlist-empty-watched-state__icon" aria-hidden="true">✓</span>
+          <span className="watchlist-empty-watched-state__text">{emptyLabel}</span>
+        </CollectionEmptyState>
       )}
-      empty={null}
-    />
+    </div>
   );
 
-  const renderMovies = (movies: Movie[]) => {
-    if (shouldUseMovieScrollDeck(movies.length, browseLayout, isMobile)) {
-      return <MovieDeckStack movies={movies} />;
-    }
-
-    return movieGrid(movies);
-  };
-
+  // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
     return (
-      <WorkspaceCollectionLoading
-        tab="movies"
-        browseLayoutClass={browseLayoutClass}
-      />
+      <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
+        <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
+          <CollectionEmptyState padding={spacing.xl} className="collection-empty-state--tight">
+            <span style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</span>
+            <strong>Loading your movies</strong>
+          </CollectionEmptyState>
+          <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
+            {sk.map((key) => <MovieCardSkeleton key={key} />)}
+          </div>
+        </div>
+      </CollectionGrid>
     );
   }
 
-  const isListEmpty =
-    allMovies.length === 0 &&
-    sections.suggestions.length === 0 &&
-    !isSuggestionsLoading;
+  const isQueueEmpty = isEmpty(sections.queue) && isEmpty(sections.suggestions) && !isSuggestionsLoading;
 
-  if (isListEmpty) {
-    return (
-      <WorkspaceCollectionGlobalEmpty
-        tab="movies"
-        className={gridSurfaceClass(browseLayout)}
-        minColumnWidth={MOVIES_POSTER_GRID_MIN_COL}
-        onAction={onAddMovieFocus}
-        actionLabel={
-          emptyActionLabel ??
-          (currentUser ? "Add a movie" : "Suggest a movie")
-        }
-        actionBusy={emptyActionBusy}
-      />
-    );
-  }
-
+  // ── Full section body ─────────────────────────────────────────────────────
   return (
-    <div className="workspace-section-body">
-      <WorkspaceIncomingSection
-        heading={sectionLabels.incoming}
-        sectionId={sectionIds.incoming}
-        isLoading={isSuggestionsLoading}
-        itemCount={sections.suggestions.length}
-        showCount={
-          !isSuggestionsLoading && sections.suggestions.length > 1
-        }
-        skeleton={<WorkspaceIncomingSkeleton variant="stack" />}
-      >
-        <SuggestionStack
-          suggestions={sections.suggestions}
-          currentUser={currentUser}
-          processingSuggestionId={processingSuggestionId}
-          onAccept={onAcceptSuggestion}
-          onReject={onRejectSuggestion}
-        />
-      </WorkspaceIncomingSection>
-
-      {allMovies.length > 0 && (
-        <CollectionSection
-          heading={sectionLabels.queue}
-          showHeading={false}
-          id={sectionIds.queue}
-        >
-          {renderMovies(allMovies)}
-        </CollectionSection>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
+      {(isSuggestionsLoading || sections.suggestions.length > 0) && (
+        isSuggestionsLoading && isEmpty(sections.suggestions) ? (
+          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
+            {sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
+          </CollectionGrid>
+        ) : (
+          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
+            {sections.suggestions.map((suggestion) => (
+              <SuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                onAccept={() => void onAcceptSuggestion(suggestion)}
+                onReject={() => void onRejectSuggestion(suggestion)}
+                canRespond={Boolean(currentUser)}
+                disableActions={!currentUser}
+                isProcessing={processingSuggestionId === suggestion.id}
+              />
+            ))}
+          </CollectionGrid>
+        )
       )}
+
+      {sections.queue.length > 0 && movieGrid(sections.queue, 'Your movie list is wide open')}
+
+      {sections.completed.length > 0 && movieGrid(sections.completed, 'No watched movies yet')}
     </div>
   );
 };

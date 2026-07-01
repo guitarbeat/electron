@@ -271,3 +271,17 @@
 @media (prefers-reduced-motion: reduce) {
   .ans__brand-glyph { transition: none; }
 }
+
+/* MagicToggle Wrapper to fit in Nav Strip */
+.ans__magic-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .ans__magic-toggle-wrapper .magic-toggle__btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6rem;
+  }
+}

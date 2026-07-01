@@ -9,7 +9,8 @@ import React, {
   useState,
 } from 'react';
 import type { User } from '@/shared/types';
-import Button from '@/ui/Button';
+import Button from '@/ui/LegacyButton';
+import { Input } from '@/ui/FormFields';
 import MagicToggle from '@/components/ui/MagicToggle';
 import { PlusIcon } from '@/common/Icons';
 import {

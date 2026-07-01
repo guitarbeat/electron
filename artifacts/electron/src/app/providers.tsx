@@ -14,7 +14,7 @@ import React, {
 import type { User } from '@/shared/types';
 import { applyTheme } from '@/theme/applyTheme';
 import { spacing } from '@/theme/tokens';
-import Toast from '@/components/ui/Toast';
+import Toast from '@/components/ui/LegacyToast';
 import { sessionInvalidationEvent } from '@/services/state';
 import type { SessionState } from '@/services/state/stateTypes';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';

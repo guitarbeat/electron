@@ -7,11 +7,11 @@ import {
   getModalOverlayStyle,
   isFocusWithin,
   trapFocusOnTab,
-} from "./lib/modalPrimitives";
-import { useAudio } from "@/hooks/useAudio";
-import Button from "./Button";
-import SharedBottomSheet from "./BottomSheet";
-import SharedMinigameModal from "./MinigameModal";
+} from './lib/modalPrimitives';
+import { useAudio } from '@/hooks/useAudio';
+import Button from './LegacyButton';
+import SharedBottomSheet from './BottomSheet';
+import SharedMinigameModal from './MinigameModal';
 
 // Base modal hook for shared functionality
 const useModalBase = (

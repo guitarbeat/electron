@@ -1,5 +1,6 @@
 import React, { useId } from "react";
 import DOMPurify from "isomorphic-dompurify";
+import parse from "html-react-parser";
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
   getElectronMarkSvgMarkup,
@@ -48,8 +49,9 @@ const ElectronMark: React.FC<ElectronMarkProps> = ({
         flex: "0 0 auto",
         ...style,
       }}
-      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markup) }}
-    />
+    >
+      {parse(DOMPurify.sanitize(markup))}
+    </span>
   );
 };
 

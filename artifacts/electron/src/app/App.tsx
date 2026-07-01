@@ -54,18 +54,28 @@ const MagicComponent = React.lazy(
       }>;
     }>,
 );
-const RetroEffects = React.lazy<
-  React.ComponentType<{ cursorTrailEnabled: boolean }>
->(() =>
-  import("@/components/effects/RetroEffects").catch(
-    () => ({ default: () => null }),
-  ),
+type RetroEffectsComponent = React.ComponentType<{ cursorTrailEnabled: boolean }>;
+type RadialMenuComponent = React.ComponentType<{
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
+  onOpenSpin?: () => void;
+}>;
+
+const RetroEffects = React.lazy<RetroEffectsComponent>(() =>
+  import('@/components/effects/RetroEffects').catch(
+    () => ({ default: (() => null) as RetroEffectsComponent })
+  )
 );
-const FishTankSection = React.lazy(
-  () => import("@/components/effects/FishTankSection"),
+const RadialMenu = React.lazy<RadialMenuComponent>(() =>
+  import('@/components/effects/RadialMenu').catch(
+    () => ({ default: (() => null) as RadialMenuComponent })
+  )
 );
 const DotField = React.lazy(() =>
   import("@/components/effects/DotField").catch(() => ({ default: () => null })),
+);
+const FishTankSection = React.lazy(
+  () => import("@/components/effects/FishTankSection"),
 );
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
 const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));

@@ -18,7 +18,6 @@ interface ToastProps {
   duration?: number;
   actionLabel?: string;
   onAction?: () => void;
-  position?: "top-right" | "top-center" | "bottom-right";
   persistent?: boolean;
 }
 
@@ -50,8 +49,6 @@ const Toast: React.FC<ToastProps> = ({
   duration = 3500,
   actionLabel,
   onAction,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  position = "top-right",
   persistent = false,
 }) => {
   const { playSuccess, playError, playPop } = useAudio();

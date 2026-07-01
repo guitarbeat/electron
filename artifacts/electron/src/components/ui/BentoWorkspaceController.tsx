@@ -1,117 +1,118 @@
-import React from "react";
-import type { MainTab } from "@/shared/types";
-import AppNavStrip from "@/ui/AppNavStrip";
-import ProfileMenu from "@/ui/ProfileMenu";
-import { useViewport } from "@/app/ViewportContext";
-import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
-import "@/app/WorkspaceTopbar.css";
-import "./BentoWorkspaceController.css";
+import { MagicToggle } from "./magic-toggle";
+import React, { useCallback } from 'react';
+import './BentoWorkspaceController.css';
 
-export interface WorkspaceChromeHeaderProps {
-  activeTab: MainTab;
-  onTabChange: (tab: MainTab) => void;
-  pwaStatus?: {
-    isOnline: boolean;
-    isStandalone: boolean;
-    canInstall: boolean;
-    hasUpdateReady: boolean;
-    pendingSyncCount: number;
-    blockedSyncCount: number;
-  };
-  onInstallApp?: () => void;
-  onApplyUpdate?: () => void;
-  onRetrySync?: () => void;
+export type SortOrder = 'recent' | 'alpha' | 'rating';
+
+export interface BentoStatTileConfig {
+  id: string;
+  label: string;
+  count: number;
+  icon: string;
+  sectionId: string;
+  tone?: 'default' | 'incoming' | 'completed';
 }
 
-interface ViewModeControlsProps {
-  viewModes: MagicToggleOption<string>[];
-  activeViewMode: string;
-  onViewModeChange: (mode: string) => void;
-  viewModeAriaLabel?: string;
+export interface BentoSortChipConfig {
+  value: SortOrder;
+  label: string;
 }
 
-const ViewModeControls: React.FC<ViewModeControlsProps> = ({
-  viewModes,
-  activeViewMode,
-  onViewModeChange,
-  viewModeAriaLabel,
-}) => (
-  <div className="bento-ctrl__sort-row">
-    <MagicToggle
-      options={viewModes}
-      activeValue={activeViewMode}
-      onChange={onViewModeChange}
-      ariaLabel={viewModeAriaLabel ?? "Browse view"}
-    />
-  </div>
-);
-
-interface BentoWorkspaceControllerProps extends WorkspaceChromeHeaderProps {
+interface BentoWorkspaceControllerProps {
   children: React.ReactNode;
+  stats: BentoStatTileConfig[];
+  sorts: BentoSortChipConfig[];
+  activeSortOrder: SortOrder;
+  onSortChange: (order: SortOrder) => void;
   ariaLabel?: string;
-  viewModes?: MagicToggleOption<string>[];
-  activeViewMode?: string;
-  onViewModeChange?: (mode: string) => void;
-  viewModeAriaLabel?: string;
 }
 
-function BentoWorkspaceController({
-  children,
-  ariaLabel,
-  viewModes,
-  activeViewMode,
-  onViewModeChange,
-  viewModeAriaLabel,
-  activeTab,
-  onTabChange,
-  pwaStatus,
-  onInstallApp,
-  onApplyUpdate,
-  onRetrySync,
-}: BentoWorkspaceControllerProps) {
-  const { isMobile } = useViewport();
-  const hasViewModes =
-    (viewModes?.length ?? 0) > 1 &&
-    Boolean(activeViewMode) &&
-    Boolean(onViewModeChange);
+interface StatTileProps {
+  tile: BentoStatTileConfig;
+}
+
+const StatTile: React.FC<StatTileProps> = ({ tile }) => {
+  const handleClick = useCallback(() => {
+    const el = document.getElementById(tile.sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [tile.sectionId]);
 
   return (
+    <button
+      type="button"
+      className={`bento-stat-tile bento-stat-tile--${tile.tone ?? 'default'}`}
+      onClick={handleClick}
+      aria-label={`${tile.count} ${tile.label} — tap to jump to section`}
+    >
+      <span className="bento-stat-tile__icon" aria-hidden="true">
+        {tile.icon}
+      </span>
+      <span className="bento-stat-tile__body">
+        <span
+          className="bento-stat-tile__count"
+          key={tile.count}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {tile.count}
+        </span>
+        <span className="bento-stat-tile__label">{tile.label}</span>
+      </span>
+    </button>
+  );
+};
+
+const BentoWorkspaceController: React.FC<BentoWorkspaceControllerProps> = ({
+  children,
+  stats,
+  sorts,
+  activeSortOrder,
+  onSortChange,
+  ariaLabel,
+}) => {
+  return (
     <section
-      className={`workspace-control-panel bento-ctrl bento-ctrl--${activeTab}${isMobile ? " bento-ctrl--mobile" : ""}`}
+      className="workspace-control-panel bento-ctrl"
       aria-label={ariaLabel}
     >
-      <header className="bento-ctrl__topbar" role="banner">
-        <div className="bento-ctrl__topbar-left app-header__left">
-          <AppNavStrip
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-            status={pwaStatus}
-            onInstallApp={onInstallApp}
-            onApplyUpdate={onApplyUpdate}
-            onRetrySync={onRetrySync}
-          />
-        </div>
-        <div className="bento-ctrl__topbar-right app-header__right">
-          <ProfileMenu />
-        </div>
-      </header>
-
-      <div className="bento-ctrl__topbar-sep" aria-hidden="true" />
-
       <div className="bento-ctrl__search">{children}</div>
 
-      {hasViewModes && viewModes && activeViewMode && onViewModeChange ? (
-        <div className="bento-ctrl__controls">
-          <ViewModeControls
-            viewModes={viewModes}
-            activeViewMode={activeViewMode}
-            onViewModeChange={onViewModeChange}
-            viewModeAriaLabel={viewModeAriaLabel}
+      {stats.length > 0 && (
+        <>
+          <div className="bento-ctrl__sep" aria-hidden="true" />
+          <div
+            className="bento-ctrl__stats"
+            role="group"
+            aria-label="Section counts"
+          >
+            {stats.map((tile) => (
+              <StatTile key={tile.id} tile={tile} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {sorts.length > 0 && (
+        <div
+          className="bento-ctrl__sort"
+          role="group"
+          aria-label="Sort order"
+        >
+          <span className="bento-ctrl__sort-label" aria-hidden="true">
+            Sort
+          </span>
+          <MagicToggle
+            options={sorts}
+            activeValue={activeSortOrder}
+            onChange={onSortChange}
+            ariaLabel="Sort order options"
           />
         </div>
-      ) : null}
+      )}
     </section>
   );
-}
+};
 
 export default BentoWorkspaceController;

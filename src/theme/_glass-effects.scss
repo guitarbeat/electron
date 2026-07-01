@@ -1,0 +1,59 @@
+/**
+ * Glass Morphism & Frosted Effects
+ * 
+ * Reusable mixins for blurred background surfaces and shimmer effects.
+ * Includes fallbacks for older browsers without backdrop-filter support.
+ */
+
+// Standard glass blur effect (10px)
+@mixin glass-blur {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  @supports not (backdrop-filter: blur(10px)) {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+// Glass blur with custom amount
+@mixin glass-blur-custom($amount) {
+  backdrop-filter: blur($amount);
+  -webkit-backdrop-filter: blur($amount);
+  
+  @supports not (backdrop-filter: blur($amount)) {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+// Full glass surface: blur + subtle border + shadow
+@mixin glass-surface {
+  @include glass-blur;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+// Glass surface with rich rim and glow
+@mixin glass-surface-rich {
+  @include glass-blur;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 
+    0 0 0 3px rgba(0, 0, 0, 0.1),
+    0 0 18px rgba(255, 255, 255, 0.08);
+}
+
+// Chrome-style glass (used for headers/panels)
+@mixin glass-chrome {
+  backdrop-filter: var(--chrome-blur, blur(10px));
+  -webkit-backdrop-filter: var(--chrome-blur, blur(10px));
+}
+
+// Disable glass effect (for reduced motion or special states)
+@mixin glass-disabled {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+// Glass highlight (used for accent overlays)
+@mixin glass-highlight {
+  background-color: var(--glass-highlight, rgba(255, 255, 255, 0.18));
+}
