@@ -177,6 +177,7 @@ export default defineConfig({
         ]
       : []),
   ],
+  css: { transformer: 'lightningcss' },
   resolve: {
     dedupe: ["react", "react-dom"],
     alias: {

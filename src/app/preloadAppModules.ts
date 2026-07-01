@@ -11,9 +11,7 @@ export const preloadAppModules = (): Promise<void> => {
 
   preloadPromise = Promise.allSettled([
     import("@/app/AppWorkspaceShell"),
-    import("@/app/CohesionAudit"),
     import("@/app/QuizFlowModalContent"),
-    import("@/branding/ElectronLogoLab"),
     import("@/components/effects/moire/Moire"),
     import("@/components/effects/RadialMenu"),
     import("@/components/effects/RetroEffects"),
