@@ -194,9 +194,21 @@ export default defineConfig({
     chunkSizeWarningLimit: 1100,
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    target: "es2020",
+    cssCodeSplit: true,
+    modulePreload: { polyfill: true },
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/")) {
+            return "react-vendor";
+          }
+          if (
+            id.includes("node_modules/framer-motion") ||
+            (id.includes("node_modules/motion") && !id.includes("node_modules/motion-vendor"))
+          ) {
+            return "framer-vendor";
+          }
           if (id.includes("node_modules/maplibre-gl")) {
             return "map-vendor";
           }
