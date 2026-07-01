@@ -15,3 +15,8 @@ Unified scattered inputs and UI toggles using reusable components like MagicTogg
 ## 2026-06-23 - Input Placeholder Accessibility
 **Learning:** Input elements relying solely on `placeholder` attributes are insufficient for screen readers; always provide an explicit `aria-label` or associated `<label>` to guarantee accessibility.
 **Action:** When adding new input fields, always ensure an explicit label is present rather than relying solely on placeholder text.
+
+## 2026-06-21 - Replaced custom split user profile widget with MagicToggle for UI consolidation.
+## 2024-06-23 - MagicToggle Semantic Abuse
+- Avoid using segmented controls (like MagicToggle) for disjointed actions (e.g. a toggle button and a modal trigger). Although it creates a visually grouped pill, it violates semantic a11y expectations since toggles imply mutually exclusive options.
+- If visual grouping is needed, build a separate MagicButtonGroup component without mutually exclusive state indicators or `aria-pressed` properties.
