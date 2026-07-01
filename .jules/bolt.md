@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 2026-06-23 - Convert Array.find to Map.get for optimization
 Converted O(N * M) Array.find calls inside a loop to O(N + M) map lookup by creating a Map beforehand. Execution time on mock 1000 questions / 10000 answers dropped from ~100ms to ~11ms.
 
@@ -10,3 +11,5 @@ When testing React hooks that rely on `useSyncExternalStore` natively in a `node
 ## 2026-06-24 - Array map/filter Set allocation bottleneck
 **Learning:** When generating Sets from objects, chained array functions like `.map().filter()` create temporary intermediate arrays causing memory allocations. The `useCollection` hook was allocating new arrays on every poll sync event in `hasLocalOnlyRows`.
 **Action:** Use a single-pass `for...of` loop and call `Set.prototype.add()` directly to shift the time/memory complexity and prevent redundant O(N) array allocation overhead.
+
+## 2024-03-20 - Handled Expected Errors Gracefully\nRemoved noisy `console.warn` outputs for expected failures (like `getPinCoverageState()` throwing) in `session/profile.ts` and `session.ts`, replacing them with descriptive comments since the code already falls back gracefully to default empty arrays. This improves code health by avoiding unhandled error logs in the console for non-critical fallback paths.

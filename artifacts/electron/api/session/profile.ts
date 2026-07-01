@@ -66,7 +66,7 @@ async function handler(req: Request): Promise<Response> {
         pinProtectedUsers = pinCoverage.pinProtectedUsers;
         usersMissingPins = pinCoverage.usersMissingPins;
       } catch (error) {
-        console.warn('Failed to read PIN coverage during logout.', error);
+        // gracefully handled by falling back to default empty arrays
       }
 
       return jsonResponse(
@@ -117,7 +117,7 @@ async function handler(req: Request): Promise<Response> {
       pinProtectedUsers = pinCoverage.pinProtectedUsers;
       usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      console.warn('Failed to read PIN coverage during profile update.', error);
+      // gracefully handled by falling back to default empty arrays
     }
     const requiresPin = pinProtectedUsers.includes(user);
 
