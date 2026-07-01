@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Convert quiz photos (PNG to WebP) using image-utils Power and update QuestionViews.tsx to serve WebP-first with PNG fallback using <picture> elements",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Use the image-utils Kiro Power to convert all 12 PNGs in public/quiz-photos/ (quiz-img-1.png through quiz-img-12.png) to WebP format at quality=85. Save as quiz-img-N.webp alongside the originals. Keep the .png files for browser fallback.",
     "2. In src/components/quiz/QuestionViews.tsx, find the ImageChoiceQuestionView component. The current code renders: <img src={option.imageUrl} alt={option.alt} style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />",
@@ -25,5 +25,5 @@
     "cd /projects/sandbox/electron && npx tsc --noEmit 2>&1 | head -30"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "The PNG files in the repo have corrupted binary data (git CRLF stripping removed 0x0d bytes from PNG binary content including the PNG signature). PIL/Pillow could not open them directly. Recovery was done by: (1) parsing chunk structure manually, (2) finding IDAT chunks by searching for the 'IDAT' magic bytes, (3) decompressing with raw deflate (wbits=-15, skipping the 2-byte zlib header) which bypasses the adler32 checksum check, (4) applying PNG inverse filters with numpy, (5) building PIL Image from raw pixel data. Each image lost at most 1 row (last row padded with zeros). The WebP files were successfully created and committed. Service worker already caches /quiz-photos/ paths cache-first via electron-images-v1 cache, so WebP files get the same caching benefit automatically."
 }
