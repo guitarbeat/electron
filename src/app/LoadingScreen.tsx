@@ -1,5 +1,5 @@
 import React from "react";
-import FishTank from "@/components/effects/FishTank";
+const FishTank = React.lazy(() => import("@/components/effects/FishTank"));
 
 /**
  * Full-screen loading state shown while the session is bootstrapping.
@@ -61,7 +61,9 @@ const LoadingScreen: React.FC = () => (
           maxWidth: "min(560px, 90vw)",
         }}
       >
-        <FishTank />
+        <React.Suspense fallback={null}>
+          <FishTank />
+        </React.Suspense>
       </div>
     </div>
   </>

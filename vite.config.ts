@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => {
   Object.assign(process.env, env);
 
   return {
+    css: { transformer: 'lightningcss' },
     server: {
       host: '0.0.0.0',
       port: 5000,

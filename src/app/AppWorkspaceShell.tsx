@@ -1,7 +1,7 @@
 import React, { type FC } from "react";
 
 import type { MainTab } from "@/shared/types";
-import MoviesView from "@/components/movies/MoviesView";
+const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
 
@@ -57,7 +57,9 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         }
       >
         {activeTab === "movies" ? (
-          <MoviesView isMobile={isMobile} />
+          <React.Suspense fallback={null}>
+            <MoviesView isMobile={isMobile} />
+          </React.Suspense>
         ) : (
           <React.Suspense fallback={<PlacesTabFallback />}>
             <PlacesList />
