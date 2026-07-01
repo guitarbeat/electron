@@ -33,6 +33,34 @@ const PlacesTabFallback: FC = () => (
   </div>
 );
 
+const MoviesTabFallback: FC = () => (
+  <div
+    className="watchlist-container places-container"
+    role="status"
+    aria-label="Loading movies"
+    aria-live="polite"
+  >
+    <div
+      style={{
+        padding: "2rem 1rem",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "0.75rem",
+        opacity: 0.65,
+        color: "var(--color-text-secondary)",
+        fontFamily: "var(--font-interface)",
+        fontSize: "0.9rem",
+      }}
+    >
+      <span style={{ fontSize: "1.75rem", lineHeight: 1 }} aria-hidden="true">
+        🎬
+      </span>
+      <span>Loading movies…</span>
+    </div>
+  </div>
+);
+
 interface AppWorkspaceShellProps {
   isMobile: boolean;
   activeTab: MainTab;
@@ -57,7 +85,7 @@ const AppWorkspaceShell: FC<AppWorkspaceShellProps> = ({
         }
       >
         {activeTab === "movies" ? (
-          <React.Suspense fallback={null}>
+          <React.Suspense fallback={<MoviesTabFallback />}>
             <MoviesView isMobile={isMobile} />
           </React.Suspense>
         ) : (
