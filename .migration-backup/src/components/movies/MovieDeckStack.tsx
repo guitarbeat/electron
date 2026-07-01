@@ -293,7 +293,6 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
     <div
       ref={containerRef}
       className="movie-deck-stack-scroll"
-
       aria-label={`Scroll through ${deck.length} movies`}
     >
       <div
