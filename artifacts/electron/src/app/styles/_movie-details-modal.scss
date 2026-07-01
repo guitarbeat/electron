@@ -558,7 +558,29 @@
   text-transform: var(--type-badge-transform);
 }
 
-/* ── Interactive folder gallery inside the movie details modal ──────────── */
+/* ── HandWritingText eyebrow in the modal header ──────────────────────── */
+
+/**
+ * The SVG handwriting sits where the plain "Movie night file" eyebrow
+ * label used to be. We size it to match the eyebrow type scale and give it
+ * a little breathing room so it doesn't crowd the title below.
+ */
+.movie-details-modal__eyebrow {
+  /* Keep the existing layout contribution (margin/padding) but let the SVG
+     define the visual content — the <p> itself becomes a flex container */
+  display: flex;
+  align-items: center;
+  min-height: 1.6rem;
+  margin-bottom: 0.1rem;
+}
+
+.movie-details-modal__eyebrow-handwriting {
+  /* Align with the eyebrow type scale (~0.72rem cap height) */
+  display: block;
+  height: 3rem;
+  /* Overflow visible so stroke caps don't clip at the component boundary */
+  overflow: visible;
+}
 
 /**
  * The gallery lives inside the scrollable content column. It uses the app's
