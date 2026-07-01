@@ -12,6 +12,7 @@ import { MAX_MOVIE_NOTE_LENGTH } from "./lib/movieSections";
 import { submitMemory } from "./lib/memorySubmit";
 import type { MovieTransitionOrigin } from "./MovieCard";
 import { InteractiveFolderGallery, type GalleryPhoto } from "@/components/ui/interactive-folder-gallery";
+import { HandWritingText } from "@/components/ui/hand-writing-text";
 
 // Curated cinematic Unsplash fallbacks used to pad the gallery when a movie
 // has fewer than 3 memory photos (or no memory photos at all).
@@ -395,7 +396,17 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
           <div className="movie-details-modal__content">
             <div className="movie-details-modal__header">
-              <p className="movie-details-modal__eyebrow">Movie night file</p>
+              <p className="movie-details-modal__eyebrow" aria-hidden="true">
+                <HandWritingText
+                  text="movie night"
+                  accentColor="var(--color-accent)"
+                  strokeWidth={2}
+                  strokeDuration={0.55}
+                  staggerDelay={0.1}
+                  className="movie-details-modal__eyebrow-handwriting"
+                />
+              </p>
+              <span className="sr-only">Movie night file</span>
               <div className="movie-details-modal__title-row">
                 <h2 className="movie-details-modal__title">{movie.title}</h2>
                 {movie.imdbRating && /^\d/.test(movie.imdbRating) ? (
@@ -479,6 +490,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 folderName={`${movie.title}.gallery`}
                 dragHintText="Drag any photo down to close"
                 className="movie-details-modal__gallery"
+                accentColor="var(--color-accent)"
               />
 
               {currentUser && onAddMemory ? (
