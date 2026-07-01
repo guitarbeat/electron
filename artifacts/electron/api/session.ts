@@ -3,6 +3,7 @@ import { getSessionState } from './_lib/session.ts';
 import { getPinCoverageState } from './_lib/state.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
 import type { User } from '../src/shared/types.ts';
+import { logger } from './_lib/logger.ts';
 
 async function handler(req: Request): Promise<Response> {
   try {
@@ -19,7 +20,7 @@ async function handler(req: Request): Promise<Response> {
       pinProtectedUsers = pinCoverage.pinProtectedUsers;
       usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      // gracefully handled by falling back to default empty arrays
+      logger.error('Failed to read PIN coverage for session state.', error);
     }
 
     return jsonResponse({
@@ -29,7 +30,7 @@ async function handler(req: Request): Promise<Response> {
       usersMissingPins,
     });
   } catch (error) {
-    console.error(`Failed to read session state during ${req.method} ${req.url}:`, error);
+    logger.error(`Failed to read session state during ${req.method} ${req.url}:`, error);
     return jsonResponse({
       hasAccess: false,
       currentUser: null,
