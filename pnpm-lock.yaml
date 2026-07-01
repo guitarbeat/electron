@@ -170,6 +170,9 @@ importers:
         specifier: 1.32.0
         version: 1.32.0
     devDependencies:
+      '@total-typescript/ts-reset':
+        specifier: ^0.6.1
+        version: 0.6.1
       prettier:
         specifier: ^3.8.3
         version: 3.8.3

@@ -1,0 +1,7 @@
+{
+  "task_id": "task-perf-faster-load",
+  "task_description": "Make the Electron app load faster. Covers: font loading consolidation and display:swap, caching headers for Netlify/Vercel, Vite manualChunks improvements (motion, gsap, modulePreload polyfill), React.lazy for MoviesView, and image lazy loading for quiz photos.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005"],
+  "blocked_reason": null
+}

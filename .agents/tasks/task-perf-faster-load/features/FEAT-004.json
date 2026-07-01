@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Route/component-level lazy loading improvements: lazy-load MoviesView (the default tab) so it does not land in the initial JS bundle. Add a dedicated movies tab fallback skeleton. Ensure preloadAppModules.ts eagerly re-fetches MoviesView during boot so users don't wait after the loading screen. Also move heavy AppNavStrip (imports gsap + lucide-react) into the lazy boundary.",
+  "status": "pending",
+  "steps": [
+    "1. Read /projects/sandbox/electron/src/app/AppWorkspaceShell.tsx. Currently MoviesView is eagerly imported at the top. PlacesList is already lazy.",
+    "2. Convert MoviesView to React.lazy in AppWorkspaceShell.tsx: replace `import MoviesView from '@/components/movies/MoviesView'` with `const MoviesView = React.lazy(() => import('@/components/movies/MoviesView'))`. Add a Suspense fallback for the movies tab similar to PlacesTabFallback - a simple skeleton or loading indicator.",
+    "3. Read /projects/sandbox/electron/src/app/preloadAppModules.ts. Add `import('@/components/movies/MoviesView')` to the Promise.allSettled array so it is preloaded during the boot screen (after lazy-splitting it).",
+    "4. Read /projects/sandbox/electron/src/app/App.tsx. Check if AppNavStrip or AppHeader are eagerly imported there or in AppHeader.tsx. If AppNavStrip (which imports gsap and lucide) is eagerly loaded in the critical path, consider whether it can be lazy. NOTE: AppNavStrip is part of the core nav chrome and renders immediately, so do NOT lazy-load it if it would cause a visible layout shift. Only lazy-load it if it has its own Suspense wrapper. Leave this as-is if it would cause UX issues.",
+    "5. Read /projects/sandbox/electron/src/app/lazyFeaturePanels.tsx - already has 5 lazy panels. Verify they are all still correct (no regression).",
+    "6. Run pnpm run typecheck to confirm no TS errors from the lazy split."
+  ],
+  "acceptance_criteria": [
+    "MoviesView is imported via React.lazy in AppWorkspaceShell.tsx",
+    "A Suspense wrapper with an appropriate fallback wraps the MoviesView render",
+    "preloadAppModules.ts includes MoviesView in its preload list",
+    "pnpm run typecheck passes",
+    "npx vite build succeeds and the MoviesView module is now a separate chunk"
+  ],
+  "verification": [
+    "grep -n 'React.lazy\\|lazy(' /projects/sandbox/electron/src/app/AppWorkspaceShell.tsx",
+    "grep -n 'MoviesView' /projects/sandbox/electron/src/app/preloadAppModules.ts",
+    "pnpm run typecheck exits 0",
+    "npx vite build from /projects/sandbox/electron succeeds"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
