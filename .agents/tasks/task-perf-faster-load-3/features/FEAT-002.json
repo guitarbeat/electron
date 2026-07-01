@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Improve service worker with separate caches for hashed assets and quiz photos, bump cache version to electron-shell-v4",
+  "status": "completed",
+  "steps": [
+    "1. Open public/sw.js. Current code uses a single 'electron-shell-v3' cache for everything.",
+    "2. Add two new cache names: ASSETS_CACHE = 'electron-assets-v1' for content-hashed /assets/* files (cache-first, no expiry), and IMAGES_CACHE = 'electron-images-v1' for /quiz-photos/*.png files (cache-first).",
+    "3. Rename the main CACHE constant to 'electron-shell-v4' (was 'electron-shell-v3'). Update the activate handler to delete old caches that are not in the set of current known caches (electron-shell-v4, electron-assets-v1, electron-images-v1).",
+    "4. In the fetch handler, add routing logic: if url.pathname starts with '/assets/', use ASSETS_CACHE (cache-first, stale-never - these files have content-hash names). If url.pathname starts with '/quiz-photos/', use IMAGES_CACHE (cache-first). If url.pathname === '/manifest.json', use network-first (it can change). Navigation requests remain network-first. All other shell assets remain cache-first in CACHE (electron-shell-v4).",
+    "5. ASSETS_CACHE handler: on miss, fetch and cache in ASSETS_CACHE. These never expire since content-hash filenames change on update.",
+    "6. IMAGES_CACHE handler: on miss, fetch and cache in IMAGES_CACHE.",
+    "7. Keep the SHELL array as is (listing shell assets). Make sure the activate cleanup deletes all old caches not in the new set of [CACHE, ASSETS_CACHE, IMAGES_CACHE]."
+  ],
+  "acceptance_criteria": [
+    "sw.js has CACHE = 'electron-shell-v4'",
+    "sw.js has ASSETS_CACHE = 'electron-assets-v1'",
+    "sw.js has IMAGES_CACHE = 'electron-images-v1'",
+    "sw.js routes /assets/* requests to ASSETS_CACHE cache-first",
+    "sw.js routes /quiz-photos/* requests to IMAGES_CACHE cache-first",
+    "sw.js routes /manifest.json requests network-first",
+    "sw.js activate handler cleans up all old caches not in the set {electron-shell-v4, electron-assets-v1, electron-images-v1}",
+    "Navigation requests remain network-first"
+  ],
+  "verification": [
+    "grep -n 'electron-shell-v4' public/sw.js should return a match",
+    "grep -n 'electron-assets-v1' public/sw.js should return a match",
+    "grep -n 'electron-images-v1' public/sw.js should return a match",
+    "grep -n 'quiz-photos' public/sw.js should return a match",
+    "grep -n 'manifest.json' public/sw.js should show network-first logic for manifest"
+  ],
+  "blocked_reason": null,
+  "findings": "Rewrote public/sw.js to use split caches: electron-shell-v4 (main shell), electron-assets-v1 (Vite content-hashed JS/CSS under /assets/*), and electron-images-v1 (quiz photos under /quiz-photos/*). Added network-first routing for /manifest.json. Activate handler now uses CURRENT_CACHES Set to clean up stale caches. No build or test commands needed for this static file change."
+}

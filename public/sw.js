@@ -1,5 +1,9 @@
-/* Electron PWA service worker — minimal app-shell cache for installability + basic offline */
-const CACHE = 'electron-shell-v3';
+/* Electron PWA service worker — app-shell + split caches */
+const CACHE = 'electron-shell-v4';
+const ASSETS_CACHE = 'electron-assets-v1';
+const IMAGES_CACHE = 'electron-images-v1';
+const CURRENT_CACHES = new Set([CACHE, ASSETS_CACHE, IMAGES_CACHE]);
+
 const SHELL = [
   '/',
   '/index.html',
@@ -21,7 +25,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+      Promise.all(keys.filter((k) => !CURRENT_CACHES.has(k)).map((k) => caches.delete(k))),
     ),
   );
   self.clients.claim();
@@ -51,6 +55,56 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => caches.match('/index.html').then((r) => r || caches.match('/'))),
+    );
+    return;
+  }
+
+  // Network-first for manifest.json (it can change).
+  if (url.pathname === '/manifest.json') {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => undefined);
+          }
+          return res;
+        })
+        .catch(() => caches.match(req)),
+    );
+    return;
+  }
+
+  // Cache-first (permanent) for content-hashed Vite JS/CSS chunks.
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.open(ASSETS_CACHE).then((assetsCache) =>
+        assetsCache.match(req).then(
+          (cached) =>
+            cached ||
+            fetch(req).then((res) => {
+              if (res.ok) assetsCache.put(req, res.clone()).catch(() => undefined);
+              return res;
+            }),
+        ),
+      ),
+    );
+    return;
+  }
+
+  // Cache-first for quiz photos — they never change.
+  if (url.pathname.startsWith('/quiz-photos/')) {
+    event.respondWith(
+      caches.open(IMAGES_CACHE).then((imgCache) =>
+        imgCache.match(req).then(
+          (cached) =>
+            cached ||
+            fetch(req).then((res) => {
+              if (res.ok) imgCache.put(req, res.clone()).catch(() => undefined);
+              return res;
+            }),
+        ),
+      ),
     );
     return;
   }
