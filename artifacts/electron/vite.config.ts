@@ -204,11 +204,12 @@ export default defineConfig({
             return "react-vendor";
           }
           // Match framer-motion and the motion package (its runtime core).
+          // Trailing slash prevents false matches on packages like @emotion/motion-utils.
           // Note: motion-vendor is a chunk output name, not a node_modules path,
           // so path-based exclusions for it are unnecessary.
           if (
-            id.includes("node_modules/framer-motion") ||
-            id.includes("node_modules/motion")
+            id.includes("node_modules/framer-motion/") ||
+            id.includes("node_modules/motion/")
           ) {
             return "framer-vendor";
           }
