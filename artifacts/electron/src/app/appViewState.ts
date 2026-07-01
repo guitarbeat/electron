@@ -4,7 +4,7 @@ export const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
 
 export interface StoredAppViewState {
   activeTab: MainTab;
-  showMessages: boolean;
+  showMessages?: boolean;
 }
 
 export const parseMainTab = (
@@ -60,12 +60,10 @@ export const readInitialAppViewState = (): StoredAppViewState => {
   const fromHash = readHashMainTab();
   const fromQuery = parseMainTab(search.get("tab"));
 
+  const panelIsMessages = search.get("panel") === "messages";
   return {
-    activeTab: fromHash ?? fromQuery ?? stored?.activeTab ?? "movies",
-    showMessages:
-      search.get("panel") === "messages"
-        ? true
-        : (stored?.showMessages ?? false),
+    activeTab: fromHash ?? fromQuery ?? (panelIsMessages ? ("messages" as const) : null) ?? stored?.activeTab ?? "movies",
+    showMessages: false,
   };
 };
 

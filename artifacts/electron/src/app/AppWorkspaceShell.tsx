@@ -15,6 +15,8 @@ import {
 
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
+const MemoriesView = React.lazy(() => import("@/components/memories/MemoriesView"));
+const MessageBoard = React.lazy(() => import("@/components/messages/MessageBoard"));
 
 const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
 
@@ -60,13 +62,19 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 
   const bento = tabConfigs[activeTab] ?? EMPTY_BENTO_CONFIG;
   const workspaceContent =
-    activeTab === "movies" ? <MoviesView /> : <PlacesList />;
+    activeTab === "movies" ? <MoviesView /> :
+    activeTab === "places" ? <PlacesList /> :
+    activeTab === "memories" ? <MemoriesView onJumpToMovies={() => onTabChange("movies")} /> :
+    <MessageBoard />;
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <ProfilePinProvider>
         <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {activeTab === "movies" ? "Movies workspace" : "Places workspace"}
+          {activeTab === "movies" ? "Movies workspace" :
+           activeTab === "places" ? "Places workspace" :
+           activeTab === "memories" ? "Memories workspace" :
+           "Messages workspace"}
         </p>
 
         <main
@@ -81,7 +89,10 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
             className={`workspace-surface workspace-surface--${activeTab}`}
             style={{ position: "relative", zIndex: 1, minWidth: 0 }}
             aria-label={
-              activeTab === "movies" ? "Movies workspace" : "Places workspace"
+              activeTab === "movies" ? "Movies workspace" :
+              activeTab === "places" ? "Places workspace" :
+              activeTab === "memories" ? "Memories workspace" :
+              "Messages workspace"
             }
           >
             <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>

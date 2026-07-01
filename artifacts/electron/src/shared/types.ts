@@ -5,7 +5,7 @@ export const USER_PHOTOS: Record<User, string> = {
   Electra: "https://cataas.com/cat/cute?width=200&height=200",
 };
 
-export const MAIN_TABS = ["movies", "places"] as const;
+export const MAIN_TABS = ["movies", "places", "memories", "messages"] as const;
 
 export type MainTab = (typeof MAIN_TABS)[number];
 
