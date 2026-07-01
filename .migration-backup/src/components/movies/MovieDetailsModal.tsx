@@ -224,9 +224,17 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   );
   const featuredMemory =
     memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
-  const secondaryMemories = canManageMemories
-    ? []
-    : memories.filter((memory) => memory.id !== featuredMemory?.id).slice(0, 2);
+  const secondaryMemories: SharedMemory[] = [];
+  if (!canManageMemories) {
+    for (const memory of memories) {
+      if (memory.id !== featuredMemory?.id) {
+        secondaryMemories.push(memory);
+        if (secondaryMemories.length === 2) {
+          break;
+        }
+      }
+    }
+  }
   const watchStatus = getWatchStatus(movie, memories.length);
   const source = clampOrigin(origin ?? null);
   const { targetWidth, targetHeight } = getDialogMetrics(isMobile);
