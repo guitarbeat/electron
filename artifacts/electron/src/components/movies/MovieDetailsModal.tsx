@@ -11,6 +11,46 @@ import { formatMemoryTimestamp } from "@/utils";
 import { MAX_MOVIE_NOTE_LENGTH } from "./lib/movieSections";
 import { submitMemory } from "./lib/memorySubmit";
 import type { MovieTransitionOrigin } from "./MovieCard";
+import { InteractiveFolderGallery, type GalleryPhoto } from "@/components/ui/interactive-folder-gallery";
+
+// Curated cinematic Unsplash fallbacks used to pad the gallery when a movie
+// has fewer than 3 memory photos (or no memory photos at all).
+const CINEMATIC_FALLBACKS = [
+  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=800&auto=format&fit=crop",
+];
+
+/** Build gallery photos from memory imageUrls + movie poster + Unsplash fillers */
+function buildGalleryPhotos(
+  memories: SharedMemory[],
+  movie: Movie,
+): GalleryPhoto[] {
+  const photos: GalleryPhoto[] = [];
+
+  // 1. Pull images from memories (up to 5)
+  memories.forEach((m) => {
+    if (m.imageUrl && photos.length < 5) {
+      photos.push({ id: `memory-${m.id}`, image: m.imageUrl });
+    }
+  });
+
+  // 2. Pad with the movie poster if it exists and we still need photos
+  if (movie.posterUrl && movie.posterUrl !== "N/A" && photos.length < 3) {
+    photos.push({ id: `poster-${movie.id}`, image: movie.posterUrl });
+  }
+
+  // 3. Fill remaining slots up to 5 with cinematic Unsplash stills
+  let fbIndex = 0;
+  while (photos.length < 5 && fbIndex < CINEMATIC_FALLBACKS.length) {
+    photos.push({ id: `fb-${fbIndex}`, image: CINEMATIC_FALLBACKS[fbIndex] });
+    fbIndex++;
+  }
+
+  return photos.slice(0, 5);
+}
 
 interface MovieDetailsModalProps {
   movie: Movie;
@@ -430,6 +470,16 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                   </span>
                 ) : null}
               </div>
+
+              {/* Interactive folder gallery — opens to reveal movie stills and
+                  memory photos. Photos come from memory imageUrls, the movie
+                  poster, and cinematic Unsplash fallbacks. */}
+              <InteractiveFolderGallery
+                photos={buildGalleryPhotos(memories, movie)}
+                folderName={`${movie.title}.gallery`}
+                dragHintText="Drag any photo down to close"
+                className="movie-details-modal__gallery"
+              />
 
               {currentUser && onAddMemory ? (
                 <div className="movie-details-modal__composer-shell">

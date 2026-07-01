@@ -557,3 +557,36 @@
   letter-spacing: var(--letter-spacing-dense);
   text-transform: var(--type-badge-transform);
 }
+
+/* ── Interactive folder gallery inside the movie details modal ──────────── */
+
+/**
+ * Scale the gallery down to fit the constrained modal content column
+ * without disrupting the surrounding layout. The component uses an internal
+ * min-h-[500px] container, so we clip it to a tighter box here and let the
+ * photos overflow within their own 3D space.
+ */
+.movie-details-modal__gallery {
+  /* Shrink the top/bottom breathing room — the modal already has padding */
+  padding-top: 1rem !important;
+  padding-bottom: 0.5rem !important;
+
+  /* Constrain height so the gallery sits flush in the notes section */
+  min-height: 380px;
+
+  /* Clip photographic overflow so it doesn't bleed into adjacent sections */
+  overflow: hidden;
+
+  /* Subtle top divider to visually separate gallery from section heading */
+  border-top: 1px solid rgba(148, 163, 200, 0.12);
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* On mobile the dialog is narrower — shrink the inner card widths via scale */
+.movie-details-modal__dialog--mobile .movie-details-modal__gallery {
+  transform: scale(0.78);
+  transform-origin: top center;
+  min-height: 300px;
+  margin-bottom: -3rem; /* compensate for the scale shrink */
+}
