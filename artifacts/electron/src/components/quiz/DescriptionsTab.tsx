@@ -1,7 +1,7 @@
-import React from "react";
-import { QuizCharacter, CHARACTERS } from "@/shared/types";
-import Card from "@/ui/Card";
-import { Textarea } from "@/ui/FormFields";
+import React from 'react';
+import { QuizCharacter, CHARACTERS } from '@/shared/types';
+import Card from '@/ui/LegacyCard';
+import { Textarea } from '@/ui/FormFields';
 
 // Descriptions Tab Component
 interface DescriptionsTabProps {

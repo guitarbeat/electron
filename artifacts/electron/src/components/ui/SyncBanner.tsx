@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
-import Button from "./Button";
-import { colors, radius, spacing, typography } from "@/theme/tokens";
-import { getSyncBannerContent, shouldShowSyncBanner } from "./lib/syncBannerContent";
-import { isMockMode } from "@/services/state";
+import React, { useCallback, useEffect, useState } from 'react';
+import Button from './LegacyButton';
+import { colors, radius, spacing, typography } from '@/theme/tokens';
+import { getSyncBannerContent } from './lib/syncBannerContent';
+import { isMockMode } from '@/services/state';
 
 interface SyncBannerProps {
   isBlocked?: boolean;

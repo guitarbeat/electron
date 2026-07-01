@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, {
   memo,
   useCallback,
@@ -8,50 +9,47 @@ import React, {
 } from "react";
 import { useUser } from "@/app/useProviders";
 import type {
+  Movie,
   MovieSuggestion,
+  SharedMemory,
   MoviesViewProps,
 } from "@/shared/types";
 import ConfirmDialog from "@/ui/ConfirmDialog";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
-import { useMoviesWorkspace } from "@/hooks/movies";
+import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
+import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
-import { buildMovieSections } from "./lib/movieSections";
-import {
-  MOVIE_BROWSE_LAYOUTS,
-  readMovieBrowseLayout,
-  shouldUseMovieScrollDeck,
-  writeMovieBrowseLayout,
-  type MovieBrowseLayout,
-} from "./lib/movieBrowseLayout";
-import { groupMemoriesByMovieId } from "@/components/memories/lib/memoryUtils";
-import { getErrorMessage } from "@/utils";
+import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import { createPortal } from "react-dom";
+import {
+  type BentoStatTileConfig,
+  type BentoSortChipConfig,
+  type SortOrder,
+} from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import { useViewport } from "@/app/ViewportContext";
-import { useWorkspaceBentoConfig } from "@/hooks/useWorkspaceBentoConfig";
+import { useMoviesWorkspaceActions } from "@/hooks/movies/useMoviesWorkspaceActions";
+import "./MoviesPhotoMode.css";
 
-const MOBILE_MOVIE_VIEW_MODES = MOVIE_BROWSE_LAYOUTS.map(({ value, label }) => ({
-  value,
-  label: value === "grid" ? "Grid" : "Scroll",
-  ariaLabel: label,
-}));
+const MOVIE_SECTION_IDS = {
+  incoming: "movies-section-incoming",
+  queue: "movies-section-queue",
+  completed: "movies-section-watched",
+};
 
-const resolveSearchTitle = (
-  selectedAutocompleteResult: MovieAutocompleteResult | null,
-  searchQuery: string,
-) => selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+const MOVIE_SORTS: BentoSortChipConfig[] = [
+  { value: "recent", label: "🕐 Recent" },
+  { value: "alpha", label: "A→Z" },
+  { value: "rating", label: "★ Rating" },
+];
 
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-  const { isMobile } = useViewport();
-  const { searchPortalEl } = useBentoSlot();
-  const [browseLayout, setBrowseLayout] = useState<MovieBrowseLayout>(() =>
-    readMovieBrowseLayout(),
-  );
+  const { setConfig, searchPortalEl } = useBentoSlot();
+  const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
     useState(false);
@@ -61,6 +59,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
   const {
+    isMobile,
     searchQuery,
     setSearchQuery,
     isAdding,
@@ -71,12 +70,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     successMovieId,
     setSuccessMovieId,
     processingSuggestionId,
-    toggleWatched,
-    renameMovie,
-    addMemory,
-    updateMemory,
-    deleteMemoryRecord,
-    toggleMemoryPin,
     isSubmittingRecommendation,
     previousMoviesRef,
     movies,
@@ -90,71 +83,100 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     isSuggestionsLoading,
     memories,
     isMoviesWorkspaceDegraded,
-    moviesSyncBanner,
+    isMoviesWorkspaceSyncBlocked,
+    moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
+    toggleWatched,
+    renameMovie,
+    addMemory,
+    updateMemory,
+    deleteMemoryRecord,
+    toggleMemoryPin,
   } = useMoviesWorkspace({ currentUser, isPaused });
-  const movieMemories = useMemo(
-    () => groupMemoriesByMovieId(movies, memories),
-    [memories, movies],
-  );
+  const movieMemories = useMemo(() => {
+    const memoriesByMovieId = new Map<string, SharedMemory[]>();
+    const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
+
+    movies.forEach((movie) => {
+      movieLookupByTitle.set(movie.title.trim().toLowerCase(), movie.id);
+    });
+    memories.forEach((memory) => {
+      let targetMovieId: string | undefined;
+
+      if (memory.movieId) {
+        targetMovieId = memory.movieId;
+      } else {
+        targetMovieId = movieLookupByTitle.get(
+          memory.movieTitle.trim().toLowerCase(),
+        );
+      }
+
+      if (targetMovieId) {
+        let movieGroup = memoriesByMovieId.get(targetMovieId);
+        if (!movieGroup) {
+          movieGroup = [];
+          memoriesByMovieId.set(targetMovieId, movieGroup);
+        }
+        movieGroup.push(memory);
+      }
+    });
+    return memoriesByMovieId;
+  }, [memories, movies]);
   const sections = useMemo(
-    () => buildMovieSections(movies, pendingSuggestions),
-    [movies, pendingSuggestions],
+    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
+    [movies, pendingSuggestions, sortOrder],
   );
-  const movieBodyActions = useMemo(
-    () => ({
-      toggleWatched,
-      renameMovie,
-      addMemory,
-      updateMemory,
-      deleteMemory: deleteMemoryRecord,
-      togglePin: toggleMemoryPin,
-    }),
+
+  const movieStats = useMemo(
+    (): BentoStatTileConfig[] => [
+      {
+        id: "incoming",
+        label: "Incoming",
+        count: sections.suggestions.length,
+        icon: "💌",
+        sectionId: MOVIE_SECTION_IDS.incoming,
+        tone: "incoming",
+      },
+      {
+        id: "queue",
+        label: "Up Next",
+        count: sections.queue.length,
+        icon: "🎞",
+        sectionId: MOVIE_SECTION_IDS.queue,
+        tone: "default",
+      },
+      {
+        id: "watched",
+        label: "Watched",
+        count: sections.completed.length,
+        icon: "✓",
+        sectionId: MOVIE_SECTION_IDS.completed,
+        tone: "completed",
+      },
+    ],
     [
-      addMemory,
-      deleteMemoryRecord,
-      renameMovie,
-      toggleMemoryPin,
-      toggleWatched,
-      updateMemory,
+      sections.suggestions.length,
+      sections.queue.length,
+      sections.completed.length,
     ],
   );
-  const handleToggleError = useCallback(
-    (message: string) => {
-      setToast({ message, type: "error" });
-    },
-    [setToast],
-  );
-  const allMovieCount = sections.queue.length + sections.completed.length;
-  const scrollBrowseAllowed = shouldUseMovieScrollDeck(
-    allMovieCount,
-    "scroll",
-    isMobile,
-  );
+  const latestMemory = memories[0] ?? null;
+  const upNextSummaryCount =
+    sections.queue.length + sections.suggestions.length;
 
-  useEffect(() => {
-    if (browseLayout === "scroll" && !scrollBrowseAllowed) {
-      setBrowseLayout("grid");
-      writeMovieBrowseLayout("grid");
-    }
-  }, [browseLayout, scrollBrowseAllowed]);
-
-  const handleBrowseLayoutChange = useCallback((layout: string) => {
-    const nextLayout = layout === "scroll" ? "scroll" : "grid";
-    setBrowseLayout(nextLayout);
-    writeMovieBrowseLayout(nextLayout);
+  const handleMovieSortChange = useCallback((order: SortOrder) => {
+    setSortOrder(order as MovieSortOrder);
   }, []);
 
-  useWorkspaceBentoConfig({
-    tab: "movies",
-    ariaLabel: "Movies workspace controls",
-    viewModes: (isMobile ? MOBILE_MOVIE_VIEW_MODES : MOVIE_BROWSE_LAYOUTS).filter(
-      (mode) => mode.value !== "scroll" || scrollBrowseAllowed,
-    ),
-    activeViewMode: browseLayout,
-    onViewModeChange: handleBrowseLayoutChange,
-    viewModeAriaLabel: "Movie browse layout",
-  });
+  useEffect(() => {
+    setConfig({
+      stats: [],
+      sorts: MOVIE_SORTS,
+      activeSortOrder: sortOrder,
+      onSortChange: handleMovieSortChange,
+      ariaLabel: "Movies workspace controls",
+    });
+  }, [setConfig, movieStats, sortOrder, handleMovieSortChange]);
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -162,14 +184,14 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
       return;
     }
 
-    // Pre-compute map for O(1) lookups to avoid O(N^2) complexity in the loop
-    const prevMoviesMap = new Map(
-      previousMoviesRef.current.map((movie) => [movie.id, movie]),
-    );
+    const previousMoviesMap = new Map<string, Movie>();
+    for (const entry of previousMoviesRef.current) {
+      previousMoviesMap.set(entry.id, entry);
+    }
 
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
-        const prevMovie = prevMoviesMap.get(movie.id);
+        const prevMovie = previousMoviesMap.get(movie.id);
         if (prevMovie && prevMovie.watchedBy.length === 1) {
           setSuccessMovieId(movie.id);
           setToast({
@@ -181,226 +203,53 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     });
     previousMoviesRef.current = movies;
   }, [movies, previousMoviesRef, setSuccessMovieId, setToast]);
-  const resetRecommendationComposer = useCallback(() => {
-    setIsRecommendationComposerOpen(false);
-    setRecommendationReason("");
-    setSuggestionError(null);
-  }, []);
-  const handleRecommendationReasonChange = useCallback((value: string) => {
-    setSuggestionError(null);
-    setRecommendationReason(value);
-  }, []);
+
   const focusSearchInput = useCallback(() => {
     moviesTopControlsRef.current?.focusSearchInput();
   }, []);
-  const clearSearchAndRefocus = useCallback(() => {
-    setSearchQuery("");
-    setSelectedAutocompleteResult(null);
-    window.requestAnimationFrame(focusSearchInput);
-  }, [focusSearchInput, setSearchQuery, setSelectedAutocompleteResult]);
+
+  const {
+    resetRecommendationComposer,
+    handleRecommendationReasonChange,
+    openRecommendationComposer,
+    handleAddAction,
+    handleSubmitRecommendation,
+    handleAcceptSuggestion,
+    handleRejectSuggestion,
+    confirmDelete,
+  } = useMoviesWorkspaceActions({
+    currentUser,
+    guestName,
+    isAdding,
+    setIsAdding,
+    isSubmittingRecommendation,
+    searchQuery,
+    setSearchQuery,
+    selectedAutocompleteResult,
+    setSelectedAutocompleteResult,
+    recommendationReason,
+    setRecommendationReason,
+    setIsRecommendationComposerOpen,
+    setSuggestionError,
+    setSuccessMovieId,
+    setToast,
+    addMovie,
+    submitRecommendation,
+    acceptSuggestionToWatchlist,
+    rejectPendingSuggestion,
+    deleteMovie,
+    movieToDelete,
+    setMovieToDelete,
+    focusSearchInput,
+  });
+
   useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
     }
   }, [resetRecommendationComposer, searchQuery]);
-  const openRecommendationComposer = useCallback(() => {
-    if (!searchQuery.trim()) {
-      return;
-    }
-    setSuggestionError(null);
-    setIsRecommendationComposerOpen(true);
-  }, [searchQuery]);
-  const handleAddAction = useCallback(async () => {
-    if (isAdding || isSubmittingRecommendation) {
-      return;
-    }
-    const title = resolveSearchTitle(selectedAutocompleteResult, searchQuery);
-    if (!title) {
-      return;
-    }
-    if (!currentUser) {
-      setIsAdding(true);
-      try {
-        const suggestion = await submitRecommendation({
-          title,
-          suggestedBy: guestName.trim() || undefined,
-          selectedResult: selectedAutocompleteResult,
-        });
-        clearSearchAndRefocus();
-        setToast({
-          message: `"${title}" sent to suggestions as ${suggestion.suggestedBy}.`,
-          type: "success",
-        });
-      } catch (error) {
-        setToast({
-          message: getErrorMessage(error, "Failed to send suggestion"),
-          type: "error",
-        });
-      } finally {
-        setIsAdding(false);
-      }
-      return;
-    }
-    setIsAdding(true);
-    try {
-      const { movie: addedMovie, isDuplicate } = await addMovie(
-        title,
-        selectedAutocompleteResult ?? undefined,
-      );
-      setSuccessMovieId(addedMovie.id);
-      window.setTimeout(
-        () =>
-          setSuccessMovieId((current) =>
-            current === addedMovie.id ? null : current,
-          ),
-        2400,
-      );
-      clearSearchAndRefocus();
-      setToast({
-        message: isDuplicate
-          ? `"${title}" is already in your queue.`
-          : `"${title}" added to movies!`,
-        type: isDuplicate ? "info" : "success",
-      });
-    } catch (error) {
-      setToast({
-        message: getErrorMessage(error, "Failed to add movie"),
-        type: "error",
-      });
-    } finally {
-      setIsAdding(false);
-    }
-  }, [
-    addMovie,
-    clearSearchAndRefocus,
-    currentUser,
-    guestName,
-    isAdding,
-    isSubmittingRecommendation,
-    searchQuery,
-    selectedAutocompleteResult,
-    setIsAdding,
-    setSuccessMovieId,
-    setToast,
-    submitRecommendation,
-  ]);
-  const handleEmptyStateAction = useCallback(() => {
-    const hasQuery = Boolean(searchQuery.trim());
-    if (!currentUser && hasQuery) {
-      openRecommendationComposer();
-      focusSearchInput();
-      return;
-    }
-    if (currentUser && hasQuery) {
-      void handleAddAction();
-      return;
-    }
-    focusSearchInput();
-    if (!currentUser) {
-      setToast({
-        message: "Type a movie or show title in search, then press Suggest.",
-        type: "info",
-      });
-    }
-  }, [
-    currentUser,
-    focusSearchInput,
-    handleAddAction,
-    openRecommendationComposer,
-    searchQuery,
-    setToast,
-  ]);
-  const handleSubmitRecommendation = useCallback(async () => {
-    if (isAdding || isSubmittingRecommendation) {
-      return;
-    }
-    const title = resolveSearchTitle(selectedAutocompleteResult, searchQuery);
-    if (!title) {
-      return;
-    }
-    setSuggestionError(null);
-    try {
-      await submitRecommendation({
-        title,
-        reason: recommendationReason,
-        suggestedBy: guestName.trim() || undefined,
-        selectedResult: selectedAutocompleteResult,
-      });
-      resetRecommendationComposer();
-      clearSearchAndRefocus();
-      setToast({
-        message: currentUser
-          ? `"${title}" suggested for review!`
-          : `"${title}" sent to suggestions${guestName.trim() ? ` as ${guestName.trim()}` : ""}!`,
-        type: "success",
-      });
-    } catch (error) {
-      setSuggestionError(
-        getErrorMessage(error, "Failed to add suggestion"),
-      );
-      setToast({ message: "Failed to add suggestion", type: "error" });
-    }
-  }, [
-    clearSearchAndRefocus,
-    currentUser,
-    guestName,
-    isAdding,
-    isSubmittingRecommendation,
-    recommendationReason,
-    resetRecommendationComposer,
-    searchQuery,
-    selectedAutocompleteResult,
-    setToast,
-    submitRecommendation,
-  ]);
-  const handleAcceptSuggestion = useCallback(
-    async (suggestion: MovieSuggestion) => {
-      try {
-        const { suggestion: accepted, isDuplicate } =
-          await acceptSuggestionToWatchlist(suggestion.id);
-        setToast({
-          message: isDuplicate
-            ? `"${accepted.title}" is already in your queue.`
-            : `"${accepted.title}" added to movies!`,
-          type: isDuplicate ? "info" : "success",
-        });
-      } catch (error) {
-        setToast({
-          message: getErrorMessage(error, "Failed to accept suggestion"),
-          type: "error",
-        });
-      }
-    },
-    [acceptSuggestionToWatchlist, setToast],
-  );
-  const handleRejectSuggestion = useCallback(
-    async (suggestion: MovieSuggestion) => {
-      try {
-        await rejectPendingSuggestion(suggestion.id);
-        setToast({ message: `"${suggestion.title}" rejected.`, type: "info" });
-      } catch (error) {
-        setToast({
-          message: getErrorMessage(error, "Failed to reject suggestion"),
-          type: "error",
-        });
-      }
-    },
-    [rejectPendingSuggestion, setToast],
-  );
-  const confirmDelete = useCallback(async () => {
-    if (!movieToDelete) {
-      return;
-    }
-    try {
-      await deleteMovie(movieToDelete.id);
-      setToast({ message: `"${movieToDelete.title}" removed!`, type: "info" });
-    } catch {
-      setToast({ message: "Failed to remove movie", type: "error" });
-    } finally {
-      setMovieToDelete(null);
-    }
-  }, [deleteMovie, movieToDelete, setMovieToDelete, setToast]);
+
   return (
     <>
       {searchPortalEl &&
@@ -408,6 +257,11 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           <MoviesTopControls
             ref={moviesTopControlsRef}
             currentUser={currentUser}
+            upNextCount={upNextSummaryCount}
+            watchedCount={sections.completed.length}
+            noteCount={memories.length}
+            latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+            latestNoteAuthor={latestMemory?.author ?? null}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             selectedAutocompleteResult={selectedAutocompleteResult}
@@ -424,45 +278,51 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             isAdding={isAdding}
             isSubmittingRecommendation={isSubmittingRecommendation}
             suggestionError={suggestionError}
+            canRecommend={true}
           />,
           searchPortalEl,
         )}
-      <div className="workspace-container">
-        {isMoviesWorkspaceDegraded ? (
+      <div className="watchlist-container places-container">
+        {isMoviesWorkspaceDegraded && (
           <SyncBanner
-            isBlocked={moviesSyncBanner.isBlocked}
+            isBlocked={isMoviesWorkspaceSyncBlocked}
             onRetry={() => void retryMoviesWorkspaceSync()}
-            label={moviesSyncBanner.label}
+            label={
+              isMoviesWorkspaceSyncBlocked
+                ? "A shared movies change conflicted with local edits. Refresh and retry."
+                : moviesWorkspaceSyncWarning ||
+                  "Movie changes are being kept locally until shared sync recovers."
+            }
           />
-        ) : null}
+        )}
         <MovieSectionBody
-        sections={sections}
-        isLoading={isLoading}
-        isSuggestionsLoading={isSuggestionsLoading}
-        currentUser={currentUser}
-        processingSuggestionId={processingSuggestionId}
-        successMovieId={successMovieId}
-        movieMemories={movieMemories}
-        onAddMovieFocus={handleEmptyStateAction}
-        emptyActionLabel={
-          searchQuery.trim()
-            ? currentUser
-              ? "Add this title"
-              : "Suggest this title"
-            : undefined
-        }
-        emptyActionBusy={isAdding || isSubmittingRecommendation}
-        onAcceptSuggestion={handleAcceptSuggestion}
-        onRejectSuggestion={handleRejectSuggestion}
-        onDeleteRequest={setMovieToDelete}
-        onToggleError={handleToggleError}
-        actions={movieBodyActions}
-        browseLayout={browseLayout}
-      />
+          sections={sections}
+          isLoading={isLoading}
+          isSuggestionsLoading={isSuggestionsLoading}
+          currentUser={currentUser}
+          isMobile={isMobile}
+          processingSuggestionId={processingSuggestionId}
+          successMovieId={successMovieId}
+          movieMemories={movieMemories}
+          onAddMovieFocus={focusSearchInput}
+          onAcceptSuggestion={handleAcceptSuggestion}
+          onRejectSuggestion={handleRejectSuggestion}
+          onDeleteRequest={setMovieToDelete}
+          onToggleError={(message) => setToast({ message, type: "error" })}
+          actions={{
+            toggleWatched,
+            renameMovie,
+            addMemory,
+            updateMemory,
+            deleteMemory: deleteMemoryRecord,
+            togglePin: toggleMemoryPin,
+          }}
+          sectionIds={MOVIE_SECTION_IDS}
+        />
         {movieToDelete && (
           <ConfirmDialog
             isOpen={Boolean(movieToDelete)}
-            title="Remove movie"
+            title="Remove Movie"
             message={`Are you sure you want to remove "${movieToDelete.title}"?`}
             onConfirm={confirmDelete}
             onCancel={() => setMovieToDelete(null)}

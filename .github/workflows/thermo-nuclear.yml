@@ -1,0 +1,25 @@
+name: Thermo-Nuclear Code Quality Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run Thermo-Nuclear Code Quality Review
+        run: npx --yes skills@latest add https://github.com/cursor/plugins --skill thermo-nuclear-code-quality-review -y
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

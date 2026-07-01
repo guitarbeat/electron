@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Button from "@/ui/Button";
-import { useMovies } from "@/hooks/movies";
-import { useUser } from "@/app/useProviders";
-import { colors, spacing } from "@/theme/tokens";
-import type { Movie } from "@/shared/types";
-import MovieDetailsModal from "@/components/movies/MovieDetailsModal";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Button from '@/ui/LegacyButton';
+import { useMovies } from '@/hooks/movies/useMovies';
+import { useUser } from '@/app/useProviders';
+import { colors, spacing } from '@/theme/tokens';
+import type { Movie } from '@/shared/types';
+import MovieDetailsModal from '@/components/movies/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,

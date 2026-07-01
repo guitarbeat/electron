@@ -1,15 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import Card from "./Card";
-import { CheckIcon } from "@/common/Icons";
-import {
-  colors,
-  shadows,
-  spacing,
-  typography,
-  radius,
-  motion,
-} from "@/theme/tokens";
-import { useAudio } from "@/hooks/useAudio";
+import React, { useEffect, useMemo, useState } from 'react';
+import Card from './LegacyCard';
+import { CheckIcon } from '@/common/Icons';
+import { colors, shadows, spacing, typography, radius, motion } from '@/theme/tokens';
+import { useAudio } from '@/hooks/useAudio';
 
 interface ToastProps {
   message: string;

@@ -20,3 +20,7 @@ Unified scattered inputs and UI toggles using reusable components like MagicTogg
 ## 2024-06-23 - MagicToggle Semantic Abuse
 - Avoid using segmented controls (like MagicToggle) for disjointed actions (e.g. a toggle button and a modal trigger). Although it creates a visually grouped pill, it violates semantic a11y expectations since toggles imply mutually exclusive options.
 - If visual grouping is needed, build a separate MagicButtonGroup component without mutually exclusive state indicators or `aria-pressed` properties.
+
+## 2024-06-13 - Redundant ARIA Labels
+**Learning:** Adding an `aria-label` to a button that already has visible text (like `{actionLabel}` inside the button) is redundant and does not actually improve accessibility, as screen readers automatically derive the accessible name from the text content. `aria-label`s should primarily be used for icon-only buttons.
+**Action:** Before adding an `aria-label` to a button, always verify whether the button already has clear visible text content. Only add `aria-label`s to buttons that lack visible text, such as icon-only buttons.
