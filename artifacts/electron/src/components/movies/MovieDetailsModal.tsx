@@ -479,6 +479,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 folderName={`${movie.title}.gallery`}
                 dragHintText="Drag any photo down to close"
                 className="movie-details-modal__gallery"
+                accentColor="var(--color-accent)"
               />
 
               {currentUser && onAddMemory ? (

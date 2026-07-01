@@ -561,32 +561,43 @@
 /* ── Interactive folder gallery inside the movie details modal ──────────── */
 
 /**
- * Scale the gallery down to fit the constrained modal content column
- * without disrupting the surrounding layout. The component uses an internal
- * min-h-[500px] container, so we clip it to a tighter box here and let the
- * photos overflow within their own 3D space.
+ * The gallery lives inside the scrollable content column. It uses the app's
+ * own CSS custom properties (surface tokens, chrome tokens, accent) so it
+ * reads as a native part of the UI rather than an embedded widget.
+ *
+ * Layout goals:
+ *   - Compact vertical footprint inside the already-padded modal section
+ *   - Overflow allowed on the horizontal axis so fanned-out photos aren't clipped
+ *   - Subtle chrome-style top divider matching the modal's own section borders
  */
 .movie-details-modal__gallery {
-  /* Shrink the top/bottom breathing room — the modal already has padding */
-  padding-top: 1rem !important;
-  padding-bottom: 0.5rem !important;
+  /* Trim the component's default tall py-32 padding down to something that
+     fits comfortably in the modal content column */
+  padding-top: 1.25rem !important;
+  padding-bottom: 0.75rem !important;
 
-  /* Constrain height so the gallery sits flush in the notes section */
-  min-height: 380px;
+  /* Let cards overflow horizontally (they fan out ±260px) without adding a
+     horizontal scrollbar */
+  overflow: visible;
+  overflow-x: visible;
 
-  /* Clip photographic overflow so it doesn't bleed into adjacent sections */
-  overflow: hidden;
+  /* Consistent min-height so the folder body doesn't collapse */
+  min-height: 390px;
 
-  /* Subtle top divider to visually separate gallery from section heading */
-  border-top: 1px solid rgba(148, 163, 200, 0.12);
+  /* Section divider — uses the app's border token instead of a hardcoded color */
+  border-top: 1px solid var(--color-border-subtle, rgba(148, 163, 200, 0.12));
   margin-top: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  /* Perspective so the folder-open rotateX animation has depth */
+  perspective: 900px;
 }
 
-/* On mobile the dialog is narrower — shrink the inner card widths via scale */
+/* Narrow modal (mobile) — scale down so the 400-px-wide stage fits */
 .movie-details-modal__dialog--mobile .movie-details-modal__gallery {
-  transform: scale(0.78);
+  transform: scale(0.72);
   transform-origin: top center;
-  min-height: 300px;
-  margin-bottom: -3rem; /* compensate for the scale shrink */
+  min-height: 280px;
+  /* Pull the bottom up to compensate for the scale shrink */
+  margin-bottom: -4.5rem;
 }

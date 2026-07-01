@@ -41,6 +41,12 @@ export interface InteractiveFolderGalleryProps {
   folderName?: string;
   dragHintText?: string;
   className?: string;
+  /**
+   * Accent color used for the glow, folder tab gradient, and photo border
+   * highlights. Defaults to the CSS variable `--color-accent` so it
+   * automatically tracks the active app theme (movies pink / places teal).
+   */
+  accentColor?: string;
 }
 
 export function InteractiveFolderGallery({
@@ -48,40 +54,70 @@ export function InteractiveFolderGallery({
   folderName = "Photography.gallery",
   dragHintText = "Drag any photo down to close",
   className,
+  accentColor = "var(--color-accent)",
 }: InteractiveFolderGalleryProps) {
   const [isFolderOpen, setIsFolderOpen] = useState(false);
   const [hoverFolder, setHoverFolder] = useState(false);
 
   return (
-    <div className={cn("w-full py-32 relative", className)}>
+    <div
+      className={cn("w-full py-32 relative", className)}
+      // Inform child inline styles of the resolved accent via a local custom
+      // property so they can derive alpha-faded variants from it.
+      style={{ ["--gallery-accent" as string]: accentColor }}
+    >
       <div className="relative w-full min-h-[500px] flex flex-col items-center justify-center">
-        {/* Folder back panel (behind photos) */}
+        {/* ── Folder shell ─────────────────────────────────────────────── */}
         <div className="relative w-[400px] h-[500px] flex justify-center pointer-events-none z-0">
-          {/* Folder body (back) */}
+
+          {/* Folder back body — uses the app's surface-1 token */}
           <motion.div
             className="absolute bottom-6 w-80 h-56 drop-shadow-2xl"
             animate={{ opacity: isFolderOpen ? 0 : 1, scale: isFolderOpen ? 0.9 : 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 28 }}
           >
-            {/* Tab */}
-            <div className="absolute top-0 left-0 w-32 h-10 bg-linear-to-t from-[#1e1e1e] to-[#2a2a2a] rounded-t-xl border-t border-l border-r border-white/10" />
+            {/* Tab — accent-tinted so it reads as "this tab belongs to the app" */}
+            <div
+              className="absolute top-0 left-0 w-32 h-10 rounded-t-xl border-t border-l border-r"
+              style={{
+                background: `linear-gradient(to top, var(--color-surface-1), color-mix(in srgb, var(--gallery-accent) 18%, var(--color-surface-2)))`,
+                borderColor: "var(--color-border)",
+              }}
+            />
             {/* Body */}
-            <div className="absolute top-8 left-0 right-0 bottom-0 bg-linear-to-b from-[#1e1e1e] to-[#0a0a0a] rounded-b-xl rounded-tr-xl border border-white/10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]" />
-            {/* Inner shadow */}
-            <div className="absolute top-10 left-2 right-2 bottom-2 bg-black rounded-lg shadow-inner pointer-events-none" />
+            <div
+              className="absolute top-8 left-0 right-0 bottom-0 rounded-b-xl rounded-tr-xl border"
+              style={{
+                background: "var(--gradient-card)",
+                borderColor: "var(--color-border)",
+                boxShadow:
+                  "inset 0 0 40px rgba(0,0,0,0.55), var(--chrome-shadow-soft)",
+              }}
+            />
+            {/* Inner depth layer */}
+            <div
+              className="absolute top-10 left-2 right-2 bottom-2 rounded-lg pointer-events-none"
+              style={{ background: "var(--color-surface-0)", opacity: 0.7 }}
+            />
+            {/* Accent glow edge along the top of the folder body */}
+            <div
+              className="absolute top-8 left-0 right-0 h-px"
+              style={{
+                background: `linear-gradient(to right, transparent, color-mix(in srgb, var(--gallery-accent) 60%, transparent), transparent)`,
+              }}
+            />
           </motion.div>
 
-          {/* Photos stack */}
+          {/* ── Photo stack ──────────────────────────────────────────── */}
           <div className="absolute bottom-10 z-10 flex justify-center">
             {photos.map((photo, i) => {
               const offset = i - 2;
 
-              // Stacked (closed) position
               const stackY = hoverFolder ? offset * -10 - 40 : offset * -5;
               const stackX = hoverFolder ? offset * 30 : offset * 3;
               const stackRotate = hoverFolder ? offset * 8 : offset * 3;
               const stackScale = 1 - Math.abs(offset) * 0.03;
 
-              // Spread (open) position
               const openY = -130;
               const openX = offset * 130;
               const openRotate = 0;
@@ -90,7 +126,7 @@ export function InteractiveFolderGallery({
               return (
                 <motion.div
                   key={photo.id}
-                  drag={isFolderOpen ? true : false}
+                  drag={isFolderOpen}
                   dragSnapToOrigin
                   onDragEnd={(_e, info) => {
                     if (info.offset.y > 100 && isFolderOpen) {
@@ -99,11 +135,17 @@ export function InteractiveFolderGallery({
                     }
                   }}
                   className={cn(
-                    "absolute bottom-0 w-56 h-72 rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] overflow-hidden border border-white/20 origin-bottom",
+                    "absolute bottom-0 w-56 h-72 rounded-xl overflow-hidden origin-bottom",
                     isFolderOpen
                       ? "cursor-grab active:cursor-grabbing pointer-events-auto"
                       : "pointer-events-none",
                   )}
+                  style={{
+                    // Accent-tinted border instead of plain white/20
+                    border: `1px solid color-mix(in srgb, var(--gallery-accent) 35%, var(--color-border))`,
+                    boxShadow:
+                      "0 20px 40px rgba(0,0,0,0.5), var(--chrome-shadow-soft)",
+                  }}
                   animate={
                     !isFolderOpen
                       ? {
@@ -121,8 +163,21 @@ export function InteractiveFolderGallery({
                           zIndex: 50,
                         }
                   }
-                  whileHover={isFolderOpen ? { scale: openScale + 0.05, zIndex: 100 } : {}}
-                  whileDrag={isFolderOpen ? { scale: openScale + 0.1, rotate: 5, zIndex: 150 } : {}}
+                  whileHover={
+                    isFolderOpen
+                      ? {
+                          scale: openScale + 0.05,
+                          zIndex: 100,
+                          // Subtle glow on hover matching the app accent
+                          filter: `drop-shadow(0 0 12px color-mix(in srgb, var(--gallery-accent) 40%, transparent))`,
+                        }
+                      : {}
+                  }
+                  whileDrag={
+                    isFolderOpen
+                      ? { scale: openScale + 0.1, rotate: 5, zIndex: 150 }
+                      : {}
+                  }
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 >
                   <img
@@ -130,32 +185,90 @@ export function InteractiveFolderGallery({
                     alt="Gallery item"
                     className="w-full h-full object-cover pointer-events-none"
                   />
+                  {/* Subtle gradient overlay so photos don't clash with the dark UI */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.32) 100%)",
+                    }}
+                  />
                 </motion.div>
               );
             })}
           </div>
 
-          {/* Folder front cover — click to open */}
+          {/* ── Folder front cover ───────────────────────────────────── */}
           <motion.div
-            className="absolute bottom-0 w-[340px] h-44 drop-shadow-[0_-20px_40px_rgba(0,0,0,0.8)] cursor-pointer z-20 pointer-events-auto"
-            style={{ transformOrigin: "bottom" }}
+            className="absolute bottom-0 w-[340px] h-44 cursor-pointer z-20 pointer-events-auto"
+            style={{
+              transformOrigin: "bottom",
+              // Use the app's deep drop-shadow token for the lift effect
+              filter: hoverFolder
+                ? `drop-shadow(0 -18px 36px color-mix(in srgb, var(--gallery-accent) 22%, transparent))`
+                : "drop-shadow(0 -12px 24px rgba(0,0,0,0.7))",
+            }}
             animate={{
               opacity: isFolderOpen ? 0 : 1,
               rotateX: hoverFolder ? -25 : 0,
               y: hoverFolder ? 10 : 0,
               pointerEvents: isFolderOpen ? "none" : "auto",
             }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
             onMouseEnter={() => setHoverFolder(true)}
             onMouseLeave={() => setHoverFolder(false)}
             onClick={() => setIsFolderOpen(true)}
           >
-            <div className="w-full h-full bg-linear-to-b from-[#2a2a2a] to-[#111] rounded-2xl border border-white/20 shadow-[inset_0_2px_10px_rgba(255,255,255,0.1)] relative overflow-hidden flex items-end justify-center pb-8">
-              {/* Top highlight line */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/40 to-transparent" />
+            <div
+              className="w-full h-full rounded-2xl relative overflow-hidden flex items-end justify-center pb-8"
+              style={{
+                // Align with the modal's own glassmorphism panel surface
+                background: "var(--chrome-surface)",
+                border: `1px solid var(--color-border)`,
+                boxShadow: "var(--chrome-shadow)",
+              }}
+            >
+              {/* Chrome top-highlight matching the modal's own chrome line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-px"
+                style={{ background: "var(--chrome-highlight-top)" }}
+              />
 
-              {/* Folder name label */}
-              <div className="px-5 py-2.5 bg-black rounded-lg border border-black/80 shadow-inner flex items-center justify-center backdrop-blur-md">
-                <span className="text-white/90 text-sm font-medium tracking-wide">
+              {/* Subtle accent glow swept across the cover surface */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse 60% 40% at 50% 100%, color-mix(in srgb, var(--gallery-accent) 12%, transparent), transparent)`,
+                }}
+              />
+
+              {/* Folder name label — uses the app's chrome pill style */}
+              <div
+                className="relative px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 backdrop-blur-md"
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--color-surface-0) 80%, transparent)",
+                  border: `1px solid color-mix(in srgb, var(--gallery-accent) 30%, var(--color-border))`,
+                  boxShadow: `0 0 14px color-mix(in srgb, var(--gallery-accent) 18%, transparent)`,
+                }}
+              >
+                {/* Small accent dot — matches the app's badge / pill aesthetic */}
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{
+                    background: accentColor,
+                    boxShadow: `0 0 6px ${accentColor}`,
+                  }}
+                />
+                <span
+                  className="text-sm font-semibold tracking-[var(--letter-spacing-wider)]"
+                  style={{
+                    color: "var(--color-text-primary)",
+                    fontFamily: "var(--font-body)",
+                    textTransform: "uppercase",
+                    fontSize: "0.72rem",
+                  }}
+                >
                   {folderName}
                 </span>
               </div>
@@ -163,10 +276,27 @@ export function InteractiveFolderGallery({
           </motion.div>
         </div>
 
-        {/* Drag-to-close hint */}
+        {/* ── Drag-to-close hint ───────────────────────────────────────── */}
         <motion.div
           animate={{ opacity: isFolderOpen ? 1 : 0, y: isFolderOpen ? 0 : 50 }}
-          className="absolute bottom-10 px-6 py-3 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 backdrop-blur-md text-black/50 dark:text-white/50 text-sm font-medium uppercase tracking-widest pointer-events-none"
+          transition={{ type: "spring", stiffness: 280, damping: 28 }}
+          className="absolute bottom-10 pointer-events-none"
+          style={{
+            padding: "0.6rem 1.5rem",
+            borderRadius: "999px",
+            // Matches the app's floating pill / chrome pill pattern
+            background:
+              "color-mix(in srgb, var(--color-surface-1) 72%, transparent)",
+            border: `1px solid color-mix(in srgb, var(--gallery-accent) 25%, var(--color-border))`,
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            color: "var(--color-text-secondary)",
+            fontFamily: "var(--font-body)",
+            fontSize: "var(--font-size-xs)",
+            fontWeight: 600,
+            letterSpacing: "var(--letter-spacing-eyebrow)",
+            textTransform: "uppercase",
+          }}
         >
           {dragHintText}
         </motion.div>
