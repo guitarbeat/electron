@@ -10,6 +10,15 @@
       "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
     },
     {
+      "source": "/quiz-photos/(.*)",
+      "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
+    },
+    {
+      "source": "/index.html",
+      "headers": [{"key": "Cache-Control", "value": "no-cache"}]
+    },
+    {
+      "note": "ORDERING CONSTRAINT: /sw.js no-cache rule MUST precede the /(.*\\.js) immutable wildcard below. If this rule moves after the wildcard, sw.js gets a year-long cache and service worker updates stop reaching returning users until the old SW expires.",
       "source": "/sw.js",
       "headers": [{"key": "Cache-Control", "value": "no-cache"}]
     },
@@ -20,10 +29,6 @@
     {
       "source": "/(.*\\.css)",
       "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]
-    },
-    {
-      "source": "/index.html",
-      "headers": [{"key": "Cache-Control", "value": "no-cache"}]
     }
   ],
   "rewrites": [

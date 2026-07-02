@@ -5,6 +5,7 @@ import type {
   MultipleChoiceQuestion as MultipleChoiceQuestionType,
   XYAxisQuestion as XYAxisQuestionType,
 } from "./lib/types";
+import WebPImg from "./lib/WebPImg";
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;
@@ -157,9 +158,10 @@ export const ImageChoiceQuestionView: React.FC<
             aria-pressed={selectedIndex === index}
             aria-label={option.alt}
           >
-            <img
+            <WebPImg
               src={option.imageUrl}
               alt={option.alt}
+              loading="eager"
               style={{
                 width: "100%",
                 height: "100%",

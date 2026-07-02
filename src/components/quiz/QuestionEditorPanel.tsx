@@ -17,6 +17,7 @@ import Button from "@/ui/Button";
 import { Input, Textarea } from "@/ui/FormFields";
 import { useToast } from "@/app/useProviders";
 import { spacing, colors, typography } from "@/theme/tokens";
+import WebPImg from "./lib/WebPImg";
 
 const QUADRANT_INFO = [
   { key: "topLeft", icon: "⬆⬅", name: "Top-Left", position: "left + top" },
@@ -257,7 +258,7 @@ const ImageChoiceEditor: React.FC<{
               title="Upload image for option"
             >
               {option.imageUrl ? (
-                <img
+                <WebPImg
                   src={option.imageUrl}
                   alt={option.alt}
                   style={{
@@ -520,7 +521,7 @@ export const ImageOptionsSummary: React.FC<{
     {options.map((opt, i) => (
       <div key={i} className="quiz-editor__summary-thumb">
         {opt.imageUrl && (
-          <img
+          <WebPImg
             src={opt.imageUrl}
             alt={opt.alt}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}

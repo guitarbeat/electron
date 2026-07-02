@@ -27,10 +27,13 @@ import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
 import type { MainTab } from "@/shared/types";
 
 import MinigameModal from "@/ui/MinigameModal";
-import { Analytics } from "@vercel/analytics/react";
 import "./App.scss";
 import "./y2k-skin.scss";
 import "./workspace-polish.scss";
+
+const Analytics = React.lazy(() =>
+  import("@vercel/analytics/react").then((m) => ({ default: m.Analytics }))
+);
 
 const MagicComponent = React.lazy(
   () =>
@@ -478,7 +481,9 @@ const App: React.FC = () => {
           </MinigameModal>
         ))}
       </div>
-      <Analytics />
+      <React.Suspense fallback={null}>
+        <Analytics />
+      </React.Suspense>
     </ThemeProvider>
   );
 };
