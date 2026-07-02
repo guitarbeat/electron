@@ -37,6 +37,18 @@ self.addEventListener('message', (event) => {
   }
 });
 
+const cacheFirst = (cacheName, req) =>
+  caches.open(cacheName).then((cache) =>
+    cache.match(req).then(
+      (cached) =>
+        cached ||
+        fetch(req).then((res) => {
+          if (res.ok) cache.put(req, res.clone()).catch(() => undefined);
+          return res;
+        }),
+    ),
+  );
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -77,35 +89,13 @@ self.addEventListener('fetch', (event) => {
 
   // Cache-first (permanent) for content-hashed Vite JS/CSS chunks.
   if (url.pathname.startsWith('/assets/')) {
-    event.respondWith(
-      caches.open(ASSETS_CACHE).then((assetsCache) =>
-        assetsCache.match(req).then(
-          (cached) =>
-            cached ||
-            fetch(req).then((res) => {
-              if (res.ok) assetsCache.put(req, res.clone()).catch(() => undefined);
-              return res;
-            }),
-        ),
-      ),
-    );
+    event.respondWith(cacheFirst(ASSETS_CACHE, req));
     return;
   }
 
   // Cache-first for quiz photos — they never change.
   if (url.pathname.startsWith('/quiz-photos/')) {
-    event.respondWith(
-      caches.open(IMAGES_CACHE).then((imgCache) =>
-        imgCache.match(req).then(
-          (cached) =>
-            cached ||
-            fetch(req).then((res) => {
-              if (res.ok) imgCache.put(req, res.clone()).catch(() => undefined);
-              return res;
-            }),
-        ),
-      ),
-    );
+    event.respondWith(cacheFirst(IMAGES_CACHE, req));
     return;
   }
 
