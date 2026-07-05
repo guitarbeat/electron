@@ -412,6 +412,9 @@ importers:
       isomorphic-dompurify:
         specifier: ^3.16.0
         version: 3.18.0
+      lightningcss:
+        specifier: ^1.32.0
+        version: 1.32.0
       lit:
         specifier: ^3.3.3
         version: 3.3.3
