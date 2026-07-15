@@ -23,6 +23,9 @@ import {
 } from "@/components/ui/lib/useWorkspaceAutocompleteDismiss";
 
 interface PlacesTopControlsProps {
+  queueCount?: number;
+  visitedCount?: number;
+  pinnedCount?: number;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   suggestionAutocompleteResults?: PlaceSuggestion[];

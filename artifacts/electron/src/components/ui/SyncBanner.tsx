@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Button from './LegacyButton';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
-import { getSyncBannerContent } from './lib/syncBannerContent';
+import { getSyncBannerContent, shouldShowSyncBanner } from './lib/syncBannerContent';
 import { isMockMode } from '@/services/state';
 
 interface SyncBannerProps {

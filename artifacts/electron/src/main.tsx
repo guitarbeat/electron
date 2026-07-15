@@ -13,7 +13,7 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("mock
 }
 
 const initialTab = readInitialMainTab();
-applyTheme(initialTab);
+applyTheme(initialTab === "places" ? "places" : "movies");
 document.body.dataset.theme = initialTab;
 void preloadCriticalAppModules();
 

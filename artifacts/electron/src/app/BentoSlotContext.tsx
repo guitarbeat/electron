@@ -1,9 +1,18 @@
 import { createContext, useContext } from "react";
 import type { MagicToggleOption } from "@/components/ui/MagicToggle";
+import type {
+  BentoSortChipConfig,
+  BentoStatTileConfig,
+  SortOrder,
+} from "@/components/ui/BentoWorkspaceController";
 import type { MainTab } from "@/shared/types";
 
 export interface BentoSlotConfig {
   ariaLabel?: string;
+  stats?: BentoStatTileConfig[];
+  sorts?: BentoSortChipConfig[];
+  activeSortOrder?: SortOrder;
+  onSortChange?(order: SortOrder): void;
   viewModes?: MagicToggleOption<string>[];
   activeViewMode?: string;
   onViewModeChange?: (mode: string) => void;

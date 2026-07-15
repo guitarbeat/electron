@@ -1,6 +1,17 @@
 import { MagicToggle } from "./magic-toggle";
 import React, { useCallback } from 'react';
 import './BentoWorkspaceController.css';
+import type { MainTab } from '@/shared/types';
+import type { AppNavStripStatus } from './AppNavStrip';
+
+export interface WorkspaceChromeHeaderProps {
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
+  pwaStatus?: AppNavStripStatus;
+  onInstallApp?: () => void;
+  onApplyUpdate?: () => void;
+  onRetrySync?: () => void;
+}
 
 export type SortOrder = 'recent' | 'alpha' | 'rating';
 

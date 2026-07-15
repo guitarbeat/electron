@@ -23,6 +23,8 @@ interface Props {
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
+  onOpenMessages?: () => void;
+  onOpenQuiz?: () => void;
 }
 
 const pluralize = (n: number, s: string, p = `${s}s`) => `${n} ${n === 1 ? s : p}`;

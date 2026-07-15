@@ -50,6 +50,12 @@ import {
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
+  upNextCount?: number;
+  watchedCount?: number;
+  noteCount?: number;
+  latestNoteMovieTitle?: string | null;
+  latestNoteAuthor?: string | null;
+  canRecommend?: boolean;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   selectedAutocompleteResult: MovieAutocompleteResult | null;

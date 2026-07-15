@@ -74,6 +74,7 @@ const Toast: React.FC<ToastProps> = ({
         clearTimeout(dismissTimer);
       };
     }
+    return undefined;
   }, [duration, onDismiss, persistent, playError, playPop, playSuccess, type]);
 
   const handleDismiss = () => {

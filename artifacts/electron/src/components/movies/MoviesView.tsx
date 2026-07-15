@@ -1,3 +1,4 @@
+import { useViewport } from "@/app/ViewportContext";
 import React, {
   memo,
   useCallback,
@@ -47,7 +48,13 @@ const MOVIE_SORTS: BentoSortChipConfig[] = [
 
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-  const { setConfig, searchPortalEl } = useBentoSlot();
+  const { registerTabConfig, searchPortalEl } = useBentoSlot();
+  const { isMobile } = useViewport();
+  const setConfig = React.useCallback(
+    (config: Parameters<typeof registerTabConfig>[1]) =>
+      registerTabConfig("movies", config),
+    [registerTabConfig],
+  );
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
@@ -58,7 +65,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
   const {
-    isMobile,
     searchQuery,
     setSearchQuery,
     isAdding,

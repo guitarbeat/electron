@@ -17,6 +17,16 @@ const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
     title: "Date Ideas",
     icon: "📍",
   },
+  memories: {
+    eyebrow: "Memories",
+    title: "Memories",
+    icon: "📝",
+  },
+  messages: {
+    eyebrow: "Messages",
+    title: "Message Board",
+    icon: "💬",
+  },
 };
 
 export const getWorkspaceMeta = (activeTab: MainTab): WorkspaceMeta =>

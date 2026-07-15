@@ -35,7 +35,7 @@ export interface UseMoviesWorkspaceActionsProps {
   }) => Promise<MovieSuggestion>;
   acceptSuggestionToWatchlist: (
     suggestionId: string,
-  ) => Promise<MovieSuggestion>;
+  ) => Promise<{ suggestion: MovieSuggestion; isDuplicate: boolean }>;
   rejectPendingSuggestion: (suggestionId: string) => Promise<void>;
   deleteMovie: (movieId: string) => Promise<void>;
   movieToDelete: Movie | null;

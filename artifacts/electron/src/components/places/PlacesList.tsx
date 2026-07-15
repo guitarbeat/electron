@@ -45,7 +45,12 @@ const PlacesList: React.FC = () => {
   const placesBodyRef = useRef<HTMLDivElement>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
   const { currentUser } = useUser();
-  const { setConfig, searchPortalEl } = useBentoSlot();
+  const { registerTabConfig, searchPortalEl } = useBentoSlot();
+  const setConfig = useCallback(
+    (config: Parameters<typeof registerTabConfig>[1]) =>
+      registerTabConfig("places", config),
+    [registerTabConfig],
+  );
   const { showToast } = useToast();
   const {
     places,

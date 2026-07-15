@@ -86,7 +86,8 @@ export const PwaInstallProvider: React.FC<PwaInstallProviderProps> = ({
     syncTintColor(element);
 
     if (window.__electronDeferredInstallPrompt) {
-      element.externalPromptEvent = window.__electronDeferredInstallPrompt;
+      element.externalPromptEvent =
+        window.__electronDeferredInstallPrompt as unknown as typeof element.externalPromptEvent;
     }
 
     setCanInstall(element.isInstallAvailable);
