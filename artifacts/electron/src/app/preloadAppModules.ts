@@ -20,11 +20,13 @@ const staggerPreloads = (
       const load = modules[index];
       index += 1;
       void Promise.resolve(load()).finally(() => {
-        scheduleIdleWork(loadNext, 600);
+        // Minimal delay between chunks — just yield to main thread
+        scheduleIdleWork(loadNext, 50);
       });
     };
 
-    scheduleIdleWork(loadNext, 400);
+    // Start immediately
+    scheduleIdleWork(loadNext, 0);
   });
 
 /** Warm the active workspace tab chunk. */
@@ -39,17 +41,13 @@ export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
 export const preloadAppWorkspaceShell = (): Promise<unknown> =>
   import("@/app/AppWorkspaceShell");
 
+// Only preload functional feature modules (no decorative effects)
 const DEFERRED_MODULES = [
-  () => import("@/components/effects/RadialMenu"),
-  () => import("@/components/effects/FishTankSection"),
   () => import("@/components/messages/MessageBoard"),
   () => import("@/components/spin-match/SpinSwipeGame"),
   () => import("@/components/quiz/QuizExperience"),
-  () => import("@/components/effects/RetroEffects"),
   () => import("@/components/quiz/QuizEditor"),
   () => import("@/components/spin-wheel/SpinWheelGame"),
-  () => import("@/app/CohesionAudit"),
-  () => import("@/branding/ElectronLogoLab"),
 ] as const;
 
 /**

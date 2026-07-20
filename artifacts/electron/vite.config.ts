@@ -197,6 +197,7 @@ export default defineConfig({
     target: "es2020",
     cssCodeSplit: true,
     modulePreload: { polyfill: true },
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {

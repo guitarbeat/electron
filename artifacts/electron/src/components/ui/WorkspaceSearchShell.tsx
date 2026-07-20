@@ -1,3 +1,4 @@
+import React from "react";
 import type { FC, FormEvent, ReactNode, Ref } from "react";
 
 interface WorkspaceSearchShellProps {
@@ -37,7 +38,7 @@ const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
       onSubmit={onSubmit}
     >
       <div
-        ref={shellRef}
+        ref={shellRef as React.Ref<HTMLDivElement>}
         className={`workspace-search__search-shell${
           icon ? " workspace-search__search-shell--with-icon" : ""
         }`}

@@ -27,7 +27,15 @@ const getCollectionItemId = (item: unknown): string | undefined => {
 };
 
 const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
-  const polledIds = new Set(polled.map(getCollectionItemId).filter(Boolean));
+  // ⚡ Bolt Optimization: Replace O(N) multi-pass array allocations with a single O(K) pass
+  const polledIds = new Set<string>();
+  for (const item of polled) {
+    const id = getCollectionItemId(item);
+    if (id) {
+      polledIds.add(id);
+    }
+  }
+
   return current.some((item) => {
     const id = getCollectionItemId(item);
     return Boolean(id && !polledIds.has(id));

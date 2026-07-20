@@ -28,7 +28,6 @@ import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import { useAudio } from "@/hooks/useAudio";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
@@ -39,44 +38,7 @@ import "./App.scss";
 const AppWorkspaceShell = React.lazy(
   () => import("@/app/AppWorkspaceShell"),
 );
-const AliveFX = React.lazy(() => import("@/components/effects/AliveFX"));
-const LazyAnalytics = React.lazy(() =>
-  Promise.resolve({ default: () => null }),
-);
-const MagicComponent = React.lazy(
-  () =>
-    import("@/components/effects/moire/Moire") as Promise<{
-      default: React.ComponentType<{
-        isVisible?: boolean;
-        opacity?: number;
-        color1?: string;
-        color2?: string;
-      }>;
-    }>,
-);
-type RetroEffectsComponent = React.ComponentType<{ cursorTrailEnabled: boolean }>;
-type RadialMenuComponent = React.ComponentType<{
-  onOpenMessages?: () => void;
-  onOpenQuiz?: () => void;
-  onOpenSpin?: () => void;
-}>;
 
-const RetroEffects = React.lazy<RetroEffectsComponent>(() =>
-  import('@/components/effects/RetroEffects').catch(
-    () => ({ default: (() => null) as RetroEffectsComponent })
-  )
-);
-const RadialMenu = React.lazy<RadialMenuComponent>(() =>
-  import('@/components/effects/RadialMenu').catch(
-    () => ({ default: (() => null) as RadialMenuComponent })
-  )
-);
-const DotField = React.lazy(() =>
-  import("@/components/effects/DotField").catch(() => ({ default: () => null })),
-);
-const FishTankSection = React.lazy(
-  () => import("@/components/effects/FishTankSection"),
-);
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
 const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));
 const modalBodyStyle = {
@@ -99,20 +61,17 @@ const App: React.FC = () => {
     handleRetryPendingSync,
     handleInstallApp,
   } = usePwaRuntime();
-  const { playSwitch } = useAudio();
   const { isMobile } = useViewport();
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
   const [isBootReady, setIsBootReady] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
   const { activeTab, handleTabChange } = useAppTabNavigation({
     initialTab: initialViewState.activeTab,
     prefersReducedMotion,
     isMobile,
-    onTabSwitch: playSwitch,
   });
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
@@ -123,8 +82,6 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
-  const [showFishTank, setShowFishTank] = useState(false);
-  const [cursorTrailEnabled] = useState<boolean>(() => !isMobile);
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
@@ -162,6 +119,7 @@ const App: React.FC = () => {
     void import("./app-skin.scss");
   }, []);
 
+  // Preload deferred modules immediately after boot (no delay)
   useEffect(() => {
     if (!isBootReady) {
       return undefined;
@@ -169,24 +127,12 @@ const App: React.FC = () => {
 
     return scheduleIdleWork(() => {
       void preloadDeferredAppModules();
-    }, 300);
+    }, 50);
   }, [isBootReady]);
 
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
   }, [currentUser]);
-
-  useEffect(() => {
-    if (!isBootReady) {
-      return undefined;
-    }
-
-    return scheduleIdleWork(() => setShowFishTank(true), 1200);
-  }, [isBootReady]);
-
-  useEffect(() => {
-    return scheduleIdleWork(() => setShowAnalytics(true), 4000);
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -276,11 +222,7 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider>
-        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-
         <div className="app-shell app-shell--viewport bg-main">
-          {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
-
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
       </ThemeProvider>
@@ -297,41 +239,9 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
-      {!prefersReducedMotion && !isMobile ? (
-        <React.Suspense fallback={null}>
-          <AliveFX />
-        </React.Suspense>
-      ) : null}
-      {cursorTrailEnabled ? (
-        <React.Suspense fallback={null}>
-          <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-        </React.Suspense>
-      ) : null}
       <div
         className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
       >
-        {!prefersReducedMotion && !isMobile ? (
-          <React.Suspense fallback={null}>
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 0,
-                pointerEvents: "none",
-              }}
-            >
-              <DotField
-                dotRadius={1.5}
-                dotSpacing={14}
-                bulgeStrength={67}
-                glowRadius={160}
-                sparkle={false}
-                waveAmplitude={0}
-              />
-            </div>
-          </React.Suspense>
-        ) : null}
-
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
@@ -365,9 +275,6 @@ const App: React.FC = () => {
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>
-              <React.Suspense fallback={null}>
-                {showFishTank ? <FishTankSection /> : null}
-              </React.Suspense>
             </div>
           </div>
         </div>
@@ -390,11 +297,6 @@ const App: React.FC = () => {
           </MinigameModal>
         ))}
       </div>
-      {showAnalytics ? (
-        <React.Suspense fallback={null}>
-          <LazyAnalytics />
-        </React.Suspense>
-      ) : null}
     </ThemeProvider>
   );
 };

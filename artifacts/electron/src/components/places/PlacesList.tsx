@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-explicit-any, react-refresh/only-export-components */
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/useProviders';
 import { usePlaces } from '@/hooks/places';

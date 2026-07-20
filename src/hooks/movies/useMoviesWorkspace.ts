@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { mediaBreakpoints, useMediaQuery } from "../useMediaQuery";
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
@@ -11,37 +10,20 @@ import type { MovieAutocompleteResult } from "../../services/metadata/types";
 import { usePolling } from "../../services/polling";
 import { Movie, MovieSuggestion, User } from "../../shared/types";
 import { useMovies } from "./useMovies";
-import { useSuggestions } from "../suggestions/useSuggestions";
+import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/useProviders";
 import {
-  areDeeplyEqual,
+  compareCreatedAtDesc,
   normalizeMovieTitle,
   sanitizeInput,
 } from "../../utils";
-import { trackMetric } from "../../services/analyticsService";
+import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
+import { trackMetric } from "@/services/analytics";
 import { readScope, retryScopeSync } from "../../services/state";
+import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner";
 
 const POLLING_INTERVAL = 30000;
-const buildAutocompleteSuggestions = (
-  titles: string[],
-  query: string,
-): MovieAutocompleteResult[] => {
-  const normalizedQuery = sanitizeInput(query).trim().toLowerCase();
-  if (!normalizedQuery) {
-    return [];
-  }
 
-  return [...new Set(titles)]
-    .map((title) => sanitizeInput(title))
-    .filter((title) => title && title.toLowerCase().includes(normalizedQuery))
-    .slice(0, 6)
-    .map((title, index) => ({
-      title,
-      type: "movie" as const,
-      imdbID: `suggestion-${index}-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      poster: undefined,
-    }));
-};
 interface UseMoviesWorkspaceProps {
   currentUser: User | null;
   isPaused: boolean;
@@ -79,7 +61,6 @@ export const useMoviesWorkspace = ({
   currentUser,
   isPaused,
 }: UseMoviesWorkspaceProps) => {
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const { showToast } = useToast();
   const readMemories = useCallback(() => readScope("memories"), []);
 
@@ -116,8 +97,6 @@ export const useMoviesWorkspace = ({
   const {
     movies,
     isLoading,
-    isSubmitting,
-    error: moviesError,
     isDegraded: isMoviesDegraded,
     isSyncBlocked: isMoviesSyncBlocked,
     syncWarning: moviesSyncWarning,
@@ -125,7 +104,6 @@ export const useMoviesWorkspace = ({
     renameMovie: renameMovieService,
     toggleWatched,
     deleteMovie,
-    restoreMovie,
     retrySync: retryMoviesSync,
   } = useMovies(currentUser, isPaused);
 
@@ -141,95 +119,78 @@ export const useMoviesWorkspace = ({
     retrySync: retrySuggestionsSync,
   } = useSuggestions(isPaused);
 
-  const {
-    data: memoriesSnapshot,
-    isLoading: isMemoriesLoading,
-    error: memoriesError,
-    refresh: refreshMemories,
-  } = usePolling(readMemories, POLLING_INTERVAL, areDeeplyEqual, {
-    key: "memories",
-    isPaused,
-  });
+  const { data: memoriesSnapshot, refresh: refreshMemories } = usePolling(
+    readMemories,
+    POLLING_INTERVAL,
+    areScopeSnapshotsEqual,
+    {
+      key: "memories",
+      isPaused,
+    },
+  );
   const memories = useMemo(() => {
     return [...(memoriesSnapshot?.data || [])].sort((a, b) => {
       if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
         return a.isPinned ? -1 : 1;
       }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return compareCreatedAtDesc(a, b);
     });
   }, [memoriesSnapshot]);
-  const suggestionAutocompleteResults = useMemo(() => {
-    const titles = pendingSuggestions
-      .filter((suggestion) => suggestion.status === "pending")
-      .map((suggestion) => suggestion.title);
 
-    return buildAutocompleteSuggestions(titles, searchQuery);
-  }, [pendingSuggestions, searchQuery]);
+  const withMemoryRefresh = useCallback(
+    async <T,>(operation: () => Promise<T>): Promise<T> => {
+      const result = await operation();
+      refreshMemories();
+      return result;
+    },
+    [refreshMemories],
+  );
+
   const addMemory = useCallback(
     async (
       movieId: string | undefined,
       movieTitle: string,
       author: string,
       note: string,
-    ) => {
-      const result = await addMemoryService(movieId, movieTitle, author, note);
-      refreshMemories();
-      return result;
-    },
-    [refreshMemories],
+    ) =>
+      withMemoryRefresh(() =>
+        addMemoryService(movieId, movieTitle, author, note),
+      ),
+    [withMemoryRefresh],
   );
+
   const updateMemory = useCallback(
     async (
       memoryId: string,
       updates: { note?: string; movieId?: string; movieTitle?: string },
-    ) => {
-      const result = await updateMemoryService(memoryId, updates);
-      refreshMemories();
-      return result;
-    },
-    [refreshMemories],
+    ) => withMemoryRefresh(() => updateMemoryService(memoryId, updates)),
+    [withMemoryRefresh],
   );
+
   const deleteMemoryRecord = useCallback(
     async (memoryId: string) => {
-      await deleteMemoryService(memoryId);
-      refreshMemories();
+      await withMemoryRefresh(() => deleteMemoryService(memoryId));
     },
-    [refreshMemories],
+    [withMemoryRefresh],
   );
+
   const toggleMemoryPin = useCallback(
-    async (memoryId: string) => {
-      const result = await toggleMemoryPinService(memoryId);
-      refreshMemories();
-      return result;
-    },
-    [refreshMemories],
+    async (memoryId: string) =>
+      withMemoryRefresh(() => toggleMemoryPinService(memoryId)),
+    [withMemoryRefresh],
   );
 
-  const [unwatchedMovies, watchedMovies] = useMemo(() => {
-    if (!movies) {
-      return [[], []] as [Movie[], Movie[]];
-    }
-
-    const unwatched: Movie[] = [];
-    const watched: Movie[] = [];
-
-    movies.forEach((movie) => {
-      if (movie.watchedBy.length < 2) {
-        unwatched.push(movie);
-      } else {
-        watched.push(movie);
+  const withProcessingSuggestion = useCallback(
+    async <T,>(suggestionId: string, operation: () => Promise<T>): Promise<T> => {
+      setProcessingSuggestionId(suggestionId);
+      try {
+        return await operation();
+      } finally {
+        setProcessingSuggestionId(null);
       }
-    });
-
-    return [unwatched, watched];
-  }, [movies]);
-
-  let memoryErrorMessage: string | null = null;
-  if (memoriesError instanceof Error) {
-    memoryErrorMessage = memoriesError.message;
-  } else if (memoriesError) {
-    memoryErrorMessage = String(memoriesError);
-  }
+    },
+    [],
+  );
 
   const submitRecommendation = useCallback(
     async ({
@@ -257,7 +218,9 @@ export const useMoviesWorkspace = ({
   );
 
   const acceptSuggestionToWatchlist = useCallback(
-    async (suggestionId: string): Promise<MovieSuggestion> => {
+    async (
+      suggestionId: string,
+    ): Promise<{ suggestion: MovieSuggestion; isDuplicate: boolean }> => {
       if (!currentUser) {
         throw new Error("Profile required");
       }
@@ -269,21 +232,23 @@ export const useMoviesWorkspace = ({
         throw new Error("Suggestion not found");
       }
 
-      setProcessingSuggestionId(suggestionId);
-
-      try {
-        await addMovie(
+      return withProcessingSuggestion(suggestionId, async () => {
+        const { isDuplicate } = await addMovie(
           suggestion.title,
           getMovieSelectionFromSuggestion(suggestion),
         );
         await acceptSuggestion(suggestionId, currentUser);
         trackMetric("suggestion_accepted");
-        return suggestion;
-      } finally {
-        setProcessingSuggestionId(null);
-      }
+        return { suggestion, isDuplicate };
+      });
     },
-    [acceptSuggestion, addMovie, currentUser, pendingSuggestions],
+    [
+      acceptSuggestion,
+      addMovie,
+      currentUser,
+      pendingSuggestions,
+      withProcessingSuggestion,
+    ],
   );
 
   const renameMovie = useCallback(
@@ -358,15 +323,11 @@ export const useMoviesWorkspace = ({
         throw new Error("Suggestion not found");
       }
 
-      setProcessingSuggestionId(suggestionId);
-
-      try {
-        await rejectSuggestion(suggestionId, currentUser);
-      } finally {
-        setProcessingSuggestionId(null);
-      }
+      await withProcessingSuggestion(suggestionId, () =>
+        rejectSuggestion(suggestionId, currentUser),
+      );
     },
-    [currentUser, pendingSuggestions, rejectSuggestion],
+    [currentUser, pendingSuggestions, rejectSuggestion, withProcessingSuggestion],
   );
 
   const retryMoviesWorkspaceSync = useCallback(async () => {
@@ -389,9 +350,42 @@ export const useMoviesWorkspace = ({
   const moviesWorkspaceSyncWarning =
     moviesSyncWarning ?? suggestionsSyncWarning ?? memoriesSnapshot?.warning;
 
+  const moviesSyncBanner = useWorkspaceSyncBanner({
+    sources: [
+      {
+        isDegraded: isMoviesDegraded,
+        isSyncBlocked: isMoviesSyncBlocked,
+        syncWarning: moviesSyncWarning,
+        retrySync: retryMoviesSync,
+      },
+      {
+        isDegraded: isSuggestionsDegraded,
+        isSyncBlocked: isSuggestionsSyncBlocked,
+        syncWarning: suggestionsSyncWarning,
+        retrySync: retrySuggestionsSync,
+      },
+    ],
+    combinedBlockedLabel:
+      "Shared movies and suggestions conflicted with local edits. Refresh and retry.",
+    combinedDegradedLabel:
+      "Movies and suggestions are being kept locally until shared sync recovers.",
+    blockedLabels: [
+      "A shared movies change conflicted with local edits. Refresh and retry.",
+      suggestionsSyncWarning ||
+        "Movie suggestion changes conflicted with local edits. Refresh and retry.",
+    ],
+    degradedLabels: [
+      moviesSyncWarning ||
+        "Movie changes are being kept locally until shared sync recovers.",
+      suggestionsSyncWarning ||
+        "Movie suggestion changes are being kept locally.",
+    ],
+    defaultDegradedLabel:
+      moviesWorkspaceSyncWarning ||
+      "Movie changes are being kept locally until shared sync recovers.",
+  });
+
   return {
-    // State returns
-    isMobile,
     isAdding,
     setIsAdding,
     movieToDelete,
@@ -404,35 +398,26 @@ export const useMoviesWorkspace = ({
     searchQuery,
     setSearchQuery,
     previousMoviesRef,
-
-    // Data returns
     movies,
     isLoading,
-    isSubmitting,
-    moviesError,
     isMoviesWorkspaceDegraded,
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
+    moviesSyncBanner,
     addMovie,
     renameMovie,
     toggleWatched,
     deleteMovie,
-    restoreMovie,
     retryMoviesWorkspaceSync,
     pendingSuggestions,
     submitRecommendation,
     acceptSuggestionToWatchlist,
     rejectPendingSuggestion,
     isSuggestionsLoading,
-    suggestionAutocompleteResults,
     memories,
     addMemory,
     updateMemory,
     deleteMemoryRecord,
     toggleMemoryPin,
-    isMemoriesLoading,
-    memoriesError: memoryErrorMessage,
-    unwatchedMovies,
-    watchedMovies,
   };
 };

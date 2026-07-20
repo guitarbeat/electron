@@ -50,8 +50,8 @@ const Toast: React.FC<ToastProps> = ({
   duration = 3500,
   actionLabel,
   onAction,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  position = "top-right",
+  // Position is part of the interface for future layout customization
+  position: _position = "top-right",
   persistent = false,
 }) => {
   const { playSuccess, playError, playPop } = useAudio();

@@ -67,7 +67,6 @@ body::before {
     linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
     linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78) border-box;
   background-size: 400% 400%;
-  animation: holo-spin 6s ease infinite, holo-pulse 3s ease-in-out infinite;
   pointer-events: none;
   z-index: 99990;
 }
@@ -85,7 +84,6 @@ body::before {
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-size: 200% 200% !important;
-  animation: holo-spin 4s linear infinite !important;
 }
 
 /* ── Nav tab labels → Orbitron ── */
@@ -138,7 +136,7 @@ body::before {
     0 8px 32px rgba(0,0,0,0.5),
     0 0 18px color-mix(in srgb, var(--y2k-pink) 16%, transparent),
     inset 0 1px 0 rgba(255,255,255,0.12);
-  transition: box-shadow 0.18s ease, transform 0.18s ease;
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
 }
 
 .movie-card:hover,
@@ -177,9 +175,8 @@ body::before {
 }
 
 
-/* Heartbeat on the heart icon when panel is closed */
+/* Heartbeat disabled for performance */
 .fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
-  animation: y2k-heartbeat 2.4s ease-in-out infinite;
   transform-origin: center;
 }
 
@@ -246,22 +243,7 @@ body::before {
   box-shadow: 0 0 12px color-mix(in srgb, var(--y2k-cyan) 50%, transparent);
 }
 
-/* ── Subtle scanlines ── */
-
-.app-shell--viewport::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.04) 2px,
-    rgba(0, 0, 0, 0.04) 4px
-  );
-  pointer-events: none;
-  z-index: 1;
-}
+/* Scanlines disabled for performance */
 
 /* ── Reduced motion ── */
 

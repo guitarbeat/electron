@@ -10,12 +10,17 @@ import {
   buildClearProfileCookie,
   buildPinAttemptCookie,
   buildProfileCookie,
-  getPinAttemptState,
   getSessionState,
 } from '../_lib/session.ts';
 import { getPinCoverageState, verifyProfilePin } from '../_lib/state.ts';
+import {
+  clearPinAttempts,
+  getPinAttemptRecord,
+  recordPinFailure,
+} from '../_lib/pinAttemptStore.ts';
 import { withWebHandler } from '../_lib/webHandler.ts';
 import { isUser } from '../../src/utils/shared.ts';
+import { logger } from '../_lib/logger.ts';
 
 const SESSION_SECRET_CONFIG_ERROR = [
   'Profile login is unavailable because SESSION_SIGNING_SECRET is not configured.',
@@ -62,7 +67,7 @@ async function handler(req: Request): Promise<Response> {
         pinProtectedUsers = pinCoverage.pinProtectedUsers;
         usersMissingPins = pinCoverage.usersMissingPins;
       } catch (error) {
-        console.warn('Failed to read PIN coverage during logout.', error);
+        logger.error('Failed to read PIN coverage during logout.', error);
       }
 
       return jsonResponse(
@@ -113,15 +118,19 @@ async function handler(req: Request): Promise<Response> {
       pinProtectedUsers = pinCoverage.pinProtectedUsers;
       usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      console.warn('Failed to read PIN coverage during profile update.', error);
+      logger.error('Failed to read PIN coverage during profile update.', error);
     }
     const requiresPin = pinProtectedUsers.includes(user);
 
     if (requiresPin) {
       const now = Date.now();
-      const attemptState = getPinAttemptState(req);
-      const failuresForUser = attemptState?.user === user ? attemptState.failures : 0;
-      const lockUntil = attemptState?.user === user ? attemptState.lockUntil : null;
+
+      // Authoritative lockout check is server-side (DB). The cookie is only
+      // issued for client-side countdown UX and is never trusted as truth.
+      const dbAttemptState = await getPinAttemptRecord(user);
+      const failuresForUser = dbAttemptState.failures;
+      const lockUntil = dbAttemptState.lockedUntil;
+
       if (lockUntil && lockUntil > now) {
         const retryAfter = getLockoutRemainingSeconds(lockUntil, now);
         return jsonResponse(
@@ -140,6 +149,9 @@ async function handler(req: Request): Promise<Response> {
       const isValid = await verifyProfilePin(user, pin);
       if (!isValid) {
         const failedState = computeNextPinAttemptState(failuresForUser, now);
+        // Persist to DB so lockout survives cookie deletion / new browsers.
+        await recordPinFailure(user, failedState.failures, failedState.lockedUntil);
+
         if (failedState.lockedUntil) {
           const retryAfter = getLockoutRemainingSeconds(failedState.lockedUntil, now);
           return jsonResponse(
@@ -151,6 +163,7 @@ async function handler(req: Request): Promise<Response> {
               headers: mergeHeaders(
                 { 'Retry-After': String(retryAfter) },
                 {
+                  // Cookie is a client hint only; lockout is enforced via DB above.
                   'Set-Cookie': buildPinAttemptCookie(req, {
                     user,
                     failures: failedState.failures,
@@ -175,6 +188,9 @@ async function handler(req: Request): Promise<Response> {
           }
         );
       }
+
+      // Successful login — reset server-side counter.
+      await clearPinAttempts(user);
     }
 
     const currentSession = getSessionState(req);
@@ -202,7 +218,7 @@ async function handler(req: Request): Promise<Response> {
       return serverErrorResponse(SESSION_SECRET_CONFIG_ERROR);
     }
 
-    console.error(`Failed to update profile session during ${req.method} ${req.url}:`, error);
+    logger.error(`Failed to update profile session during ${req.method} ${req.url}:`, error);
     return serverErrorResponse();
   }
 }
