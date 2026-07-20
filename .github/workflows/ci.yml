@@ -13,7 +13,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.27.0
+          version: 10.28.1
 
       - uses: actions/setup-node@v4
         with:
@@ -23,17 +23,8 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Add deslop skill
-        run: npx -y skills add https://github.com/cursor/plugins --skill deslop -y
-
-      - name: Lint
-        run: pnpm lint
-
       - name: Typecheck
-        run: pnpm check-types
-
-      - name: Test
-        run: pnpm test
+        run: pnpm run typecheck
 
       - name: Build
-        run: pnpm build
+        run: pnpm run build

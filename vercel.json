@@ -74,5 +74,5 @@
       "destination": "/index.html"
     }
   ],
-  "outputDirectory": "artifacts/electron/dist"
+  "outputDirectory": "artifacts/electron/dist/public"
 }
