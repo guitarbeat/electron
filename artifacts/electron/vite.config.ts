@@ -6,27 +6,26 @@ import tailwindcss from "@tailwindcss/vite";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { applyFetchResponseHeaders } from "./nodeBridge.ts";
 
+// PORT and BASE_PATH are only meaningful for the dev/preview server. During a
+// production `vite build` (e.g. on Vercel) they are not provided, so we fall
+// back to sensible defaults there instead of throwing.
+const isServe = process.argv.includes("serve") || process.argv.includes("dev");
+
 const rawPort = process.env.PORT;
 
-if (!rawPort) {
+if (isServe && !rawPort) {
   throw new Error(
     "PORT environment variable is required but was not provided.",
   );
 }
 
-const port = Number(rawPort);
+const port = rawPort ? Number(rawPort) : 5173;
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
+const basePath = process.env.BASE_PATH ?? "/";
 
 const resolveFromRoot = (subpath: string): string =>
   path.resolve(import.meta.dirname, subpath);
