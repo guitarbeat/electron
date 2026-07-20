@@ -1,20 +1,17 @@
 import React, { memo } from "react";
-import { CollectionGrid } from "@/ui/CollectionLayout";
-import PlaceCard from "./PlaceCard.tsx";
-import type { Place } from "../../shared/types.ts";
-import PlacesEmptyState from "./PlacesEmptyState.tsx";
+import PlaceCard from "./PlaceCard";
+import type { Place } from "@/shared/types";
+import { WorkspaceSectionEmpty } from "@/components/ui/WorkspaceEmptyState";
+import WorkspaceCollectionGrid from "@/ui/WorkspaceCollectionGrid";
+import { PLACES_GRID_CLASS, PLACES_GRID_MIN_COL } from "@/utils/workspaceConfig";
 
 interface PlacesGridProps {
   places: Place[];
-  emptyStateHint: string;
+  variant: "queue" | "completed";
   canEdit: boolean;
   isSubmitting: boolean;
   activeCardId: string | null;
   onCardTap: (place: Place) => void;
-  onCardKeyDown: (
-    event: React.KeyboardEvent<HTMLDivElement>,
-    place: Place,
-  ) => void;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
@@ -23,52 +20,36 @@ interface PlacesGridProps {
 
 const PlacesGrid: React.FC<PlacesGridProps> = ({
   places,
-  emptyStateHint,
+  variant,
   canEdit,
   isSubmitting,
   activeCardId,
   onCardTap,
-  onCardKeyDown,
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
   onEdit,
-}) => {
-  return (
-    <CollectionGrid
-      className="watchlist-content places-grid"
-      minColumnWidth="clamp(10.5rem, 24vw, 13rem)"
-    >
-      {places.length > 0 ? (
-        places.map((place) => (
-          <div
-            key={place.id}
-            id={`place-card-${place.id}`}
-            onClick={() => onCardTap(place)}
-            onKeyDown={(event) => onCardKeyDown(event, place)}
-            role="button"
-            tabIndex={0}
-            style={{
-              cursor: "pointer",
-            }}
-          >
-            <PlaceCard
-              place={place}
-              canEdit={canEdit}
-              isSubmitting={isSubmitting}
-              isActive={activeCardId === place.id}
-              onMarkVisited={onMarkVisited}
-              onMarkUnvisited={onMarkUnvisited}
-              onDelete={onDelete}
-              onEdit={onEdit}
-            />
-          </div>
-        ))
-      ) : (
-        <PlacesEmptyState hint={emptyStateHint} />
-      )}
-    </CollectionGrid>
-  );
-};
+}) => (
+  <WorkspaceCollectionGrid
+    className={PLACES_GRID_CLASS}
+    minColumnWidth={PLACES_GRID_MIN_COL}
+    items={places}
+    getItemKey={(place) => place.id}
+    renderItem={(place) => (
+      <PlaceCard
+        place={place}
+        canEdit={canEdit}
+        isSubmitting={isSubmitting}
+        isActive={activeCardId === place.id}
+        onActivate={() => onCardTap(place)}
+        onMarkVisited={onMarkVisited}
+        onMarkUnvisited={onMarkUnvisited}
+        onDelete={onDelete}
+        onEdit={onEdit}
+      />
+    )}
+    empty={<WorkspaceSectionEmpty tab="places" variant={variant} />}
+  />
+);
 
 export default memo(PlacesGrid);

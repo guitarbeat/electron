@@ -9,7 +9,6 @@ import React, {
 } from "react";
 import { useUser } from "@/app/useProviders";
 import type {
-  Movie,
   MovieSuggestion,
   SharedMemory,
   MoviesViewProps,

@@ -1,10 +1,21 @@
 import { useCallback, useEffect } from "react";
+import { isSoundEnabled } from "@/utils/soundPreference";
 
 let sharedAudioContext: AudioContext | null = null;
 let audioContextUnavailable = false;
 let userGestureAudioUnlocked = false;
 let unlockListenersInstalled = false;
 let unlockGestureHandler: (() => void) | null = null;
+let outputFilter: BiquadFilterNode | null = null;
+let masterGainNode: GainNode | null = null;
+
+const MASTER_GAIN = 0.82;
+const CLICK_DEBOUNCE_MS = 35;
+const DUPLICATE_SOUND_WINDOW_MS = 90;
+
+let lastClickAt = 0;
+let lastSoundKey = "";
+let lastSoundAt = 0;
 
 const getAudioContextClass = () =>
   window.AudioContext ||
@@ -110,11 +121,78 @@ const getAudioContextForPlayback = (): AudioContext | null => {
   return sharedAudioContext;
 };
 
-/**
- * Shared audio hook — Y2K aesthetic.
- * Browsers require a user gesture before AudioContext can run; we defer
- * construction until the first pointer/key/touch, then play UI sounds.
- */
+const ensureOutputChain = (ctx: AudioContext): AudioNode => {
+  if (!masterGainNode || masterGainNode.context !== ctx) {
+    masterGainNode = ctx.createGain();
+    masterGainNode.gain.value = MASTER_GAIN;
+    masterGainNode.connect(ctx.destination);
+  }
+
+  if (!outputFilter || outputFilter.context !== ctx) {
+    outputFilter = ctx.createBiquadFilter();
+    outputFilter.type = "lowpass";
+    outputFilter.frequency.value = 2600;
+    outputFilter.Q.value = 0.6;
+    outputFilter.connect(masterGainNode);
+  }
+
+  return outputFilter;
+};
+
+const shouldSkipDuplicateSound = (key: string): boolean => {
+  const now = performance.now();
+  if (key === lastSoundKey && now - lastSoundAt < DUPLICATE_SOUND_WINDOW_MS) {
+    return true;
+  }
+  lastSoundKey = key;
+  lastSoundAt = now;
+  return false;
+};
+
+interface ToneOptions {
+  frequency: number;
+  endFrequency?: number | null;
+  type?: OscillatorType;
+  duration?: number;
+  volume?: number;
+  attackTime?: number;
+  startTime?: number;
+}
+
+const scheduleTone = (
+  ctx: AudioContext,
+  {
+    frequency,
+    endFrequency = null,
+    type = "sine",
+    duration = 0.1,
+    volume = 0.05,
+    attackTime = 0.004,
+    startTime,
+  }: ToneOptions,
+): void => {
+  const now = startTime ?? ctx.currentTime;
+  const destination = ensureOutputChain(ctx);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, now);
+  if (endFrequency !== null) {
+    osc.frequency.linearRampToValueAtTime(endFrequency, now + duration);
+  }
+
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(volume, now + attackTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+  osc.connect(gain);
+  gain.connect(destination);
+
+  osc.start(now);
+  osc.stop(now + duration + 0.01);
+};
+
 export const useAudio = () => {
   useEffect(() => {
     installUnlockListeners();
@@ -131,15 +209,6 @@ export const useAudio = () => {
     [],
   );
 
-  /**
-   * Play a single synthesized tone with a soft attack and smooth decay.
-   * @param frequency     Start frequency in Hz
-   * @param endFrequency  End frequency for a pitch glide (null = no glide)
-   * @param type          Oscillator wave type (default 'sine')
-   * @param duration      Total duration in seconds (default 0.1)
-   * @param volume        Peak gain 0–1 (default 0.05)
-   * @param attackTime    Linear ramp-up time in seconds (default 0.004)
-   */
   const playTone = useCallback(
     (
       frequency: number,
@@ -149,85 +218,173 @@ export const useAudio = () => {
       volume = 0.05,
       attackTime = 0.004,
     ) => {
+      if (!isSoundEnabled()) {
+        return;
+      }
+
       const ctx = getCtx();
       if (!ctx) return;
 
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.setValueAtTime(frequency, now);
-      if (endFrequency !== null) {
-        osc.frequency.linearRampToValueAtTime(endFrequency, now + duration);
-      }
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(volume, now + attackTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + duration);
+      scheduleTone(ctx, {
+        frequency,
+        endFrequency,
+        type,
+        duration,
+        volume,
+        attackTime,
+      });
     },
     [getCtx],
   );
 
-  /**
-   * D5 (587 Hz) soft tap — clean digital keypress, Nokia/WinXP brevity.
-   * Very short, barely audible, just enough to register the action.
-   */
   const playClick = useCallback(() => {
-    playTone(587, null, "sine", 0.032, 0.022, 0.002);
+    const now = performance.now();
+    if (now - lastClickAt < CLICK_DEBOUNCE_MS) {
+      return;
+    }
+    lastClickAt = now;
+    playTone(587, null, "sine", 0.032, 0.02, 0.002);
   }, [playTone]);
 
-  /**
-   * Ascending spring bloop — 330 Hz → 660 Hz in 80 ms.
-   * That bubbly Y2K "bloop" (think MSN Messenger notification character).
-   */
   const playPop = useCallback(() => {
-    playTone(330, 660, "sine", 0.08, 0.046, 0.003);
+    if (shouldSkipDuplicateSound("pop")) {
+      return;
+    }
+    playTone(330, 660, "sine", 0.08, 0.04, 0.003);
   }, [playTone]);
 
-  /**
-   * Two-step perfect-4th ping — E4 (330 Hz) then A4 (440 Hz).
-   * Like a tab/window switch in Windows XP or early browser chrome.
-   */
   const playSwitch = useCallback(() => {
-    playTone(330, null, "sine", 0.055, 0.032, 0.003);
-    setTimeout(() => playTone(440, null, "sine", 0.065, 0.032, 0.003), 52);
-  }, [playTone]);
+    if (shouldSkipDuplicateSound("switch")) {
+      return;
+    }
 
-  /**
-   * Four-note ascending pentatonic chime — C5 → E5 → G5 → C6.
-   * The Y2K "achievement unlocked" arpeggio, warm and melodic.
-   */
+    const ctx = getCtx();
+    if (!ctx || !isSoundEnabled()) {
+      return;
+    }
+
+    const now = ctx.currentTime;
+    scheduleTone(ctx, {
+      frequency: 330,
+      duration: 0.055,
+      volume: 0.028,
+      attackTime: 0.003,
+      startTime: now,
+    });
+    scheduleTone(ctx, {
+      frequency: 440,
+      duration: 0.065,
+      volume: 0.028,
+      attackTime: 0.003,
+      startTime: now + 0.052,
+    });
+  }, [getCtx]);
+
   const playSuccess = useCallback(() => {
-    playTone(523.25, null, "sine", 0.13, 0.052, 0.004);
-    setTimeout(() => playTone(659.25, null, "sine", 0.14, 0.048, 0.004), 72);
-    setTimeout(() => playTone(783.99, null, "sine", 0.16, 0.044, 0.004), 144);
-    setTimeout(() => playTone(1046.5, null, "sine", 0.14, 0.036, 0.004), 216);
-  }, [playTone]);
+    if (shouldSkipDuplicateSound("success")) {
+      return;
+    }
 
-  /**
-   * Warm descending digital tone — B4→G4 then G4→E4, all sine.
-   * Error, but gentle — like an early-2000s "nope" without the buzzer harshness.
-   */
+    const ctx = getCtx();
+    if (!ctx || !isSoundEnabled()) {
+      return;
+    }
+
+    const now = ctx.currentTime;
+    const notes = [
+      { frequency: 523.25, duration: 0.13, volume: 0.044, delay: 0 },
+      { frequency: 659.25, duration: 0.14, volume: 0.04, delay: 0.072 },
+      { frequency: 783.99, duration: 0.16, volume: 0.036, delay: 0.144 },
+      { frequency: 1046.5, duration: 0.14, volume: 0.03, delay: 0.216 },
+    ] as const;
+
+    notes.forEach(({ frequency, duration, volume, delay }) => {
+      scheduleTone(ctx, {
+        frequency,
+        duration,
+        volume,
+        attackTime: 0.004,
+        startTime: now + delay,
+      });
+    });
+  }, [getCtx]);
+
   const playError = useCallback(() => {
-    playTone(493.88, 392, "sine", 0.13, 0.042, 0.006);
-    setTimeout(() => playTone(392, 293.66, "sine", 0.12, 0.034, 0.006), 118);
-  }, [playTone]);
+    if (shouldSkipDuplicateSound("error")) {
+      return;
+    }
 
-  /**
-   * Descending ding-ding — G5 then E5, like a soft attention chime.
-   * Evokes AIM "door creak" era but stripped down to just the tone.
-   */
+    const ctx = getCtx();
+    if (!ctx || !isSoundEnabled()) {
+      return;
+    }
+
+    const now = ctx.currentTime;
+    scheduleTone(ctx, {
+      frequency: 493.88,
+      endFrequency: 392,
+      duration: 0.13,
+      volume: 0.036,
+      attackTime: 0.006,
+      startTime: now,
+    });
+    scheduleTone(ctx, {
+      frequency: 392,
+      endFrequency: 293.66,
+      duration: 0.12,
+      volume: 0.03,
+      attackTime: 0.006,
+      startTime: now + 0.118,
+    });
+  }, [getCtx]);
+
   const playWarning = useCallback(() => {
-    playTone(783.99, null, "sine", 0.09, 0.044, 0.004);
-    setTimeout(() => playTone(659.25, null, "sine", 0.1, 0.036, 0.004), 105);
-  }, [playTone]);
+    if (shouldSkipDuplicateSound("warning")) {
+      return;
+    }
+
+    const ctx = getCtx();
+    if (!ctx || !isSoundEnabled()) {
+      return;
+    }
+
+    const now = ctx.currentTime;
+    scheduleTone(ctx, {
+      frequency: 783.99,
+      duration: 0.09,
+      volume: 0.038,
+      attackTime: 0.004,
+      startTime: now,
+    });
+    scheduleTone(ctx, {
+      frequency: 659.25,
+      duration: 0.1,
+      volume: 0.032,
+      attackTime: 0.004,
+      startTime: now + 0.105,
+    });
+  }, [getCtx]);
+
+  const playKey = useCallback(
+    (digit = 5) => {
+      const clamped = Math.max(0, Math.min(9, digit));
+      const semitoneOffset = (clamped - 5) * 0.55;
+      const frequency = 523.25 * 2 ** (semitoneOffset / 12);
+      playTone(frequency, null, "sine", 0.03, 0.018, 0.002);
+    },
+    [playTone],
+  );
+
+  const playKeypad = useCallback(
+    (key: number | "del") => {
+      if (key === "del") {
+        playClick();
+        return;
+      }
+      playKey(key);
+    },
+    [playClick, playKey],
+  );
 
   return {
     playTone,
@@ -237,5 +394,7 @@ export const useAudio = () => {
     playSuccess,
     playError,
     playWarning,
+    playKey,
+    playKeypad,
   };
 };
