@@ -1,3 +1,9 @@
+
+import { randomBytes } from 'node:crypto';
+
+// Ensure a dummy secret is set for tests
+process.env.SESSION_SIGNING_SECRET = randomBytes(32).toString('hex');
+
 import assert from "node:assert/strict";
 import test from "node:test";
 
