@@ -18,6 +18,7 @@ interface ToastProps {
   duration?: number;
   actionLabel?: string;
   onAction?: () => void;
+  position?: "top-right" | "top-center" | "bottom-right";
   persistent?: boolean;
 }
 
@@ -49,6 +50,8 @@ const Toast: React.FC<ToastProps> = ({
   duration = 3500,
   actionLabel,
   onAction,
+  // Position is part of the interface for future layout customization
+  position: _position = "top-right",
   persistent = false,
 }) => {
   const { playSuccess, playError, playPop } = useAudio();
@@ -71,6 +74,7 @@ const Toast: React.FC<ToastProps> = ({
         clearTimeout(dismissTimer);
       };
     }
+    return undefined;
   }, [duration, onDismiss, persistent, playError, playPop, playSuccess, type]);
 
   const handleDismiss = () => {

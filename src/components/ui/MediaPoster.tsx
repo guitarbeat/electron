@@ -6,6 +6,7 @@ interface MediaPosterProps {
   year?: string;
   id?: string;
   className?: string;
+  priority?: boolean;
 }
 
 const brokenUrls = new Set<string>();
@@ -16,6 +17,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   year,
   id,
   className = "",
+  priority = false,
 }) => {
   const [hasImageError, setHasImageError] = React.useState(() =>
     posterUrl ? brokenUrls.has(posterUrl) : false,
@@ -52,7 +54,8 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
         <img
           src={posterUrl}
           alt={`${title} poster`}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           className={`movie-poster ${isLoaded ? "is-loaded" : ""}`}
           onLoad={() => setIsLoaded(true)}
           onError={handleImageError}

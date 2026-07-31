@@ -5,13 +5,7 @@
  * `themes.ts` and are applied at runtime via `applyTheme()`.
  */
 
-import { moviesThemeDefinition, placesThemeDefinition } from "./themes.ts";
-
-/** @deprecated Prefer `useTheme().theme` — kept for gradual migration of inline styles. */
-export const moviesTheme = moviesThemeDefinition.tokens;
-
-/** @deprecated Prefer `useTheme().theme` */
-export const placesTheme = placesThemeDefinition.tokens;
+import { moviesThemeDefinition } from "./themes.ts";
 
 export const shellTokens = moviesThemeDefinition.shell;
 
@@ -55,9 +49,9 @@ export { applyTheme, clearAppliedTheme } from "./applyTheme.ts";
 
 // * Typography scale
 const fontFamily = {
-  heading: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-  body: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-  sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+  heading: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+  body: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+  sans: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
   display: ["Papyrus", "serif"],
   mono: ["JetBrains Mono", "SFMono-Regular", "Consolas", "monospace"],
 } as const;

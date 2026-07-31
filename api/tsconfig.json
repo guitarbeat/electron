@@ -1,0 +1,30 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "**/*.test.ts"],
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler",
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["node"],
+    "baseUrl": "..",
+    "paths": {
+      "@/app/*": ["./src/app/*"],
+      "@/branding/*": ["./src/branding/*"],
+      "@/common/*": ["./src/components/common/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/effects/*": ["./src/components/effects/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/matchmaker/*": ["./src/components/matchmaker/*"],
+      "@/memories/*": ["./src/components/memories/*"],
+      "@/quiz/*": ["./src/components/quiz/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/theme/*": ["./src/theme/*"],
+      "@/ui/*": ["./src/components/ui/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/*": ["./src/*"]
+    }
+  }
+}

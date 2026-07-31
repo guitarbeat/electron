@@ -19,6 +19,24 @@ class PollingManager {
   private activeIntervals = new Map<string, number>();
   private inFlight = new Map<string, Promise<void>>();
   private options = new Map<string, PollingOptions>();
+  private visibilityListenerBound = false;
+
+  private ensureVisibilityListener() {
+    if (this.visibilityListenerBound || typeof document === "undefined") {
+      return;
+    }
+
+    this.visibilityListenerBound = true;
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        return;
+      }
+
+      for (const key of this.subscribers.keys()) {
+        void this.execute(key);
+      }
+    });
+  }
 
   /**
    * Subscribe to polling updates for a given key
@@ -30,6 +48,8 @@ class PollingManager {
     listener: Listener<T>,
     options: PollingOptions = {},
   ) {
+    this.ensureVisibilityListener();
+
     if (!this.subscribers.has(key)) {
       this.subscribers.set(key, new Set());
     }
@@ -108,6 +128,10 @@ class PollingManager {
    * Execute polling for a given key with race protection and deduplication
    */
   private execute(key: string): Promise<void> {
+    if (typeof document !== "undefined" && document.hidden) {
+      return Promise.resolve();
+    }
+
     const existingRequest = this.inFlight.get(key);
     if (existingRequest) {
       return existingRequest;

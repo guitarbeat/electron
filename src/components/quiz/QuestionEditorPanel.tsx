@@ -6,18 +6,14 @@ import type {
   QuizCharacter,
   QuizQuestion,
   XYAxisQuestion,
-} from "./lib/types";
-import ScoreSlider from "./ScoreSlider";
-import {
-  getQuestionDetail,
-  QUESTION_TYPE_LABELS,
-} from "./lib/QuestionEditorMeta";
-import Card from "@/ui/Card";
-import Button from "@/ui/Button";
-import { Input, Textarea } from "@/ui/FormFields";
-import { useToast } from "@/app/useProviders";
-import { spacing, colors, typography } from "@/theme/tokens";
-import WebPImg from "./lib/WebPImg";
+} from './lib/types';
+import ScoreSlider from './ScoreSlider';
+import { getQuestionDetail, QUESTION_TYPE_LABELS } from './lib/QuestionEditorMeta';
+import Card from '@/ui/LegacyCard';
+import Button from '@/ui/LegacyButton';
+import { Input, Textarea } from '@/ui/FormFields';
+import { useToast } from '@/app/useProviders';
+import { spacing, colors, typography } from '@/theme/tokens';
 
 const QUADRANT_INFO = [
   { key: "topLeft", icon: "⬆⬅", name: "Top-Left", position: "left + top" },
@@ -258,9 +254,11 @@ const ImageChoiceEditor: React.FC<{
               title="Upload image for option"
             >
               {option.imageUrl ? (
-                <WebPImg
+                <img
                   src={option.imageUrl}
                   alt={option.alt}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -521,9 +519,11 @@ export const ImageOptionsSummary: React.FC<{
     {options.map((opt, i) => (
       <div key={i} className="quiz-editor__summary-thumb">
         {opt.imageUrl && (
-          <WebPImg
+          <img
             src={opt.imageUrl}
             alt={opt.alt}
+            loading="lazy"
+            decoding="async"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         )}

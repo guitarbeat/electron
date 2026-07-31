@@ -1,0 +1,334 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLACE CARDS  —  poster-style cards parallel to MovieCard
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(155px, 22vw, 195px), 1fr));
+  gap: 1.05rem;
+  align-items: start;
+}
+
+.places-grid__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-tertiary);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Outer card shell — mirrors .movie-item-card exactly */
+.place-item-card {
+  container-type: inline-size;
+  border-radius: 1rem;
+  overflow: hidden;
+  max-width: none;
+  justify-self: stretch;
+  width: 100%;
+  will-change: transform, box-shadow;
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+/* Touch: squeeze on tap */
+.place-item-card:active {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .place-item-card:hover {
+    transform: translateY(-6px) scale(1.025);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 22%, transparent),
+      0 0 28px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+
+  .place-item-card:hover:active {
+    transform: translateY(-2px) scale(0.98);
+    transition-duration: 0.1s;
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.45),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 18%, transparent),
+      0 0 14px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+}
+
+/* Visited state — mirrors movie-item-card--watched */
+.place-item-card--visited {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(74, 222, 128, 0.25),
+    0 0 20px rgba(74, 222, 128, 0.1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .place-item-card--visited:hover {
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(74, 222, 128, 0.35),
+      0 0 32px rgba(74, 222, 128, 0.18);
+  }
+}
+
+/* Portrait poster container — same 2:3 ratio as movie posters */
+.place-item-poster-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: #000;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+/* Top-to-bottom dark vignette — mirrors .movie-item-poster-wrap::before */
+.place-item-poster-wrap::before {
+  content: '';
+  position: absolute;
+  inset-x: 0;
+  top: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Cover art — dark cinematic surface matching movie fallback aesthetic */
+.place-item-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--color-accent) 20%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 80%, color-mix(in srgb, var(--color-secondary, #95dcff) 14%, transparent) 0%, transparent 55%),
+    linear-gradient(160deg, #1a1010 0%, #0d0908 50%, #14100e 100%);
+}
+
+/* Central emoji — large decorative focal element (like a poster image) */
+.place-item-cover__icon {
+  font-size: 5rem;
+  line-height: 1;
+  filter:
+    drop-shadow(0 6px 24px rgba(0, 0, 0, 0.7))
+    drop-shadow(0 0 40px rgba(255, 255, 255, 0.06));
+  user-select: none;
+  position: relative;
+  z-index: 1;
+  opacity: 0.88;
+}
+
+/* Map pin indicator */
+.place-item-cover__pin {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.6rem;
+  font-size: 0.85rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  user-select: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Category badge — top-left, mirrors IMDB star badge */
+.place-item-category-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.22rem 0.48rem 0.22rem 0.32rem;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 52%),
+    rgba(6, 8, 14, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.place-item-category-badge__icon {
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.place-item-category-badge__label {
+  font-family: var(--type-eyebrow-family);
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Visited badge — replaces category badge when visited */
+.place-item-visited-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-success, #34d399) 85%, transparent);
+  color: #052;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Bottom gradient overlay — exactly mirrors .movie-item-overlay */
+.place-item-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.48rem;
+  padding: 0.78rem;
+  background: linear-gradient(
+    to top,
+    rgba(3, 6, 12, 0.97) 0%,
+    rgba(5, 8, 16, 0.76) 44%,
+    rgba(11, 8, 18, 0.38) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  transition: background 0.22s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .place-item-card:hover .place-item-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.97) 0%,
+      rgba(0, 0, 0, 0.68) 55%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+  }
+}
+
+.place-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Title — mirrors .movie-item-title display typography */
+.place-item-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .place-item-card:hover .place-item-title {
+    color: color-mix(in srgb, var(--color-accent) 55%, #fff);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75), 0 0 12px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
+}
+
+/* Meta row — mirrors .movie-meta-genre-row */
+.place-item-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.1rem;
+}
+
+/* Category chip — mirrors .movie-item-genre-chip */
+.place-item-genre-chip {
+  display: inline-block;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--type-eyebrow-family);
+  font-size: 0.58rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: var(--line-height-none);
+  white-space: nowrap;
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Coords chip — secondary meta */
+.place-item-coords-chip {
+  display: inline-block;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--type-eyebrow-family);
+  font-size: 0.56rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  line-height: var(--line-height-none);
+  white-space: nowrap;
+}
+
+.place-item-notes {
+  margin: 0;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-style: italic;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Added-by byline */
+.place-item-added-by {
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: 0.03em;
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.place-item-actions {
+  pointer-events: all;
+}
+
+.place-item-action-btn,
+.place-item-edit-btn,
+.place-item-delete-btn {
+  pointer-events: all;
+}

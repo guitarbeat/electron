@@ -38,6 +38,20 @@ export const getMovieActionState = ({
   const showActionRail = showWatchedAction || showNotesAction;
   const memoryCountText = `${memoriesCount} note${memoriesCount === 1 ? "" : "s"}`;
 
+  let notesButtonAriaLabel: string | null = null;
+  if (showNotesAction) {
+    notesButtonAriaLabel = hasMemories
+      ? `View notes for "${movie.title}"`
+      : `Add note to "${movie.title}"`;
+  }
+
+  let primaryActionAriaLabel: string | null = null;
+  if (showWatchedAction) {
+    primaryActionAriaLabel = watchedByCurrentUser
+      ? `Mark "${movie.title}" as unwatched`
+      : `Mark "${movie.title}" as watched`;
+  }
+
   return {
     isGuest,
     hasMemories,
@@ -48,18 +62,10 @@ export const getMovieActionState = ({
     memoryCountText,
     notesButtonLabel: hasMemories ? memoryCountText : "Add note",
     notesButtonCompactLabel: hasMemories ? "Notes" : "Note",
-    notesButtonAriaLabel: showNotesAction
-      ? hasMemories
-        ? `View notes for "${movie.title}"`
-        : `Add note to "${movie.title}"`
-      : null,
+    notesButtonAriaLabel,
     notesBadgeText: hasMemories ? String(memoriesCount) : null,
     primaryActionLabel: watchedByCurrentUser ? "Watched" : "Mark watched",
     primaryActionCompactLabel: watchedByCurrentUser ? "Watched" : "Watch",
-    primaryActionAriaLabel: showWatchedAction
-      ? watchedByCurrentUser
-        ? `Mark "${movie.title}" as unwatched`
-        : `Mark "${movie.title}" as watched`
-      : null,
+    primaryActionAriaLabel,
   };
 };

@@ -5,7 +5,9 @@ export const USER_PHOTOS: Record<User, string> = {
   Electra: "https://cataas.com/cat/cute?width=200&height=200",
 };
 
-export type MainTab = "movies" | "places";
+export const MAIN_TABS = ["movies", "places", "memories", "messages"] as const;
+
+export type MainTab = (typeof MAIN_TABS)[number];
 
 export interface Place {
   id: string;
@@ -103,9 +105,6 @@ export interface MatchmakerGame {
 
 export interface MoviesViewProps {
   isPaused?: boolean;
-  isMobile?: boolean;
-  showPlanControls?: boolean;
-  onClosePlanControls?: () => void;
 }
 
 export type { QuizCharacter } from "../components/quiz/lib/types.ts";

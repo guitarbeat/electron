@@ -1,15 +1,8 @@
-import React, { useEffect, useId, useRef } from "react";
-import { createPortal } from "react-dom";
-import Card from "./Card";
-import Button from "./Button";
-import {
-  colors,
-  spacing,
-  typography,
-  zIndex,
-  motion,
-  shadows,
-} from "@/theme/tokens";
+import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import Card from './LegacyCard';
+import Button from './LegacyButton';
+import { colors, spacing, typography, zIndex, motion, shadows } from '@/theme/tokens';
 import {
   getModalCloseButtonStyle,
   getModalOverlayStyle,

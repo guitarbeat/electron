@@ -1,56 +1,44 @@
 import React, {
-  startTransition,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
+import {
+  APP_VIEW_STATE_KEY,
+  readInitialAppViewState,
+  stripLaunchUrlShortcuts,
+  type StoredAppViewState,
+} from "@/app/appViewState";
 import { buildFeatureModals } from "@/app/buildMinigameModals";
-import { preloadAppModules } from "@/app/preloadAppModules";
+import {
+  preloadCriticalAppModules,
+  preloadDeferredAppModules,
+} from "@/app/preloadAppModules";
 import {
   readQuizCompletionState,
   writeQuizCompletionState,
 } from "@/app/quizCompletionStorage";
 import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
+import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
-import { useAppSession, useUser, useTheme } from "@/app/useProviders";
+import type { ThemeName } from "@/theme/themes";
+import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
-import AppHeader from "@/app/AppHeader";
-import { AppHeaderSlotProvider } from "@/app/AppHeaderSlot";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import AppWorkspaceShell from "@/app/AppWorkspaceShell";
-import VignetteOverlay from "@/components/effects/VignetteOverlay";
-import { useAudio } from "@/hooks/useAudio";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import type { MainTab } from "@/shared/types";
+import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
+import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
 import "./App.scss";
-import "./y2k-skin.scss";
-import "./workspace-polish.scss";
 
-const Analytics = React.lazy(() =>
-  import("@vercel/analytics/react").then((m) => ({ default: m.Analytics }))
+const AppWorkspaceShell = React.lazy(
+  () => import("@/app/AppWorkspaceShell"),
 );
 
-const MagicComponent = React.lazy(
-  () =>
-    import("@/components/effects/moire/Moire") as Promise<{
-      default: React.ComponentType<{
-        isVisible?: boolean;
-        opacity?: number;
-        color1?: string;
-        color2?: string;
-      }>;
-    }>,
-);
-const RetroEffects = React.lazy(() =>
-  import("@/components/effects/RetroEffects").catch(
-    () => ({ default: () => null }) as { default: React.FC },
-  ),
-);
 const ElectronLogoLab = React.lazy(() => import("@/branding/ElectronLogoLab"));
 const CohesionAudit = React.lazy(() => import("@/app/CohesionAudit"));
 const modalBodyStyle = {
@@ -60,87 +48,9 @@ const modalBodyStyle = {
 const isCohesionAuditRoute =
   typeof window !== "undefined" &&
   window.location.pathname.replace(/\/$/, "") === "/cohesion";
-const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
-const BOOT_SCREEN_MIN_MS = 600;
-
-/** True once at module load — avoids creating a canvas on every render. */
-const webGLAvailable: boolean = (() => {
-  if (typeof document === "undefined") return false;
-  try {
-    const canvas = document.createElement("canvas");
-    return Boolean(
-      canvas.getContext("webgl2") ??
-      canvas.getContext("webgl") ??
-      canvas.getContext("experimental-webgl"),
-    );
-  } catch {
-    return false;
-  }
-})();
-
-/**
- * Reads the active theme tokens and feeds the Moiré shader its accent colors,
- * so the background stays color-linked to the rest of the UI.
- */
-const ThemedMoire: React.FC = () => {
-  const { theme } = useTheme();
-
-  if (!webGLAvailable) {
-    return null;
-  }
-
-  return (
-    <MagicComponent
-      isVisible
-      opacity={0.2}
-      color1={theme.moire.color1}
-      color2={theme.moire.color2}
-    />
-  );
-};
-
-type ViewTransitionCapableDocument = Document & {
-  startViewTransition?: (callback: () => void | Promise<void>) => {
-    finished: Promise<void>;
-  };
-};
-
-const getRequestedTab = (value: string | null): MainTab | null => {
-  if (!value) return null;
-  if (value === "places") return "places";
-  if (value === "movies") return "movies";
-  return null;
-};
-
-interface StoredAppViewState {
-  activeTab: MainTab;
-  showMessages: boolean;
-}
-
-const readStoredAppViewState = (): StoredAppViewState | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(APP_VIEW_STATE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw) as Partial<StoredAppViewState>;
-    return {
-      activeTab: parsed.activeTab === "places" ? "places" : "movies",
-      showMessages: Boolean(parsed.showMessages),
-    };
-  } catch {
-    return null;
-  }
-};
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const { isSessionLoading } = useAppSession();
   const {
     isOnline,
     isStandalone,
@@ -151,38 +61,31 @@ const App: React.FC = () => {
     handleRetryPendingSync,
     handleInstallApp,
   } = usePwaRuntime();
-  const { playSwitch } = useAudio();
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const { isMobile } = useViewport();
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
   const [isBootReady, setIsBootReady] = useState(false);
 
-  const persistedViewState = useMemo(() => readStoredAppViewState(), []);
-  const [activeTab, setActiveTab] = useState<MainTab>(() => {
-    if (typeof window !== "undefined") {
-      const fromHash = getRequestedTab(window.location.hash.replace(/^#/, ""));
-      if (fromHash) return fromHash;
-    }
-    return persistedViewState?.activeTab ?? "movies";
+  const initialViewState = useMemo(() => readInitialAppViewState(), []);
+  const { activeTab, handleTabChange } = useAppTabNavigation({
+    initialTab: initialViewState.activeTab,
+    prefersReducedMotion,
+    isMobile,
   });
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
   );
   const [showMessages, setShowMessages] = useState(
-    persistedViewState?.showMessages ?? false,
+    () => initialViewState.showMessages,
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
-  const [showQuizFlow, setShowQuizFlow] = useState(false);
-  const [showSpinWheel, setShowSpinWheel] = useState(false);
-  const [showSpinWheelOnly, setShowSpinWheelOnly] = useState(false);
-  const [isSpinWheelLocked, setIsSpinWheelLocked] = useState(false);
-  const [cursorTrailEnabled] = useState<boolean>(
-    () =>
-      typeof window !== "undefined" &&
-      localStorage.getItem("cursorTrailEnabled") === "true",
-  );
-  const shortcutHandledRef = React.useRef(false);
+  const [showQuizExperience, setShowQuizExperience] = useState(false);
+  const [showSpinMatch, setShowSpinMatch] = useState(false);
+
+  useEffect(() => {
+    stripLaunchUrlShortcuts();
+  }, []);
 
   const logoLabState = useMemo(() => {
     if (typeof window === "undefined") {
@@ -200,32 +103,32 @@ const App: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const startedAt = performance.now();
-    let timerId: number | undefined;
 
-    void preloadAppModules().finally(() => {
-      if (cancelled) {
-        return;
+    void preloadCriticalAppModules().finally(() => {
+      if (!cancelled) {
+        setIsBootReady(true);
       }
-
-      const remaining = Math.max(
-        0,
-        BOOT_SCREEN_MIN_MS - (performance.now() - startedAt),
-      );
-      timerId = window.setTimeout(() => {
-        if (!cancelled) {
-          setIsBootReady(true);
-        }
-      }, remaining);
     });
 
     return () => {
       cancelled = true;
-      if (timerId !== undefined) {
-        window.clearTimeout(timerId);
-      }
     };
   }, []);
+
+  useEffect(() => {
+    void import("./app-skin.scss");
+  }, []);
+
+  // Preload deferred modules immediately after boot (no delay)
+  useEffect(() => {
+    if (!isBootReady) {
+      return undefined;
+    }
+
+    return scheduleIdleWork(() => {
+      void preloadDeferredAppModules();
+    }, 50);
+  }, [isBootReady]);
 
   useEffect(() => {
     setQuizCompleted(readQuizCompletionState(currentUser));
@@ -245,35 +148,6 @@ const App: React.FC = () => {
     );
   }, [activeTab, showMessages]);
 
-  useEffect(() => {
-    if (shortcutHandledRef.current || typeof window === "undefined") {
-      return;
-    }
-
-    shortcutHandledRef.current = true;
-    const search = new URLSearchParams(window.location.search);
-    const requestedTab = getRequestedTab(search.get("tab"));
-    const requestedPanel = search.get("panel");
-    let didApplyShortcut = false;
-
-    if (requestedTab) {
-      setActiveTab(requestedTab);
-      didApplyShortcut = true;
-    }
-
-    if (requestedPanel === "messages") {
-      setShowMessages(true);
-      didApplyShortcut = true;
-    }
-
-    if (didApplyShortcut) {
-      search.delete("tab");
-      search.delete("panel");
-      const next = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ""}${window.location.hash}`;
-      window.history.replaceState({}, "", next);
-    }
-  }, []);
-
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {
       setQuizCompleted(completed);
@@ -283,101 +157,57 @@ const App: React.FC = () => {
   );
 
   const openQuizExperience = useCallback(() => {
-    setShowQuizFlow(true);
+    setShowQuizExperience(true);
   }, []);
 
   const handleQuizComplete = useCallback(() => {
     updateQuizCompletion(true);
-    setShowQuizFlow(false);
   }, [updateQuizCompletion]);
+
+  const handleQuizEdit = useCallback(() => {
+    setShowQuizExperience(false);
+    setShowQuizEditor(true);
+  }, []);
 
   const handleQuizRetake = useCallback(() => {
     updateQuizCompletion(false);
   }, [updateQuizCompletion]);
 
-  const handleTabChange = useCallback(
-    (tab: MainTab) => {
-      if (tab === activeTab) {
-        return;
-      }
-
-      playSwitch();
-
-      const nextTab = () => {
-        startTransition(() => {
-          setActiveTab(tab);
-        });
-      };
-
-      const transitionDocument = document as ViewTransitionCapableDocument;
-      if (
-        prefersReducedMotion ||
-        typeof transitionDocument.startViewTransition !== "function"
-      ) {
-        nextTab();
-        return;
-      }
-
-      transitionDocument.startViewTransition(() => {
-        nextTab();
-      });
-    },
-    [activeTab, playSwitch, prefersReducedMotion],
-  );
-
-  // Keep URL hash in sync with active tab
-  useEffect(() => {
-    const current = window.location.hash.replace(/^#/, "");
-    if (current !== activeTab) {
-      window.history.replaceState(null, "", `#${activeTab}`);
-    }
-  }, [activeTab]);
-
-  // Respond to back/forward navigation and direct hash links
-  useEffect(() => {
-    const onHashChange = () => {
-      const tab = getRequestedTab(window.location.hash.replace(/^#/, ""));
-      if (tab) handleTabChange(tab);
-    };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, [handleTabChange]);
-
   const openSpinMatch = useCallback(() => {
-    setShowSpinWheel(true);
+    setShowSpinMatch(true);
   }, []);
+
+  const openMessages = useCallback(() => {
+    handleTabChange("messages");
+  }, [handleTabChange]);
 
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
-        showMessages,
+        showMessages: false,
         showQuizEditor,
-        showQuizFlow,
-        showSpinWheel,
-        showSpinWheelOnly,
+        showQuizExperience,
+        showSpinMatch,
         quizCompleted,
-        isSpinWheelLocked,
         currentUser,
         setShowMessages,
         setShowQuizEditor,
-        setShowQuizFlow,
-        setShowSpinWheel,
-        setShowSpinWheelOnly,
-        setIsSpinWheelLocked,
+        setShowQuizExperience,
+        setShowSpinMatch,
         onQuizComplete: handleQuizComplete,
         onQuizRetake: handleQuizRetake,
+        onQuizEdit: handleQuizEdit,
       }),
     [
       currentUser,
       handleQuizComplete,
+      handleQuizEdit,
       handleQuizRetake,
-      isSpinWheelLocked,
       quizCompleted,
       showMessages,
       showQuizEditor,
-      showQuizFlow,
-      showSpinWheel,
-      showSpinWheelOnly,
+      showQuizExperience,
+      showSpinMatch,
     ],
   );
 
@@ -392,36 +222,26 @@ const App: React.FC = () => {
   if (logoLabState.enabled) {
     return (
       <ThemeProvider>
-        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-
         <div className="app-shell app-shell--viewport bg-main">
-          {!prefersReducedMotion ? <MagicComponent isVisible /> : null}
-
-          <VignetteOverlay />
-
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
       </ThemeProvider>
     );
   }
 
-  if (isSessionLoading || !isBootReady) {
+  if (!isBootReady) {
     return (
-      <ThemeProvider>
+      <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
         <LoadingScreen />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider>
-      <React.Suspense fallback={null}>
-        <RetroEffects cursorTrailEnabled={cursorTrailEnabled} />
-      </React.Suspense>
-      <div className="app-shell app-shell--viewport bg-main">
-        {!prefersReducedMotion ? <ThemedMoire /> : null}
-
-        <VignetteOverlay />
+    <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
+      <div
+        className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
+      >
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
@@ -430,36 +250,32 @@ const App: React.FC = () => {
           <div
             className={`app-workspace-stack app-workspace-stack--${activeTab}`}
           >
-            <AppHeaderSlotProvider>
-              <div
-                className={`app-tab-shell app-tab-shell--${activeTab}${activeTab === "movies" ? " movies-unified-shell" : ""}`}
-              >
-                <AppHeader
-                  activeTab={activeTab}
-                  onTabChange={handleTabChange}
-                  pwaStatus={{
-                    isOnline,
-                    isStandalone,
-                    canInstall: canInstallApp,
-                    hasUpdateReady,
-                    pendingSyncCount: outboxStatus.pendingCount,
-                    blockedSyncCount: outboxStatus.blockedCount,
-                  }}
-                  onInstallApp={() => void handleInstallApp()}
-                  onApplyUpdate={handleApplyUpdate}
-                  onRetrySync={handleRetryPendingSync}
-                  onOpenSpin={openSpinMatch}
-                  onOpenMessages={() => setShowMessages(true)}
-                  onOpenQuiz={openQuizExperience}
-                />
-                <WorkspaceErrorBoundary>
+            <div
+              className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
+            >
+              <WorkspaceErrorBoundary>
+                <React.Suspense fallback={null}>
                   <AppWorkspaceShell
-                    isMobile={isMobile}
                     activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    pwaStatus={{
+                      isOnline,
+                      isStandalone,
+                      canInstall: canInstallApp,
+                      hasUpdateReady,
+                      pendingSyncCount: outboxStatus.pendingCount,
+                      blockedSyncCount: outboxStatus.blockedCount,
+                    }}
+                    onInstallApp={() => void handleInstallApp()}
+                    onApplyUpdate={handleApplyUpdate}
+                    onRetrySync={handleRetryPendingSync}
+                    onOpenMessages={openMessages}
+                    onOpenQuiz={openQuizExperience}
+                    onOpenSpin={openSpinMatch}
                   />
-                </WorkspaceErrorBoundary>
-              </div>
-            </AppHeaderSlotProvider>
+                </React.Suspense>
+              </WorkspaceErrorBoundary>
+            </div>
           </div>
         </div>
 
@@ -481,9 +297,6 @@ const App: React.FC = () => {
           </MinigameModal>
         ))}
       </div>
-      <React.Suspense fallback={null}>
-        <Analytics />
-      </React.Suspense>
     </ThemeProvider>
   );
 };
@@ -492,7 +305,9 @@ const AppWithProviders: React.FC = () => (
   <UserProvider>
     <ToastProvider>
       <PwaInstallProvider>
-        <App />
+        <ViewportProvider>
+          <App />
+        </ViewportProvider>
       </PwaInstallProvider>
     </ToastProvider>
   </UserProvider>

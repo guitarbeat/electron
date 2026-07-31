@@ -1,36 +1,45 @@
-export interface WorkspaceSection<T, S> {
-  id: string;
-  header: string;
-  items: T[];
+/**
+ * Generic utility for workspace collections (Movies, Places, etc.)
+ */
+
+export interface CollectionSections<T, S> {
+  suggestions: S[];
+  queue: T[];
+  completed: T[];
 }
 
+export const compareCreatedAtDesc = (
+  left: { createdAt: string },
+  right: { createdAt: string },
+): number =>
+  new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+
+export const compareCreatedAtAsc = (
+  left: { createdAt: string },
+  right: { createdAt: string },
+): number => compareCreatedAtDesc(right, left);
+
+export const compareStringsAlpha = (left: string, right: string): number =>
+  left.localeCompare(right, undefined, { sensitivity: "base" });
+
+/**
+ * Builds standard collection sections (Suggestions, Queue, Completed)
+ */
 export function buildCollectionSections<T, S>(
   items: T[],
-  getSectionId: (item: T) => string,
-  getSectionHeader: (item: T) => string,
-  sortSections?: (a: S, b: S) => number,
-): WorkspaceSection<T, S>[] {
-  const sectionsMap = new Map<string, WorkspaceSection<T, S>>();
+  suggestions: S[] = [],
+  isCompleted: (item: T) => boolean,
+): CollectionSections<T, S> {
+  const queue: T[] = [];
+  const completed: T[] = [];
 
   for (const item of items) {
-    const id = getSectionId(item);
-    if (!sectionsMap.has(id)) {
-      sectionsMap.set(id, {
-        id,
-        header: getSectionHeader(item),
-        items: [],
-      });
+    if (isCompleted(item)) {
+      completed.push(item);
+    } else {
+      queue.push(item);
     }
-    sectionsMap.get(id)!.items.push(item);
   }
 
-  const sections = Array.from(sectionsMap.values());
-
-  if (sortSections) {
-    // Note: sortSections typed with S, but sections are WorkspaceSection<T, S>
-    // Assuming S was meant to be the section type for sorting.
-    sections.sort(sortSections as any);
-  }
-
-  return sections;
+  return { suggestions, queue, completed };
 }

@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useMovies } from "@/hooks/movies/useMovies";
+import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/useProviders";
 import type { Movie } from "@/shared/types";
 import MovieDetailsModal from "@/components/movies/MovieDetailsModal";
@@ -385,6 +385,7 @@ function ResultScreen({
             : undefined
         }
         role="button"
+        aria-label={`Open details for ${winner.title}`}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -448,6 +449,7 @@ function ResultScreen({
         type="button"
         onClick={onReset}
         aria-label="Play again"
+        title="Play again"
         style={{
           padding: "0.6rem 1.6rem",
           background: "transparent",
@@ -469,6 +471,10 @@ function ResultScreen({
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
+
+  useEffect(() => {
+    void import("@/app/skins/spin-wheel-skin.scss");
+  }, []);
 
   const [phase, setPhase] = useState<Phase>("swipe");
   const [kept, setKept] = useState<Movie[]>([]);
@@ -825,6 +831,7 @@ function ActionButton({
       type="button"
       onClick={onClick}
       aria-label={label}
+      title={label}
       style={{
         width: 62,
         height: 62,
@@ -888,6 +895,7 @@ function DoneCard({ kept, onReset }: { kept: number; onReset: () => void }) {
           type="button"
           onClick={onReset}
           aria-label="Try again"
+          title="Try again"
           style={{
             padding: "0.45rem 1.1rem",
             borderRadius: 999,

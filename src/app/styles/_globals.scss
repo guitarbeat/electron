@@ -1,0 +1,735 @@
+/*
+ * Global tokens, base element styles, and responsive touch/typography defaults.
+ * Palette runtime overrides: src/theme/themes.ts → applyTheme().
+ */
+
+@use '../../theme/breakpoints' as *;
+
+/* ── CSS Custom Properties (fallback: movies theme — src/theme/themes.ts) ── */
+:root {
+  --color-background: #07091a;
+  --color-surface-0: #060819;
+  --color-surface-1: rgba(16, 26, 58, 0.82);
+  --color-surface-elevated: rgba(20, 32, 68, 0.86);
+  --color-surface-2: rgba(22, 34, 70, 0.9);
+  --color-surface-3: rgba(30, 44, 86, 0.94);
+  --color-text-primary: #eef2ff;
+  --color-text-secondary: #94a3c8;
+  --color-text-tertiary: #5b6e9a;
+  --color-accent: #f472b6;
+  --color-accent-hover: #f9a8d4;
+  --color-secondary: #7dd3fc;
+  --color-tertiary: #c4b5fd;
+  --color-quaternary: #c4b5fd;
+  --color-quinary: #7dd3fc;
+  --color-success: #86efac;
+  --color-warning: #fde68a;
+  --color-error: #fca5a5;
+  --color-border: rgba(148, 163, 200, 0.28);
+  --color-border-subtle: rgba(148, 163, 200, 0.12);
+  --color-overlay: rgba(3, 5, 18, 0.88);
+  --gradient-shell: linear-gradient(182deg, #0d1535 0%, #080f2a 42%, #060c1e 72%, #040816 100%);
+  --gradient-card: linear-gradient(178deg, rgba(20, 32, 72, 0.94) 0%, rgba(12, 18, 50, 0.9) 52%, rgba(6, 8, 28, 0.92) 100%);
+  --gradient-primary: linear-gradient(128deg, #f472b6 0%, #fb7185 42%, #fce7f3 100%);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-card: 1rem;
+  --radius-xl: 1.25rem;
+  --chrome-radius-sm: 0.9rem;
+  --chrome-radius: 1.3rem;
+  --chrome-radius-lg: 1.85rem;
+  --chrome-pill-radius: 999px;
+  --chrome-border-color: rgba(148, 163, 200, 0.28);
+  --chrome-highlight-top: linear-gradient(180deg, rgba(238, 242, 255, 0.2) 0%, rgba(238, 242, 255, 0.08) 14%, transparent 58%);
+  --chrome-surface: linear-gradient(165deg, rgba(18, 28, 66, 0.93) 0%, rgba(10, 16, 42, 0.95) 45%, rgba(6, 8, 26, 0.97) 100%);
+  --chrome-shadow-soft: 0 18px 36px rgba(2, 4, 18, 0.36), inset 0 1px 0 rgba(238, 242, 255, 0.05);
+  --chrome-shadow: 0 28px 52px rgba(2, 4, 18, 0.44), inset 0 1px 0 rgba(238, 242, 255, 0.07);
+  --chrome-blur: blur(40px) saturate(2);
+  --surface-padding: clamp(1rem, 0.8rem + 0.8vw, 1.25rem);
+  --surface-padding-compact: clamp(0.8rem, 0.65rem + 0.4vw, 1rem);
+  --shadow-card: 0 16px 26px rgba(2, 4, 18, 0.24), inset 0 1px 0 rgba(238, 242, 255, 0.06);
+  --shadow-elevated: 0 22px 38px rgba(2, 4, 18, 0.38), inset 0 1px 0 rgba(238, 242, 255, 0.09);
+  --shadow-floating: 0 28px 48px rgba(2, 4, 18, 0.45), 0 0 36px rgba(244, 114, 182, 0.06);
+  --focus-ring: color-mix(in srgb, var(--color-accent) 70%, transparent);
+  --font-display: 'Papyrus', 'Marker Felt', serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: var(--font-body);
+  --font-interface: var(--font-body);
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
+  /* Retro / lo-fi font — Comic Neue loads from Google Fonts on all platforms,
+     including iOS where Comic Sans MS is unavailable as a system font */
+  --font-retro: 'Comic Neue', 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-size-3xs: 0.5625rem;
+  --font-size-2xs: 0.625rem;
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem);
+  --font-size-sm: clamp(0.8125rem, 0.78rem + 0.15vw, 0.9375rem);
+  --font-size-base: clamp(0.875rem, 0.84rem + 0.2vw, 1rem);
+  --font-size-lg: clamp(1rem, 0.95rem + 0.3vw, 1.175rem);
+  --font-size-xl: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  --font-size-2xl: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+  --font-size-3xl: clamp(1.625rem, 1.4rem + 1vw, 2.25rem);
+  --font-size-4xl: clamp(2rem, 1.7rem + 1.5vw, 3rem);
+  --font-size-mobile-base: 16px;
+  --font-size-mobile-compact: 15px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --line-height-none: 1;
+  --line-height-heading: 1.2;
+  --line-height-snug: 1.25;
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.55;
+  --line-height-relaxed: 1.75;
+  --letter-spacing-display: -0.04em;
+  --letter-spacing-none: 0;
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: -0.01em;
+  --letter-spacing-wide: 0.02em;
+  --letter-spacing-dense: 0.03em;
+  --letter-spacing-button: 0.04em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-eyebrow: 0.08em;
+  --letter-spacing-widest: 0.14em;
+  --type-eyebrow-family: var(--font-body);
+  --type-eyebrow-size: 0.72rem;
+  --type-eyebrow-weight: var(--font-weight-semibold);
+  --type-eyebrow-line-height: var(--line-height-none);
+  --type-eyebrow-letter-spacing: var(--letter-spacing-eyebrow);
+  --type-eyebrow-transform: uppercase;
+  --type-title-sm-family: var(--font-heading);
+  --type-title-sm-size: 1.25rem;
+  --type-title-sm-weight: var(--font-weight-semibold);
+  --type-title-sm-line-height: var(--line-height-heading);
+  --type-title-sm-letter-spacing: var(--letter-spacing-normal);
+  --type-title-md-family: var(--font-heading);
+  --type-title-md-size: 1.5rem;
+  --type-title-md-weight: var(--font-weight-semibold);
+  --type-title-md-line-height: var(--line-height-heading);
+  --type-title-md-letter-spacing: var(--letter-spacing-tight);
+  --type-tab-label-family: var(--font-interface);
+  --type-tab-label-size: clamp(0.72rem, 1vw + 0.45rem, 0.85rem);
+  --type-tab-label-weight: var(--font-weight-bold);
+  --type-tab-label-line-height: var(--line-height-none);
+  --type-tab-label-letter-spacing: var(--letter-spacing-wider);
+  --type-tab-label-transform: uppercase;
+  --type-button-label-family: var(--font-heading);
+  --type-button-label-weight: var(--font-weight-semibold);
+  --type-button-label-line-height: var(--line-height-none);
+  --type-button-label-letter-spacing: var(--letter-spacing-button);
+  --type-button-label-transform: uppercase;
+  --type-badge-family: var(--font-heading);
+  --type-badge-size: 0.7rem;
+  --type-badge-weight: var(--font-weight-extrabold);
+  --type-badge-line-height: var(--line-height-none);
+  --type-badge-letter-spacing: var(--letter-spacing-wider);
+  --type-badge-transform: uppercase;
+  --type-body-sm-family: var(--font-body);
+  --type-body-sm-size: 0.875rem;
+  --type-body-sm-line-height: 1.45;
+  --type-body-md-family: var(--font-body);
+  --type-body-md-size: 0.9rem;
+  --type-body-md-line-height: 1.55;
+  --type-caption-family: var(--font-body);
+  --type-caption-size: var(--font-size-2xs);
+  --type-caption-line-height: var(--line-height-tight);
+  --type-micro-family: var(--font-body);
+  --type-micro-size: var(--font-size-3xs);
+  --type-micro-line-height: var(--line-height-tight);
+  --type-poster-title-family: var(--font-heading);
+  --type-poster-title-size: clamp(0.85rem, 2.5vw, 1.15rem);
+  --type-poster-title-weight: var(--font-weight-extrabold);
+  --type-poster-title-line-height: var(--line-height-heading);
+  --type-poster-title-letter-spacing: 0.06em;
+  --type-poster-title-transform: uppercase;
+  --transition-fast: 100ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-normal: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-slow: 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* Shell bridge tokens — palette runtime overrides via applyTheme() */
+  --theme-transition-duration: 280ms;
+  --theme-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --shell-max-width: #{$container-max-width};
+  --shell-border: color-mix(in srgb, var(--color-border-subtle) 80%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --loading-sequence-blend-mode: difference;
+  --loading-mask-color: #e8e0d4;
+  --z-index-loading-sequence: 11000;
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-surface-0);
+  background-image:
+    radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--color-accent) 16%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 56% 52%, color-mix(in srgb, var(--color-tertiary) 10%, transparent) 0%, transparent 60%),
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--color-quaternary) 9%, transparent) 0%, transparent 38%),
+    radial-gradient(circle at 12% 82%, color-mix(in srgb, var(--color-quinary) 8%, transparent) 0%, transparent 42%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-attachment: fixed;
+  color: var(--color-text-primary);
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  letter-spacing: var(--letter-spacing-normal);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* Enhanced focus-visible styles */
+:where(button, input, textarea, a, [role='button']):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Thin scrollbars — accent-tinted */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-accent) 18%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  border-radius: 99px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-accent) 32%, transparent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Global font styles */
+.bg-main {
+  background-color: transparent;
+}
+
+/* Quirks are part of the vibe; keep effects available by default. */
+
+/* Retro divider -- modernized gradient line */
+.retro-divider {
+  height: 1px;
+  border: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 127, 198, 0.3) 20%,
+    rgba(149, 220, 255, 0.3) 50%,
+    rgba(167, 138, 242, 0.3) 80%,
+    transparent 100%
+  );
+  opacity: 0.6;
+  margin: 0.75rem 0;
+}
+
+/* Retro glow-text utility */
+.retro-glow {
+  text-shadow:
+    0 0 8px rgba(255, 127, 198, 0.5),
+    0 0 20px rgba(255, 127, 198, 0.2);
+}
+
+/* Card hover shine */
+.retro-card-shine {
+  position: relative;
+  overflow: hidden;
+}
+.retro-card-shine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.retro-card-shine:hover::before {
+  transform: translateX(100%);
+}
+
+
+.memory-lane-divider {
+  margin: 0.35rem 0 0.55rem;
+  border: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-accent) 40%, transparent) 22%,
+    color-mix(in srgb, var(--color-secondary) 50%, transparent) 50%,
+    color-mix(in srgb, var(--color-accent) 40%, transparent) 78%,
+    transparent 100%
+  );
+  position: relative;
+  opacity: 0.82;
+}
+
+.memory-lane-divider::after {
+  content: '♥';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  font-size: 0.68rem;
+  color: color-mix(in srgb, var(--color-accent) 78%, white 22%);
+  background: color-mix(in srgb, var(--color-surface-1) 92%, transparent);
+  padding: 0 0.32rem;
+  border-radius: 999px;
+}
+
+.movie-card,
+.places-item-card {
+  position: relative;
+}
+
+.movie-card::after,
+.places-item-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0.75rem;
+  right: 0.75rem;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-accent) 44%, transparent) 30%,
+    color-mix(in srgb, var(--color-secondary) 44%, transparent) 70%,
+    transparent 100%
+  );
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+/* Hide scrollbar on nav row while keeping scroll functional */
+.nav-scroll-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.nav-scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Responsive Typography */
+.header-title {
+  font-size: calc(1.65rem + 2vw);
+}
+
+@media (max-width: 640px) {
+  .header-content {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+
+  .header-avatar {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 1rem;
+  }
+}
+
+/* Mobile Touch Optimizations */
+@media (max-width: 640px) {
+  /* Improve touch targets */
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 16px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Better touch feedback */
+  button:active,
+  [role='button']:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* Prevent text selection on touch */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Smooth scrolling for mobile */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent bounce scroll on mobile */
+  body {
+    overscroll-behavior: contain;
+  }
+
+  /* Better focus styles for touch */
+  button:focus-visible,
+  [role='button']:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Disable hover effects on touch devices */
+  @media (hover: none) {
+    .movie-card:hover {
+      transform: none;
+      box-shadow: inherit;
+    }
+
+    .card-mobile-disable-hover:hover {
+      transform: none;
+      box-shadow: inherit;
+    }
+  }
+}
+@media (max-width: 640px) {
+  input,
+  textarea {
+    font-size: 16px;
+    /* Prevents zoom on iOS — must be >= 16px */
+    -webkit-appearance: none;
+    /* Prevent iOS default styling */
+    border-radius: 4px;
+    /* Ensure consistent border radius */
+  }
+
+  button {
+    min-height: 44px;
+    /* Better touch target */
+    -webkit-tap-highlight-color: transparent;
+    /* Remove iOS tap highlight */
+  }
+
+  /* Prevent iOS from zooming on input focus */
+  @supports (-webkit-touch-callout: none) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
+
+  .add-movie-form {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .add-movie-form > * {
+    flex-shrink: 0;
+  }
+
+  .message-board-title {
+    font-size: calc(1.15rem + 0.8vw);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+}
+
+/* Enhanced Mobile Typography & Spacing */
+@media (max-width: 640px) {
+  /* Improved readability with better line height */
+  body {
+    line-height: 1.6;
+    font-size: var(--font-size-mobile-base); /* Prevent iOS zoom */
+  }
+
+  /* Better heading sizes for mobile */
+  h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+    line-height: 1.3;
+    margin-bottom: 0.875rem;
+  }
+
+  h3 {
+    font-size: clamp(1.125rem, 3vw, 1.5rem);
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Better paragraph spacing */
+  p {
+    margin-bottom: 1rem;
+    max-width: 100%;
+  }
+
+  /* Improved list spacing */
+  ul,
+  ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Better form spacing */
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-label {
+    margin-bottom: 0.5rem;
+    font-size: var(--type-body-sm-size);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Card spacing improvements */
+  .card {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+
+  .card-title {
+    font-size: var(--font-size-lg);
+    margin-bottom: 0.75rem;
+  }
+
+  .card-content {
+    font-size: var(--type-body-sm-size);
+    line-height: 1.5;
+  }
+
+  /* Button spacing */
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .button-group.horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Better modal spacing */
+  .modal-content {
+    padding: 1.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .modal-body {
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-footer {
+    padding-top: 1rem;
+    gap: 0.75rem;
+  }
+
+  /* Improved grid layouts */
+  .grid-mobile-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-mobile-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  /* Better spacing for navigation */
+  .nav-item {
+    padding: 0.75rem 1rem;
+    margin: 0.25rem 0;
+  }
+
+  .nav-section {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Improved responsive text */
+  .responsive-text-sm {
+    font-size: clamp(0.75rem, 2vw, 0.875rem);
+  }
+
+  .responsive-text-base {
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+  }
+
+  .responsive-text-lg {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+  }
+
+  .responsive-text-xl {
+    font-size: clamp(1.25rem, 3.5vw, 1.5rem);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screen adjustments */
+  body {
+    font-size: var(--font-size-mobile-compact);
+  }
+
+  .card {
+    padding: 0.875rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .button-group {
+    gap: 0.625rem;
+  }
+}
+
+/* Movie Card Title Responsive */
+@media (max-width: 640px) {
+  .movie-title {
+    font-size: calc(1.05rem + 0.6vw);
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-title {
+    font-size: calc(0.95rem + 0.5vw);
+  }
+}
+
+/* Tablet and Medium Screens */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .main-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Large Screens */
+@media (min-width: 1025px) {
+  .main-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Ensure images don't overflow containers */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Prevent horizontal overflow */
+body {
+  overflow-x: hidden;
+}
+
+/* Ensure containers don't overflow */
+.main-container,
+.modal-content-wrapper,
+.spin-wheel-container {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Main Container Mobile Padding */
+@media (max-width: 640px) {
+  .main-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Card Mobile Improvements */
+@media (max-width: 640px) {
+  /* Disable hover effects on mobile */
+  .card-mobile-disable-hover:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  /* Prevent iOS bounce scroll */
+  overscroll-behavior: none;
+}
+
+/* Fix for iOS Safari address bar */
+@supports (-webkit-touch-callout: none) {
+  body.modal-open {
+    /* Store scroll position before fixing */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}

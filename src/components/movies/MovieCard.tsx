@@ -1,9 +1,11 @@
-import React from "react";
-import { useCardTilt } from "@/hooks/useCardTilt";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import type { Movie, SharedMemory, User } from "@/shared/types";
-import { executeAction, getErrorMessage, consoleError } from "@/utils";
-import Card from "@/ui/Card";
+
+import React from 'react';
+import { useCardTilt } from '@/hooks/useCardTilt';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import type { Movie, SharedMemory, User } from '@/shared/types';
+import { executeAction, getErrorMessage, consoleError } from '@/utils';
+import Card from '@/ui/LegacyCard';
+import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import {
   MediaCardPosterWrap,
   MediaCardTitle,
@@ -40,6 +42,8 @@ interface MovieCardProps {
   onDeleteMemory?: (memoryId: string) => Promise<void>;
   onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
+  isCompact?: boolean;
+  priorityPoster?: boolean;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({
@@ -55,6 +59,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
   onDeleteMemory,
   onTogglePin,
   isHighlighted = false,
+  isCompact = false,
+  priorityPoster = false,
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
@@ -63,8 +69,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [isUpdating, setIsUpdating] = React.useState(false);
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
-  const tilt = useCardTilt();
-  const isMobile = useMediaQuery(mediaBreakpoints.sm);
+  const isMobile = isCompact;
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
   const actionState = React.useMemo(
@@ -115,24 +120,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""}`}
         data-movie-id={movie.id}
       >
-        <div
-          ref={tilt.ref}
-          className="card-tilt-wrap"
-          onMouseEnter={tilt.onMouseEnter}
-          onMouseMove={tilt.onMouseMove}
-          onMouseLeave={tilt.onMouseLeave}
-        >
+        <CardTiltShell disabled={isCompact}>
           <Card
             ref={cardRef}
             variant="default"
-            className="movie-item-card"
+            className="movie-item-card chroma-card"
+            data-added-by={movie.addedBy}
             style={{
               padding: 0,
               marginBottom: "0.75rem",
               overflow: "hidden",
             }}
           >
-            <div className="card-tilt-sheen" aria-hidden="true" />
+            <CardTiltSheen />
             <MediaCardPosterWrap
               ref={posterRef}
               className="movie-item-poster-wrap"
@@ -142,6 +142,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 posterUrl={movie.posterUrl}
                 year={movie.year}
                 id={movie.id}
+                priority={priorityPoster}
               />
 
               <MediaCardWatcherStack
@@ -168,8 +169,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
               </button>
             </MediaCardPosterWrap>
           </Card>
-        </div>
-        {/* card-tilt-wrap */}
+        </CardTiltShell>
 
         <div className="movie-item-info-external">
           <MediaCardTitle className="movie-item-title-external">
@@ -217,7 +217,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   );
 };
 
-export default MovieCard;
+export default React.memo(MovieCard);
 
 interface MovieActionsProps {
   movie: Movie;

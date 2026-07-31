@@ -1,6 +1,7 @@
 import "@khmyznikov/pwa-install";
 import type { PWAInstallElement } from "@khmyznikov/pwa-install";
 import React, {
+  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -9,11 +10,15 @@ import React, {
   useState,
   type ReactNode,
 } from "react";
-import {
-  PwaInstallContext,
-  type PwaInstallContextValue,
-} from "./PwaInstallContext.ts";
 import { useToast } from "@/app/useProviders";
+
+export interface PwaInstallContextValue {
+  canInstall: boolean;
+  isStandalone: boolean;
+  openInstallDialog: () => void;
+}
+
+const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const usePwaInstall = (): PwaInstallContextValue => {
@@ -81,7 +86,8 @@ export const PwaInstallProvider: React.FC<PwaInstallProviderProps> = ({
     syncTintColor(element);
 
     if (window.__electronDeferredInstallPrompt) {
-      element.externalPromptEvent = window.__electronDeferredInstallPrompt;
+      element.externalPromptEvent =
+        window.__electronDeferredInstallPrompt as unknown as typeof element.externalPromptEvent;
     }
 
     setCanInstall(element.isInstallAvailable);
@@ -172,25 +178,20 @@ export const PwaInstallProvider: React.FC<PwaInstallProviderProps> = ({
     [canInstall, isStandalone, openInstallDialog],
   );
 
-  if (isStandalone) {
-    return (
-      <PwaInstallContext.Provider value={value}>
-        {children}
-      </PwaInstallContext.Provider>
-    );
-  }
-
   return (
     <PwaInstallContext.Provider value={value}>
       {children}
-      <pwa-install
-        ref={attachElement}
-        manifestUrl="/manifest.json"
-        useLocalStorage
-        manualApple
-        manualChrome
-        installDescription="Install Electron on your home screen or dock for quick launch, fullscreen viewing, and offline access to your shared queue."
-      />
+      {isStandalone ? null : (
+        <pwa-install
+          ref={attachElement}
+          manifestUrl="/manifest.json"
+          useLocalStorage
+          manualApple
+          manualChrome
+          disable-screenshots
+          installDescription="Install Electron on your home screen or dock for quick launch, fullscreen viewing, and offline access to your shared queue."
+        />
+      )}
     </PwaInstallContext.Provider>
   );
 };

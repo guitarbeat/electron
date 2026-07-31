@@ -41,7 +41,7 @@ const OUTBOX_STATUS_EVENT = "movie-watch-outbox-status";
 
 /** Shown when fetch to /api/state fails (offline, dev server down, CORS). */
 export const SYNC_WARNING_CLIENT_NETWORK =
-  "Could not reach the app sync API. Check that the dev server is running, or try again when back online.";
+  "Saving on this device — changes will sync when you're back online.";
 
 /** Shown when local mutations are queued and not yet applied on the server. */
 export const SYNC_WARNING_OUTBOX =

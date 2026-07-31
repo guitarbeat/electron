@@ -49,6 +49,7 @@ import {
   sanitizeInput,
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
+  findMovieByNormalizedTitle,
 } from '../../src/utils/index.ts';
 import {
   badRequestResponse,
@@ -61,10 +62,7 @@ import {
   unauthorizedResponse,
 } from './http.ts';
 import {
-  importSharedStateFileFromGist,
-  shouldAttemptGistBackfill,
-} from './gistMigration.ts';
-import {
+  invalidateSharedStateCache,
   isSharedStateConfigured,
   isSharedStateWriteConfigured,
   listSharedStateFilenames,
@@ -316,6 +314,13 @@ const scopes: {
 
           if (movies.some((movie) => movie.id === id)) {
             return { ok: false, conflict: 'Movie already exists.' };
+          }
+
+          if (findMovieByNormalizedTitle(movies, title)) {
+            return {
+              ok: false,
+              conflict: 'A movie with this title is already in the queue.',
+            };
           }
 
           return {
@@ -1199,20 +1204,10 @@ const readScopeStoredData = async <TScope extends StateScope>(
     };
   }
 
-  let file = await readSharedStateFileRecord(definition.filename, {
+  const file = await readSharedStateFileRecord(definition.filename, {
     bypassCache: options.bypassCache,
   });
-  let stored = definition.parse(file.content);
-
-  if (shouldAttemptGistBackfill(scope, file.exists, stored)) {
-    const imported = await importSharedStateFileFromGist(definition.filename);
-    if (imported) {
-      file = await readSharedStateFileRecord(definition.filename, {
-        bypassCache: true,
-      });
-      stored = definition.parse(file.content);
-    }
-  }
+  const stored = definition.parse(file.content);
 
   if (!file.exists) {
     await repairMissingScopeFile(scope, definition, stored);
@@ -1250,6 +1245,20 @@ export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics>
   };
 };
 
+/** Ensures every scope has a row in shared_state_files (default content when missing). */
+export const bootstrapMissingScopeFiles = async (): Promise<StateScopeDiagnostics> => {
+  if (!isSharedStateConfigured()) {
+    throw new Error('DATABASE_URL is not configured.');
+  }
+
+  for (const scope of STATE_SCOPES) {
+    await readScopeStoredData(scope, { bypassCache: true });
+  }
+
+  invalidateSharedStateCache();
+  return getStateScopeDiagnostics();
+};
+
 /**
  * Maps shared-store/API errors to user-safe banner copy (no secrets). Exported for tests.
  */
@@ -1261,7 +1270,7 @@ export const getScopeWarning = (error: unknown): string | undefined => {
   const msg = error.message;
 
   if (msg === 'DATABASE_URL is not configured.') {
-    return 'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL (or VITE_DATABASE_URL during local Vite development), then restart the dev server.';
+    return 'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL in your environment variables, then restart the server.';
   }
 
   const readMatch = /^Failed to read shared state \((\d+)\)\.$/.exec(msg);

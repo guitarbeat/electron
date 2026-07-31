@@ -99,3 +99,29 @@ export const normalizeMovies = (value: unknown): Movie[] =>
         return normalizedMovie ? [normalizedMovie] : [];
       })
     : [];
+
+const METADATA_FIELDS = [
+  "posterUrl",
+  "year",
+  "plot",
+  "imdbRating",
+  "runtime",
+  "genre",
+  "director",
+] as const satisfies readonly (keyof Movie)[];
+
+export const mergeMissingMovieMetadata = (
+  existing: Movie,
+  incoming: Partial<Movie>,
+): Partial<Movie> | null => {
+  const patch: Partial<Movie> = {};
+
+  for (const field of METADATA_FIELDS) {
+    const nextValue = incoming[field];
+    if (nextValue && !existing[field]) {
+      patch[field] = nextValue;
+    }
+  }
+
+  return Object.keys(patch).length > 0 ? patch : null;
+};

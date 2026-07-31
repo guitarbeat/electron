@@ -1,8 +1,8 @@
 import React from "react";
 import type { MovieSuggestion } from "@/shared/types";
-import { fetchOmdbMetadata } from "@/services/metadata/omdb";
+import { fetchOmdbMetadataCached } from "@/services/metadata/omdbMetadataCache";
 import MediaPoster from "@/ui/MediaPoster";
-import BaseSuggestionCard from "@/components/common/BaseSuggestionCard";
+import SuggestionCardBase from "@/ui/SuggestionCardBase";
 import MediaCardMetadata from "@/ui/MediaCardMetadata";
 
 interface SuggestionCardProps {
@@ -12,6 +12,7 @@ interface SuggestionCardProps {
   canRespond?: boolean;
   disableActions?: boolean;
   isProcessing?: boolean;
+  className?: string;
 }
 
 const SuggestionCard: React.FC<SuggestionCardProps> = ({
@@ -21,6 +22,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   canRespond = true,
   disableActions = false,
   isProcessing = false,
+  className,
 }) => {
   const [posterUrl, setPosterUrl] = React.useState<string | undefined>(
     undefined,
@@ -31,7 +33,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
     let cancelled = false;
     const controller = new AbortController();
 
-    fetchOmdbMetadata(
+    fetchOmdbMetadataCached(
       suggestion.title,
       suggestion.type,
       suggestion.imdbID,
@@ -53,7 +55,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   }, [suggestion.title, suggestion.type, suggestion.imdbID]);
 
   return (
-    <BaseSuggestionCard
+    <SuggestionCardBase
       suggestedBy={suggestion.suggestedBy}
       title={suggestion.title}
       subtitle={suggestion.reason}
@@ -62,7 +64,9 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       canRespond={canRespond}
       disableActions={disableActions}
       isProcessing={isProcessing}
-      className="movie-item-card suggestion-item-card"
+      className={["movie-item-card suggestion-item-card", className]
+        .filter(Boolean)
+        .join(" ")}
       media={
         <MediaPoster
           title={suggestion.title}

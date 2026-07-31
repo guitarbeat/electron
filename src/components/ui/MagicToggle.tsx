@@ -1,9 +1,13 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import "./MagicToggle.css";
 
 export interface MagicToggleOption<T extends string> {
   value: T;
-  label: string;
+  label: React.ReactNode;
+  /** Used when label is icon-only or abbreviated on small screens. */
+  ariaLabel?: string;
+  disabled?: boolean;
+  className?: string;
 }
 
 interface MagicToggleProps<T extends string> {
@@ -47,7 +51,7 @@ function MagicToggle<T extends string>({
       ref={containerRef}
     >
       <div
-        className="magic-toggle__indicator"
+        className={`magic-toggle__indicator ${options.find((opt) => opt.value === activeValue)?.className?.includes("is-logout") ? "is-logout" : ""}`}
         style={{
           transform: `translateX(${indicatorStyle.left}px)`,
           width: `${indicatorStyle.width}px`,
@@ -60,9 +64,14 @@ function MagicToggle<T extends string>({
           <button
             key={option.value}
             type="button"
-            className={`magic-toggle__btn ${isActive ? "is-active" : ""}`}
-            onClick={() => onChange(option.value)}
+            className={`magic-toggle__btn ${isActive ? "is-active" : ""} ${option.disabled ? "is-disabled" : ""} ${option.className || ""}`.trim()}
+            disabled={option.disabled}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              onChange(option.value);
+            }}
             aria-pressed={isActive}
+            aria-label={option.ariaLabel}
           >
             {option.label}
           </button>

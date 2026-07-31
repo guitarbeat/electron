@@ -1,45 +1,50 @@
 import React from "react";
-import "./MagicButtonGroup.css";
+import "./MagicToggle.css"; // Reuse magic-toggle styles for consistency
 
-export interface MagicButtonGroupOption<T extends string> {
-  value: T;
+export interface MagicButtonOption {
+  id: string;
   label: React.ReactNode;
+  onClick: () => void;
   ariaLabel?: string;
+  ariaPressed?: boolean;
   disabled?: boolean;
   className?: string;
+  title?: string;
 }
 
-interface MagicButtonGroupProps<T extends string> {
-  options: MagicButtonGroupOption<T>[];
-  onClick: (value: T) => void;
+interface MagicButtonGroupProps {
+  options: MagicButtonOption[];
   ariaLabel?: string;
-  className?: string;
+  ariaPressed?: boolean;
 }
 
-function MagicButtonGroup<T extends string>({
+function MagicButtonGroup({
   options,
-  onClick,
   ariaLabel,
-  className = "",
-}: MagicButtonGroupProps<T>) {
+}: MagicButtonGroupProps) {
   return (
     <div
-      className={`magic-button-group ${className}`.trim()}
+      className="magic-toggle"
       role="group"
       aria-label={ariaLabel}
     >
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          className={`magic-button-group__btn ${option.className || ""}`.trim()}
-          disabled={option.disabled}
-          onClick={() => onClick(option.value)}
-          aria-label={option.ariaLabel}
-        >
-          {option.label}
-        </button>
-      ))}
+      {/* Intentionally no moving indicator because these are disjointed actions, not a mutually exclusive selection */}
+      {options.map((option) => {
+        return (
+          <button
+            key={option.id}
+            type="button"
+            className={`magic-toggle__btn ${option.disabled ? "is-disabled" : ""} ${option.className || ""}`.trim()}
+            disabled={option.disabled}
+            onClick={option.onClick}
+            aria-label={option.ariaLabel}
+            aria-pressed={option.ariaPressed}
+            title={option.title}
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

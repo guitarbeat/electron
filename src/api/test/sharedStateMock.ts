@@ -1,7 +1,7 @@
 import { installSharedStateMemoryStoreForTests } from "../../../api/_lib/sharedStateStore.ts";
 
 export interface SharedStateMemoryMockContext {
-  /** Filename → JSON string (same shape as prior Gist file contents). */
+  /** Filename → JSON string (same shape as shared_state_files content). */
   getFile: (filename: string) => string | undefined;
   /** Raw string bodies written by patch calls. */
   patchBodies: string[];

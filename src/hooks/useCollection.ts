@@ -5,6 +5,7 @@ import type {
   StateScope,
   StateScopeDataMap,
 } from "@/services/state/stateTypes";
+import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import { areDeeplyEqual } from "@/utils";
 import { User } from "@/shared/types";
 
@@ -27,7 +28,9 @@ const getCollectionItemId = (item: unknown): string | undefined => {
 };
 
 const hasLocalOnlyRows = <T>(current: T[], polled: T[]): boolean => {
-  // ⚡ Bolt Optimization: Replace O(N) multi-pass array allocations with a single O(K) pass
+  // Optimization: Use a single pass loop instead of multi-pass chained array
+  // methods (.map().filter()) to build the Set. This eliminates intermediate
+  // array allocations and improves performance for large collections.
   const polledIds = new Set<string>();
   for (const item of polled) {
     const id = getCollectionItemId(item);
@@ -55,7 +58,7 @@ export const useCollection = <T>(
     error,
     isLoading,
     refresh,
-  } = usePolling(readFunc, pollingInterval, areDeeplyEqual, {
+  } = usePolling(readFunc, pollingInterval, areScopeSnapshotsEqual, {
     key: scope,
     isPaused,
   });

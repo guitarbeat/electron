@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
-import Button from "./Button";
-import { colors, radius, spacing, typography } from "@/theme/tokens";
-import { getSyncBannerContent } from "./lib/syncBannerContent";
-import { isMockMode } from "@/services/state";
+import React, { useCallback, useEffect, useState } from 'react';
+import Button from './LegacyButton';
+import { colors, radius, spacing, typography } from '@/theme/tokens';
+import { getSyncBannerContent, shouldShowSyncBanner } from './lib/syncBannerContent';
+import { isMockMode } from '@/services/state';
 
 interface SyncBannerProps {
   isBlocked?: boolean;
@@ -35,6 +35,11 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
   const incidentKey = `${isBlocked}::${label ?? ""}`;
   const content = getSyncBannerContent({ isBlocked, label });
   const [copied, setCopied] = useState(false);
+  const [showDetails, setShowDetails] = useState(isBlocked);
+
+  useEffect(() => {
+    setShowDetails(isBlocked);
+  }, [isBlocked, incidentKey]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -51,9 +56,28 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
     return () => window.clearTimeout(id);
   }, [copied]);
 
-  if (isInMockMode) {
+  if (isInMockMode || !shouldShowSyncBanner({ isBlocked, label })) {
     return null;
   }
+
+  const isAssertive = content.tone === "assertive";
+  const surfaceColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 10%, transparent)"
+    : content.accent;
+  const borderColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 28%, transparent)"
+    : content.border;
+  const badgeColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 72%, white 28%)"
+    : "color-mix(in srgb, var(--color-text-primary) 88%, white 12%)";
+  const timestampColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 45%, var(--color-text-secondary) 55%)"
+    : colors.textSecondary;
+  const detailsColor = isAssertive
+    ? "color-mix(in srgb, var(--color-error) 55%, var(--color-text-primary) 45%)"
+    : colors.textSecondary;
+
+  const summary = label?.trim() || content.description;
 
   return (
     <div
@@ -65,69 +89,109 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
         gap: spacing.xs,
         padding: `${spacing.sm} ${spacing.md}`,
         borderRadius: radius.md,
-        background: "rgba(255, 87, 87, 0.08)",
-        border: `1px solid rgba(255, 120, 120, 0.3)`,
+        background: surfaceColor,
+        border: `1px solid ${borderColor}`,
         color: colors.textPrimary,
       }}
     >
-      {/* Header row */}
       <div
         style={{
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: spacing.sm,
           flexWrap: "wrap",
         }}
       >
-        <span
+        <div style={{ flex: "1 1 12rem", minWidth: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: spacing.sm,
+              flexWrap: "wrap",
+              marginBottom: spacing.xs,
+            }}
+          >
+            <span
+              style={{
+                fontSize: typography.fontSize.xs,
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: badgeColor,
+              }}
+            >
+              {content.badge}
+            </span>
+            <span
+              style={{
+                fontSize: typography.fontSize.xs,
+                color: timestampColor,
+              }}
+            >
+              <IncidentTimestamp key={incidentKey} />
+            </span>
+          </div>
+          <p
+            style={{
+              margin: 0,
+              fontSize: typography.fontSize.sm,
+              lineHeight: 1.45,
+              color: colors.textPrimary,
+            }}
+          >
+            {summary}
+          </p>
+        </div>
+
+        <div
           style={{
-            fontSize: typography.fontSize.xs,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "#ffb3b3",
+            display: "flex",
+            alignItems: "center",
+            gap: spacing.xs,
+            flexWrap: "wrap",
+            marginLeft: "auto",
           }}
         >
-          {content.badge}
-        </span>
-        <span
-          style={{
-            fontSize: typography.fontSize.xs,
-            color: "rgba(255,200,200,0.6)",
-            marginRight: "auto",
-          }}
-        >
-          <IncidentTimestamp key={incidentKey} />
-        </span>
-        <Button size="sm" variant="ghost" onClick={() => void handleCopy()}>
-          {copied ? "Copied!" : "Copy"}
-        </Button>
-        {onRetry ? (
-          <Button size="sm" variant="ghost" onClick={() => void onRetry()}>
-            Retry
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowDetails((open) => !open)}
+            aria-expanded={showDetails}
+          >
+            {showDetails ? "Hide details" : "Details"}
           </Button>
-        ) : null}
+          <Button size="sm" variant="ghost" onClick={() => void handleCopy()}>
+            {copied ? "Copied!" : "Copy"}
+          </Button>
+          {onRetry ? (
+            <Button size="sm" variant="ghost" onClick={() => void onRetry()}>
+              Retry
+            </Button>
+          ) : null}
+        </div>
       </div>
 
-      {/* Copy-ready text block */}
-      <pre
-        style={{
-          margin: 0,
-          padding: "0.5rem 0.6rem",
-          borderRadius: radius.sm,
-          background: "rgba(0,0,0,0.25)",
-          fontSize: "0.7rem",
-          lineHeight: 1.6,
-          color: "rgba(255,220,220,0.85)",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          userSelect: "text",
-          cursor: "text",
-          fontFamily: "monospace",
-        }}
-      >
-        {content.copyPayload}
-      </pre>
+      {showDetails ? (
+        <pre
+          style={{
+            margin: 0,
+            padding: "0.5rem 0.6rem",
+            borderRadius: radius.sm,
+            background: "rgba(0,0,0,0.25)",
+            fontSize: "0.7rem",
+            lineHeight: 1.6,
+            color: detailsColor,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            userSelect: "text",
+            cursor: "text",
+            fontFamily: "monospace",
+          }}
+        >
+          {content.copyPayload}
+        </pre>
+      ) : null}
     </div>
   );
 };

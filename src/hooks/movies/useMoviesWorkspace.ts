@@ -233,13 +233,13 @@ export const useMoviesWorkspace = ({
       }
 
       return withProcessingSuggestion(suggestionId, async () => {
-        const { isDuplicate } = await addMovie(
+        await addMovie(
           suggestion.title,
           getMovieSelectionFromSuggestion(suggestion),
         );
         await acceptSuggestion(suggestionId, currentUser);
         trackMetric("suggestion_accepted");
-        return { suggestion, isDuplicate };
+        return { suggestion, isDuplicate: false };
       });
     },
     [

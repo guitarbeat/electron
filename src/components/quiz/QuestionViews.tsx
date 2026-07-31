@@ -5,7 +5,6 @@ import type {
   MultipleChoiceQuestion as MultipleChoiceQuestionType,
   XYAxisQuestion as XYAxisQuestionType,
 } from "./lib/types";
-import WebPImg from "./lib/WebPImg";
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestionType;
@@ -27,9 +26,7 @@ export const MultipleChoiceQuestionView: React.FC<
             onClick={() => onSelect(index)}
             aria-pressed={selectedIndex === index}
           >
-            <span aria-hidden="true">
-              {selectedIndex === index ? "✅ " : "◻ "}
-            </span>
+            {selectedIndex === index ? "✅ " : "◻ "}
             {option.text}
           </button>
         ))}
@@ -160,10 +157,11 @@ export const ImageChoiceQuestionView: React.FC<
             aria-pressed={selectedIndex === index}
             aria-label={option.alt}
           >
-            <WebPImg
+            <img
               src={option.imageUrl}
               alt={option.alt}
-              loading="eager"
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "100%",

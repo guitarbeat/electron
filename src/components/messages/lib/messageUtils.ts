@@ -22,3 +22,16 @@ export const isMessageFromCurrentUser = (
   message: Message,
   currentUser: User | null,
 ): boolean => Boolean(currentUser) && message.author === currentUser;
+
+export interface MessageKeydownState {
+  key: string;
+  shiftKey: boolean;
+  isComposing?: boolean;
+}
+
+export const shouldSubmitMessageOnKeyDown = ({
+  key,
+  shiftKey,
+  isComposing = false,
+}: MessageKeydownState): boolean =>
+  !isComposing && key === "Enter" && !shiftKey;

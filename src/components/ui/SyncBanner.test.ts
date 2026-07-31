@@ -4,15 +4,18 @@ import {
   SYNC_WARNING_CLIENT_NETWORK,
   SYNC_WARNING_OUTBOX,
 } from "../../services/state/index.ts";
-import { getSyncBannerContent } from "./lib/syncBannerContent.ts";
+import {
+  getSyncBannerContent,
+  shouldShowSyncBanner,
+} from "./lib/syncBannerContent.ts";
 
 test("getSyncBannerContent", async (t) => {
   await t.test("returns local-only messaging for degraded sync", () => {
     const content = getSyncBannerContent({ isBlocked: false });
 
     assert.equal(content.badge, "Sync paused");
-    assert.equal(content.title, "Sync paused");
-    assert.equal(content.tone, "assertive");
+    assert.equal(content.title, "Sync unavailable");
+    assert.equal(content.tone, "polite");
     assert.ok(content.whatItMeans.length > 0);
     assert.ok(content.whatToDo.length > 0);
     assert.ok(content.debugHints.length > 0);
@@ -60,8 +63,28 @@ test("getSyncBannerContent", async (t) => {
       label: SYNC_WARNING_CLIENT_NETWORK,
     });
 
+    assert.equal(content.badge, "Offline");
+    assert.equal(content.tone, "polite");
     assert.ok(content.debugHints.some((h) => /\/api\/state/i.test(h)));
     assert.ok(content.whatToDo.length > 0);
+  });
+
+  await t.test("hides expected local-only and dev network banners", () => {
+    assert.equal(
+      shouldShowSyncBanner({
+        isBlocked: false,
+        label: "DATABASE_URL is not configured for shared state.",
+      }),
+      false,
+    );
+    assert.equal(
+      shouldShowSyncBanner({
+        isBlocked: false,
+        label: SYNC_WARNING_CLIENT_NETWORK,
+      }),
+      process.env.NODE_ENV === "production",
+    );
+    assert.equal(shouldShowSyncBanner({ isBlocked: true }), true);
   });
 
   await t.test("classifies database API warnings", () => {

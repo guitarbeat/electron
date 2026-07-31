@@ -3,10 +3,17 @@ import { useRef, useEffect, useCallback } from "react";
 const TILT_MAX_DEG = 7;
 const SCALE_ON_HOVER = 1.016;
 
-export function useCardTilt<T extends HTMLElement = HTMLDivElement>() {
+export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
+  disabled = false,
+}: { disabled?: boolean } = {}) {
   const ref = useRef<T | null>(null);
   const raf = useRef<number>(0);
   const prefersReduced = useRef(false);
+  const isDisabled = useRef(disabled);
+
+  useEffect(() => {
+    isDisabled.current = disabled;
+  }, [disabled]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -22,14 +29,15 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>() {
   }, []);
 
   const onMouseEnter = useCallback(() => {
-    if (prefersReduced.current) return;
+    if (prefersReduced.current || isDisabled.current) return;
     const el = ref.current;
     if (!el) return;
     el.style.transition = "none";
+    el.style.willChange = "transform";
   }, []);
 
   const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (prefersReduced.current) return;
+    if (prefersReduced.current || isDisabled.current) return;
     const clientX = e.clientX;
     const clientY = e.clientY;
     cancelAnimationFrame(raf.current);
@@ -50,6 +58,8 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>() {
         "--sheen-y",
         `${(((dy + 1) / 2) * 100).toFixed(1)}%`,
       );
+      el.style.setProperty("--mouse-x", `${clientX - r.left}px`);
+      el.style.setProperty("--mouse-y", `${clientY - r.top}px`);
     });
   }, []);
 
@@ -59,8 +69,11 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>() {
     if (!el) return;
     el.style.transition = "transform 0.55s cubic-bezier(0.34,1.56,0.64,1)";
     el.style.transform = "";
+    el.style.willChange = "auto";
     el.style.removeProperty("--sheen-x");
     el.style.removeProperty("--sheen-y");
+    el.style.removeProperty("--mouse-x");
+    el.style.removeProperty("--mouse-y");
   }, []);
 
   return { ref, onMouseEnter, onMouseMove, onMouseLeave };

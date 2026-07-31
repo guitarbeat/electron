@@ -17,15 +17,9 @@ export const calculateQuizResults = (
     return acc;
   }, {} as CharacterScores);
 
-  // Convert questions array to a Map for O(1) lookup
-  const questionMap = new Map<string, QuizQuestion>();
-  for (const q of questions) {
-    questionMap.set(q.id, q);
-  }
-
   // Calculate scores from answers
   answers.forEach((answer) => {
-    const question = questionMap.get(answer.questionId);
+    const question = questions.find((q) => q.id === answer.questionId);
     if (!question) return;
 
     if (

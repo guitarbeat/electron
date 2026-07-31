@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import Button from "@/ui/Button";
-import { useMovies } from "@/hooks/movies/useMovies";
-import { useUser } from "@/app/useProviders";
-import { colors, spacing } from "@/theme/tokens";
-import type { Movie } from "@/shared/types";
-import MovieDetailsModal from "@/components/movies/MovieDetailsModal";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Button from '@/ui/LegacyButton';
+import { useMovies } from '@/hooks/movies/useMovies';
+import { useUser } from '@/app/useProviders';
+import { colors, spacing } from '@/theme/tokens';
+import type { Movie } from '@/shared/types';
+import MovieDetailsModal from '@/components/movies/MovieDetailsModal';
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
@@ -20,6 +20,10 @@ interface SpinWheelGameProps {
 const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
+
+  useEffect(() => {
+    void import("@/app/skins/spin-wheel-skin.scss");
+  }, []);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
@@ -165,6 +169,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
         style={{ cursor: "pointer" }}
         title={`Click for more details about "${movie.title}"`}
         role="button"
+        aria-label={`Open details for ${movie.title}`}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {

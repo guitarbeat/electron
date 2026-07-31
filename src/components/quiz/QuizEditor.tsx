@@ -5,20 +5,21 @@
  * Sub-components merged into quiz/QuizEditor scope.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useQuiz } from "@/hooks/useQuiz";
-import { mediaBreakpoints, useMediaQuery } from "@/hooks/useMediaQuery";
-import { useToast } from "@/app/useProviders";
-import type { QuizData } from "@/hooks/useQuiz";
-import { CHARACTERS, QuizQuestion } from "./lib/types";
-import QuestionsTab from "./QuestionsTab";
-import DescriptionsTab from "./DescriptionsTab";
-import SyncBanner from "@/components/ui/SyncBanner";
-import Button from "@/ui/Button";
-import { spacing, colors } from "@/theme/tokens";
-import { ArrowLeftIcon, EyeIcon } from "@/common/Icons";
-import "./retro-ad.css";
-import "./QuizEditor.css";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuiz } from '@/hooks/useQuiz';
+import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
+import { useToast } from '@/app/useProviders';
+import type { QuizData } from '@/hooks/useQuiz';
+import { CHARACTERS, QuizQuestion } from './lib/types';
+import QuestionsTab from './QuestionsTab';
+import DescriptionsTab from './DescriptionsTab';
+import SyncBanner from '@/components/ui/SyncBanner';
+import Button from '@/ui/LegacyButton';
+import { spacing, colors } from '@/theme/tokens';
+import { ArrowLeftIcon, EyeIcon } from '@/common/Icons';
+import { useFeatureFonts } from "@/hooks/useFeatureFonts";
+import './retro-ad.css';
+import './QuizEditor.css';
 
 interface UseUndoRedoReturn<T> {
   state: T;
@@ -157,6 +158,8 @@ const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
   } = useQuiz();
   const { showToast } = useToast();
   const isMobile = useMediaQuery(mediaBreakpoints.md);
+
+  useFeatureFonts();
 
   // Use undo/redo for local state
   const {

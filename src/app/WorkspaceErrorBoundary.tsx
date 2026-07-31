@@ -1,4 +1,5 @@
 import React from "react";
+import { getErrorMessage } from "@/utils";
 
 interface Props {
   children: React.ReactNode;
@@ -21,9 +22,10 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: unknown): State {
-    const message =
-      error instanceof Error ? error.message : "An unexpected error occurred.";
-    return { hasError: true, errorMessage: message };
+    return {
+      hasError: true,
+      errorMessage: getErrorMessage(error, "An unexpected error occurred."),
+    };
   }
 
   componentDidCatch(error: unknown, info: React.ErrorInfo) {

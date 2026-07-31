@@ -2,10 +2,20 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "@total-typescript/ts-reset";
 import "@/shared/pwaInstallWindow";
+import { readInitialMainTab } from "@/app/appViewState";
+import { preloadCriticalAppModules } from "@/app/preloadAppModules";
 import { applyTheme } from "@/theme/applyTheme";
 import App from "./app/App";
 
-applyTheme("movies");
+// Dev convenience: ?mock=1 in URL sets mock data mode
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("mock") === "1") {
+  window.localStorage.setItem("useMockData", "true");
+}
+
+const initialTab = readInitialMainTab();
+applyTheme(initialTab === "places" ? "places" : "movies");
+document.body.dataset.theme = initialTab;
+void preloadCriticalAppModules();
 
 const isStandalone =
   window.matchMedia("(display-mode: standalone)").matches ||

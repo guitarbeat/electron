@@ -12,11 +12,11 @@
   top: 0.25rem;
   bottom: 0.25rem;
   left: 0;
-  background: rgba(244, 114, 182, 0.15);
-  border: 1px solid rgba(244, 114, 182, 0.5);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(244, 114, 182, 0.25);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent) 25%, transparent);
+  transition: transform 0.1s ease-out, width 0.1s ease-out;
   pointer-events: none;
 }
 
@@ -28,7 +28,7 @@
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
   color: var(--color-text-secondary, rgba(200, 215, 255, 0.55));
-  font-family: 'Papyrus', serif;
+  font-family: var(--font-interface, var(--font-body, sans-serif));
   font-size: 0.7rem;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -37,19 +37,72 @@
 }
 
 .magic-toggle__btn:hover {
-  color: rgba(240, 200, 255, 0.88);
+  color: color-mix(
+    in srgb,
+    var(--color-accent-light, var(--color-accent)) 88%,
+    var(--color-text-primary)
+  );
+}
+
+
+
+.magic-toggle__btn.is-logout {
+  color: var(--color-error);
+}
+.magic-toggle__btn.is-logout.is-active {
+  color: var(--color-error);
+}
+.magic-toggle__btn.is-logout:hover {
+  color: color-mix(in srgb, var(--color-error) 80%, black);
+}
+.magic-toggle__indicator.is-logout {
+  background: color-mix(in srgb, var(--color-error) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-error) 50%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-error) 25%, transparent);
 }
 
 .magic-toggle__btn.is-active {
-  color: #f9bfe0;
+  color: color-mix(
+    in srgb,
+    var(--color-accent-light, var(--color-accent)) 95%,
+    var(--color-text-primary)
+  );
   font-weight: bold;
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
+  .magic-toggle {
+    width: 100%;
+    padding: 0.2rem;
+    background: color-mix(in srgb, var(--color-surface-2) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+    box-shadow: none;
+  }
+
+  .magic-toggle__indicator {
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    box-shadow: none;
+    transition:
+      transform 0.2s ease,
+      width 0.2s ease;
+  }
+
   .magic-toggle__btn {
-    font-size: 0.65rem;
-    padding: 0.25rem 0.6rem;
+    flex: 1 1 0;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0.4rem 0.5rem;
+    font-family: var(--font-interface, var(--font-body, sans-serif));
+    font-size: 0.8125rem;
+    font-weight: 600;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .magic-toggle__btn.is-active {
+    color: var(--color-text-primary);
   }
 }
 
@@ -70,4 +123,12 @@
 }
 .theme-y2k .magic-toggle__btn.is-active {
   color: #8a5c1e;
+}
+.magic-toggle__btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.magic-toggle__btn.is-empty {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -1,9 +1,9 @@
-import React from "react";
-import { Movie, User } from "@/shared/types";
-import { Textarea } from "@/ui/FormFields";
-import Button from "@/ui/Button";
-import { radius, spacing, typography } from "@/theme/tokens";
-import { canCreateMemory } from "./lib/memoryUtils";
+import React from 'react';
+import { Movie, User } from '@/shared/types';
+import { Textarea } from '@/ui/FormFields';
+import Button from '@/ui/LegacyButton';
+import { radius, spacing, typography } from '@/theme/tokens';
+import { canCreateMemory } from './lib/memoryUtils';
 
 interface MemoryComposerProps {
   watchedMovieOptions: Movie[];
@@ -80,6 +80,7 @@ const MemoryComposer: React.FC<MemoryComposerProps> = ({
       }, 50);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isComposerOpen, noteInputRef]);
 
   return (

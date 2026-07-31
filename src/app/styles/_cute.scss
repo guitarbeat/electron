@@ -1,0 +1,257 @@
+/* ══════════════════════════════════════════════════════════════════
+   Y2K layer — holographic border, chrome text, neon glow
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Design tokens ── */
+:root {
+  --font-y2k-display: 'Orbitron', 'Segoe UI', sans-serif;
+  --font-y2k-mono:    'VT323', 'Courier New', monospace;
+  --font-y2k-bubbly:  'Nunito', system-ui, sans-serif;
+  --font-electra:     'Papyrus', fantasy; /* 🏺 for Electra */
+
+  --y2k-pink:   #ff2d78;
+  --y2k-cyan:   #00d4ff;
+  --y2k-lime:   #39ff14;
+  --y2k-violet: #bf5af2;
+  --y2k-gold:   #ffd700;
+
+  --holo-gradient: linear-gradient(
+    135deg,
+    #ff2d78 0%, #bf5af2 18%, #00d4ff 36%,
+    #39ff14 54%, #ffd700 72%, #ff2d78 90%
+  );
+
+  --radius-card:      1.35rem;
+  --radius-lg:        1.1rem;
+  --radius-md:        0.9rem;
+  --chrome-radius:    1.6rem;
+  --chrome-radius-lg: 2.1rem;
+}
+
+/* ── Keyframes ── */
+
+@keyframes holo-spin {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+@keyframes holo-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1;   }
+}
+
+@keyframes y2k-heartbeat {
+  0%   { transform: rotate(0deg)   scale(1);    }
+  25%  { transform: rotate(90deg)  scale(1.1);  }
+  50%  { transform: rotate(180deg) scale(1);    }
+  75%  { transform: rotate(270deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1);    }
+}
+
+@keyframes glitter {
+  0%, 100% { opacity: 0;   transform: scale(0.4) rotate(0deg);   }
+  30%       { opacity: 1;   transform: scale(1)   rotate(180deg); }
+  60%       { opacity: 0.6; transform: scale(0.8) rotate(270deg); }
+}
+
+/* ── Holographic border frame ── */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 4px;
+  border-radius: 1.6rem;
+  border: 2.5px solid transparent;
+  background:
+    linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
+    linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78) border-box;
+  background-size: 400% 400%;
+  pointer-events: none;
+  z-index: 99990;
+}
+
+/* ── Section / eyebrow labels → Orbitron + holo gradient ── */
+
+[class*="eyebrow"],
+.eyebrow-label,
+.workspace-section__eyebrow {
+  font-family: var(--font-y2k-display) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.14em !important;
+  background: var(--holo-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-size: 200% 200% !important;
+}
+
+/* ── Nav tab labels → Orbitron ── */
+
+.app-nav__label,
+.app-tab-label {
+  font-family: var(--font-y2k-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+}
+
+/* ── Counts / badges → Orbitron ── */
+
+.workspace-section__count {
+  font-family: var(--font-y2k-display);
+}
+
+/* ── Movie card titles → Nunito ── */
+
+.movie-item__title,
+.movie-card__title {
+  font-family: var(--font-y2k-bubbly);
+  font-weight: 800;
+}
+
+/* ── Hide IMDB ratings ── */
+
+.movie-item-imdb-badge,
+.media-card__rating-badge,
+[class*="imdb"],
+[class*="rating-badge"] {
+  display: none !important;
+}
+
+/* ── Cards — holographic border + neon glow ── */
+
+.movie-card,
+.place-card,
+.places-item-card,
+.media-card,
+.ui-card {
+  border-radius: var(--radius-card);
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(var(--color-surface-1, rgba(16,26,58,0.82)), var(--color-surface-1, rgba(16,26,58,0.82))),
+    linear-gradient(135deg, #ff2d78 0%, #bf5af2 50%, #00d4ff 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 18px color-mix(in srgb, var(--y2k-pink) 16%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+}
+
+.movie-card:hover,
+.place-card:hover {
+  box-shadow:
+    0 14px 40px rgba(0,0,0,0.55),
+    0 0 36px color-mix(in srgb, var(--y2k-cyan) 30%, transparent),
+    0 0 12px color-mix(in srgb, var(--y2k-pink) 22%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  transform: translateY(-2px);
+}
+
+.movie-card::before,
+.place-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,0.04) 30%,
+    rgba(0,212,255,0.06) 45%,
+    rgba(255,45,120,0.06) 55%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.movie-card:hover::before,
+.place-card:hover::before {
+  opacity: 1;
+}
+
+
+/* Heartbeat disabled for performance */
+.fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
+  transform-origin: center;
+}
+
+/* ── Quick action buttons ── */
+
+.fwp-action {
+  border-radius: 1rem;
+  font-family: var(--font-y2k-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+}
+
+.fwp-action__label {
+  font-family: var(--font-electra); /* 🏺 */
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── View mode toggle ── */
+
+.magic-toggle__btn.is-active {
+  font-family: var(--font-y2k-display);
+}
+
+.magic-toggle__indicator {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--y2k-pink) 40%, transparent),
+    color-mix(in srgb, var(--y2k-violet) 30%, transparent)
+  ) !important;
+  border-color: color-mix(in srgb, var(--y2k-pink) 60%, transparent) !important;
+  box-shadow:
+    0 2px 16px color-mix(in srgb, var(--y2k-pink) 50%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.14) !important;
+}
+
+/* ── Scrollbars ── */
+
+* {
+  scrollbar-color: color-mix(in srgb, var(--y2k-pink) 35%, transparent) transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--y2k-pink), var(--y2k-violet));
+  border-radius: 99px;
+}
+
+/* ── Drag/swipe hints → VT323 terminal ── */
+
+[class*="peek"],
+[class*="drag-hint"],
+[class*="swipe-hint"] {
+  font-family: var(--font-y2k-mono) !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.12em !important;
+  color: color-mix(in srgb, var(--y2k-cyan) 70%, transparent) !important;
+}
+
+/* ── Focus rings ── */
+
+:where(button, input, textarea, a, [role='button']):focus-visible {
+  outline: 2px solid var(--y2k-cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--y2k-cyan) 50%, transparent);
+}
+
+/* Scanlines disabled for performance */
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  [class*="eyebrow"],
+  .fwp-panel::before,
+  .fwp-toggle svg {
+    animation: none !important;
+  }
+}

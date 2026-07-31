@@ -241,6 +241,62 @@ export const BookmarkIcon: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
+export const LockIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    <rect
+      x="5"
+      y="11"
+      width="14"
+      height="10"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth={2}
+      fill="none"
+    />
+    {path("M8 11V7a4 4 0 018 0v4")}
+  </StrokeIcon>
+);
+
+export const LogoutIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path("M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4")}
+    <polyline
+      points="16,17 21,12 16,7"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <line
+      x1="21"
+      y1="12"
+      x2="9"
+      y2="12"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      fill="none"
+    />
+  </StrokeIcon>
+);
+
+export const SoundOnIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path("M11 5L6 9H3v6h3l5 4V5z")}
+    {path("M15.54 8.46a5 5 0 010 7.07")}
+    {path("M17.66 6.34a8 8 0 010 11.32")}
+  </StrokeIcon>
+);
+
+export const SoundOffIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path("M11 5L6 9H3v6h3l5 4V5z")}
+    {path("M23 9l-6 6")}
+    {path("M17 9l6 6")}
+  </StrokeIcon>
+);
+
 export const Spinner: React.FC<IconProps> = ({
   className = "w-6 h-6",
   style,

@@ -1,3 +1,5 @@
+import { sanitizeInput } from "./shared.ts";
+
 // ============================================================================
 // Validation Constants
 // ============================================================================
@@ -55,10 +57,7 @@ export const createValidator = (rules: ValidationRules) => {
         return;
       }
 
-      // eslint-disable-next-line no-control-regex
-      const cleanValue = value
-        .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "")
-        .trim();
+      const cleanValue = sanitizeInput(value);
 
       if (rule.maxLength && cleanValue.length > rule.maxLength) {
         const error =

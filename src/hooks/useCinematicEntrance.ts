@@ -1,20 +1,11 @@
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+import { hasHoverCapability, prefersReducedMotion } from "@/utils/motionPreference";
 
 /**
  * Cinematic card drop-in entrance — mirrors the hero's Phase 1 technique.
  *
- * Robustness notes:
- * - Does NOT rely on CSS to pre-hide elements. GSAP.set() runs synchronously
- *   before the first paint, so there is no flash of visible content.
- * - If the first effect run finds no targets (DOM not yet committed), a
- *   MutationObserver watches the container and fires the animation once
- *   the selector matches, then disconnects.
- * - hasAnimated ref prevents double-fires.
+ * Skipped on mobile/coarse pointers and when reduced motion is requested.
+ * GSAP loads on demand so the main bundle stays lean.
  */
 export function useCinematicEntrance(
   containerRef: React.RefObject<HTMLElement | null>,
@@ -25,72 +16,83 @@ export function useCinematicEntrance(
   const hasAnimated = useRef(false);
 
   useEffect(() => {
-    if (!ready || hasAnimated.current) return;
+    if (
+      !ready ||
+      hasAnimated.current ||
+      prefersReducedMotion() ||
+      !hasHoverCapability()
+    ) {
+      return;
+    }
 
-    function run() {
-      const container = containerRef.current;
-      if (!container || hasAnimated.current) return;
+    let cancelled = false;
+    let observer: MutationObserver | undefined;
 
-      const targets = Array.from(
-        container.querySelectorAll<HTMLElement>(selector),
-      );
-      if (targets.length === 0) return false; // signal: not ready yet
+    void import("gsap").then(({ gsap }) => {
+      if (cancelled) return;
 
-      hasAnimated.current = true;
+      function run() {
+        const container = containerRef.current;
+        if (!container || hasAnimated.current) return false;
 
-      if (prefersReducedMotion()) {
-        gsap.set(targets, { clearProps: "all" });
+        const targets = Array.from(
+          container.querySelectorAll<HTMLElement>(selector),
+        );
+        if (targets.length === 0) return false;
+
+        hasAnimated.current = true;
+
+        gsap.set(targets, {
+          y: 72,
+          autoAlpha: 0,
+          scale: 0.95,
+          rotationX: -10,
+          transformOrigin: "50% 100%",
+          filter: "blur(6px)",
+        });
+
+        gsap.to(targets, {
+          y: 0,
+          autoAlpha: 1,
+          scale: 1,
+          rotationX: 0,
+          filter: "blur(0px)",
+          ease: "power3.out",
+          duration: 0.55,
+          delay,
+          stagger: {
+            amount: Math.min(0.35, targets.length * 0.05),
+            ease: "power1.in",
+          },
+          clearProps: "filter,rotationX,scale",
+          overwrite: true,
+        });
+
         return true;
       }
 
-      // Set initial hidden state synchronously (before browser paints)
-      gsap.set(targets, {
-        y: 110,
-        autoAlpha: 0,
-        scale: 0.91,
-        rotationX: -18,
-        transformOrigin: "50% 100%",
-        filter: "blur(12px)",
+      if (run()) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      observer = new MutationObserver(() => {
+        if (run()) observer?.disconnect();
       });
-
-      gsap.to(targets, {
-        y: 0,
-        autoAlpha: 1,
-        scale: 1,
-        rotationX: 0,
-        filter: "blur(0px)",
-        ease: "expo.out",
-        duration: 1.05,
-        delay,
-        stagger: {
-          amount: Math.min(0.65, targets.length * 0.08),
-          ease: "power1.in",
-        },
-        clearProps: "filter,rotationX,scale",
-        overwrite: true,
-      });
-
-      return true;
-    }
-
-    // Try immediately (DOM may already be committed)
-    if (run()) return;
-
-    // DOM not ready yet — observe until selector matches, then fire once
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new MutationObserver(() => {
-      if (run()) observer.disconnect();
+      observer.observe(container, { childList: true, subtree: true });
     });
-    observer.observe(container, { childList: true, subtree: true });
 
     return () => {
-      observer.disconnect();
-      // Safety: if animation never fired, ensure elements are visible
+      cancelled = true;
+      observer?.disconnect();
       if (!hasAnimated.current) {
-        const stuck = container.querySelectorAll<HTMLElement>(selector);
-        if (stuck.length > 0) gsap.set(stuck, { clearProps: "all" });
+        const container = containerRef.current;
+        const stuck = container?.querySelectorAll<HTMLElement>(selector);
+        stuck?.forEach((el) => {
+          el.style.removeProperty("transform");
+          el.style.removeProperty("opacity");
+          el.style.removeProperty("filter");
+        });
       }
     };
   }, [ready, containerRef, selector, delay]);

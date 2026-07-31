@@ -1,0 +1,70 @@
+.workspace-feature-section {
+  position: relative;
+  min-width: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+  box-shadow:
+    0 8px 24px color-mix(in srgb, var(--color-background) 28%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+}
+
+.workspace-feature-section--embedded {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.workspace-feature-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-accent) 8%, transparent),
+    color-mix(in srgb, var(--color-surface-1) 60%, transparent) 60%
+  );
+}
+
+.workspace-feature-section__title {
+  margin: 0;
+  font-family: var(--font-interface, var(--font-body, sans-serif));
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.9;
+}
+
+.workspace-feature-section__body {
+  min-width: 0;
+}
+
+.workspace-feature-section__body--spin .spin-game-wrapper {
+  min-height: auto;
+  border-radius: 0;
+}
+
+.workspace-feature-section__body--quiz .quiz-retro-wrapper {
+  min-height: auto;
+}
+
+.workspace-feature-section__loading {
+  margin: 0;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  font-family: var(--font-interface, var(--font-body, sans-serif));
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 640px) {
+  .workspace-feature-section:not(.workspace-feature-section--embedded) {
+    border-radius: 0.75rem;
+  }
+}

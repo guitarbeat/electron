@@ -11,7 +11,7 @@
   width: min(12rem, 72%);
   height: 0.35rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-accent, #c88d59) 22%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
   opacity: 0.85;
   animation: app-suspense-pulse 1.1s ease-in-out infinite;
 }

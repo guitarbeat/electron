@@ -3,12 +3,11 @@ import LazyBoundary from "@/app/LazyBoundary";
 import {
   MessageBoardPanel,
   QuizEditorPanel,
-  QuizFlowModalPanel,
+  QuizExperiencePanel,
   SpinSwipeGamePanel,
-  SpinWheelGamePanel,
 } from "@/app/lazyFeaturePanels";
+import WorkspaceFeatureSection from "@/components/ui/WorkspaceFeatureSection";
 import type { User } from "@/shared/types";
-import { spacing } from "@/theme/tokens";
 
 export interface AppModalConfig {
   key: string;
@@ -30,12 +29,6 @@ const scrollContentStyle: CSSProperties = {
   overflowY: "auto",
 };
 
-const paddedScrollContentStyle: CSSProperties = {
-  flex: 1,
-  overflowY: "auto",
-  padding: spacing.lg,
-};
-
 const renderSuspended = (content: ReactNode, label: string) => (
   <LazyBoundary label={label}>{content}</LazyBoundary>
 );
@@ -43,20 +36,17 @@ const renderSuspended = (content: ReactNode, label: string) => (
 export interface BuildFeatureModalsParams {
   showMessages: boolean;
   showQuizEditor: boolean;
-  showQuizFlow: boolean;
-  showSpinWheel: boolean;
-  showSpinWheelOnly: boolean;
+  showQuizExperience: boolean;
+  showSpinMatch: boolean;
   quizCompleted: boolean;
-  isSpinWheelLocked: boolean;
   currentUser: User | null;
   setShowMessages: (open: boolean) => void;
   setShowQuizEditor: (open: boolean) => void;
-  setShowQuizFlow: (open: boolean) => void;
-  setShowSpinWheel: (open: boolean) => void;
-  setShowSpinWheelOnly: (open: boolean) => void;
-  setIsSpinWheelLocked: (locked: boolean) => void;
+  setShowQuizExperience: (open: boolean) => void;
+  setShowSpinMatch: (open: boolean) => void;
   onQuizComplete: () => void;
   onQuizRetake: () => void;
+  onQuizEdit: () => void;
 }
 
 export function buildFeatureModals(
@@ -65,20 +55,17 @@ export function buildFeatureModals(
   const {
     showMessages,
     showQuizEditor,
-    showQuizFlow,
-    showSpinWheel,
-    showSpinWheelOnly,
+    showQuizExperience,
+    showSpinMatch,
     quizCompleted,
-    isSpinWheelLocked,
     currentUser,
     setShowMessages,
     setShowQuizEditor,
-    setShowQuizFlow,
-    setShowSpinWheel,
-    setShowSpinWheelOnly,
-    setIsSpinWheelLocked,
+    setShowQuizExperience,
+    setShowSpinMatch,
     onQuizComplete,
     onQuizRetake,
+    onQuizEdit,
   } = params;
 
   return [
@@ -94,11 +81,38 @@ export function buildFeatureModals(
       content: renderSuspended(<MessageBoardPanel />, "Loading messages"),
     },
     {
+      key: "quiz-experience",
+      isOpen: showQuizExperience,
+      onClose: () => setShowQuizExperience(false),
+      title: "Quiz · Personality",
+      ariaLabel: "Personality quiz",
+      maxWidth: 720,
+      maxHeight: 900,
+      contentStyle: scrollContentStyle,
+      content: renderSuspended(
+        <WorkspaceFeatureSection
+          id="quiz-section"
+          ariaLabel="Personality quiz"
+          variant="embedded"
+          bodyClassName="workspace-feature-section__body--quiz"
+        >
+          <QuizExperiencePanel
+            currentUser={currentUser}
+            quizCompleted={quizCompleted}
+            onComplete={onQuizComplete}
+            onRetake={onQuizRetake}
+            onEdit={currentUser ? onQuizEdit : undefined}
+          />
+        </WorkspaceFeatureSection>,
+        "Loading personality quiz",
+      ),
+    },
+    {
       key: "quiz-editor",
       isOpen: showQuizEditor,
       onClose: () => setShowQuizEditor(false),
-      title: "Quiz · Personality",
-      ariaLabel: "Personality quiz",
+      title: "Quiz · Editor",
+      ariaLabel: "Personality quiz editor",
       maxWidth: 1200,
       maxHeight: 900,
       content: renderSuspended(
@@ -108,52 +122,23 @@ export function buildFeatureModals(
     },
     {
       key: "spin-match",
-      isOpen: showSpinWheel,
-      onClose: () => setShowSpinWheel(false),
-      title: "Spin · Match Game",
-      ariaLabel: "Choose a subset of movies, then spin the wheel",
-      maxWidth: 520,
-      maxHeight: 820,
-      closeDisabled: isSpinWheelLocked,
-      closeDisabledLabel: "Finish the current spin before closing.",
-      content: renderSuspended(
-        <SpinSwipeGamePanel onSpinningChange={setIsSpinWheelLocked} />,
-        "Loading spin match",
-      ),
-      contentStyle: { flex: 1, overflowY: "auto" },
-    },
-    {
-      key: "spin-wheel-only",
-      isOpen: showSpinWheelOnly,
-      onClose: () => setShowSpinWheelOnly(false),
-      title: "Spin · Wheel Picker",
-      ariaLabel: "Spin the wheel to pick a movie",
-      maxWidth: 520,
-      maxHeight: 700,
-      content: renderSuspended(<SpinWheelGamePanel />, "Loading spin wheel"),
-      contentStyle: { flex: 1, overflowY: "auto" },
-    },
-    {
-      key: "quiz-flow",
-      isOpen: showQuizFlow,
-      onClose: () => setShowQuizFlow(false),
-      title: quizCompleted ? "Quiz · Retake Flow" : "Quiz · Start Flow",
-      ariaLabel: "Quiz experience",
-      maxWidth: 920,
+      isOpen: showSpinMatch,
+      onClose: () => setShowSpinMatch(false),
+      title: "Spin & Match",
+      ariaLabel: "Spin match game",
+      maxWidth: 720,
       maxHeight: 900,
-      contentStyle: paddedScrollContentStyle,
+      contentStyle: scrollContentStyle,
       content: renderSuspended(
-        <QuizFlowModalPanel
-          currentUser={currentUser}
-          quizCompleted={quizCompleted}
-          onComplete={onQuizComplete}
-          onRetake={onQuizRetake}
-          onEdit={() => {
-            setShowQuizFlow(false);
-            setShowQuizEditor(true);
-          }}
-        />,
-        "Loading quiz",
+        <WorkspaceFeatureSection
+          id="spin-match-section"
+          ariaLabel="Spin match game"
+          variant="embedded"
+          bodyClassName="workspace-feature-section__body--spin"
+        >
+          <SpinSwipeGamePanel />
+        </WorkspaceFeatureSection>,
+        "Loading spin match",
       ),
     },
   ];

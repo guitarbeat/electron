@@ -7,13 +7,12 @@ import {
   type MotionValue,
 } from "motion/react";
 import type { Movie } from "@/shared/types";
+import { useViewport } from "@/app/ViewportContext";
 
-const CARD_W = 240;
-const CARD_H = 360;
-const INCREMENT_Y = 10;
+const INCREMENT_Y = 8;
 const INCREMENT_Z = 10;
 const SCROLL_STEP_PX = 108;
-const MAX_FAN_DEG = 16;
+const MAX_FAN_DEG = 14;
 const MAX_DOT_COUNT = 16;
 
 const fanAngleFor = (index: number, total: number) => {
@@ -27,6 +26,8 @@ interface DeckCardProps {
   index: number;
   total: number;
   scrollYProgress: MotionValue<number>;
+  cardW: number;
+  cardH: number;
 }
 
 const DeckCard: React.FC<DeckCardProps> = ({
@@ -34,6 +35,8 @@ const DeckCard: React.FC<DeckCardProps> = ({
   index,
   total,
   scrollYProgress,
+  cardW,
+  cardH,
 }) => {
   const start = index / (total + 1);
   const end = (index + 1) / (total + 1);
@@ -59,7 +62,7 @@ const DeckCard: React.FC<DeckCardProps> = ({
         top: index * INCREMENT_Y,
         left: 0,
         right: 0,
-        height: CARD_H,
+        height: cardH,
         transform,
         zIndex: (total - index) * 10,
         opacity,
@@ -75,8 +78,8 @@ const DeckCard: React.FC<DeckCardProps> = ({
         <img
           src={movie.posterUrl}
           alt={movie.title}
-          width={CARD_W}
-          height={CARD_H}
+          width={cardW}
+          height={cardH}
           loading={index === 0 ? "eager" : "lazy"}
           decoding="async"
           style={{
@@ -262,6 +265,9 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
   const deck = movies;
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollYProgress = useMotionValue(0);
+  const { isMobile } = useViewport();
+  const CARD_W = isMobile ? 180 : 240;
+  const CARD_H = isMobile ? 270 : 360;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -293,6 +299,7 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
     <div
       ref={containerRef}
       className="movie-deck-stack-scroll"
+
       aria-label={`Scroll through ${deck.length} movies`}
     >
       <div
@@ -316,6 +323,8 @@ const MovieDeckStack: React.FC<Props> = ({ movies }) => {
                 index={i}
                 total={deck.length}
                 scrollYProgress={scrollYProgress}
+                cardW={CARD_W}
+                cardH={CARD_H}
               />
             ))}
           </div>

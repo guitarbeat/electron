@@ -1,9 +1,3 @@
-
-import { randomBytes } from 'node:crypto';
-
-// Ensure a dummy secret is set for tests
-process.env.SESSION_SIGNING_SECRET = randomBytes(32).toString('hex');
-
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -171,7 +165,7 @@ test("getScopeWarning maps shared-store and config errors to user-safe copy", ()
   assert.ok(
     (
       getScopeWarning(new Error("DATABASE_URL is not configured.")) ?? ""
-    ).includes("VITE_DATABASE_URL"),
+    ).includes("DATABASE_URL"),
   );
   assert.ok(
     (

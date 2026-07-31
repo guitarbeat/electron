@@ -7,13 +7,14 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   ReactNode,
 } from 'react';
 import type { User } from '@/shared/types';
 import { applyTheme } from '@/theme/applyTheme';
 import { spacing } from '@/theme/tokens';
-import Toast from '@/components/ui/Toast';
+import Toast from '@/components/ui/LegacyToast';
 import { sessionInvalidationEvent } from '@/services/state';
 import type { SessionState } from '@/services/state/stateTypes';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
@@ -34,28 +35,27 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-import { getAppTheme } from '@/theme/themes';
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [themeName] = useState<ThemeName>('movies');
+import { getAppTheme, type ThemeName } from '@/theme/themes';
+
+export const ThemeProvider: React.FC<{
+  children: ReactNode;
+  themeName?: ThemeName;
+}> = ({ children, themeName = "movies" }) => {
   const theme = useMemo(() => getAppTheme(themeName), [themeName]);
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
-    applyTheme(currentTheme);
-  }, [currentTheme]);
+    applyTheme(themeName);
+  }, [themeName]);
 
   const value = useMemo(
     () => ({
-      currentTheme,
+      currentTheme: themeName,
       theme,
-      themeTokens: theme.tokens,
     }),
-    [themeName, theme]
+    [themeName, theme],
   );
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 // ============================================================================
@@ -142,13 +142,22 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
           zIndex: 250,
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
           gap: spacing.sm,
           width: "min(720px, calc(100vw - 1rem))",
           pointerEvents: "none",
         }}
       >
         {toasts.map((toast) => (
-          <div key={toast.id} style={{ pointerEvents: "auto" }}>
+          <div
+            key={toast.id}
+            style={{
+              pointerEvents: "auto",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <Toast
               message={toast.message}
               type={toast.type}
@@ -177,6 +186,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const [pinProtectedUsers, setPinProtectedUsers] = useState<User[]>([]);
   const [usersMissingPins, setUsersMissingPins] = useState<User[]>([]);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const hasHydratedSessionRef = useRef(false);
 
   const applySessionState = useCallback((nextState: SessionState) => {
     debugSession("[session] Applying state:", {
@@ -191,9 +201,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     setUsersMissingPins(nextState.usersMissingPins);
   }, []);
 
+  const clearSessionState = useCallback(() => {
+    setHasAccess(false);
+    setCurrentUserState(null);
+    setPinProtectedUsers([]);
+    setUsersMissingPins([]);
+  }, []);
+
   const refreshSession = useCallback(async () => {
     debugSession("[session] Refreshing session…");
-    setIsSessionLoading(true);
+    const isInitialLoad = !hasHydratedSessionRef.current;
+    if (isInitialLoad) {
+      setIsSessionLoading(true);
+    }
     try {
       let response: Response;
       try {
@@ -204,10 +224,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         });
       } catch (error) {
         debugSession("[session] Refresh network error — clearing state", error);
-        setHasAccess(false);
-        setCurrentUserState(null);
-        setPinProtectedUsers([]);
-        setUsersMissingPins([]);
+        clearSessionState();
         return;
       }
 
@@ -217,10 +234,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
           response.status,
           "— clearing state",
         );
-        setHasAccess(false);
-        setCurrentUserState(null);
-        setPinProtectedUsers([]);
-        setUsersMissingPins([]);
+        clearSessionState();
         return;
       }
 
@@ -228,9 +242,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       debugSession("[session] Refresh succeeded:", session);
       applySessionState(session);
     } finally {
-      setIsSessionLoading(false);
+      if (isInitialLoad) {
+        hasHydratedSessionRef.current = true;
+        setIsSessionLoading(false);
+      }
     }
-  }, [applySessionState]);
+  }, [applySessionState, clearSessionState]);
 
   useEffect(() => {
     void refreshSession();

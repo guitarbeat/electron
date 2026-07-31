@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { CheckIcon, EditIcon, TrashIcon } from "@/common/Icons";
+import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import MediaCard from "@/ui/MediaCard";
 import type { Place } from "@/shared/types";
 import { radius } from "@/theme/tokens";
@@ -16,13 +17,13 @@ import { getPlaceMeta } from "./lib/placeMeta";
 import WatcherBadge from "@/common/WatcherBadge";
 import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 import MediaCardMetadata from "@/ui/MediaCardMetadata";
-import { useCardTilt } from "@/hooks/useCardTilt";
 
 interface PlaceCardProps {
   place: Place;
   canEdit: boolean;
   isSubmitting: boolean;
   isActive?: boolean;
+  onActivate?: () => void;
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
@@ -34,6 +35,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   canEdit,
   isSubmitting,
   isActive = false,
+  onActivate,
   onMarkVisited,
   onMarkUnvisited,
   onDelete,
@@ -41,7 +43,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
 }) => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const tilt = useCardTilt();
   const isVisited = Boolean(place.visitedAt);
   const meta = getPlaceMeta(place.name);
   const hasCoords =
@@ -79,8 +80,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       })
     : null;
 
+  const handleActivate = (event: React.MouseEvent | React.KeyboardEvent) => {
+    if ((event.target as HTMLElement).closest("button")) {
+      return;
+    }
+    onActivate?.();
+  };
+
   return (
     <div
+      id={`place-card-${place.id}`}
       draggable={canEdit}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = "link";
@@ -128,21 +137,32 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         />
       )}
 
-      <div
-        ref={tilt.ref}
-        className="card-tilt-wrap"
-        onMouseEnter={tilt.onMouseEnter}
-        onMouseMove={tilt.onMouseMove}
-        onMouseLeave={tilt.onMouseLeave}
-      >
+      <CardTiltShell>
         <MediaCard
           variant={isVisited ? "visited" : "default"}
-          className={`place-item-card${isVisited ? " place-item-card--visited" : ""}`}
+          className={`place-item-card chroma-card${isVisited ? " place-item-card--visited" : ""}`}
           hover={false}
         >
-          <div className="card-tilt-sheen" aria-hidden="true" />
+          <CardTiltSheen />
           <MediaCardPosterWrap className="place-item-poster-wrap">
-            <MediaCardCover className="place-item-cover" aria-hidden="true">
+            <MediaCardCover
+              className="place-item-cover"
+              aria-hidden={onActivate ? undefined : true}
+              role={onActivate ? "button" : undefined}
+              tabIndex={onActivate ? 0 : undefined}
+              aria-label={onActivate ? `Show ${place.name} on map` : undefined}
+              onClick={onActivate ? handleActivate : undefined}
+              onKeyDown={
+                onActivate
+                  ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleActivate(event);
+                      }
+                    }
+                  : undefined
+              }
+            >
               {/* Large decorative emoji — acts like a poster focal element */}
               <span className="place-item-cover__icon">{meta.icon}</span>
               {hasCoords && <span className="place-item-cover__pin">📍</span>}
@@ -252,8 +272,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
             </MediaCardOverlay>
           </MediaCardPosterWrap>
         </MediaCard>
-      </div>
-      {/* card-tilt-wrap */}
+      </CardTiltShell>
     </div>
   );
 };

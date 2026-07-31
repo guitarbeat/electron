@@ -11,6 +11,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { colors, spacing, radius, typography } from "@/theme/tokens";
 import type { Place } from "@/shared/types";
 import { getPlaceMeta } from "./lib/placeMeta";
+import { Spinner } from "@/components/common/Icons";
 
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
@@ -444,6 +445,7 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(
               setIsDropMode((p) => !p);
               if (isDropMode) cancelPin();
             }}
+            aria-label={isDropMode ? "Cancel drop pin" : "Drop new pin"}
             style={{
               position: "absolute",
               top: spacing.md,
@@ -574,7 +576,6 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(
                 value={newPlaceName}
                 onChange={(e) => setNewPlaceName(e.target.value)}
                 placeholder="Name this place…"
-                aria-label="New place name"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && canSave) void handleSavePin();
                 }}
@@ -632,6 +633,10 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(
                 onClick={() => void handleSavePin()}
                 disabled={!canSave}
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: spacing.xs,
                   padding: `${spacing.xs} ${spacing.sm}`,
                   background: canSave ? colors.accent : colors.border,
                   color: canSave ? "#fff" : colors.textTertiary,
@@ -642,7 +647,13 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(
                   cursor: canSave ? "pointer" : "not-allowed",
                 }}
               >
-                {isSaving ? "Saving…" : "Save pin"}
+                {isSaving ? (
+                  <>
+                    <Spinner size={14} /> Saving…
+                  </>
+                ) : (
+                  "Save pin"
+                )}
               </button>
             </div>
           </div>

@@ -30,7 +30,10 @@ const clean = (value: string | undefined): string =>
 const getSessionSigningSecret = (): string => {
   const configured = clean(process.env.SESSION_SIGNING_SECRET || process.env.SESSION_SECRET);
   if (!configured) {
-    throw new Error('SESSION_SIGNING_SECRET is not configured.');
+    throw new Error(
+      'SESSION_SIGNING_SECRET is not configured. ' +
+      'Set SESSION_SIGNING_SECRET to a stable secret value in your environment.'
+    );
   }
   return configured;
 };
