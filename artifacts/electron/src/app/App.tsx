@@ -26,7 +26,7 @@ import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
 import type { ThemeName } from "@/theme/themes";
 import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
-import LoadingScreen from "@/app/LoadingScreen";
+import AppSuspenseFallback from "@/app/AppSuspenseFallback";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -65,7 +65,9 @@ const App: React.FC = () => {
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
-  const [isBootReady, setIsBootReady] = useState(false);
+  // Start as ready — render immediately, let Suspense handle lazy chunks.
+  // Preload still warms chunks in the background for faster tab switches.
+  const [isBootReady] = useState(true);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
   const { activeTab, handleTabChange } = useAppTabNavigation({
@@ -101,18 +103,9 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Warm chunks in background — does not block rendering
   useEffect(() => {
-    let cancelled = false;
-
-    void preloadCriticalAppModules().finally(() => {
-      if (!cancelled) {
-        setIsBootReady(true);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    void preloadCriticalAppModules();
   }, []);
 
   useEffect(() => {
@@ -229,14 +222,6 @@ const App: React.FC = () => {
     );
   }
 
-  if (!isBootReady) {
-    return (
-      <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
-        <LoadingScreen />
-      </ThemeProvider>
-    );
-  }
-
   return (
     <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
       <div
@@ -254,7 +239,7 @@ const App: React.FC = () => {
               className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
             >
               <WorkspaceErrorBoundary>
-                <React.Suspense fallback={null}>
+                <React.Suspense fallback={<AppSuspenseFallback label="Loading workspace" />}>
                   <AppWorkspaceShell
                     activeTab={activeTab}
                     onTabChange={handleTabChange}
