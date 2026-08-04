@@ -1,0 +1,181 @@
+/* ══════════════════════════════════════════════════════════════════
+   UserPickerScreen — "Who's watching?" full-viewport landing screen
+   ══════════════════════════════════════════════════════════════════ */
+
+.ups-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-0, #060819);
+  overflow: hidden;
+}
+
+/* ── Ambient glow blobs ─────────────────────────────────────────── */
+
+.ups-glow {
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(120px);
+  opacity: 0.18;
+}
+
+.ups-glow--left {
+  left: -160px;
+  bottom: -80px;
+  background: radial-gradient(circle, #f472b6 0%, transparent 70%);
+}
+
+.ups-glow--right {
+  right: -160px;
+  top: -80px;
+  background: radial-gradient(circle, #fde68a 0%, transparent 70%);
+}
+
+/* ── Content wrapper ─────────────────────────────────────────────── */
+
+.ups-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2rem;
+}
+
+/* ── Heading ─────────────────────────────────────────────────────── */
+
+.ups-heading {
+  font-family: var(--font-body, system-ui);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary, #94a3c8);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* ── Avatar grid ─────────────────────────────────────────────────── */
+
+.ups-grid {
+  display: flex;
+  gap: clamp(2rem, 6vw, 4rem);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Individual card ─────────────────────────────────────────────── */
+
+.ups-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ups-card:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.ups-card:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ups-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Avatar shell ────────────────────────────────────────────────── */
+
+.ups-card__avatar {
+  position: relative;
+  width: clamp(100px, 16vw, 140px);
+  height: clamp(100px, 16vw, 140px);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--color-border, rgba(148, 163, 200, 0.28));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background: var(--color-surface-1, rgba(16, 26, 58, 0.82));
+}
+
+.ups-card:hover:not(:disabled) .ups-card__avatar {
+  border-color: var(--color-accent, #f472b6);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--color-accent, #f472b6),
+    0 0 24px color-mix(in srgb, var(--color-accent, #f472b6) 35%, transparent);
+}
+
+.ups-card__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ups-card__initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--color-accent, #f472b6);
+}
+
+/* ── Lock badge ──────────────────────────────────────────────────── */
+
+.ups-card__lock {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(6, 8, 25, 0.85);
+  border: 1px solid var(--color-border, rgba(148, 163, 200, 0.28));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary, #94a3c8);
+}
+
+/* ── Name label ──────────────────────────────────────────────────── */
+
+.ups-card__name {
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary, #94a3c8);
+  transition: color 0.2s ease;
+}
+
+.ups-card:hover:not(:disabled) .ups-card__name {
+  color: var(--color-text-primary, #eef2ff);
+}
+
+/* ── Error message ───────────────────────────────────────────────── */
+
+.ups-error {
+  color: var(--color-error, #fca5a5);
+  font-size: 0.875rem;
+  text-align: center;
+  margin: 0;
+}

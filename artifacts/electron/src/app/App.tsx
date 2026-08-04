@@ -27,6 +27,7 @@ import type { ThemeName } from "@/theme/themes";
 import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import AppSuspenseFallback from "@/app/AppSuspenseFallback";
+import UserPickerScreen from "@/app/UserPickerScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -203,6 +204,14 @@ const App: React.FC = () => {
       showSpinMatch,
     ],
   );
+
+  if (!currentUser) {
+    return (
+      <ThemeProvider>
+        <UserPickerScreen />
+      </ThemeProvider>
+    );
+  }
 
   if (isCohesionAuditRoute) {
     return (
