@@ -7,22 +7,7 @@
     "type": "git",
     "url": "https://github.com/isaacs/node-tar.git"
   },
-  "scripts": {
-    "genparse": "node scripts/generate-parse-fixtures.js",
-    "snap": "tap",
-    "test": "tap",
-    "pretest": "npm run prepare",
-    "presnap": "npm run prepare",
-    "prepare": "tshy && bash scripts/build.sh",
-    "preversion": "npm test",
-    "postversion": "npm publish",
-    "prepublishOnly": "git push origin --follow-tags",
-    "format": "prettier --write . --log-level warn",
-    "typedoc": "typedoc --tsconfig .tshy/esm.json ./src/*.ts",
-    "lint": "oxlint --fix src test",
-    "postsnap": "npm run lint",
-    "postlint": "npm run format"
-  },
+  "scripts": {},
   "dependencies": {
     "@isaacs/fs-minipass": "^4.0.0",
     "chownr": "^3.0.0",
