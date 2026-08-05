@@ -85,7 +85,7 @@ export const normalizePinRecord = (value: unknown): PinRecord => {
 
   const normalized: PinRecord = {};
   for (const [key, pinValue] of Object.entries(result.data)) {
-    normalized[key] = sanitizeInput(pinValue);
+    normalized[key] = sanitizeInput(pinValue as string);
   }
 
   return normalized;

@@ -153,14 +153,14 @@ const validateSameOriginRequest = (req: Request): Response | null => {
     const originUrl = new URL(origin);
     const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
       .split(',')
-      .map((entry) => entry.trim())
+      .map((entry: string) => entry.trim())
       .filter(Boolean);
 
     if (allowedOrigins.length === 0) {
       return null;
     }
 
-    const isAllowed = allowedOrigins.some((allowed) => {
+    const isAllowed = allowedOrigins.some((allowed: string) => {
       try {
         return new URL(allowed).origin === originUrl.origin;
       } catch {
