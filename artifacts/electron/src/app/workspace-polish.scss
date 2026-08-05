@@ -142,11 +142,7 @@
 }
 
 /* ── Smooth iOS momentum scrolling everywhere ───────────────── */
-.app-shell,
-.modal-content,
-.modal-content-wrapper {
-  -webkit-overflow-scrolling: touch;
-}
+/* Momentum scrolling is now default on iOS — no vendor prefix needed */
 
 /* ============================================================================
    Suggestion Card — Poster style (overrides earlier Y2K silver chrome)

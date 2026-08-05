@@ -68,8 +68,14 @@ const getPool = (): pg.Pool => {
     if (pool) {
       void pool.end().catch(() => undefined);
     }
-    const poolConfig: pg.PoolConfig = { connectionString: databaseUrl };
-    if (needsSsl(databaseUrl)) {
+    // Upgrade sslmode=require → verify-full to suppress pg v9 deprecation warning
+    // while preserving the same actual TLS behavior (full verification).
+    const resolvedUrl = databaseUrl.replace(
+      /([?&])sslmode=require(?=&|$)/,
+      '$1sslmode=verify-full'
+    );
+    const poolConfig: pg.PoolConfig = { connectionString: resolvedUrl };
+    if (needsSsl(resolvedUrl)) {
       poolConfig.ssl = { rejectUnauthorized: true };
     }
     pool = new Pool(poolConfig);
