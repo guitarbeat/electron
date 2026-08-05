@@ -92,7 +92,10 @@ export const calculateQuizResults = (
 
   const percentages: Record<QuizCharacter, number> = CHARACTERS.reduce(
     (acc, char) => {
-      acc[char] = Math.round((scores[char] / totalScore) * 100) || 0;
+      acc[char] =
+        totalScore > 0
+          ? Math.round((scores[char] / totalScore) * 100) || 0
+          : 0;
       return acc;
     },
     {} as Record<QuizCharacter, number>,
