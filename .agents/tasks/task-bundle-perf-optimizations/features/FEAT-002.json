@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "refactor",
   "description": "Add decoding='async' attribute to all img tags in MediaPoster.tsx that lack it, and add fetchPriority attribute for performance. The component at src/components/ui/MediaPoster.tsx currently has loading='lazy' and fetchPriority but is missing decoding='async' which allows the browser to decode images off the main thread.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "In src/components/ui/MediaPoster.tsx, add decoding='async' to both img elements (the poster image at ~line 57 and the cat fallback at ~line 68).",
     "Verify artifacts/electron/src/components/ui/MediaPoster.tsx is the same file."
