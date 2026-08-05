@@ -56,19 +56,34 @@
 }
 
 /* ── Holographic border frame ── */
+/*
+ * Uses the mask punch-through technique so the interior is truly transparent.
+ * The pseudo-element fills the whole viewport area but the mask subtracts the
+ * content-box, leaving only the 2.5 px gradient border strip visible.
+ * High z-index keeps the neon ring on top; pointer-events:none lets clicks
+ * pass through to the app content beneath it.
+ */
 
 body::before {
   content: '';
   position: fixed;
   inset: 4px;
   border-radius: 1.6rem;
-  border: 2.5px solid transparent;
-  background:
-    linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
-    linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78) border-box;
+  padding: 2.5px;                /* controls visible border thickness */
+  border: none;
+  background: linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78);
   background-size: 400% 400%;
   pointer-events: none;
   z-index: 99990;
+  /* Punch a transparent hole inside — only the padding strip is visible */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
 }
 
 /* ── Section / eyebrow labels → Orbitron + holo gradient ── */

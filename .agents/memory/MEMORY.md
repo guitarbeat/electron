@@ -2,3 +2,4 @@
 - [Electron React deduplication](electron-react-dedup.md) — must use resolve.dedupe + alias to prevent multiple React instances with lazy-loaded chunks
 - [Expo CORS fix](expo-cors-fix.md) — Expo web preview on *.expo.janeway.replit.dev blocks cross-origin calls to *.janeway.replit.dev; fix by adding cors: true to Vite server config.
 - [Electron-Mobile Mode B pattern](electron-mobile-mode-b.md) — Web app has hand-written fetch layer; mobile uses custom lib/api.ts calling EXPO_PUBLIC_DOMAIN, not @workspace/api-client-react.
+- [Cute.scss body::before overlay](cute-scss-body-before-overlay.md) — body::before neon border used z-index 99990 with opaque interior, covering all React content; fixed with CSS mask punch-through.
