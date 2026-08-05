@@ -76,9 +76,6 @@ const App: React.FC = () => {
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
   );
-  const [showMessages, setShowMessages] = useState(
-    () => initialViewState.showMessages,
-  );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
@@ -143,10 +140,9 @@ const App: React.FC = () => {
       APP_VIEW_STATE_KEY,
       JSON.stringify({
         activeTab,
-        showMessages,
       } satisfies StoredAppViewState),
     );
-  }, [activeTab, showMessages]);
+  }, [activeTab]);
 
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {
@@ -190,7 +186,7 @@ const App: React.FC = () => {
         showSpinMatch,
         quizCompleted,
         currentUser,
-        setShowMessages,
+        setShowMessages: () => {},
         setShowQuizEditor,
         setShowQuizExperience,
         setShowSpinMatch,
@@ -204,7 +200,6 @@ const App: React.FC = () => {
       handleQuizEdit,
       handleQuizRetake,
       quizCompleted,
-      showMessages,
       showQuizEditor,
       showQuizExperience,
       showSpinMatch,

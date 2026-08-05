@@ -26,8 +26,7 @@ import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
 import type { ThemeName } from "@/theme/themes";
 import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
-import AppSuspenseFallback from "@/app/AppSuspenseFallback";
-import UserPickerScreen from "@/app/UserPickerScreen";
+import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -66,9 +65,7 @@ const App: React.FC = () => {
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
-  // Start as ready — render immediately, let Suspense handle lazy chunks.
-  // Preload still warms chunks in the background for faster tab switches.
-  const [isBootReady] = useState(true);
+  const [isBootReady, setIsBootReady] = useState(false);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
   const { activeTab, handleTabChange } = useAppTabNavigation({
@@ -78,9 +75,6 @@ const App: React.FC = () => {
   });
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
-  );
-  const [showMessages, setShowMessages] = useState(
-    () => initialViewState.showMessages,
   );
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
@@ -104,9 +98,18 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Warm chunks in background — does not block rendering
   useEffect(() => {
-    void preloadCriticalAppModules();
+    let cancelled = false;
+
+    void preloadCriticalAppModules().finally(() => {
+      if (!cancelled) {
+        setIsBootReady(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -137,10 +140,9 @@ const App: React.FC = () => {
       APP_VIEW_STATE_KEY,
       JSON.stringify({
         activeTab,
-        showMessages,
       } satisfies StoredAppViewState),
     );
-  }, [activeTab, showMessages]);
+  }, [activeTab]);
 
   const updateQuizCompletion = useCallback(
     (completed: boolean) => {
@@ -184,7 +186,7 @@ const App: React.FC = () => {
         showSpinMatch,
         quizCompleted,
         currentUser,
-        setShowMessages,
+        setShowMessages: () => {},
         setShowQuizEditor,
         setShowQuizExperience,
         setShowSpinMatch,
@@ -198,20 +200,11 @@ const App: React.FC = () => {
       handleQuizEdit,
       handleQuizRetake,
       quizCompleted,
-      showMessages,
       showQuizEditor,
       showQuizExperience,
       showSpinMatch,
     ],
   );
-
-  if (!currentUser) {
-    return (
-      <ThemeProvider>
-        <UserPickerScreen />
-      </ThemeProvider>
-    );
-  }
 
   if (isCohesionAuditRoute) {
     return (
@@ -227,6 +220,14 @@ const App: React.FC = () => {
         <div className="app-shell app-shell--viewport bg-main">
           <ElectronLogoLab initialVariant={logoLabState.initialVariant} />
         </div>
+      </ThemeProvider>
+    );
+  }
+
+  if (!isBootReady) {
+    return (
+      <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
+        <LoadingScreen />
       </ThemeProvider>
     );
   }
@@ -248,7 +249,7 @@ const App: React.FC = () => {
               className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
             >
               <WorkspaceErrorBoundary>
-                <React.Suspense fallback={<AppSuspenseFallback label="Loading workspace" />}>
+                <React.Suspense fallback={null}>
                   <AppWorkspaceShell
                     activeTab={activeTab}
                     onTabChange={handleTabChange}
