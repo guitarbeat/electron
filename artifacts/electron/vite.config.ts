@@ -232,6 +232,19 @@ export default defineConfig({
           if (id.includes("node_modules/date-fns")) {
             return "date-vendor";
           }
+          if (id.includes("node_modules/lucide-react")) {
+            return "icons-vendor";
+          }
+          if (
+            id.includes("node_modules/dompurify") ||
+            id.includes("node_modules/isomorphic-dompurify") ||
+            id.includes("node_modules/html-react-parser")
+          ) {
+            return "sanitize-vendor";
+          }
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
           return undefined;
         },
       },

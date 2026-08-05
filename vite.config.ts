@@ -158,12 +158,46 @@ export default defineConfig(({ mode }) => {
               return 'react-vendor';
             }
 
-            if (id.includes('node_modules/ogl')) {
-              return 'graphics-vendor';
+            if (
+              id.includes('node_modules/framer-motion/') ||
+              id.includes('node_modules/motion/')
+            ) {
+              return 'framer-vendor';
             }
 
             if (id.includes('node_modules/maplibre-gl')) {
               return 'map-vendor';
+            }
+
+            if (
+              id.includes('node_modules/ogl') ||
+              id.includes('node_modules/three')
+            ) {
+              return 'graphics-vendor';
+            }
+
+            if (id.includes('node_modules/gsap')) {
+              return 'motion-vendor';
+            }
+
+            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
+              return 'charts-vendor';
+            }
+
+            if (id.includes('node_modules/date-fns')) {
+              return 'date-vendor';
+            }
+
+            if (id.includes('node_modules/lucide-react')) {
+              return 'icons-vendor';
+            }
+
+            if (
+              id.includes('node_modules/dompurify') ||
+              id.includes('node_modules/isomorphic-dompurify') ||
+              id.includes('node_modules/html-react-parser')
+            ) {
+              return 'sanitize-vendor';
             }
 
             if (id.includes('node_modules')) {
