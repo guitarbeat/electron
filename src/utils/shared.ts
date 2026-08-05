@@ -1,5 +1,6 @@
 import type { Movie, User } from "../shared/types.ts";
-import { spacing } from "../theme/tokens.ts";
+
+const SPACING_MD = "1rem";
 
 /**
  * Consolidated Utilities
@@ -520,19 +521,19 @@ export const layouts = {
   centeredContainer: {
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: `0 ${spacing.md}`,
+    padding: `0 ${SPACING_MD}`,
   },
-  grid: (columns: number = 1, gap: string = spacing.md) => ({
+  grid: (columns: number = 1, gap: string = SPACING_MD) => ({
     display: "grid",
     gridTemplateColumns: `repeat(${columns}, 1fr)`,
     gap,
   }),
-  stack: (gap: string = spacing.md) => ({
+  stack: (gap: string = SPACING_MD) => ({
     display: "flex",
     flexDirection: "column" as const,
     gap,
   }),
-  inlineStack: (gap: string = spacing.md) => ({
+  inlineStack: (gap: string = SPACING_MD) => ({
     display: "flex",
     alignItems: "center",
     gap,
@@ -540,7 +541,7 @@ export const layouts = {
   flexRow: (
     justifyContent: string = "flex-start",
     alignItems: string = "center",
-    gap: string = spacing.md,
+    gap: string = SPACING_MD,
   ) => ({
     display: "flex",
     flexDirection: "row" as const,
@@ -551,7 +552,7 @@ export const layouts = {
   flexColumn: (
     justifyContent: string = "flex-start",
     alignItems: string = "stretch",
-    gap: string = spacing.md,
+    gap: string = SPACING_MD,
   ) => ({
     display: "flex",
     flexDirection: "column" as const,
@@ -561,7 +562,7 @@ export const layouts = {
   }),
   spaceBetween: (
     direction: "row" | "column" = "row",
-    gap: string = spacing.md,
+    gap: string = SPACING_MD,
   ) => ({
     display: "flex",
     flexDirection: direction,

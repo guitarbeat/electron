@@ -100,7 +100,7 @@
       "destination": "/api/state/[scope]?scope=:scope"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
