@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Fix all 19 bugs identified in the bug scan report. Covers critical race conditions, high-severity cache/retry issues, medium-severity stale-closure and UX bugs, and low-severity performance/memory issues.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Bug 1 (Critical): In src/hooks/movies/useMovies.ts, fix the stale closure in addMovie. The fire-and-forget metadata enrichment already uses performMutationIfMoviePresent which reads moviesRef.current for guard check and passes current movies to buildOptimistic. The real issue is the addMovie dependency on `movies` for building the initial optimistic data (`[...movies, newMovie]`). Replace direct `movies` usage in addMovie with `moviesRef.current`. Similarly fix renameMovie, toggleWatched, deleteMovie, restoreMovie which also directly reference `movies` from the closure.",
     "Bug 2 (Critical): In api/_lib/state.ts, add optimistic locking (version check). The createMutateHandler already receives a baseVersion from the client via parseMutationRequest. After reading `latest`, compare `mutation.baseVersion` with `latest.version` - if they differ, return a 409 conflict response with the current data and version so the client can retry. Add a comment explaining the optimistic locking strategy.",
@@ -34,5 +34,5 @@
     "Run pnpm run typecheck and confirm it passes"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 19 bugs fixed and typecheck passes. Node 22 with pnpm via /opt/toolchains/.nvm/versions/node/v22.23.2/bin. Bug 8 required no code change (pattern is sound after Bug 1 fix)."
 }
