@@ -55,8 +55,13 @@ const getPool = (): pg.Pool => {
   if (!databaseUrl) throw new Error('DATABASE_URL is not configured.');
   if (!pool || poolUrl !== databaseUrl) {
     if (pool) void pool.end().catch(() => undefined);
-    const poolConfig: pg.PoolConfig = { connectionString: databaseUrl };
-    if (needsSsl(databaseUrl)) {
+    // Upgrade sslmode=require → verify-full to suppress pg v9 deprecation warning
+    const resolvedUrl = databaseUrl.replace(
+      /([?&])sslmode=require(?=&|$)/,
+      '$1sslmode=verify-full'
+    );
+    const poolConfig: pg.PoolConfig = { connectionString: resolvedUrl };
+    if (needsSsl(resolvedUrl)) {
       poolConfig.ssl = { rejectUnauthorized: true };
     }
     pool = new Pool(poolConfig);
