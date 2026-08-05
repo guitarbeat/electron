@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix XSS vulnerability in PlacesMap.tsx, duplicated UI in SpinSwipeGame.tsx, dead code in messageKeyboard.ts, polling refresh race condition in usePolling, and stale closure in QuizEditor undo/redo",
+  "status": "in_progress",
+  "steps": [
+    "1. Fix XSS in src/components/places/PlacesMap.tsx: The popupHtml template string interpolates place.name and place.notes directly into HTML without escaping. Create a helper function escapeHtml(str) that escapes &, <, >, \", and ' characters. Apply it to place.name and place.notes before interpolating into the HTML template passed to .setHTML().",
+    "2. Fix duplicated ProgressBar and wrapper in src/components/spin-match/SpinSwipeGame.tsx: In the swipe phase return JSX (the final return statement of SpinSwipeGame), there is a duplicate nested structure - an outer div containing ProgressBar + a card-holder, and INSIDE that same structure is duplicated again. Remove the redundant outer wrapper so ProgressBar only renders once.",
+    "3. Remove dead code file src/components/messages/lib/messageKeyboard.ts: This file exports shouldSubmitMessageOnKeyDown and MessageKeydownState but is never imported anywhere in the codebase. The same functionality exists in src/components/messages/lib/messageUtils.ts which IS used by MessageInput.tsx. Delete messageKeyboard.ts entirely.",
+    "4. Fix polling refresh race condition in src/services/polling/index.ts: In the usePolling hook's refresh() function (the keyed path), it calls setIsLoading(true) then pollingManager.refresh(key).catch(...). However, pollingManager.refresh() internally catches all errors and notifies via listener (which already calls setIsLoading(false)), so the .catch() is unreachable dead code. The real bug: if the component unmounts or unsubscribes during a refresh, the listener won't fire and isLoading stays true. Fix by: (a) removing the unreachable .catch() block, (b) instead awaiting the refresh with a .then() that ensures isLoading is set false (or better, remove setIsLoading(true) from refresh since the listener handles loading state transitions).",
+    "5. Fix stale closure in QuizEditor undo/redo (src/components/quiz/QuizEditor.tsx): The undo and redo callbacks use state from their closures but may see stale values when called rapidly. Fix by using functional state updaters that derive the current state from the updater argument rather than closing over the outer state variable. Specifically, the undo function should use setStateInternal with a function updater and read the 'current state' from inside that updater, and similarly push to future from there."
+  ],
+  "acceptance_criteria": [
+    "pnpm run typecheck passes with no errors",
+    "pnpm run test passes",
+    "PlacesMap.tsx no longer interpolates raw user input into HTML strings",
+    "SpinSwipeGame.tsx renders ProgressBar exactly once in the swipe phase",
+    "messageKeyboard.ts is deleted",
+    "usePolling refresh() has no unreachable code paths"
+  ],
+  "verification": [
+    "pnpm run typecheck",
+    "pnpm run test"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

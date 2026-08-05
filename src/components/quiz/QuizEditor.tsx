@@ -39,6 +39,12 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
   const [past, setPast] = useState<T[]>([]);
   const [future, setFuture] = useState<T[]>([]);
   const isUndoRedoRef = useRef(false);
+  const stateRef = useRef<T>(initialState);
+
+  // Keep stateRef in sync with the latest state value
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const setState = useCallback((newState: T) => {
     if (isUndoRedoRef.current) {
@@ -72,12 +78,12 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
           isUndoRedoRef.current = true;
           return previousState;
         });
-        return [state, ...prevFuture];
+        return [stateRef.current, ...prevFuture];
       });
 
       return newPast;
     });
-  }, [state]);
+  }, []);
 
   const redo = useCallback(() => {
     setFuture((prevFuture) => {
@@ -90,12 +96,12 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
           isUndoRedoRef.current = true;
           return nextState;
         });
-        return [...prevPast, state];
+        return [...prevPast, stateRef.current];
       });
 
       return newFuture;
     });
-  }, [state]);
+  }, []);
 
   const clear = useCallback(() => {
     setPast([]);
@@ -104,6 +110,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
 
   const reset = useCallback((newInitialState: T) => {
     setStateInternal(newInitialState);
+    stateRef.current = newInitialState;
     setPast([]);
     setFuture([]);
   }, []);
