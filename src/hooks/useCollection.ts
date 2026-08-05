@@ -114,6 +114,10 @@ export const useCollection = <T>(
           );
         }
         return true;
+      } catch (err) {
+        // Re-fetch server state so the UI does not remain stuck on stale optimistic data.
+        refresh();
+        throw err;
       } finally {
         mutationsInFlightRef.current -= 1;
         setIsSubmitting(false);
