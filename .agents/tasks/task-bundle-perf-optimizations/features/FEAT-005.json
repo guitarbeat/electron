@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "chore",
   "description": "Add dns-prefetch/preconnect hints for external image domains used by the app (cataas.com for fallback posters, images.unsplash.com for cinematic fallbacks, omdbapi poster CDN). Also add preconnect for fonts.gstatic.com which is already there but add i.imgur.com/encrypted-tbn0.gstatic.com for user avatar photos. These reduce connection setup time for above-the-fold images.",
-  "status": "pending",
+  "status": "completed",
   "steps": [
     "In index.html (root), add dns-prefetch hints for image domains used by MediaPoster and MovieDetailsModal: <link rel='dns-prefetch' href='https://cataas.com' />, <link rel='dns-prefetch' href='https://images.unsplash.com' />, <link rel='dns-prefetch' href='https://m.media-amazon.com' /> (OMDB poster CDN).",
     "In artifacts/electron/index.html, add the same dns-prefetch hints. Check the existing hints - some may already be present (omdbapi.com and tvmaze are already there for API calls).",
