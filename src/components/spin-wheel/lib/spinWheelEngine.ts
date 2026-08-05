@@ -1,4 +1,4 @@
-import type { Movie } from "@/shared/types";
+import type { Movie } from "../../../shared/types.ts";
 
 const SEGMENT_COLORS = [
   "#ff7ea8",
