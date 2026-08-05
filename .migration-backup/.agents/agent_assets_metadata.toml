@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "xM4cssyp_xhmkp0OjtdEC"
-uri = "file://docs/DESIGN.md"
-type = "text"
-title = "DESIGN.md — Electron Design System"

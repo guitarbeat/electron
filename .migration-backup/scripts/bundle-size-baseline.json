@@ -1,9 +1,0 @@
-{
-  "comment": "Gzipped sizes (bytes) from production build. Regenerate with: pnpm analyze && node scripts/check-bundle-size.mjs --update",
-  "files": {
-    "index.js": 133740,
-    "index.css": 19700,
-    "AppWorkspaceShell.js": 8330
-  },
-  "toleranceRatio": 0.1
-}

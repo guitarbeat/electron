@@ -1,5 +1,0 @@
-# Non-default upload exclusions (Vercel already ignores node_modules, .env*, .git, etc.)
-dist
-dist-ssr
-.local
-*.log
