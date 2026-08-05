@@ -24,12 +24,13 @@ export const searchTvMazeShows = async (
   url.searchParams.set("mode", "search");
   url.searchParams.set("q", query);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    METADATA_REQUEST_TIMEOUT_MS,
+  );
+
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      METADATA_REQUEST_TIMEOUT_MS,
-    );
     const mergedSignal =
       signal && typeof AbortSignal.any === "function"
         ? AbortSignal.any([signal, controller.signal])
@@ -39,8 +40,6 @@ export const searchTvMazeShows = async (
       signal: mergedSignal,
       headers: { Accept: "application/json" },
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`TVMaze search failed with status ${response.status}`);
@@ -69,5 +68,7 @@ export const searchTvMazeShows = async (
       `TVMaze search failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       { cause: error },
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 };

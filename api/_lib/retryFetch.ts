@@ -27,9 +27,21 @@ const sleep = (ms: number): Promise<void> =>
   });
 
 /**
+ * Returns true when the abort was triggered by the caller's signal (not our
+ * internal timeout controller).  Caller-initiated aborts should not be retried.
+ */
+const isCallerAbort = (error: unknown, callerSignal: AbortSignal | undefined): boolean => {
+  if (!callerSignal?.aborted) return false;
+  if (!(error instanceof Error)) return false;
+  return error.name === 'AbortError';
+};
+
+/**
  * Retries transient HTTP failures (429, 5xx) and network errors.
  * Returns the last response when retries are exhausted or on non-retryable status.
  * Uses globalThis.fetch (standard in Node 18+).
+ *
+ * Caller-initiated aborts (via init.signal) propagate immediately without retry.
  */
 export const fetchWithRetry = async (
   input: RequestInfo | URL,
@@ -39,14 +51,15 @@ export const fetchWithRetry = async (
 ): Promise<Response> => {
   let lastResponse: Response | undefined;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const callerSignal = init?.signal as AbortSignal | undefined;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const signal = init?.signal
-        ? AbortSignal.any([init.signal, controller.signal])
+      const signal = callerSignal
+        ? AbortSignal.any([callerSignal, controller.signal])
         : controller.signal;
 
       const response = await fetch(input, {
@@ -76,6 +89,12 @@ export const fetchWithRetry = async (
 
       await sleep(delayMs);
     } catch (error) {
+      // If the caller explicitly aborted, propagate immediately without retrying.
+      if (isCallerAbort(error, callerSignal)) {
+        clearTimeout(timeoutId);
+        throw error instanceof Error ? error : new Error(`${context}: aborted`);
+      }
+
       if (attempt === MAX_ATTEMPTS) {
         throw error instanceof Error ? error : new Error(`${context}: ${String(error)}`);
       }

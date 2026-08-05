@@ -4,6 +4,11 @@ export function useWorkspaceAutocompleteDismiss(
   regionRef: RefObject<HTMLElement | null>,
   onDismiss: () => void,
 ) {
+  // Store onDismiss in a ref so the effect doesn't re-subscribe the listener
+  // on every render when callers pass an inline arrow function.
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
@@ -11,13 +16,13 @@ export function useWorkspaceAutocompleteDismiss(
         return;
       }
       if (!regionRef.current?.contains(target)) {
-        onDismiss();
+        onDismissRef.current();
       }
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [onDismiss, regionRef]);
+  }, [regionRef]);
 }
 
 interface AutocompleteFocusBoundaryOptions {
