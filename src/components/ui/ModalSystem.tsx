@@ -27,7 +27,12 @@ const useModalBase = (
 
   useEffect(() => {
     if (!isOpen) {
-      previousFocusedElement.current?.focus?.();
+      if (
+        previousFocusedElement.current &&
+        document.body.contains(previousFocusedElement.current)
+      ) {
+        previousFocusedElement.current.focus?.();
+      }
       return undefined;
     }
 

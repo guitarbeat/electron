@@ -35,12 +35,15 @@ export const searchTvMazeShows = async (
         ? AbortSignal.any([signal, controller.signal])
         : (signal ?? controller.signal);
 
-    const response = await fetch(url.toString(), {
-      signal: mergedSignal,
-      headers: { Accept: "application/json" },
-    });
-
-    clearTimeout(timeoutId);
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), {
+        signal: mergedSignal,
+        headers: { Accept: "application/json" },
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       throw new Error(`TVMaze search failed with status ${response.status}`);
