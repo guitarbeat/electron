@@ -31,8 +31,14 @@ export function useWorkspaceSyncBanner({
   combinedBlockedLabel,
   combinedDegradedLabel,
 }: UseWorkspaceSyncBannerOptions): UseWorkspaceSyncBannerResult {
-  const isDegraded = sources.some((source) => source.isDegraded);
-  const isBlocked = sources.some((source) => source.isSyncBlocked);
+  const isDegraded = useMemo(
+    () => sources.some((source) => source.isDegraded),
+    [sources],
+  );
+  const isBlocked = useMemo(
+    () => sources.some((source) => source.isSyncBlocked),
+    [sources],
+  );
 
   const label = useMemo(() => {
     const blockedSources = sources.filter((source) => source.isSyncBlocked);

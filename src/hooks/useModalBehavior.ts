@@ -34,13 +34,21 @@ export const useModalBehavior = ({
 }: UseModalBehaviorOptions) => {
   const { playPop } = useAudio();
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) {
-      previousFocusRef.current?.focus?.();
+      if (wasOpenRef.current) {
+        const el = previousFocusRef.current;
+        if (el && document.contains(el)) {
+          el.focus();
+        }
+      }
+      wasOpenRef.current = false;
       return undefined;
     }
 
+    wasOpenRef.current = true;
     previousFocusRef.current = document.activeElement as HTMLElement;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";

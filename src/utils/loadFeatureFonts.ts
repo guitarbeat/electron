@@ -42,6 +42,9 @@ export const loadFeatureFonts = (): Promise<void> => {
       { once: true },
     );
     document.head.appendChild(link);
+  }).catch((error) => {
+    featureFontsPromise = null;
+    throw error;
   });
 
   return featureFontsPromise;

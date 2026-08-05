@@ -150,7 +150,7 @@ export const useMovies = (
           id: newMovie.id,
           title: newMovie.title,
         },
-        [...movies, newMovie],
+        [...moviesRef.current, newMovie],
       );
 
       void (async () => {
@@ -186,7 +186,7 @@ export const useMovies = (
 
       return newMovie;
     },
-    [currentUser, movies, performMutation, performMutationIfMoviePresent],
+    [currentUser, performMutation, performMutationIfMoviePresent],
   );
 
   const renameMovie = useCallback(
@@ -195,14 +195,15 @@ export const useMovies = (
         throw new Error("Profile required");
       }
 
-      const currentMovie = movies.find((entry) => entry.id === movieId);
+      const current = moviesRef.current;
+      const currentMovie = current.find((entry) => entry.id === movieId);
       if (!currentMovie) {
         throw new Error("Movie not found");
       }
 
       const cleanTitle = validateMovieTitle(title);
 
-      const optimisticMovies = movies.map((movie) =>
+      const optimisticMovies = current.map((movie) =>
         movie.id === movieId ? { ...movie, title: cleanTitle } : movie,
       );
 
@@ -245,7 +246,7 @@ export const useMovies = (
         }
       })();
     },
-    [currentUser, movies, performMutation, performMutationIfMoviePresent],
+    [currentUser, performMutation, performMutationIfMoviePresent],
   );
 
   const toggleWatched = useCallback(
@@ -257,7 +258,7 @@ export const useMovies = (
       await performMutation(
         "toggle_watched",
         { movieId },
-        movies.map((movie) => {
+        moviesRef.current.map((movie) => {
           if (movie.id !== movieId) {
             return movie;
           }
@@ -271,7 +272,7 @@ export const useMovies = (
         }),
       );
     },
-    [currentUser, movies, performMutation],
+    [currentUser, performMutation],
   );
 
   const deleteMovie = useCallback(
@@ -279,29 +280,32 @@ export const useMovies = (
       await performMutation(
         "delete_movie",
         { movieId },
-        movies.filter((movie) => movie.id !== movieId),
+        moviesRef.current.filter((movie) => movie.id !== movieId),
       );
     },
-    [movies, performMutation],
+    [performMutation],
   );
 
   const restoreMovie = useCallback(
     async (movie: Movie) => {
-      await performMutation("restore_movie", { movie }, [...movies, movie]);
+      await performMutation("restore_movie", { movie }, [
+        ...moviesRef.current,
+        movie,
+      ]);
     },
-    [movies, performMutation],
+    [performMutation],
   );
 
   const manualMetadataUpdate = useCallback(
     async (movieId: string, searchTerm?: string) => {
-      const movie = movies.find((entry) => entry.id === movieId);
+      const movie = moviesRef.current.find((entry) => entry.id === movieId);
       if (!movie) {
         return false;
       }
 
       return updateMovieMetadata(movie, searchTerm);
     },
-    [movies, updateMovieMetadata],
+    [updateMovieMetadata],
   );
 
   const refreshAllMetadata = useCallback(async () => {
@@ -311,7 +315,7 @@ export const useMovies = (
 
     isRefreshingMetadataRef.current = true;
     try {
-      const latestMovies = [...movies];
+      const latestMovies = [...moviesRef.current];
       const refreshed = await concurrentMap(latestMovies, 5, async (movie) => {
         try {
           const metadata = await fetchMovieMetadata(movie.title);
@@ -321,16 +325,17 @@ export const useMovies = (
         }
       });
 
+      const currentMovies = moviesRef.current;
       const validUpdates = refreshed.filter(
         (update) =>
           Object.keys(update.metadata).length > 0 &&
-          moviesRef.current.some((m) => m.id === update.movieId),
+          currentMovies.some((m) => m.id === update.movieId),
       );
 
       const updatesMap = new Map<string, Partial<Movie>>(
         validUpdates.map((update) => [update.movieId, update.metadata]),
       );
-      const optimisticMovies = latestMovies.map((movie) => {
+      const optimisticMovies = currentMovies.map((movie) => {
         const metadataUpdate = updatesMap.get(movie.id);
         return metadataUpdate ? { ...movie, ...metadataUpdate } : movie;
       });
@@ -354,7 +359,6 @@ export const useMovies = (
   }, [
     currentUser,
     isSubmitting,
-    movies,
     performMutationIfMoviePresent,
     refresh,
   ]);

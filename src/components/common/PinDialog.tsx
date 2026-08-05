@@ -36,6 +36,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const submittedRef = useRef(false);
+  const onSubmitRef = useRef(onSubmit);
+  onSubmitRef.current = onSubmit;
   const [flow, dispatch] = useReducer(
     pinFlowReducer,
     mode,
@@ -45,6 +48,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     dispatch({ type: "reset", mode });
+    submittedRef.current = false;
   }, [isOpen, mode, user]);
 
   useEffect(() => {
@@ -83,17 +87,21 @@ const PinDialog: React.FC<PinDialogProps> = ({
   };
 
   useEffect(() => {
-    if (flow.mode !== "enter" || flow.digits.length !== PIN_LENGTH || isLoading) {
+    if (flow.mode !== "enter" || flow.digits.length !== PIN_LENGTH || isLoading || submittedRef.current) {
       return;
     }
     const id = window.setTimeout(async () => {
+      if (submittedRef.current) return;
+      submittedRef.current = true;
       dispatch({ type: "clear-error" });
       try {
-        const success = await onSubmit(flow.digits);
+        const success = await onSubmitRef.current(flow.digits);
         if (!success) {
+          submittedRef.current = false;
           reportError("Incorrect PIN", true);
         }
       } catch (submitError) {
+        submittedRef.current = false;
         consoleError("PIN submit failed:", submitError);
         reportError(
           getErrorMessage(submitError, "Unable to verify PIN. Please try again."),
@@ -102,7 +110,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
     }, 100);
     return () => window.clearTimeout(id);
-  }, [flow.digits, flow.mode, isLoading, onSubmit, playError]);
+  }, [flow.digits, flow.mode, isLoading, playError]);
 
   const appendDigit = (value: number) => {
     if (flow.digits.length >= PIN_LENGTH) return;

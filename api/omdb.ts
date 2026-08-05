@@ -266,13 +266,27 @@ async function handler(req: Request): Promise<Response> {
     }
 
     if (upstreamResponse.ok) {
-      cacheResponse(cacheKey, {
-        body,
-        contentType,
-        expiresAt: Date.now() + ONE_HOUR_MS,
-        status: upstreamResponse.status,
-        statusText: upstreamResponse.statusText,
-      });
+      // Only cache successful OMDb responses (Response: "True").
+      // OMDb returns HTTP 200 even for errors like "Movie not found" with Response: "False".
+      let isOmdbSuccess = true;
+      try {
+        const parsed = JSON.parse(body) as { Response?: string };
+        if (parsed.Response === "False") {
+          isOmdbSuccess = false;
+        }
+      } catch {
+        // If we can't parse, still cache the raw response
+      }
+
+      if (isOmdbSuccess) {
+        cacheResponse(cacheKey, {
+          body,
+          contentType,
+          expiresAt: Date.now() + ONE_HOUR_MS,
+          status: upstreamResponse.status,
+          statusText: upstreamResponse.statusText,
+        });
+      }
     }
 
     return new Response(body, {

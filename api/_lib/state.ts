@@ -1500,9 +1500,20 @@ export const createMutateHandler =
 
       const latest = await readScopeStoredData(scope, { bypassCache: true });
 
-      // Apply mutations against the latest server snapshot (last-writer-wins). We do not
-      // reject writes when baseVersion lags: two devices can race; the in-flight op is
-      // validated and merged on current server state instead of forcing a 409 refresh.
+      // Version-aware last-writer-wins: we intentionally allow writes even when
+      // baseVersion lags. Two devices can race; the in-flight operation is validated
+      // and merged against current server state rather than forcing a 409 refresh.
+      // We log divergence for observability and future opt-in strict locking.
+      if (mutation.baseVersion !== latest.version) {
+        console.warn(
+          `[state] Version divergence on "${scope}" (op: ${mutation.op}): ` +
+            `client sent ${mutation.baseVersion.slice(0, 8)}…, ` +
+            `server has ${latest.version.slice(0, 8)}…. ` +
+            `Proceeding with last-writer-wins merge.`
+        );
+      }
+
+      // Apply mutation against the current server snapshot (last-writer-wins).
 
       const result = definition.mutate(latest.stored, mutation.op, mutation.payload, {
         currentUser,

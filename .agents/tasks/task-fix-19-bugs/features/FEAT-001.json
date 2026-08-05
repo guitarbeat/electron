@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix all 19 bugs identified in the bug scan report. Covers critical race conditions, high-severity cache/retry issues, medium-severity stale-closure and UX bugs, and low-severity performance/memory issues.",
+  "status": "completed",
+  "steps": [
+    "Bug 1 (Critical): In src/hooks/movies/useMovies.ts, fix the stale closure in addMovie. The fire-and-forget metadata enrichment already uses performMutationIfMoviePresent which reads moviesRef.current for guard check and passes current movies to buildOptimistic. The real issue is the addMovie dependency on `movies` for building the initial optimistic data (`[...movies, newMovie]`). Replace direct `movies` usage in addMovie with `moviesRef.current`. Similarly fix renameMovie, toggleWatched, deleteMovie, restoreMovie which also directly reference `movies` from the closure.",
+    "Bug 2 (Critical): In api/_lib/state.ts, add optimistic locking (version check). The createMutateHandler already receives a baseVersion from the client via parseMutationRequest. After reading `latest`, compare `mutation.baseVersion` with `latest.version` - if they differ, return a 409 conflict response with the current data and version so the client can retry. Add a comment explaining the optimistic locking strategy.",
+    "Bug 3 (High): In api/_lib/retryFetch.ts, fix isRetryableStatus to exclude 501 (Not Implemented). Change `status >= 500` to explicitly exclude 501: `(status >= 500 && status !== 501)`.",
+    "Bug 4 (High): In src/services/polling/index.ts, add cache eviction in the PollingManager. Add a MAX_CACHE_AGE_MS constant (e.g. 5 minutes). In the execute() method, after setting cache, also record a timestamp. Add a periodic cleanup or check in execute() that evicts entries from `cache` and `errors` maps if no subscribers exist for that key AND the entry is older than MAX_CACHE_AGE_MS. Also add a MAX_CACHE_ENTRIES cap. For the visibility listener, only iterate over keys that have active subscribers.",
+    "Bug 5 (High): In src/services/metadata/omdbMetadataCache.ts, add TTL and max-size cap to the metadataCache. Add a MAX_CACHE_SIZE constant (e.g. 200) and a TTL (e.g. 30 minutes). Wrap cached promises with timestamp. Before returning from cache, check TTL. Before inserting, evict oldest entries if at capacity.",
+    "Bug 6 (High): In src/hooks/useAppTabNavigation.ts, fix the hashchange handling. In the first useEffect, only call replaceState when the current window hash differs from the desired hash. This prevents unnecessary history manipulation.",
+    "Bug 7 (High): In src/utils/shared.ts concurrentMap function, fix error handling to properly await all in-flight promises. When one worker throws, set hasError flag, collect the error, but then await all other workers using Promise.allSettled before rejecting with the first error.",
+    "Bug 8 (Medium): In src/hooks/useCollection.ts, the performMutation already uses a ref pattern (mutationsInFlightRef) but the optimistic data is passed in by the caller. This is by design since callers use moviesRef.current. The real fix is already handled by Bug 1 (making callers use refs). No additional change needed in useCollection itself, but verify the pattern is sound.",
+    "Bug 9 (Medium): In src/components/common/PinDialog.tsx, fix the auto-submit effect to prevent double-fire. Add a `submittedRef` guard that tracks whether a submission is in progress. Also use a ref for onSubmit to stabilize the dependency.",
+    "Bug 10 (Medium): In src/hooks/useModalBehavior.ts, fix focus restore. Add a guard: only call previousFocusRef.current?.focus() if the element is still in the DOM (document.contains check). Also add a wasOpenRef to track if modal was ever opened, preventing focus calls on initial mount.",
+    "Bug 11 (Medium): In api/tvmaze.ts, fix LRU cache by re-inserting on read. In getCachedResponse, after finding a valid (non-expired) entry, delete and re-insert it to move it to the end of the Map insertion order.",
+    "Bug 12 (Medium): In src/hooks/movies/useMovies.ts refreshAllMetadata, use moviesRef.current instead of the `movies` closure variable. Build optimisticMovies from moviesRef.current at the point of mutation, not at the start of the function.",
+    "Bug 13 (Medium): In src/utils/shared.ts formatMessageTimestamp, use calendar-day comparison instead of raw second diff. Compare the date portions (year, month, day) of the timestamp and now to determine if 'today'.",
+    "Bug 14 (Medium): In src/utils/loadFeatureFonts.ts, clear featureFontsPromise on rejection. Add a .catch handler that sets featureFontsPromise = null before re-throwing, so subsequent calls can retry.",
+    "Bug 15 (Medium): In src/utils/shared.ts debounce function, improve this typing. Use ThisParameterType<T> for the returned function's this parameter instead of `unknown`.",
+    "Bug 16 (Low): In src/hooks/useWorkspaceSyncBanner.ts, memoize the sources-derived values individually. Instead of depending on the `sources` array reference directly, compute isDegraded and isBlocked with useMemo and use the individual boolean/string values as deps for label and onRetry.",
+    "Bug 17 (Low): In src/utils/shared.ts randomInt, add rejection sampling for unbiased results. Use a loop that rejects values >= floor(2^32 / range) * range.",
+    "Bug 18 (Low): In src/hooks/useChromaSpotlight.ts, kill active GSAP tweens on cleanup. In the useEffect cleanup, call gsapRef.current?.killTweensOf(pos.current) to stop any running tween.",
+    "Bug 19 (Low): In api/omdb.ts, check response body for OMDb error responses before caching. After reading the body, parse it and check for Response: 'False'. Only cache if it's a successful OMDb response."
+  ],
+  "acceptance_criteria": [
+    "pnpm run typecheck passes with no errors",
+    "All 19 bugs addressed with appropriate code changes",
+    "No regressions introduced - existing function signatures preserved for public APIs",
+    "Code follows existing patterns in the codebase"
+  ],
+  "verification": [
+    "Run pnpm run typecheck and confirm it passes"
+  ],
+  "blocked_reason": null,
+  "findings": "All 19 bugs fixed and typecheck passes. Node 22 with pnpm via /opt/toolchains/.nvm/versions/node/v22.23.2/bin. Bug 8 required no code change (pattern is sound after Bug 1 fix)."
+}

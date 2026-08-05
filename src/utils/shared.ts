@@ -187,11 +187,16 @@ export const decodeStorageData = (data: string): string => {
 // ============================================================================
 
 /**
- * Helper to control concurrency when processing array items
+ * Helper to control concurrency when processing array items.
  * @param items The array of items to process
  * @param concurrency The maximum number of concurrent operations
  * @param fn The async function to execute for each item
- * @returns A promise that resolves to an array of results in the same order as the input items
+ * @returns A promise that resolves to an array of results in the same order as the input items.
+ *
+ * **Important:** On rejection, the returned promise throws the first captured error.
+ * The results array is NOT valid after rejection (it may contain uninitialized holes
+ * for items that were not processed). Callers must not inspect partial results in
+ * a catch handler.
  */
 export const concurrentMap = async <T, R>(
   items: T[],
@@ -204,6 +209,7 @@ export const concurrentMap = async <T, R>(
 
   const results = new Array<R>(items.length);
   let currentIndex = 0;
+  let firstError: unknown = null;
   let hasError = false;
 
   const worker = async () => {
@@ -215,8 +221,11 @@ export const concurrentMap = async <T, R>(
       try {
         results[index] = await fn(items[index]);
       } catch (error) {
-        hasError = true;
-        throw error;
+        if (!hasError) {
+          hasError = true;
+          firstError = error;
+        }
+        break;
       }
     }
   };
@@ -227,7 +236,19 @@ export const concurrentMap = async <T, R>(
     worker,
   );
 
-  await Promise.all(workers);
+  const settled = await Promise.allSettled(workers);
+
+  if (hasError) {
+    throw firstError;
+  }
+
+  // If a worker rejected without setting hasError (shouldn't happen, but be safe)
+  for (const result of settled) {
+    if (result.status === "rejected") {
+      throw result.reason;
+    }
+  }
+
   return results;
 };
 
@@ -271,7 +292,7 @@ export const debounce = <T extends (...args: unknown[]) => unknown>(
 ) => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
-  return function (this: unknown, ...args: Parameters<T>) {
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     const later = () => {
       timeout = null;
       if (!immediate) func.apply(this, args);
@@ -351,7 +372,13 @@ export const formatMessageTimestamp = (date: string): string => {
       return "";
     }
 
-    if (diffSeconds < 86400) {
+    // Use calendar-day comparison to determine if the message was sent today
+    const isToday =
+      timestamp.getFullYear() === now.getFullYear() &&
+      timestamp.getMonth() === now.getMonth() &&
+      timestamp.getDate() === now.getDate();
+
+    if (isToday) {
       const hours = timestamp.getHours();
       const minutes = timestamp.getMinutes();
       const ampm = hours >= 12 ? "PM" : "AM";
@@ -421,10 +448,22 @@ export const randomUtils = {
   },
 
   /**
-   * Get random integer in range
+   * Get random integer in range [min, max) using rejection sampling for unbiased results
    */
   randomInt: (min: number, max: number): number => {
-    return Math.floor(min + getSecureRandom() * (max - min));
+    const range = max - min;
+    if (range <= 0) return min;
+
+    // Rejection sampling: reject values that would introduce modulo bias
+    const limit = Math.floor(0x100000000 / range) * range;
+    const array = new Uint32Array(1);
+    let raw: number;
+    do {
+      crypto.getRandomValues(array);
+      raw = array[0];
+    } while (raw >= limit);
+
+    return min + (raw % range);
   },
 
   /**
