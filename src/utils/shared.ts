@@ -187,11 +187,16 @@ export const decodeStorageData = (data: string): string => {
 // ============================================================================
 
 /**
- * Helper to control concurrency when processing array items
+ * Helper to control concurrency when processing array items.
  * @param items The array of items to process
  * @param concurrency The maximum number of concurrent operations
  * @param fn The async function to execute for each item
- * @returns A promise that resolves to an array of results in the same order as the input items
+ * @returns A promise that resolves to an array of results in the same order as the input items.
+ *
+ * **Important:** On rejection, the returned promise throws the first captured error.
+ * The results array is NOT valid after rejection (it may contain uninitialized holes
+ * for items that were not processed). Callers must not inspect partial results in
+ * a catch handler.
  */
 export const concurrentMap = async <T, R>(
   items: T[],

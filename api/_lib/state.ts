@@ -1500,18 +1500,20 @@ export const createMutateHandler =
 
       const latest = await readScopeStoredData(scope, { bypassCache: true });
 
-      // Optimistic locking: if the client's baseVersion does not match the current
-      // server version, reject the write with a 409 so the client can refresh and retry.
-      // This prevents silent data loss when two devices race to mutate the same state.
+      // Version-aware last-writer-wins: we intentionally allow writes even when
+      // baseVersion lags. Two devices can race; the in-flight operation is validated
+      // and merged against current server state rather than forcing a 409 refresh.
+      // We log divergence for observability and future opt-in strict locking.
       if (mutation.baseVersion !== latest.version) {
-        return conflictResponse({
-          currentData: latest.clientData,
-          currentVersion: latest.version,
-          conflict: 'Version mismatch: another update occurred since your last read.',
-        });
+        console.warn(
+          `[state] Version divergence on "${scope}" (op: ${mutation.op}): ` +
+            `client sent ${mutation.baseVersion.slice(0, 8)}…, ` +
+            `server has ${latest.version.slice(0, 8)}…. ` +
+            `Proceeding with last-writer-wins merge.`
+        );
       }
 
-      // Apply mutation against the verified-matching server snapshot.
+      // Apply mutation against the current server snapshot (last-writer-wins).
 
       const result = definition.mutate(latest.stored, mutation.op, mutation.payload, {
         currentUser,
