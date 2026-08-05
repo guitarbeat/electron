@@ -36,6 +36,15 @@ export const useModalBehavior = ({
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
 
+  // Store onClose and closeDisabled in refs so the effect only depends on
+  // `isOpen`. This prevents the scroll-lock effect from tearing down and
+  // recapturing `prevOverflow` (as "hidden") when callers pass unstable
+  // onClose references.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const closeDisabledRef = useRef(closeDisabled);
+  closeDisabledRef.current = closeDisabled;
+
   useEffect(() => {
     if (!isOpen) {
       if (wasOpenRef.current) {
@@ -54,7 +63,7 @@ export const useModalBehavior = ({
     document.body.style.overflow = "hidden";
 
     const focusTimer = window.setTimeout(() => {
-      if (closeDisabled) {
+      if (closeDisabledRef.current) {
         containerRef.current?.focus();
       } else {
         (initialFocusRef?.current ?? containerRef.current)?.focus();
@@ -63,9 +72,9 @@ export const useModalBehavior = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isFocusWithin(containerRef.current)) return;
-      if (event.key === "Escape" && !closeDisabled) {
+      if (event.key === "Escape" && !closeDisabledRef.current) {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       trapFocusOnTab(event, containerRef.current);
@@ -77,7 +86,7 @@ export const useModalBehavior = ({
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, closeDisabled, onClose, containerRef, initialFocusRef]);
+  }, [isOpen, containerRef, initialFocusRef]);
 
   const handleClose = useCallback(() => {
     if (closeDisabled) return;

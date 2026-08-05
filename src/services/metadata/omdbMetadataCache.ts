@@ -55,12 +55,41 @@ export const fetchOmdbMetadataCached = (
 
   evictOldestEntries();
 
-  const request = fetchOmdbMetadata(title, type, imdbID, signal).catch(
-    (error) => {
-      metadataCache.delete(key);
-      throw error;
-    },
-  );
+  // Issue the request without the caller's abort signal so that a single
+  // caller aborting doesn't reject the shared cached promise for everyone.
+  // The caller's signal is checked before and after the shared fetch.
+  const request = fetchOmdbMetadata(title, type, imdbID).catch((error) => {
+    metadataCache.delete(key);
+    throw error;
+  });
   metadataCache.set(key, { promise: request, timestamp: Date.now() });
-  return request;
+
+  // If this specific caller has a signal, wrap the shared promise so their
+  // abort only affects them, not other consumers of the cached entry.
+  if (!signal) {
+    return request;
+  }
+
+  return new Promise<MovieMetadata>((resolve, reject) => {
+    if (signal.aborted) {
+      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+      return;
+    }
+
+    const onAbort = () => {
+      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+
+    request.then(
+      (value) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(error);
+      },
+    );
+  });
 };

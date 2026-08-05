@@ -89,7 +89,7 @@ export const serverErrorResponse = (
   return jsonResponse(
     {
       error: 'Internal Server Error',
-      message,
+      message: process.env.NODE_ENV === 'development' ? message : 'Internal server error.',
       stack: process.env.NODE_ENV === 'development' ? stack : undefined,
     },
     { status: 500 }
