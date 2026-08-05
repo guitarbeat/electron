@@ -50,7 +50,7 @@ import {
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
   findMovieByNormalizedTitle,
-} from '../../src/utils/index.ts';
+} from './common.ts';
 import {
   badRequestResponse,
   conflictResponse,

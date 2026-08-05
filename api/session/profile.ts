@@ -19,7 +19,7 @@ import {
   recordPinFailure,
 } from '../_lib/pinAttemptStore.ts';
 import { withWebHandler } from '../_lib/webHandler.ts';
-import { isUser } from '../../src/utils/shared.ts';
+import { isUser } from '../_lib/common.ts';
 import { logger } from '../_lib/logger.ts';
 
 const SESSION_SECRET_CONFIG_ERROR = [
