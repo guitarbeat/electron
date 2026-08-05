@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import {
   motion,
   useMotionValue,
@@ -30,7 +30,7 @@ interface DeckCardProps {
   cardH: number;
 }
 
-const DeckCard: React.FC<DeckCardProps> = ({
+const DeckCard: React.FC<DeckCardProps> = memo(({
   movie,
   index,
   total,
@@ -174,13 +174,13 @@ const DeckCard: React.FC<DeckCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});
 
 const DotIndicator: React.FC<{
   index: number;
   total: number;
   scrollYProgress: MotionValue<number>;
-}> = ({ index, total, scrollYProgress }) => {
+}> = memo(({ index, total, scrollYProgress }) => {
   const start = index / (total + 1);
   const end = (index + 1) / (total + 1);
   const scale = useTransform(
@@ -235,7 +235,7 @@ const DotIndicator: React.FC<{
       />
     </motion.div>
   );
-};
+});
 
 const DeckProgress: React.FC<{
   total: number;

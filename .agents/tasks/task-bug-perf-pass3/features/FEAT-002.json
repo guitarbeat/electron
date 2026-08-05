@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-002",
+  "type": "refactor",
+  "description": "Performance improvements: memoize expensive components, stabilize context values, reduce unnecessary re-renders in list components",
+  "status": "in_progress",
+  "steps": [
+    "1. src/components/movies/MovieDeckStack.tsx: The DeckCard component is defined inside MovieDeckStack but not memoized. With scroll-driven animations updating on every frame, each card re-renders. Wrap DeckCard and DotIndicator with React.memo since their props (movie, index, total, scrollYProgress) are stable references.",
+    "2. src/components/movies/SuggestionCard.tsx: Check if this component is memoized. If not, and it receives stable props from a parent list, wrap with React.memo.",
+    "3. src/components/places/PlaceCard.tsx: Check if this component is memoized. If not, wrap with React.memo to avoid re-rendering all cards when any single place changes.",
+    "4. src/components/memories/PolaroidMemory.tsx: Check if this component is memoized. If not, wrap with React.memo.",
+    "5. src/app/useProviders.ts: The useAppSession hook returns a new object reference every render. Since it's used in usePins which has useCallback dependencies on its return values, this could trigger cascading re-renders. Memoize the return object in useAppSession using useMemo with the actual primitive values as deps.",
+    "6. src/components/effects/RadialMenu.tsx: The `menuItems` array is recreated on every render (defined inside the component body without useMemo). Since the callbacks reference outer scope closures that change, wrap with useMemo with appropriate deps to avoid recreating the array (and its icon JSX) on every render."
+  ],
+  "acceptance_criteria": [
+    "TypeScript typecheck passes for all projects",
+    "DeckCard, DotIndicator wrapped with React.memo",
+    "PlaceCard, SuggestionCard, PolaroidMemory wrapped with React.memo if they weren't already",
+    "useAppSession returns a memoized object",
+    "RadialMenu menuItems array is memoized"
+  ],
+  "verification": [
+    "Run ./node_modules/.bin/tsc --build from root",
+    "Run ../../node_modules/.bin/tsc --noEmit from artifacts/electron/",
+    "Run ./node_modules/.bin/tsc --project api/tsconfig.json --noEmit from root"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

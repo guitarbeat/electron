@@ -277,4 +277,4 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   );
 };
 
-export default PlaceCard;
+export default React.memo(PlaceCard);
