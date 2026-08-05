@@ -53,7 +53,10 @@ export function useAppTabNavigation({
   useEffect(() => {
     const hashTab = readHashMainTab();
     if (hashTab !== activeTab) {
-      window.history.replaceState(null, "", `#${activeTab}`);
+      const currentHash = window.location.hash.replace(/^#/, "");
+      if (currentHash !== activeTab) {
+        window.history.replaceState(null, "", `#${activeTab}`);
+      }
     }
   }, [activeTab]);
 

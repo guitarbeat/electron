@@ -69,6 +69,13 @@ export function useChromaSpotlight({
       if (frameRef.current !== null) {
         cancelAnimationFrame(frameRef.current);
       }
+      // Kill active GSAP tweens to prevent updates after unmount
+      if (gsapRef.current) {
+        gsapRef.current.killTweensOf(pos.current);
+        if (fadeRef.current) {
+          gsapRef.current.killTweensOf(fadeRef.current);
+        }
+      }
     };
   }, [radius]);
 

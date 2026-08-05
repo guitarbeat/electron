@@ -5,7 +5,7 @@ const DEFAULT_TIMEOUT_MS = 15000;
 
 
 const isRetryableStatus = (status: number): boolean => {
-  return status === 429 || status === 502 || status === 503 || status === 504 || status >= 500;
+  return status === 429 || (status >= 500 && status !== 501);
 };
 
 const parseRetryAfterMs = (response: Response): number | null => {

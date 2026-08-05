@@ -6,6 +6,9 @@ interface PollingOptions {
   allowNull?: boolean;
 }
 
+const MAX_CACHE_AGE_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_CACHE_ENTRIES = 100;
+
 /**
  * Consolidated polling management system that provides both a PollingManager class
  * and usePolling hook in a single cohesive module.
@@ -15,6 +18,7 @@ class PollingManager {
   private intervals = new Map<string, ReturnType<typeof setInterval>>();
   private fetchFns = new Map<string, () => Promise<unknown>>();
   private cache = new Map<string, unknown>();
+  private cacheTimestamps = new Map<string, number>();
   private errors = new Map<string, unknown>();
   private activeIntervals = new Map<string, number>();
   private inFlight = new Map<string, Promise<void>>();
@@ -33,7 +37,9 @@ class PollingManager {
       }
 
       for (const key of this.subscribers.keys()) {
-        void this.execute(key);
+        if (this.subscribers.get(key)!.size > 0) {
+          void this.execute(key);
+        }
       }
     });
   }
@@ -164,6 +170,7 @@ class PollingManager {
         }
 
         this.cache.set(key, data);
+        this.cacheTimestamps.set(key, Date.now());
         this.errors.delete(key);
         this.notify(key, data, null);
       } catch (e) {
@@ -184,6 +191,7 @@ class PollingManager {
         if (this.inFlight.get(key) === request) {
           this.inFlight.delete(key);
         }
+        this.evictStaleEntries();
       }
     })();
 
@@ -204,6 +212,38 @@ class PollingManager {
           console.error(`Polling listener failed for ${key}`, listenerError);
         }
       });
+    }
+  }
+
+  /**
+   * Evict stale cache/error entries for keys with no active subscribers
+   */
+  private evictStaleEntries() {
+    const now = Date.now();
+
+    for (const key of this.cache.keys()) {
+      if (this.subscribers.has(key) && this.subscribers.get(key)!.size > 0) {
+        continue;
+      }
+      const timestamp = this.cacheTimestamps.get(key) ?? 0;
+      if (now - timestamp > MAX_CACHE_AGE_MS) {
+        this.cache.delete(key);
+        this.cacheTimestamps.delete(key);
+        this.errors.delete(key);
+      }
+    }
+
+    // Enforce max entries cap by evicting oldest entries without active subscribers
+    if (this.cache.size > MAX_CACHE_ENTRIES) {
+      for (const key of this.cache.keys()) {
+        if (this.cache.size <= MAX_CACHE_ENTRIES) break;
+        if (this.subscribers.has(key) && this.subscribers.get(key)!.size > 0) {
+          continue;
+        }
+        this.cache.delete(key);
+        this.cacheTimestamps.delete(key);
+        this.errors.delete(key);
+      }
     }
   }
 

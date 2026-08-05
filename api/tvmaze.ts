@@ -47,6 +47,10 @@ const getCachedResponse = (cacheKey: string): CachedResponse | null => {
     return null;
   }
 
+  // Re-insert to move to end of Map insertion order (LRU behavior)
+  tvMazeCache.delete(cacheKey);
+  tvMazeCache.set(cacheKey, cached);
+
   return cached;
 };
 
