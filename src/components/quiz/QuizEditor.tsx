@@ -41,19 +41,23 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
   const isUndoRedoRef = useRef(false);
   const stateRef = useRef<T>(initialState);
 
-  // Keep stateRef in sync with the latest state value
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  // Wrap setStateInternal to keep stateRef synchronously in sync
+  const setStateTracked = useCallback((updater: T | ((prev: T) => T)) => {
+    setStateInternal((prev) => {
+      const next = typeof updater === "function" ? (updater as (prev: T) => T)(prev) : updater;
+      stateRef.current = next;
+      return next;
+    });
+  }, []);
 
   const setState = useCallback((newState: T) => {
     if (isUndoRedoRef.current) {
       isUndoRedoRef.current = false;
-      setStateInternal(newState);
+      setStateTracked(newState);
       return;
     }
 
-    setStateInternal((prevState) => {
+    setStateTracked((prevState) => {
       setPast((prevPast) => {
         const newPast = [...prevPast, prevState];
         if (newPast.length > MAX_HISTORY_SIZE) {
@@ -64,7 +68,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
       setFuture([]);
       return newState;
     });
-  }, []);
+  }, [setStateTracked]);
 
   const undo = useCallback(() => {
     setPast((prevPast) => {
@@ -74,7 +78,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
       const previousState = newPast.pop()!;
 
       setFuture((prevFuture) => {
-        setStateInternal(() => {
+        setStateTracked(() => {
           isUndoRedoRef.current = true;
           return previousState;
         });
@@ -83,7 +87,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
 
       return newPast;
     });
-  }, []);
+  }, [setStateTracked]);
 
   const redo = useCallback(() => {
     setFuture((prevFuture) => {
@@ -92,7 +96,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
       const [nextState, ...newFuture] = prevFuture;
 
       setPast((prevPast) => {
-        setStateInternal(() => {
+        setStateTracked(() => {
           isUndoRedoRef.current = true;
           return nextState;
         });
@@ -101,7 +105,7 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
 
       return newFuture;
     });
-  }, []);
+  }, [setStateTracked]);
 
   const clear = useCallback(() => {
     setPast([]);
@@ -109,11 +113,10 @@ const useUndoRedo = <T,>(initialState: T): UseUndoRedoReturn<T> => {
   }, []);
 
   const reset = useCallback((newInitialState: T) => {
-    setStateInternal(newInitialState);
-    stateRef.current = newInitialState;
+    setStateTracked(newInitialState);
     setPast([]);
     setFuture([]);
-  }, []);
+  }, [setStateTracked]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
