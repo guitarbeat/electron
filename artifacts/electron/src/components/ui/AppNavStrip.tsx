@@ -2,7 +2,7 @@ import { type FC, useRef, useEffect, useMemo, useState } from 'react';
 import { RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from 'lucide-react';
 import type { MainTab } from '@/shared/types';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { MagicToggle } from './magic-toggle';
+import MagicToggle from './MagicToggle';
 import './AppNavStrip.css';
 
 export interface AppNavStripStatus {

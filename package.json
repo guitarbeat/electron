@@ -19,8 +19,12 @@
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.6.1",
+    "@types/node": "catalog:",
+    "@types/pg": "^8.20.0",
+    "pg": "^8.20.0",
     "prettier": "^3.8.3",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "zod": "catalog:"
   },
   "dependencies": {
     "@esbuild/darwin-arm64": "^0.27.3",
