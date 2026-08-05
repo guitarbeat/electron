@@ -17,7 +17,7 @@ import {
   type MovieActionState,
 } from "./lib/movieActionState";
 import MovieTitleEditModal from "./MovieTitleEditModal";
-import MovieDetailsModal from "./MovieDetailsModal";
+const MovieDetailsModal = React.lazy(() => import("./MovieDetailsModal"));
 import MediaPoster from "@/ui/MediaPoster";
 import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
@@ -201,18 +201,20 @@ const MovieCard: React.FC<MovieCardProps> = ({
         />
       ) : null}
 
-      <MovieDetailsModal
-        movie={movie}
-        memories={memories}
-        isOpen={isDetailsOpen}
-        origin={detailsOrigin}
-        currentUser={currentUser}
-        onAddMemory={onAddMemory}
-        onUpdateMemory={onUpdateMemory}
-        onDeleteMemory={onDeleteMemory}
-        onTogglePin={onTogglePin}
-        onClose={() => setIsDetailsOpen(false)}
-      />
+      <React.Suspense fallback={null}>
+        <MovieDetailsModal
+          movie={movie}
+          memories={memories}
+          isOpen={isDetailsOpen}
+          origin={detailsOrigin}
+          currentUser={currentUser}
+          onAddMemory={onAddMemory}
+          onUpdateMemory={onUpdateMemory}
+          onDeleteMemory={onDeleteMemory}
+          onTogglePin={onTogglePin}
+          onClose={() => setIsDetailsOpen(false)}
+        />
+      </React.Suspense>
     </>
   );
 };

@@ -4,7 +4,7 @@ import { useMovies } from '@/hooks/movies/useMovies';
 import { useUser } from '@/app/useProviders';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
-import MovieDetailsModal from '@/components/movies/MovieDetailsModal';
+const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
@@ -480,11 +480,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
       </div>
 
       {modalMovie && (
-        <MovieDetailsModal
-          movie={modalMovie}
-          isOpen={!!modalMovie}
-          onClose={() => setModalMovie(null)}
-        />
+        <React.Suspense fallback={null}>
+          <MovieDetailsModal
+            movie={modalMovie}
+            isOpen={!!modalMovie}
+            onClose={() => setModalMovie(null)}
+          />
+        </React.Suspense>
       )}
     </div>
   );

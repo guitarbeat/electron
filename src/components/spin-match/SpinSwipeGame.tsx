@@ -8,7 +8,7 @@ import React, {
 import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/useProviders";
 import type { Movie } from "@/shared/types";
-import MovieDetailsModal from "@/components/movies/MovieDetailsModal";
+const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
@@ -601,11 +601,13 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
           onWinnerClick={setModalMovie}
         />
         {modalMovie && (
-          <MovieDetailsModal
-            movie={modalMovie}
-            isOpen={!!modalMovie}
-            onClose={() => setModalMovie(null)}
-          />
+          <React.Suspense fallback={null}>
+            <MovieDetailsModal
+              movie={modalMovie}
+              isOpen={!!modalMovie}
+              onClose={() => setModalMovie(null)}
+            />
+          </React.Suspense>
         )}
       </div>
     );
@@ -745,11 +747,13 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
           )}
 
           {modalMovie && (
-            <MovieDetailsModal
-              movie={modalMovie}
-              isOpen={!!modalMovie}
-              onClose={() => setModalMovie(null)}
-            />
+            <React.Suspense fallback={null}>
+              <MovieDetailsModal
+                movie={modalMovie}
+                isOpen={!!modalMovie}
+                onClose={() => setModalMovie(null)}
+              />
+            </React.Suspense>
           )}
         </div>
       </div>

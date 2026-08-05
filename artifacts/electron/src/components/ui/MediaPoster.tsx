@@ -55,6 +55,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
           src={posterUrl}
           alt={`${title} poster`}
           loading={priority ? "eager" : "lazy"}
+          decoding="async"
           fetchPriority={priority ? "high" : "auto"}
           className={`movie-poster ${isLoaded ? "is-loaded" : ""}`}
           onLoad={() => setIsLoaded(true)}
@@ -66,6 +67,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
             src={catUrl}
             alt={`A cat representing ${title}`}
             loading="lazy"
+            decoding="async"
             className={`movie-poster movie-poster--cat-fallback ${isLoaded ? "is-loaded" : ""}`}
             onLoad={() => setIsLoaded(true)}
             onError={() => {

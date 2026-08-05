@@ -1,0 +1,22 @@
+{
+  "id": "FEAT-003",
+  "type": "refactor",
+  "description": "Split heavy vendor libraries into dedicated manual chunks and add a catch-all vendor chunk for remaining node_modules. Currently the manualChunks function in both vite configs returns undefined for anything that doesn't match the explicit patterns, which means libraries like lucide-react, isomorphic-dompurify, html-react-parser, chroma-js, zod, clsx, class-variance-authority, etc. all land in the main index chunk (74KB gzip). Adding a catch-all 'vendor' chunk for remaining node_modules will isolate third-party code for better caching.",
+  "status": "completed",
+  "steps": [
+    "In artifacts/electron/vite.config.ts, modify the manualChunks function to add a final catch-all: if id.includes('node_modules') return 'vendor'. This should be the LAST condition after all specific vendor chunks.",
+    "In the root vite.config.ts, the catch-all 'vendor' chunk already exists at the bottom of manualChunks. Verify it matches the same pattern as the artifacts config.",
+    "Also add a specific chunk for lucide-react since it's used in 22 files and likely contributes significantly to bundle size: if (id.includes('node_modules/lucide-react')) return 'icons-vendor';",
+    "Add a specific chunk for isomorphic-dompurify + html-react-parser since they are only used by the ElectronLogoLab (lazy-loaded): if (id.includes('node_modules/dompurify') || id.includes('node_modules/isomorphic-dompurify') || id.includes('node_modules/html-react-parser')) return 'sanitize-vendor';"
+  ],
+  "acceptance_criteria": [
+    "artifacts/electron/vite.config.ts manualChunks has icons-vendor, sanitize-vendor, and catch-all vendor chunks",
+    "Root vite.config.ts manualChunks has matching icon-vendor and sanitize-vendor chunks",
+    "pnpm run typecheck passes"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/electron && pnpm run typecheck"
+  ],
+  "blocked_reason": null,
+  "findings": "Both vite configs now have matching chunk splitting order. The root config was also missing framer-vendor, motion-vendor, charts-vendor, date-vendor chunks that the artifacts config already had - these were added for consistency. Typecheck passes cleanly."
+}
