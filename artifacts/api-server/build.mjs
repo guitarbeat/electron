@@ -101,6 +101,8 @@ async function buildAll() {
       "puppeteer-core",
       "electron",
     ],
+    minify: true,
+    treeShaking: true,
     sourcemap: "linked",
     plugins: [
       // pino relies on workers to handle logging, instead of externalizing it we use a plugin to handle it
