@@ -1,0 +1,22 @@
+{
+  "id": "FEAT-001",
+  "type": "refactor",
+  "description": "Dynamic-import gsap in AppNavStrip to prevent it from landing in the initial bundle. Currently gsap is statically imported with `import { gsap } from 'gsap'` in src/components/ui/AppNavStrip.tsx, which forces the entire gsap library into the initial chunk. The hooks (useCinematicEntrance.ts, useChromaSpotlight.ts) already use dynamic import('gsap') correctly. AppNavStrip should follow the same pattern.",
+  "status": "completed",
+  "steps": [
+    "In src/components/ui/AppNavStrip.tsx, remove the static `import { gsap } from 'gsap'` at line 2.",
+    "Refactor the gsap usage in the useEffect (lines ~50-66) to dynamically import gsap. The effect currently uses gsap.to() for mousemove/mouseleave animations on nav buttons. Load gsap on demand inside the effect: `const { gsap } = await import('gsap');` and store it in a ref or closure variable so it's available to event handlers.",
+    "Pattern to follow: see src/hooks/useCinematicEntrance.ts which does `void import('gsap').then(({ gsap }) => { ... })` inside the effect.",
+    "Ensure the same change is reflected in artifacts/electron/src/components/ui/AppNavStrip.tsx (these should be the same file - verify)."
+  ],
+  "acceptance_criteria": [
+    "No static gsap import remains in AppNavStrip.tsx",
+    "The nav button hover animation still works (gsap.to called on mousemove/mouseleave)",
+    "pnpm run typecheck passes without errors"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/electron && pnpm run typecheck"
+  ],
+  "blocked_reason": null,
+  "findings": "Typecheck verified with tsc --noEmit directly (pnpm not installed in sandbox). Both src/ and artifacts/electron/src/ copies updated identically."
+}

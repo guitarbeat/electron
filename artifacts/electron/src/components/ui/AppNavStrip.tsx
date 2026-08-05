@@ -1,9 +1,8 @@
 import { type FC, useRef, useEffect, useMemo, useState } from 'react';
-import { gsap } from 'gsap';
 import { RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from 'lucide-react';
 import type { MainTab } from '@/shared/types';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
-import { MagicToggle } from './magic-toggle';
+import MagicToggle from './MagicToggle';
 import './AppNavStrip.css';
 
 export interface AppNavStripStatus {
@@ -45,19 +44,29 @@ const AppNavStrip: FC<Props> = ({
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
+
+    let gsapInstance: typeof import('gsap').gsap | null = null;
+
+    void import('gsap').then(({ gsap }) => {
+      gsapInstance = gsap;
+    });
+
     const btns = Array.from(nav.querySelectorAll<HTMLElement>('.ans__btn'));
     const cleanups = btns.map((el) => {
       const onMove = (e: MouseEvent) => {
+        if (!gsapInstance) return;
         const r = el.getBoundingClientRect();
-        gsap.to(el, {
+        gsapInstance.to(el, {
           x: (e.clientX - r.left - r.width / 2) * 0.3,
           y: (e.clientY - r.top - r.height / 2) * 0.3,
           ease: 'power2.out',
           duration: 0.35,
         });
       };
-      const onLeave = () =>
-        gsap.to(el, { x: 0, y: 0, ease: 'elastic.out(1,0.3)', duration: 1.1 });
+      const onLeave = () => {
+        if (!gsapInstance) return;
+        gsapInstance.to(el, { x: 0, y: 0, ease: 'elastic.out(1,0.3)', duration: 1.1 });
+      };
       el.addEventListener('mousemove', onMove);
       el.addEventListener('mouseleave', onLeave);
       return () => {

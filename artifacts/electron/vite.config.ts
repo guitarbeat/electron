@@ -194,7 +194,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1100,
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    target: "es2020",
+    target: "es2022",
     cssCodeSplit: true,
     modulePreload: { polyfill: true },
     sourcemap: false,
@@ -225,6 +225,25 @@ export default defineConfig({
           }
           if (id.includes("node_modules/gsap")) {
             return "motion-vendor";
+          }
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
+            return "charts-vendor";
+          }
+          if (id.includes("node_modules/date-fns")) {
+            return "date-vendor";
+          }
+          if (id.includes("node_modules/lucide-react")) {
+            return "icons-vendor";
+          }
+          if (
+            id.includes("node_modules/dompurify") ||
+            id.includes("node_modules/isomorphic-dompurify") ||
+            id.includes("node_modules/html-react-parser")
+          ) {
+            return "sanitize-vendor";
+          }
+          if (id.includes("node_modules")) {
+            return "vendor";
           }
           return undefined;
         },

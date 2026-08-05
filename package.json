@@ -2,6 +2,7 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "pnpm run typecheck && pnpm -r --filter \"!./artifacts/electron-mobile\" --filter \"!./artifacts/mockup-sandbox\" --if-present run build",
@@ -18,8 +19,12 @@
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.6.1",
+    "@types/node": "catalog:",
+    "@types/pg": "^8.20.0",
+    "pg": "^8.20.0",
     "prettier": "^3.8.3",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "zod": "catalog:"
   },
   "dependencies": {
     "@esbuild/darwin-arm64": "^0.27.3",
