@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "refactor",
   "description": "Lazy-load the MovieDetailsModal component. It imports framer-motion and InteractiveFolderGallery and HandWritingText (which themselves import framer-motion). MovieDetailsModal is only shown when a user taps a movie card, so it should be React.lazy loaded rather than statically imported in MovieCard.tsx and SpinSwipeGame.tsx. This will reduce the MoviesView chunk size.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "In src/components/movies/MovieCard.tsx, change `import MovieDetailsModal from './MovieDetailsModal'` to use React.lazy: `const MovieDetailsModal = React.lazy(() => import('./MovieDetailsModal'))`. Wrap the <MovieDetailsModal> JSX usage in a <React.Suspense fallback={null}> (since it's a modal, null fallback is fine).",
     "In src/components/spin-match/SpinSwipeGame.tsx, apply the same change: lazy import MovieDetailsModal and wrap usages in Suspense.",
