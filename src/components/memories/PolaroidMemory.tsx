@@ -232,4 +232,4 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({
   );
 };
 
-export default PolaroidMemory;
+export default React.memo(PolaroidMemory);

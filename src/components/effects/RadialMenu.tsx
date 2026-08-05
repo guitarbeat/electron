@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MessageIcon } from "@/common/Icons";
 import RadialFabToggleIcon from "@/components/effects/RadialFabToggleIcon";
 import { useAudio } from "@/hooks/useAudio";
@@ -332,35 +332,38 @@ const RadialMenu: React.FC<RadialMenuProps> = ({
     };
   }, [closeMenu]);
 
-  const handleMenuItemClick = (callback?: () => void) => {
+  const handleMenuItemClick = useCallback((callback?: () => void) => {
     playSwitch();
     callback?.();
     setIsActive(false);
-  };
+  }, [playSwitch]);
 
-  const menuItems = [
-    {
-      colorClass: "teal",
-      label: "Messages",
-      description: "Chat, notes, and check-ins",
-      onClick: () => handleMenuItemClick(onOpenMessages),
-      icon: <MessageIcon size={20} style={{ color: "white" }} />,
-    },
-    {
-      colorClass: "violet",
-      label: "Quiz",
-      description: "Take the retro personality quiz",
-      onClick: () => handleMenuItemClick(onOpenQuiz),
-      icon: <QuizIcon />,
-    },
-    {
-      colorClass: "amber",
-      label: "Spin",
-      description: "Swipe to merge, spin to pick a movie",
-      onClick: () => handleMenuItemClick(onOpenSpin),
-      icon: <SpinIcon />,
-    },
-  ] as const;
+  const menuItems = useMemo(
+    () => [
+      {
+        colorClass: "teal",
+        label: "Messages",
+        description: "Chat, notes, and check-ins",
+        onClick: () => handleMenuItemClick(onOpenMessages),
+        icon: <MessageIcon size={20} style={{ color: "white" }} />,
+      },
+      {
+        colorClass: "violet",
+        label: "Quiz",
+        description: "Take the retro personality quiz",
+        onClick: () => handleMenuItemClick(onOpenQuiz),
+        icon: <QuizIcon />,
+      },
+      {
+        colorClass: "amber",
+        label: "Spin",
+        description: "Swipe to merge, spin to pick a movie",
+        onClick: () => handleMenuItemClick(onOpenSpin),
+        icon: <SpinIcon />,
+      },
+    ] as const,
+    [onOpenMessages, onOpenQuiz, onOpenSpin, handleMenuItemClick],
+  );
 
   const toggleLabel = isActive ? "Close quick actions" : "Open quick actions";
   const toggleHint = "Drag to reposition • Click to toggle quick actions";

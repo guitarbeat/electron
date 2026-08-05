@@ -84,4 +84,4 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   );
 };
 
-export default SuggestionCard;
+export default React.memo(SuggestionCard);

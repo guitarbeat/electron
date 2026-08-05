@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import type {
   ThemeContextValue,
   ToastContextType,
@@ -45,11 +45,20 @@ export const useAppSession = (): Pick<
   | "refreshSession"
 > => {
   const context = useUser();
-  return {
-    hasAccess: context.hasAccess,
-    pinProtectedUsers: context.pinProtectedUsers,
-    usersMissingPins: context.usersMissingPins,
-    isSessionLoading: context.isSessionLoading,
-    refreshSession: context.refreshSession,
-  };
+  return useMemo(
+    () => ({
+      hasAccess: context.hasAccess,
+      pinProtectedUsers: context.pinProtectedUsers,
+      usersMissingPins: context.usersMissingPins,
+      isSessionLoading: context.isSessionLoading,
+      refreshSession: context.refreshSession,
+    }),
+    [
+      context.hasAccess,
+      context.pinProtectedUsers,
+      context.usersMissingPins,
+      context.isSessionLoading,
+      context.refreshSession,
+    ],
+  );
 };
