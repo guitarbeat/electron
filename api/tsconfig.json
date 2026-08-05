@@ -4,6 +4,7 @@
   "exclude": ["node_modules", "**/*.test.ts"],
   "compilerOptions": {
     "noEmit": true,
+    "noEmitOnError": false,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "lib": ["esnext", "dom", "dom.iterable"],
