@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Fix XSS vulnerability in PlacesMap.tsx, duplicated UI in SpinSwipeGame.tsx, dead code in messageKeyboard.ts, polling refresh race condition in usePolling, and stale closure in QuizEditor undo/redo",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. Fix XSS in src/components/places/PlacesMap.tsx: The popupHtml template string interpolates place.name and place.notes directly into HTML without escaping. Create a helper function escapeHtml(str) that escapes &, <, >, \", and ' characters. Apply it to place.name and place.notes before interpolating into the HTML template passed to .setHTML().",
     "2. Fix duplicated ProgressBar and wrapper in src/components/spin-match/SpinSwipeGame.tsx: In the swipe phase return JSX (the final return statement of SpinSwipeGame), there is a duplicate nested structure - an outer div containing ProgressBar + a card-holder, and INSIDE that same structure is duplicated again. Remove the redundant outer wrapper so ProgressBar only renders once.",
@@ -23,5 +23,5 @@
     "pnpm run test"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All 5 fixes verified: typecheck passes, tests pass. pnpm installed via bun global for verification. The polling race condition fix also addresses the console errors seen in the steering message (StateClientError from polling) by removing the redundant loading state manipulation that could cause UI flickering during errors."
 }
