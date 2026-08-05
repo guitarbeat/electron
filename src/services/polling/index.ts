@@ -412,13 +412,7 @@ export const usePolling = <T>(
 
   const refresh = useCallback(() => {
     if (key && interval !== null) {
-      setIsLoading(true);
-      setError(null);
-      pollingManager.refresh(key).catch((error) => {
-        consoleError(`Polling refresh failed for ${key}:`, error);
-        setError(error instanceof Error ? error : new Error(String(error)));
-        setIsLoading(false);
-      });
+      void pollingManager.refresh(key);
     } else {
       executeLocal(true);
     }

@@ -13,6 +13,16 @@ import type { Place } from "@/shared/types";
 import { getPlaceMeta } from "./lib/placeMeta";
 import { Spinner } from "@/components/common/Icons";
 
+/** Escape user-supplied strings before interpolating into HTML templates. */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const DEFAULT_CENTER: [number, number] = [-97.74, 30.27];
 const DEFAULT_ZOOM = 3;
 const MAP_STYLE: StyleSpecification = {
@@ -228,10 +238,10 @@ const PlacesMap = forwardRef<PlacesMapHandle, PlacesMapProps>(
           ">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
               <span style="font-size:1.1rem;">${meta.icon}</span>
-              <span style="color:${colors.textPrimary};font-size:0.85rem;font-weight:600;letter-spacing:0.02em;">${place.name}</span>
+              <span style="color:${colors.textPrimary};font-size:0.85rem;font-weight:600;letter-spacing:0.02em;">${escapeHtml(place.name)}</span>
             </div>
             ${isVisited ? `<span style="font-size:0.65rem;color:${colors.secondary};letter-spacing:0.06em;text-transform:uppercase;">✓ Visited</span>` : ""}
-            ${place.notes ? `<div style="font-size:0.72rem;color:${colors.textTertiary};margin-top:2px;">${place.notes}</div>` : ""}
+            ${place.notes ? `<div style="font-size:0.72rem;color:${colors.textTertiary};margin-top:2px;">${escapeHtml(place.notes)}</div>` : ""}
           </div>
         `;
 
