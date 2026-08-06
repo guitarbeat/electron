@@ -120,3 +120,80 @@ test("readScope preserves optimistic queued movie mutations when degraded replay
     });
   }
 });
+
+test("readScope returns degraded snapshot on server 500 error instead of throwing", async () => {
+  const localStorage = new MemoryStorage();
+  const windowStub = {
+    localStorage,
+    dispatchEvent: () => true,
+    btoa: (s: string) => Buffer.from(s, "binary").toString("base64"),
+    atob: (s: string) => Buffer.from(s, "base64").toString("binary"),
+  } as unknown as Window & typeof globalThis;
+
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: windowStub,
+  });
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: "Internal server error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+
+  try {
+    const result = await readScope("suggestions");
+    assert.equal(result.degraded, true);
+    assert.deepEqual(result.data, []);
+    assert.ok(result.warning);
+  } finally {
+    globalThis.fetch = originalFetch;
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  }
+});
+
+test("readScope re-throws StateClientError on 401 unauthorized", async () => {
+  const localStorage = new MemoryStorage();
+  const windowStub = {
+    localStorage,
+    dispatchEvent: () => true,
+    btoa: (s: string) => Buffer.from(s, "binary").toString("base64"),
+    atob: (s: string) => Buffer.from(s, "base64").toString("binary"),
+  } as unknown as Window & typeof globalThis;
+
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: windowStub,
+  });
+
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ error: "Unauthorized." }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+
+  try {
+    await assert.rejects(
+      async () => {
+        await readScope("movies");
+      },
+      (err: unknown) => {
+        return (
+          err instanceof Error &&
+          err.name === "StateClientError" &&
+          (err as { status?: number }).status === 401
+        );
+      },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+  }
+});
+
