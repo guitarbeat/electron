@@ -1,4 +1,0 @@
-🎯 **What:** Removed the `export` keyword from `AARON_BUBBLE_COLOR` in `src/components/messages/lib/messageUtils.ts` and `artifacts/electron/src/components/messages/lib/messageUtils.ts`.
-💡 **Why:** This variable is only used internally within `messageUtils.ts` in the `getBubbleColor` function and shouldn't be exposed as an export. This cleans up the module's public API and resolves a dead code/unused export issue.
-✅ **Verification:** Verified the code changes manually, ran `pnpm lint` and `pnpm test` (all tests passed), and performed a code review which gave a "Correct" rating.
-✨ **Result:** Improved codebase hygiene and maintainability by removing an unused export without affecting any existing functionality.
