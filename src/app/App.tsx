@@ -5,6 +5,7 @@ import React, {
   useState,
 } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import {
   APP_VIEW_STATE_KEY,
   readInitialAppViewState,
@@ -308,6 +309,7 @@ const AppWithProviders: React.FC = () => (
         <ViewportProvider>
           <App />
           <SpeedInsights />
+          <Analytics />
         </ViewportProvider>
       </PwaInstallProvider>
     </ToastProvider>
