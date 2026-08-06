@@ -82,8 +82,6 @@ const trimCache = (cache: Map<string, CachedResponse>) => {
   for (const [key, value] of cache.entries()) {
     if (value.expiresAt <= now) {
       cache.delete(key);
-    } else {
-      break;
     }
   }
 

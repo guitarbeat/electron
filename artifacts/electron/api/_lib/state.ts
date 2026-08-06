@@ -123,17 +123,18 @@ interface ScopeDefinition<
 const parseArrayScope = <T>(
   content: string | null,
   context: string,
-  normalizeRecord: (value: unknown) => T | null
+  normalizeRecord: (value: unknown) => T | null,
+  defaultContent: T[] = []
 ): T[] => {
   if (!content) {
-    return [];
+    return defaultContent;
   }
 
   try {
     const parsed = parseJsonContent(content, context);
     if (!Array.isArray(parsed)) {
       console.warn(`${context} was not an array; defaulting to empty state.`);
-      return [];
+      return defaultContent;
     }
 
     const normalized = parsed.flatMap((entry) => {
@@ -147,15 +148,15 @@ const parseArrayScope = <T>(
       );
     }
 
-    return normalized;
+    return normalized.length > 0 ? normalized : defaultContent;
   } catch (error) {
-    console.error(`Failed to parse ${context}; defaulting to empty state.`, error);
-    return [];
+    console.error(`Failed to parse ${context}; defaulting to seed state.`, error);
+    return defaultContent;
   }
 };
 
 const parseMovies = (content: string | null): Movie[] =>
-  parseArrayScope<Movie>(content, 'movies', normalizeMovieRecord);
+  parseArrayScope<Movie>(content, 'movies', normalizeMovieRecord, mockMovies);
 
 const parseQuiz = (content: string | null) => {
   if (!content) {
@@ -457,7 +458,7 @@ const scopes: {
   messages: {
     filename: 'messages.json',
     parse: (content) =>
-      parseArrayScope<Message>(content, 'messages', normalizeMessageRecord),
+      parseArrayScope<Message>(content, 'messages', normalizeMessageRecord, mockMessages),
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['messages'],
     mutate: (current, op, payload, context) => {
@@ -516,7 +517,7 @@ const scopes: {
   memories: {
     filename: 'memories.json',
     parse: (content) =>
-      parseArrayScope<SharedMemory>(content, 'memories', normalizeSharedMemoryRecord),
+      parseArrayScope<SharedMemory>(content, 'memories', normalizeSharedMemoryRecord, mockMemories),
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['memories'],
     mutate: (current, op, payload, context) => {
@@ -678,7 +679,7 @@ const scopes: {
   places: {
     filename: 'places.json',
     parse: (content) =>
-      parseArrayScope<Place>(content, 'places', normalizePlaceRecord),
+      parseArrayScope<Place>(content, 'places', normalizePlaceRecord, mockPlaces),
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['places'],
     mutate: (current, op, payload, context) => {
@@ -794,7 +795,8 @@ const scopes: {
       parseArrayScope<MovieSuggestion>(
         content,
         'suggestions',
-        normalizeSuggestionRecord
+        normalizeSuggestionRecord,
+        mockSuggestions
       ),
     serialize: (value) => JSON.stringify(value, null, 2),
     toClient: (value) => value as StateScopeDataMap['suggestions'],

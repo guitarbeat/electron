@@ -123,7 +123,7 @@ export const useCollection = <T>(
         setIsSubmitting(false);
       }
     },
-    [currentUser, scope],
+    [currentUser, scope, refresh],
   );
 
   const retrySync = useCallback(async () => {

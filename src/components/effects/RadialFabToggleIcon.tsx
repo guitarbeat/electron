@@ -45,21 +45,16 @@ const RadialFabToggleIcon: React.FC<RadialFabToggleIconProps> = ({
         strokeDasharray="2 2"
       />
 
-      {/* Primary Four-pointed Star */}
+      {/* Primary Four-pointed Sparkle Star */}
       <path
-        d="M12 2C12 2 13.2 8.8 13.2 12C13.2 15.2 12 22 12 22C12 22 10.8 15.2 10.8 12C10.8 8.8 12 2Z"
-        fill="url(#star-grad)"
-        filter="url(#halo-glow)"
-      />
-      <path
-        d="M2 12C2 12 8.8 10.8 12 10.8C15.2 10.8 22 12 22 12C22 12 15.2 13.2 12 13.2C8.8 13.2 2 12 2 12Z"
+        d="M 12 2 Q 12 12 22 12 Q 12 12 12 22 Q 12 12 2 12 Q 12 12 12 2 Z"
         fill="url(#star-grad)"
         filter="url(#halo-glow)"
       />
 
       {/* Diagonal Sparkle Rays */}
       <path
-        d="M6.5 6.5L17.5 17.5M17.5 6.5L6.5 17.5"
+        d="M 6.5 6.5 L 17.5 17.5 M 17.5 6.5 L 6.5 17.5"
         stroke="#ffffff"
         strokeOpacity="0.65"
         strokeWidth="1"
@@ -80,7 +75,7 @@ const RadialFabToggleIcon: React.FC<RadialFabToggleIconProps> = ({
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M7 7L17 17M17 7L7 17"
+        d="M 7 7 L 17 17 M 17 7 L 7 17"
         stroke="#ffffff"
         strokeWidth="2.4"
         strokeLinecap="round"

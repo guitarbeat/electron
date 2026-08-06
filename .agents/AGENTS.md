@@ -78,6 +78,12 @@ This ensures OpenCode behaves similarly to Claude Code with full workflow enforc
 - **Serverless Dependency Isolation**: Keep serverless function helpers in `api/_lib/` pure and decoupled from frontend UI/theme modules (`src/theme/*`, `src/components/*`). Never use path aliases (such as `@/*`) inside serverless handlers unless resolved by a serverless bundler.
 - **Composite TS Cache**: Use `tsc --build --force` in typecheck scripts to force declaration re-emission on CI/Vercel cached builds.
 
+## Development & Build Engineering Guardrails
+
+- **Vite `manualChunks` Core Isolation**: When splitting vendor bundles in Vite/Rollup, match core React packages (`react`, `react-dom`, `scheduler`, `use-sync-external-store`, `object-assign`, `react-is`) with exact trailing slashes (e.g. `/node_modules/scheduler/`) to prevent subpackage leakage (`react-hook-form`, `react-icons`) that causes circular chunk dependencies (`vendor -> react-vendor -> vendor`).
+- **SVG Path Formatting**: Always format SVG `<path d="..." />` attributes with explicit whitespace between command tokens and coordinates (e.g. `M 12 2 Q 12 12 22 12` rather than `12C12`). Ensure cubic bezier `C` commands specify all 6 control point numbers to prevent browser SVG parsing errors.
+- **Local Dev Resilient Mocking**: API handlers and state stores should provide in-process fallback secrets (e.g. ephemeral random signing key) and populate default seed data when `SESSION_SIGNING_SECRET` or `DATABASE_URL` is unconfigured.
+
 ## Orchestration: Personas, Skills, and Commands
 
 This repo has three composable layers. They have different jobs and should not be confused:
