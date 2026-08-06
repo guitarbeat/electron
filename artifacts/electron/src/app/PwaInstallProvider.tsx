@@ -1,5 +1,9 @@
-import "@khmyznikov/pwa-install";
-import type { PWAInstallElement } from "@khmyznikov/pwa-install";
+/**
+ * PwaInstallProvider — native PWA install prompt without lit or @khmyznikov/pwa-install.
+ *
+ * Uses the browser's beforeinstallprompt event directly. On iOS Safari (which
+ * doesn't fire beforeinstallprompt), install instructions are shown via toast.
+ */
 import React, {
   createContext,
   useCallback,
@@ -12,186 +16,138 @@ import React, {
 } from "react";
 import { useToast } from "@/app/useProviders";
 
+// ── Types ──────────────────────────────────────────────────────────
+
+// Mirrors the global augmentation in src/shared/pwaInstallWindow.ts
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  readonly userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 export interface PwaInstallContextValue {
   canInstall: boolean;
   isStandalone: boolean;
   openInstallDialog: () => void;
 }
 
+// ── Context ────────────────────────────────────────────────────────
+
 const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const usePwaInstall = (): PwaInstallContextValue => {
-  const context = useContext(PwaInstallContext);
-  if (!context) {
-    throw new Error("usePwaInstall must be used within PwaInstallProvider");
-  }
-  return context;
+  const ctx = useContext(PwaInstallContext);
+  if (!ctx) throw new Error("usePwaInstall must be used within PwaInstallProvider");
+  return ctx;
 };
+
+// ── Helpers ────────────────────────────────────────────────────────
 
 const readStandaloneMode = (): boolean =>
   typeof window !== "undefined" &&
   (window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true);
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
 
-const syncTintColor = (element: PWAInstallElement | null): void => {
-  if (!element || typeof document === "undefined") {
-    return;
-  }
+/** True on iOS Safari, which doesn't fire beforeinstallprompt */
+const isIosSafari = (): boolean =>
+  typeof navigator !== "undefined" &&
+  /iphone|ipad|ipod/i.test(navigator.userAgent) &&
+  !(window as Window & { MSStream?: unknown }).MSStream;
 
-  const accent = getComputedStyle(document.documentElement)
-    .getPropertyValue("--color-accent")
-    .trim();
+// ── Provider ───────────────────────────────────────────────────────
 
-  if (accent) {
-    element.styles = { "--tint-color": accent };
-  }
-};
-
-interface PwaInstallProviderProps {
-  children: ReactNode;
-}
-
-/**
- * Hosts `<pwa-install>` and exposes install UI to the app shell (header chip, toasts).
- * @see https://github.com/khmyznikov/pwa-install
- */
-export const PwaInstallProvider: React.FC<PwaInstallProviderProps> = ({
-  children,
-}) => {
+export const PwaInstallProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { showToast } = useToast();
-  const elementRef = useRef<PWAInstallElement | null>(null);
-  const autoPromptShownRef = useRef(false);
+  const promptRef = useRef<BeforeInstallPromptEvent | null>(null);
+  const autoShownRef = useRef(false);
 
   const [canInstall, setCanInstall] = useState(false);
   const [isStandalone, setIsStandalone] = useState(readStandaloneMode);
 
-  const openInstallDialog = useCallback(() => {
-    const element = elementRef.current;
-    if (!element || isStandalone) {
-      return;
-    }
-
-    syncTintColor(element);
-    element.showDialog(true);
-  }, [isStandalone]);
-
-  const attachElement = useCallback((element: PWAInstallElement | null) => {
-    elementRef.current = element;
-    if (!element) {
-      return;
-    }
-
-    syncTintColor(element);
-
+  // Pick up a deferred prompt set by index.html before React boots
+  useEffect(() => {
     if (window.__electronDeferredInstallPrompt) {
-      element.externalPromptEvent =
-        window.__electronDeferredInstallPrompt as unknown as typeof element.externalPromptEvent;
+      promptRef.current = window.__electronDeferredInstallPrompt;
+      if (!readStandaloneMode()) setCanInstall(true);
     }
-
-    setCanInstall(element.isInstallAvailable);
-    setIsStandalone(element.isUnderStandaloneMode || readStandaloneMode());
   }, []);
 
+  // Listen for the install prompt event
   useEffect(() => {
-    const refreshStandalone = () => {
-      setIsStandalone(readStandaloneMode());
-    };
+    const handler = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      promptRef.current = e;
+      if (!readStandaloneMode()) {
+        setCanInstall(true);
 
-    document.addEventListener("visibilitychange", refreshStandalone);
-    return () => {
-      document.removeEventListener("visibilitychange", refreshStandalone);
-    };
-  }, []);
-
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) {
-      return undefined;
-    }
-
-    const handleAvailable = () => {
-      setCanInstall(true);
-      syncTintColor(element);
-
-      if (autoPromptShownRef.current || element.isUnderStandaloneMode) {
-        return;
-      }
-
-      autoPromptShownRef.current = true;
-      window.setTimeout(() => {
-        if (!element.isUnderStandaloneMode && element.isInstallAvailable) {
-          element.showDialog();
+        // Auto-prompt after a short delay (mirrors old pwa-install behaviour)
+        if (!autoShownRef.current) {
+          autoShownRef.current = true;
+          window.setTimeout(() => {
+            if (!readStandaloneMode() && promptRef.current) {
+              void promptRef.current.prompt();
+            }
+          }, 1400);
         }
-      }, 1400);
+      }
     };
 
-    const handleSuccess = (event: Event) => {
-      const detail = (event as CustomEvent<{ message?: string }>).detail;
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  // Track standalone mode changes
+  useEffect(() => {
+    const refresh = () => setIsStandalone(readStandaloneMode());
+    window.addEventListener("appinstalled", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("appinstalled", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
+  // After successful install
+  useEffect(() => {
+    const handler = () => {
       setCanInstall(false);
       setIsStandalone(true);
       showToast({
         type: "success",
-        message:
-          detail?.message ??
-          "Electron is installed. Open it from your home screen or dock.",
+        message: "Electron is installed. Open it from your home screen or dock.",
       });
     };
-
-    const handleInstalled = () => {
-      setCanInstall(false);
-      setIsStandalone(true);
-    };
-
-    const handleThemeChange = () => {
-      syncTintColor(element);
-    };
-
-    element.addEventListener("pwa-install-available-event", handleAvailable);
-    element.addEventListener("pwa-install-success-event", handleSuccess);
-    window.addEventListener("appinstalled", handleInstalled);
-
-    const themeObserver = new MutationObserver(handleThemeChange);
-    themeObserver.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => {
-      element.removeEventListener(
-        "pwa-install-available-event",
-        handleAvailable,
-      );
-      element.removeEventListener("pwa-install-success-event", handleSuccess);
-      window.removeEventListener("appinstalled", handleInstalled);
-      themeObserver.disconnect();
-    };
+    window.addEventListener("appinstalled", handler);
+    return () => window.removeEventListener("appinstalled", handler);
   }, [showToast]);
 
+  const openInstallDialog = useCallback(async () => {
+    if (isStandalone) return;
+
+    if (promptRef.current) {
+      await promptRef.current.prompt();
+      const { outcome } = await promptRef.current.userChoice;
+      if (outcome === "accepted") setCanInstall(false);
+      promptRef.current = null;
+      return;
+    }
+
+    if (isIosSafari()) {
+      showToast({
+        type: "info",
+        message: 'To install: tap the Share button, then "Add to Home Screen".',
+      });
+    }
+  }, [isStandalone, showToast]);
+
   const value = useMemo(
-    () => ({
-      canInstall,
-      isStandalone,
-      openInstallDialog,
-    }),
+    () => ({ canInstall, isStandalone, openInstallDialog }),
     [canInstall, isStandalone, openInstallDialog],
   );
 
   return (
     <PwaInstallContext.Provider value={value}>
       {children}
-      {isStandalone ? null : (
-        <pwa-install
-          ref={attachElement}
-          manifestUrl="/manifest.json"
-          useLocalStorage
-          manualApple
-          manualChrome
-          disable-screenshots
-          installDescription="Install Electron on your home screen or dock for quick launch, fullscreen viewing, and offline access to your shared queue."
-        />
-      )}
     </PwaInstallContext.Provider>
   );
 };

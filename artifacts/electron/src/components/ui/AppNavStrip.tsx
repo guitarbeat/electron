@@ -45,27 +45,20 @@ const AppNavStrip: FC<Props> = ({
     const nav = navRef.current;
     if (!nav) return;
 
-    let gsapInstance: typeof import('gsap').gsap | null = null;
-
-    void import('gsap').then(({ gsap }) => {
-      gsapInstance = gsap;
-    });
-
     const btns = Array.from(nav.querySelectorAll<HTMLElement>('.ans__btn'));
     const cleanups = btns.map((el) => {
       const onMove = (e: MouseEvent) => {
-        if (!gsapInstance) return;
         const r = el.getBoundingClientRect();
-        gsapInstance.to(el, {
-          x: (e.clientX - r.left - r.width / 2) * 0.3,
-          y: (e.clientY - r.top - r.height / 2) * 0.3,
-          ease: 'power2.out',
-          duration: 0.35,
+        const offsetX = (e.clientX - r.left - r.width / 2) * 0.3;
+        const offsetY = (e.clientY - r.top - r.height / 2) * 0.3;
+        void import('motion').then(({ animate }) => {
+          animate(el, { transform: `translate(${offsetX}px, ${offsetY}px)` }, { duration: 0.35, ease: [0.16, 1, 0.3, 1] });
         });
       };
       const onLeave = () => {
-        if (!gsapInstance) return;
-        gsapInstance.to(el, { x: 0, y: 0, ease: 'elastic.out(1,0.3)', duration: 1.1 });
+        void import('motion').then(({ animate }) => {
+          animate(el, { transform: 'translate(0px, 0px)' }, { duration: 1.1, ease: [0.25, 1, 0.5, 1] });
+        });
       };
       el.addEventListener('mousemove', onMove);
       el.addEventListener('mouseleave', onLeave);

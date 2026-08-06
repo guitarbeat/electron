@@ -1,4 +1,4 @@
-import { MagicToggle } from "./magic-toggle";
+import MagicToggle from "./MagicToggle";
 import React, { useCallback } from 'react';
 import './BentoWorkspaceController.css';
 import type { MainTab } from '@/shared/types';
