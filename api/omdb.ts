@@ -174,10 +174,25 @@ const validateSameOriginRequest = (req: Request): Response | null => {
   }
 };
 
+const isPrivateIp = (ip: string): boolean => {
+  return /^(::f{4}:)?10\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
+    /^(::f{4}:)?192\.168\.\d{1,3}\.\d{1,3}/i.test(ip) ||
+    /^(::f{4}:)?169\.254\.\d{1,3}\.\d{1,3}/i.test(ip) ||
+    /^(::f{4}:)?127\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
+    /^(::f{4}:)?172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}/i.test(ip) ||
+    /^(::1|fc00:|fe80:)/i.test(ip);
+};
+
 const getClientIp = (req: Request): string => {
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
+    const ips = forwardedFor.split(',').map((ip) => ip.trim());
+    for (let i = ips.length - 1; i >= 0; i--) {
+      if (!isPrivateIp(ips[i])) {
+        return ips[i];
+      }
+    }
+    return ips[ips.length - 1] || 'unknown';
   }
 
   return req.headers.get('x-real-ip') || 'unknown';
