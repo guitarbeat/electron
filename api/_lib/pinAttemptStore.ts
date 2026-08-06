@@ -7,70 +7,19 @@
  * continues to be issued for client-side countdown UX only.
  */
 
-import pg from 'pg';
-
-const { Pool } = pg;
+import type pg from 'pg';
+import { createPostgresPool, getDatabaseUrl } from './dbCommon.ts';
 
 let pool: pg.Pool | null = null;
 let poolUrl = '';
 let schemaReady: Promise<void> | null = null;
-
-// ---------------------------------------------------------------------------
-// Internal helpers (mirrors sharedStateStore, kept self-contained)
-// ---------------------------------------------------------------------------
-
-const cleanEnvValue = (value: string | undefined): string => {
-  let normalized = (value || '').trim();
-  while (
-    normalized.length >= 2 &&
-    ((normalized.startsWith('"') && normalized.endsWith('"')) ||
-      (normalized.startsWith("'") && normalized.endsWith("'")))
-  ) {
-    normalized = normalized.slice(1, -1).trim();
-  }
-  return normalized;
-};
-
-const getDatabaseUrl = (): string =>
-  cleanEnvValue(
-    process.env.DATABASE_URL ||
-      process.env.POSTGRES_URL ||
-      process.env.POSTGRES_PRISMA_URL
-  );
-
-const needsSsl = (url: string): boolean => {
-  try {
-    const u = new URL(url);
-    const sslmode = u.searchParams.get('sslmode');
-    if (sslmode === 'disable' || sslmode === 'allow') return false;
-    const cloudHosts = ['neon.tech', 'supabase.co', 'railway.app', 'render.com', 'amazonaws.com'];
-    return cloudHosts.some((h) => u.hostname.includes(h));
-  } catch {
-    return false;
-  }
-};
-
-const cleanDatabaseUrl = (url: string): string => {
-  try {
-    const u = new URL(url);
-    u.searchParams.delete('channel_binding');
-    return u.toString();
-  } catch {
-    return url;
-  }
-};
 
 const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) throw new Error('DATABASE_URL is not configured.');
   if (!pool || poolUrl !== databaseUrl) {
     if (pool) void pool.end().catch(() => undefined);
-    const cleanUrl = cleanDatabaseUrl(databaseUrl);
-    const poolConfig: pg.PoolConfig = { connectionString: cleanUrl };
-    if (needsSsl(cleanUrl)) {
-      poolConfig.ssl = { rejectUnauthorized: false };
-    }
-    pool = new Pool(poolConfig);
+    pool = createPostgresPool(databaseUrl);
     poolUrl = databaseUrl;
     schemaReady = null;
   }
