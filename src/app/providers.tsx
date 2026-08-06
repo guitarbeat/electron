@@ -356,3 +356,5 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
+
+export { useTheme, useThemeColors, useToast, useUser } from "./useProviders";
