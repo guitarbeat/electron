@@ -84,12 +84,12 @@
 }
 
 /* With sidebar rail — shift content right */
-.workspace-stage--with-rail {
+.app-shell__canvas--with-rail {
   margin-left: 68px;
 }
 
 @media (max-width: 768px) {
-  .workspace-stage--with-rail {
+  .app-shell__canvas--with-rail {
     margin-left: 0;
     padding-bottom: 70px; /* space for mobile bottom bar */
   }

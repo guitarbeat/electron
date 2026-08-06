@@ -46,6 +46,8 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
+import SidebarRail from "@/components/ui/SidebarRail";
+import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import "./App.scss";
 
 const AppWorkspaceShell = React.lazy(
@@ -92,6 +94,19 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
+  const [openPanels, setOpenPanels] = useState<Set<TogglePanel>>(new Set());
+
+  const togglePanel = useCallback((panel: TogglePanel) => {
+    setOpenPanels((prev) => {
+      const next = new Set(prev);
+      if (next.has(panel)) {
+        next.delete(panel);
+      } else {
+        next.add(panel);
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
@@ -254,7 +269,25 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <div className="app-shell__canvas app-shell__canvas--main">
+        <SidebarRail
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          pwaStatus={{
+            isOnline,
+            isStandalone,
+            canInstall: canInstallApp,
+            hasUpdateReady,
+            pendingSyncCount: outboxStatus.pendingCount,
+            blockedSyncCount: outboxStatus.blockedCount,
+          }}
+          onInstallApp={() => void handleInstallApp()}
+          onApplyUpdate={handleApplyUpdate}
+          onRetrySync={handleRetryPendingSync}
+          openPanels={openPanels}
+          onTogglePanel={togglePanel}
+        />
+
+        <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
           <div
             className={`app-workspace-stack app-workspace-stack--${activeTab}`}
           >
@@ -280,6 +313,8 @@ const App: React.FC = () => {
                     onOpenMessages={openMessages}
                     onOpenQuiz={openQuizExperience}
                     onOpenSpin={openSpinMatch}
+                    openPanels={openPanels}
+                    onTogglePanel={togglePanel}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>

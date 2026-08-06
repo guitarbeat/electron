@@ -283,36 +283,34 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
 
   return (
     <>
-      {searchPortalEl &&
-        createPortal(
-          <MoviesTopControls
-            ref={moviesTopControlsRef}
-            currentUser={currentUser}
-            upNextCount={upNextSummaryCount}
-            watchedCount={sections.completed.length}
-            noteCount={memories.length}
-            latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
-            latestNoteAuthor={latestMemory?.author ?? null}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedAutocompleteResult={selectedAutocompleteResult}
-            setSelectedAutocompleteResult={setSelectedAutocompleteResult}
-            guestName={guestName}
-            setGuestName={setGuestName}
-            onSubmit={handleAddAction}
-            onRecommend={openRecommendationComposer}
-            onSubmitRecommendation={handleSubmitRecommendation}
-            onCancelRecommendation={resetRecommendationComposer}
-            recommendationReason={recommendationReason}
-            setRecommendationReason={handleRecommendationReasonChange}
-            showRecommendationComposer={isRecommendationComposerOpen}
-            isAdding={isAdding}
-            isSubmittingRecommendation={isSubmittingRecommendation}
-            suggestionError={suggestionError}
-            canRecommend={true}
-          />,
-          searchPortalEl,
-        )}
+      <div className="movies-search-container">
+        <MoviesTopControls
+          ref={moviesTopControlsRef}
+          currentUser={currentUser}
+          upNextCount={upNextSummaryCount}
+          watchedCount={sections.completed.length}
+          noteCount={memories.length}
+          latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+          latestNoteAuthor={latestMemory?.author ?? null}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedAutocompleteResult={selectedAutocompleteResult}
+          setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+          guestName={guestName}
+          setGuestName={setGuestName}
+          onSubmit={handleAddAction}
+          onRecommend={openRecommendationComposer}
+          onSubmitRecommendation={handleSubmitRecommendation}
+          onCancelRecommendation={resetRecommendationComposer}
+          recommendationReason={recommendationReason}
+          setRecommendationReason={handleRecommendationReasonChange}
+          showRecommendationComposer={isRecommendationComposerOpen}
+          isAdding={isAdding}
+          isSubmittingRecommendation={isSubmittingRecommendation}
+          suggestionError={suggestionError}
+          canRecommend={true}
+        />
+      </div>
       <div className="watchlist-container places-container">
         {isMoviesWorkspaceDegraded && (
           <SyncBanner

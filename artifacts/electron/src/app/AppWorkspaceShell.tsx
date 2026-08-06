@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import SidebarRail from "@/components/ui/SidebarRail";
 import type { WorkspaceChromeHeaderProps } from "@/components/ui/BentoWorkspaceController";
 import ProfilePinPanel from "@/components/ui/ProfilePinPanel";
 import { ProfilePinProvider } from "@/app/ProfilePinContext";
@@ -27,6 +26,8 @@ type AppWorkspaceShellProps = WorkspaceChromeHeaderProps & {
   onOpenMessages?: () => void;
   onOpenQuiz?: () => void;
   onOpenSpin?: () => void;
+  openPanels: Set<TogglePanel>;
+  onTogglePanel: (panel: TogglePanel) => void;
 };
 
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
@@ -36,6 +37,8 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
+  openPanels,
+  onTogglePanel,
 }) => {
   const [tabConfigs, setTabConfigs] = useState<
     Partial<Record<MainTab, RegisteredBentoSlotConfig>>
@@ -43,22 +46,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );
-
-  // Toggle panels — multiple can be open simultaneously
-  const [openPanels, setOpenPanels] = useState<Set<TogglePanel>>(new Set());
   const { currentUser } = useUser();
-
-  const togglePanel = useCallback((panel: TogglePanel) => {
-    setOpenPanels((prev) => {
-      const next = new Set(prev);
-      if (next.has(panel)) {
-        next.delete(panel);
-      } else {
-        next.add(panel);
-      }
-      return next;
-    });
-  }, []);
 
   const registerTabConfig = useCallback(
     (tab: MainTab, config: RegisteredBentoSlotConfig) => {
@@ -92,22 +80,10 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
            "Messages workspace"}
         </p>
 
-        {/* Persistent sidebar navigation */}
-        <SidebarRail
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          pwaStatus={pwaStatus}
-          onInstallApp={onInstallApp}
-          onApplyUpdate={onApplyUpdate}
-          onRetrySync={onRetrySync}
-          openPanels={openPanels}
-          onTogglePanel={togglePanel}
-        />
-
         {/* Main content area */}
         <main
           id="main-content"
-          className="workspace-stage workspace-stage--simplified workspace-stage--fullbleed workspace-stage--with-rail"
+          className="workspace-stage workspace-stage--simplified workspace-stage--fullbleed"
           tabIndex={-1}
         >
           <ProfilePinPanel />
@@ -122,7 +98,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
                     <button
                       type="button"
                       className="toggle-panel__close"
-                      onClick={() => togglePanel("messages")}
+                      onClick={() => onTogglePanel("messages")}
                       aria-label="Close messages"
                     >
                       ×
@@ -141,7 +117,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
                     <button
                       type="button"
                       className="toggle-panel__close"
-                      onClick={() => togglePanel("quiz")}
+                      onClick={() => onTogglePanel("quiz")}
                       aria-label="Close quiz"
                     >
                       ×
@@ -165,7 +141,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
                     <button
                       type="button"
                       className="toggle-panel__close"
-                      onClick={() => togglePanel("spin")}
+                      onClick={() => onTogglePanel("spin")}
                       aria-label="Close spin"
                     >
                       ×
