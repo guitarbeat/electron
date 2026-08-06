@@ -1,0 +1,3 @@
+refactor: optimize secondaryMemories array slicing
+
+Replaces inefficient .filter().slice(0,2) chained array methods with a for...of loop containing an early break when the condition is met. This ensures we stop evaluating once 2 items are gathered, significantly improving performance for large arrays.
