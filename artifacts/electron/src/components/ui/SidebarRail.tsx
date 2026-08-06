@@ -194,20 +194,6 @@ const SidebarRail: React.FC<SidebarRailProps> = ({
       {/* Profiles (pushed to bottom) */}
       <div className="sidebar-rail__section sidebar-rail__section--bottom">
         <div className="sidebar-rail__profiles">
-          <img
-            src={USER_PHOTOS.Aaron}
-            alt="Aaron"
-            className={`sidebar-rail__avatar ${currentUser === "Aaron" ? "sidebar-rail__avatar--active" : ""}`}
-            draggable="false"
-          />
-          <img
-            src={USER_PHOTOS.Electra}
-            alt="Electra"
-            className={`sidebar-rail__avatar ${currentUser === "Electra" ? "sidebar-rail__avatar--active" : ""}`}
-            draggable="false"
-          />
-        </div>
-        <div className="sidebar-rail__profile-item">
           <ProfileMenu />
         </div>
       </div>
