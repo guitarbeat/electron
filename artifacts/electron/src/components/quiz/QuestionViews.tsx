@@ -332,7 +332,7 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
             marginTop: 6,
             fontSize: "9px",
             color: "#888888",
-            fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+            fontFamily: 'var(--font-body)',
           }}
           role="status"
           aria-live="polite"

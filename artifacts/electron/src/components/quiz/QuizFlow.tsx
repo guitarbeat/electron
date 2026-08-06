@@ -40,7 +40,7 @@ interface QuizFlowInitialState {
 }
 
 const QUIZ_EMPTY_STATE_TEXT_STYLE = {
-  fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+  fontFamily: 'var(--font-body)',
   color: "#000080",
   fontWeight: "bold",
 } satisfies React.CSSProperties;
