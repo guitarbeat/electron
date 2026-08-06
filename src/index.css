@@ -306,6 +306,34 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* High-contrast focus state for Fire TV & Smart TV remote D-Pad navigation */
+  :focus-visible {
+    outline: 3px solid hsl(var(--primary)) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 16px -2px hsl(var(--primary) / 0.7) !important;
+  }
+
+  /* Minimum 44px hit bounds for TV Remote spatial navigation */
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  [role="button"] {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+/* Fallback for low-spec TV browsers without hardware backdrop blur support */
+@supports not (backdrop-filter: blur(1px)) {
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-sm,
+  .backdrop-blur {
+    background-color: hsl(var(--card) / 0.96) !important;
+  }
 }
 
 /**
