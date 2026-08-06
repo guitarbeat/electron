@@ -32,8 +32,30 @@ class PollingManager {
         return;
       }
 
-      for (const key of this.subscribers.keys()) {
-        void this.execute(key);
+      const keys = Array.from(this.subscribers.keys());
+      const BATCH_SIZE = 5;
+      const DELAY_MS = 50;
+
+      const processBatch = (startIndex: number) => {
+        if (typeof document !== "undefined" && document.hidden) {
+          return;
+        }
+
+        const endIndex = Math.min(startIndex + BATCH_SIZE, keys.length);
+        for (let i = startIndex; i < endIndex; i++) {
+          const key = keys[i];
+          if (key !== undefined) {
+             void this.execute(key);
+          }
+        }
+
+        if (endIndex < keys.length) {
+          setTimeout(() => processBatch(endIndex), DELAY_MS);
+        }
+      };
+
+      if (keys.length > 0) {
+        processBatch(0);
       }
     });
   }
