@@ -63,14 +63,6 @@ export const usePinPanel = (): PinPanelContextValue => {
   return context;
 };
 
-/** @deprecated Use useProfileSelection or usePinPanel */
-export const useProfilePin = (): ProfileSelectionContextValue &
-  PinPanelContextValue => {
-  const selection = useProfileSelection();
-  const panel = usePinPanel();
-  return { ...selection, ...panel };
-};
-
 export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
