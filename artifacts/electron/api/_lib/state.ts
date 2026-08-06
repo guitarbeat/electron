@@ -11,6 +11,13 @@ import {
 import { normalizeMovieRecord } from '../../src/services/content/movieRecords.ts';
 import type { PinRecord } from '../../src/services/content/pinHelpers.ts';
 import {
+  mockMovies,
+  mockSuggestions,
+  mockMessages,
+  mockMemories,
+  mockPlaces,
+} from '../../src/services/state/mockData.ts';
+import {
   appendDailySpinEntry,
   cloneQuizData,
   defaultQuizData,
@@ -133,22 +140,14 @@ const parseArrayScope = <T>(
   try {
     const parsed = parseJsonContent(content, context);
     if (!Array.isArray(parsed)) {
-      console.warn(`${context} was not an array; defaulting to empty state.`);
+      console.warn(`${context} was not an array; defaulting to seed state.`);
       return defaultContent;
     }
 
-    const normalized = parsed.flatMap((entry) => {
+    return parsed.flatMap((entry) => {
       const next = normalizeRecord(entry);
       return next ? [next] : [];
     });
-
-    if (normalized.length !== parsed.length) {
-      console.warn(
-        `Dropped ${parsed.length - normalized.length} invalid record(s) from ${context}.`
-      );
-    }
-
-    return normalized.length > 0 ? normalized : defaultContent;
   } catch (error) {
     console.error(`Failed to parse ${context}; defaulting to seed state.`, error);
     return defaultContent;
