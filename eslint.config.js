@@ -9,7 +9,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 const reactHooksRecommended = reactHooks.configs.flat.recommended;
 
 export default tseslint.config(
-  { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next'] },
+  { ignores: ['dist', 'scripts', 'docs', 'public', '.next', 'node_modules'] },
   {
     extends: [
       js.configs.recommended,
@@ -18,12 +18,12 @@ export default tseslint.config(
       react.configs.flat['jsx-runtime'],
       jsxA11y.flatConfigs.recommended,
     ],
-    files: ['**/*.{ts,tsx}'],
+    files: ['artifacts/electron/src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./artifacts/electron/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
