@@ -49,6 +49,11 @@ Command behavior:
 - In local Vite development, `VITE_DATABASE_URL` is accepted as a fallback when `DATABASE_URL` is not set.
 - If database configuration is missing, the app falls back to degraded local snapshot/outbox storage and mock seed arrays (`mockMovies`, `mockSuggestions`, `mockMemories`) instead of crashing.
 
+## Architecture Decisions (ADRs)
+
+Key architectural decisions are documented in `docs/decisions/`:
+- [ADR-001: Serverless Dependency Isolation, Neon Connection String Parsing, and Smart TV Spatial UX](file:///Users/aaron/Downloads/electron/docs/decisions/ADR-001-serverless-isolation-neon-and-tv-ux.md)
+
 ## Environment Variables
 
 Client-side variables used by the app:

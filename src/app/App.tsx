@@ -30,6 +30,8 @@ import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useTvMode } from "@/hooks/useTvMode";
+import { useTvNavigation } from "@/hooks/useTvNavigation";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
@@ -62,6 +64,8 @@ const App: React.FC = () => {
     handleInstallApp,
   } = usePwaRuntime();
   const { isMobile } = useViewport();
+  const { isTvMode } = useTvMode();
+  useTvNavigation(isTvMode);
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
@@ -235,7 +239,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
       <div
-        className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
+        className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}${isTvMode ? " app-shell--tv" : ""}`}
       >
         <a href="#main-content" className="skip-link">
           Skip to content
