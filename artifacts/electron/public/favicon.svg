@@ -1,22 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="fg" x1="14" x2="50" y1="14" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7dd3fc"/>
-      <stop offset=".5" stop-color="#38bdf8"/>
-      <stop offset="1" stop-color="#818cf8"/>
-    </linearGradient>
-    <linearGradient id="bolt" x1="19" x2="48" y1="12" y2="49" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fff"/>
-      <stop offset=".4" stop-color="#7dd3fc"/>
+    <linearGradient id="ring" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8"/>
       <stop offset="1" stop-color="#818cf8"/>
     </linearGradient>
   </defs>
-  <rect x="8" y="8" width="48" height="48" rx="12" fill="#05070e"/>
-  <path stroke="url(#fg)" stroke-linecap="round" stroke-width="5" d="M21 17V47"/>
-  <path stroke="url(#fg)" stroke-linecap="round" stroke-width="5" d="M21 19H45"/>
-  <path stroke="url(#bolt)" stroke-linecap="round" stroke-width="5" d="M21 33H37"/>
-  <path stroke="url(#fg)" stroke-linecap="round" stroke-width="5" d="M21 47H45"/>
-  <path stroke="url(#bolt)" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5" d="M43 19L31 33H39L25 47"/>
-  <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".9" stroke-width="2" d="M44 18L32 32.5H39.5L26 47"/>
-  <circle cx="46" cy="17" r="2" fill="#fff" fill-opacity=".95"/>
+  <!-- Dark circle background -->
+  <circle cx="32" cy="32" r="30" fill="#0a0e1a"/>
+  <!-- Accent ring -->
+  <circle cx="32" cy="32" r="26" stroke="url(#ring)" stroke-width="3" fill="none"/>
+  <!-- Play triangle -->
+  <path d="M26 20L48 32L26 44Z" fill="url(#ring)"/>
 </svg>
