@@ -3,11 +3,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import {
   appendSpinHistory,
   SPIN_HISTORY_MAX,
-} from '../../src/components/spin-wheel/lib/spinWheelEngine.ts';
-import {
   applyMatchmakerSwipe,
   undoMatchmakerSwipe,
-} from '../../src/components/matchmaker/matchmakerGame.ts';
+} from './gameHelpers.ts';
 import { normalizeMovieRecord } from '../../src/services/content/movieRecords.ts';
 import type { PinRecord } from '../../src/services/content/pinHelpers.ts';
 import {
