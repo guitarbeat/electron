@@ -50,19 +50,25 @@ const needsSsl = (url: string): boolean => {
   }
 };
 
+const cleanDatabaseUrl = (url: string): string => {
+  try {
+    const u = new URL(url);
+    u.searchParams.delete('channel_binding');
+    return u.toString();
+  } catch {
+    return url;
+  }
+};
+
 const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) throw new Error('DATABASE_URL is not configured.');
   if (!pool || poolUrl !== databaseUrl) {
     if (pool) void pool.end().catch(() => undefined);
-    // Upgrade sslmode=require → verify-full to suppress pg v9 deprecation warning
-    const resolvedUrl = databaseUrl.replace(
-      /([?&])sslmode=require(?=&|$)/,
-      '$1sslmode=verify-full'
-    );
-    const poolConfig: pg.PoolConfig = { connectionString: resolvedUrl };
-    if (needsSsl(resolvedUrl)) {
-      poolConfig.ssl = { rejectUnauthorized: true };
+    const cleanUrl = cleanDatabaseUrl(databaseUrl);
+    const poolConfig: pg.PoolConfig = { connectionString: cleanUrl };
+    if (needsSsl(cleanUrl)) {
+      poolConfig.ssl = { rejectUnauthorized: false };
     }
     pool = new Pool(poolConfig);
     poolUrl = databaseUrl;
