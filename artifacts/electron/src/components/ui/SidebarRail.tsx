@@ -4,10 +4,28 @@
  */
 import React from "react";
 import type { MainTab } from "@/shared/types";
+import { USER_PHOTOS } from "@/shared/types";
+import { useUser } from "@/app/useProviders";
 import ProfileMenu from "@/ui/ProfileMenu";
 import { MessageIcon } from "@/common/Icons";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import "./SidebarRail.css";
+
+// ── Icons ─────────────────────────────────────────────────────────
+
+const SearchIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
 
 // ── Icons ─────────────────────────────────────────────────────────
 
@@ -67,6 +85,7 @@ export interface SidebarRailProps {
   onRetrySync?: () => void;
   openPanels: Set<TogglePanel>;
   onTogglePanel: (panel: TogglePanel) => void;
+  onSearchFocus?: () => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────
@@ -76,13 +95,39 @@ const SidebarRail: React.FC<SidebarRailProps> = ({
   onTabChange,
   openPanels,
   onTogglePanel,
+  onSearchFocus,
 }) => {
+  const { currentUser } = useUser();
+
   return (
     <nav className="sidebar-rail" aria-label="Main navigation">
       {/* Brand */}
       <div className="sidebar-rail__brand">
         <span className="sidebar-rail__brand-glyph">◈</span>
         <span className="sidebar-rail__brand-label">Electron</span>
+      </div>
+
+      {/* Search + Add */}
+      <div className="sidebar-rail__section sidebar-rail__section--search">
+        <button
+          type="button"
+          className="sidebar-rail__item"
+          onClick={onSearchFocus}
+          aria-label="Search"
+        >
+          <span className="sidebar-rail__icon"><SearchIcon /></span>
+          <span className="sidebar-rail__label">Search</span>
+        </button>
+
+        <button
+          type="button"
+          className="sidebar-rail__item sidebar-rail__item--accent"
+          onClick={onSearchFocus}
+          aria-label="Add movie"
+        >
+          <span className="sidebar-rail__icon"><PlusIcon /></span>
+          <span className="sidebar-rail__label">Add</span>
+        </button>
       </div>
 
       {/* Primary tabs */}
@@ -146,8 +191,22 @@ const SidebarRail: React.FC<SidebarRailProps> = ({
         </button>
       </div>
 
-      {/* Profile (pushed to bottom) */}
+      {/* Profiles (pushed to bottom) */}
       <div className="sidebar-rail__section sidebar-rail__section--bottom">
+        <div className="sidebar-rail__profiles">
+          <img
+            src={USER_PHOTOS.Aaron}
+            alt="Aaron"
+            className={`sidebar-rail__avatar ${currentUser === "Aaron" ? "sidebar-rail__avatar--active" : ""}`}
+            draggable="false"
+          />
+          <img
+            src={USER_PHOTOS.Electra}
+            alt="Electra"
+            className={`sidebar-rail__avatar ${currentUser === "Electra" ? "sidebar-rail__avatar--active" : ""}`}
+            draggable="false"
+          />
+        </div>
         <div className="sidebar-rail__profile-item">
           <ProfileMenu />
         </div>

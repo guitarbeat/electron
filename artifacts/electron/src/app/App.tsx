@@ -285,6 +285,10 @@ const App: React.FC = () => {
           onRetrySync={handleRetryPendingSync}
           openPanels={openPanels}
           onTogglePanel={togglePanel}
+          onSearchFocus={() => {
+            const input = document.querySelector<HTMLInputElement>('.workspace-search__search-field');
+            input?.focus();
+          }}
         />
 
         <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
