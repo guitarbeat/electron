@@ -79,6 +79,25 @@ This ensures OpenCode behaves similarly to Claude Code with full workflow enforc
 - **Serverless Dependency Isolation**: Keep serverless function helpers in `api/_lib/` pure and decoupled from frontend UI/theme modules (`src/theme/*`, `src/components/*`). Never use path aliases (such as `@/*`) inside serverless handlers unless resolved by a serverless bundler.
 - **Composite TS Cache**: Use `tsc --build --force` in typecheck scripts to force declaration re-emission on CI/Vercel cached builds.
 
+### Vercel Platform Best Practices
+
+- Treat Vercel Functions as stateless + ephemeral (no durable RAM/FS, no background daemons); use Blob or marketplace integrations for preserving state
+- Edge Functions (standalone) are deprecated; prefer Vercel Functions
+- Don't start new projects on Vercel KV/Postgres (both discontinued); use Marketplace Redis/Postgres instead
+- Store secrets in Vercel Env Variables; not in git or `NEXT_PUBLIC_*`
+- Provision Marketplace native integrations with `vercel integration add` (CI/agent-friendly)
+- Sync env + project settings with `vercel env pull` / `vercel pull` when you need local/offline parity
+- Use `waitUntil` for post-response work; avoid the deprecated Function `context` parameter
+- Set Function regions near your primary data source; avoid cross-region DB/service roundtrips
+- Tune Fluid Compute knobs (e.g., `maxDuration`, memory/CPU) for long I/O-heavy calls (LLMs, APIs)
+- Use Runtime Cache for fast regional caching + tag invalidation (don't treat it as global KV)
+- Use Cron Jobs for schedules; cron runs in UTC and triggers your production URL via HTTP GET
+- Use Vercel Blob for uploads/media; use Edge Config for small, globally-read config
+- If Deployment Protection is enabled, use a bypass secret to directly access deployments
+- Add OpenTelemetry via `@vercel/otel` on Node; don't expect OTEL support on the Edge runtime
+- Enable Web Analytics + Speed Insights early
+- For durable agent loops or untrusted code: use Workflow (pause/resume/state) + Sandbox
+
 ## Development & Build Engineering Guardrails
 
 - **Monorepo Root `tsconfig.json` References**: Ensure root `tsconfig.json` lists all active subpackage paths (e.g. `./artifacts/electron`) in its `references` array. This ensures IDE TypeScript language servers resolve path aliases (`@/*`) correctly when opening source files directly.
