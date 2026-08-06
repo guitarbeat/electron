@@ -1,0 +1,458 @@
+/*
+ * TV-optimized styles for Smart TV browsers (Fire TV Silk, Samsung Internet TV, etc.)
+ *
+ * Detection strategy:
+ * - Fire TV Silk: pointer: coarse, hover: none, width >= 960px
+ * - Most Smart TVs: no fine pointer, no hover, large viewport
+ * - Also activated by adding `data-tv-mode` attribute to <html> for manual override
+ *
+ * Key adaptations:
+ * - Overscan-safe margins (48px inset)
+ * - Enlarged focus indicators for D-pad navigation
+ * - Larger interactive targets (min 56px)
+ * - Boosted font sizes for readability at 10ft viewing distance
+ * - Disabled hover-dependent interactions
+ * - Simplified animations (reduce motion for lower-powered hardware)
+ */
+
+@use '../../theme/breakpoints' as *;
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   TV MODE — matches Smart TV / Fire TV conditions
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* TV detection: large screen + coarse/no pointer + no hover capability */
+@media (min-width: 960px) and (hover: none), (min-width: 960px) and (pointer: coarse) {
+  /* ─── Overscan-safe area ─── */
+  :root {
+    --tv-overscan: 48px;
+    --tv-focus-width: 4px;
+    --tv-focus-color: var(--color-accent);
+    --tv-focus-glow: color-mix(in srgb, var(--color-accent) 50%, transparent);
+    --tv-target-min: 56px;
+    --tv-gap-scale: 1.5;
+  }
+
+  /* ─── Base Typography — 10ft viewing distance ─── */
+  body {
+    font-size: clamp(18px, 1.8vw, 24px);
+    line-height: 1.6;
+  }
+
+  :root {
+    --font-size-3xs: 0.75rem;
+    --font-size-2xs: 0.8125rem;
+    --font-size-xs: 0.875rem;
+    --font-size-sm: 1rem;
+    --font-size-base: 1.125rem;
+    --font-size-lg: 1.3rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 1.875rem;
+    --font-size-3xl: 2.25rem;
+    --font-size-4xl: 3rem;
+
+    /* Button label type boost */
+    --type-button-label-letter-spacing: 0.05em;
+    --type-tab-label-size: 1rem;
+    --type-eyebrow-size: 0.875rem;
+    --type-badge-size: 0.85rem;
+    --type-body-sm-size: 1rem;
+    --type-body-md-size: 1.125rem;
+    --type-caption-size: 0.875rem;
+    --type-poster-title-size: 1.3rem;
+  }
+
+  /* ─── Shell — overscan padding ─── */
+  .app-shell--viewport {
+    --app-shell-gutter: var(--tv-overscan);
+    padding-top: var(--tv-overscan);
+    padding-bottom: var(--tv-overscan);
+    padding-left: var(--tv-overscan);
+    padding-right: var(--tv-overscan);
+  }
+
+  /* ─── Global Focus Styles — thick glowing ring for D-pad ─── */
+  :where(button, a, input, textarea, select, [role='button'], [tabindex]):focus-visible {
+    outline: var(--tv-focus-width) solid var(--tv-focus-color) !important;
+    outline-offset: 3px !important;
+    box-shadow:
+      0 0 0 8px var(--tv-focus-glow),
+      0 0 24px var(--tv-focus-glow) !important;
+    border-radius: inherit;
+    transition: outline 0.1s ease, box-shadow 0.15s ease !important;
+    z-index: 100;
+    position: relative;
+  }
+
+  /* Focus state within scrollable areas — ensure visibility */
+  :where(button, a, [role='button'], [tabindex]):focus-visible {
+    scroll-margin: 40px;
+  }
+
+  /* ─── Buttons — enlarged hit targets ─── */
+  .ui-button {
+    min-height: var(--tv-target-min);
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .ui-button--sm {
+    min-height: 48px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9375rem;
+  }
+
+  .ui-button--lg {
+    min-height: 64px;
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+  }
+
+  /* Disable hover elevation on TV — only focus matters */
+  .ui-button:not(:disabled):hover:not(.ui-button--ghost) {
+    transform: none;
+    filter: none;
+  }
+
+  /* ─── Navigation Strip — larger targets ─── */
+  .ans {
+    --ans-h: 3.75rem;
+    --ans-font-size: 1rem;
+    padding: 0.5rem;
+  }
+
+  .ans__brand {
+    font-size: 1.4rem;
+    padding: 0 1rem;
+  }
+
+  .ans__btn {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .ans__btn-label {
+    font-size: 0.9375rem;
+  }
+
+  /* ─── MagicToggle — larger tap targets ─── */
+  .magic-toggle {
+    min-height: 48px;
+  }
+
+  .magic-toggle__option {
+    min-height: 44px;
+    padding: 0.5rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  /* ─── Floating Panel — position for TV visibility ─── */
+  .floating-workspace-panel {
+    /* Move to top-center for TV — easier to reach with D-pad */
+    bottom: auto !important;
+    top: var(--tv-overscan) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    right: auto !important;
+    max-width: 90vw;
+  }
+
+  .floating-panel__inner {
+    padding: 0.6rem 1rem;
+    gap: 0.75rem;
+  }
+
+  /* ─── Cards — bigger gaps, readable text ─── */
+  .movie-card,
+  .place-card,
+  .media-card {
+    min-height: 200px;
+  }
+
+  .movie-card__title,
+  .place-card__name,
+  .media-card__title {
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+
+  .movie-card__meta,
+  .place-card__details,
+  .media-card__subtitle {
+    font-size: 0.9375rem;
+  }
+
+  /* ─── Collection Grid — larger gaps for TV ─── */
+  .collection-grid,
+  .workspace-collection-grid {
+    gap: 1.5rem;
+  }
+
+  .movie-card-rail {
+    gap: 1.25rem;
+    scroll-padding: var(--tv-overscan);
+  }
+
+  /* ─── Workspace Stage — more breathing room ─── */
+  .workspace-stage {
+    gap: 1.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .workspace-stage--simplified {
+    gap: 1.75rem;
+  }
+
+  /* ─── Workspace Stack — TV-friendly max width ─── */
+  .app-workspace-stack {
+    gap: 1.5rem;
+    max-width: calc(100vw - var(--tv-overscan) * 2);
+  }
+
+  /* ─── Modals / Dialogs — larger on TV ─── */
+  [role="dialog"],
+  .modal-overlay__content {
+    max-width: min(720px, calc(100vw - var(--tv-overscan) * 2));
+    max-height: calc(100vh - var(--tv-overscan) * 2);
+    padding: 2rem;
+  }
+
+  [role="dialog"] h2,
+  .modal-overlay__content h2 {
+    font-size: 1.5rem;
+  }
+
+  /* ─── Form Fields — enlarged for TV input ─── */
+  input,
+  textarea,
+  select {
+    min-height: var(--tv-target-min);
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  /* ─── Disable hover-dependent features ─── */
+  .hover-card,
+  [data-hover-card],
+  .tooltip-trigger [data-state="open"],
+  .context-menu-trigger {
+    pointer-events: none;
+  }
+
+  /* Remove hover card tilt effects — distracting on TV */
+  .card-tilt-shell {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* ─── Scrolling — ensure cards are fully visible ─── */
+  * {
+    scroll-behavior: smooth;
+    scroll-snap-type: none;
+  }
+
+  /* ─── Reduce Motion — TVs have weaker GPUs ─── */
+  .app-shell::before,
+  .app-shell::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Reduce complex backdrop-filter usage on TV */
+  .ui-button {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* ─── Profile Menu — larger items ─── */
+  .profile-menu__item,
+  [role="menuitem"] {
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* ─── Status Chip — larger for readability ─── */
+  .ans__chip {
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+    min-height: 44px;
+  }
+
+  .ans__chip-action {
+    min-height: 36px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  /* ─── Suggestion Cards — TV readable ─── */
+  .suggestion-card,
+  .suggestion-stack {
+    min-height: 160px;
+  }
+
+  .suggestion-card__title {
+    font-size: 1.125rem;
+  }
+
+  .suggestion-card__body {
+    font-size: 1rem;
+  }
+
+  /* ─── Spin Wheel — ensure large enough on TV ─── */
+  .spin-wheel {
+    min-width: 320px;
+    min-height: 320px;
+  }
+
+  /* ─── Toast — larger and more visible ─── */
+  .toast,
+  [data-sonner-toast] {
+    font-size: 1rem;
+    padding: 1rem 1.5rem;
+    min-height: 56px;
+  }
+
+  /* ─── Workspace search — bigger input ─── */
+  .workspace-search-field input,
+  .workspace-autocomplete input {
+    min-height: 56px;
+    font-size: 1.125rem;
+  }
+
+  /* ─── Movie Details Modal — TV optimized ─── */
+  .movie-details-modal {
+    font-size: 1rem;
+  }
+
+  .movie-details-modal__title {
+    font-size: 1.75rem;
+  }
+
+  .movie-details-modal__plot,
+  .movie-details-modal__meta {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  /* ─── Messages — bigger bubbles ─── */
+  .message-bubble {
+    font-size: 1.0625rem;
+    padding: 0.875rem 1.25rem;
+    max-width: 70%;
+  }
+
+  .message-input textarea {
+    min-height: 56px;
+    font-size: 1.0625rem;
+  }
+
+  /* ─── Tabs — larger clickable area ─── */
+  [role="tab"] {
+    min-height: 48px;
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  /* ─── Radial Menu / FAB — larger for TV ─── */
+  .radial-fab {
+    width: 64px;
+    height: 64px;
+  }
+
+  .radial-menu__item {
+    min-width: 56px;
+    min-height: 56px;
+    font-size: 1rem;
+  }
+
+  /* ─── Pin Dialog — TV optimized ─── */
+  .pin-dialog__digit {
+    width: 56px;
+    height: 64px;
+    font-size: 1.5rem;
+  }
+
+  .pin-dialog__numpad button {
+    min-width: 64px;
+    min-height: 64px;
+    font-size: 1.25rem;
+  }
+
+  /* ─── Checkbox / Switch / Toggle — larger for TV ─── */
+  [role="checkbox"],
+  [role="switch"] {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* ─── Bottom Sheet — more visible handle ─── */
+  .bottom-sheet__handle {
+    width: 64px;
+    height: 6px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Manual TV mode override via data attribute
+   Apply same styles when data-tv-mode="true" on <html>
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root[data-tv-mode="true"] {
+  --tv-overscan: 48px;
+  --tv-focus-width: 4px;
+  --tv-focus-color: var(--color-accent);
+  --tv-focus-glow: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  --tv-target-min: 56px;
+  --tv-gap-scale: 1.5;
+  --font-size-3xs: 0.75rem;
+  --font-size-2xs: 0.8125rem;
+  --font-size-xs: 0.875rem;
+  --font-size-sm: 1rem;
+  --font-size-base: 1.125rem;
+  --font-size-lg: 1.3rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.875rem;
+  --font-size-3xl: 2.25rem;
+  --font-size-4xl: 3rem;
+  --type-button-label-letter-spacing: 0.05em;
+  --type-tab-label-size: 1rem;
+  --type-eyebrow-size: 0.875rem;
+  --type-badge-size: 0.85rem;
+  --type-body-sm-size: 1rem;
+  --type-body-md-size: 1.125rem;
+  --type-caption-size: 0.875rem;
+  --type-poster-title-size: 1.3rem;
+}
+
+/* When data-tv-mode is explicitly set, apply layout overrides without media query */
+[data-tv-mode="true"] .app-shell--viewport {
+  --app-shell-gutter: 48px;
+  padding: 48px;
+}
+
+[data-tv-mode="true"] :where(button, a, input, textarea, select, [role='button'], [tabindex]):focus-visible {
+  outline: 4px solid var(--tv-focus-color, var(--color-accent)) !important;
+  outline-offset: 3px !important;
+  box-shadow:
+    0 0 0 8px var(--tv-focus-glow, rgba(244, 114, 182, 0.5)),
+    0 0 24px var(--tv-focus-glow, rgba(244, 114, 182, 0.5)) !important;
+  z-index: 100;
+  position: relative;
+}
+
+[data-tv-mode="true"] body {
+  font-size: clamp(18px, 1.8vw, 24px);
+}
+
+[data-tv-mode="true"] .ui-button {
+  min-height: 56px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-tv-mode="true"] .ui-button:not(:disabled):hover:not(.ui-button--ghost) {
+  transform: none;
+  filter: none;
+}

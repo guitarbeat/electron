@@ -24,6 +24,9 @@ $breakpoint-2xl: 1024px;
 // Large desktop
 $breakpoint-3xl: 1100px;
 
+// Smart TV / Fire TV (large viewport, D-pad navigation)
+$breakpoint-tv: 960px;
+
 // Container max-width
 $container-max-width: 1480px;
 
@@ -61,5 +64,13 @@ $container-max-width: 1480px;
     @media (min-width: $breakpoint-2xl + 1) { @content; }
   } @else if $bp == '3xl' {
     @media (min-width: $breakpoint-3xl + 1) { @content; }
+  }
+}
+
+// TV detection mixin — large viewport + coarse/no pointer
+@mixin tv-mode {
+  @media (min-width: $breakpoint-tv) and (hover: none),
+         (min-width: $breakpoint-tv) and (pointer: coarse) {
+    @content;
   }
 }

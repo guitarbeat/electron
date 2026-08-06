@@ -316,7 +316,8 @@
 
   /* Minimum 44px hit bounds for TV Remote spatial navigation */
   button,
-  a,
+  a.btn,
+  a[role="button"],
   input[type="button"],
   input[type="submit"],
   [role="button"] {

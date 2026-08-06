@@ -11,6 +11,7 @@
 @use './styles/theme-shell';
 @use '../theme/glass-effects' as *;
 @use '../theme/color-utils' as *;
+@use './styles/tv-optimized';
 
 /*
  * App.scss — entry point for global styles.
