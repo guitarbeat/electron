@@ -55,22 +55,6 @@
   60%       { opacity: 0.6; transform: scale(0.8) rotate(270deg); }
 }
 
-/* ── Holographic border frame ── */
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 4px;
-  border-radius: 1.6rem;
-  border: 2.5px solid transparent;
-  background:
-    linear-gradient(var(--color-surface-0, #060819), var(--color-surface-0, #060819)) padding-box,
-    linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78) border-box;
-  background-size: 400% 400%;
-  pointer-events: none;
-  z-index: 99990;
-}
-
 /* ── Section / eyebrow labels → Orbitron + holo gradient ── */
 
 [class*="eyebrow"],
@@ -248,7 +232,6 @@ body::before {
 /* ── Reduced motion ── */
 
 @media (prefers-reduced-motion: reduce) {
-  body::before,
   [class*="eyebrow"],
   .fwp-panel::before,
   .fwp-toggle svg {

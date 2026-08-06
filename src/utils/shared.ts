@@ -1,4 +1,5 @@
 import type { Movie, User } from "../shared/types.ts";
+export { createValidator, validateAndThrow } from "./validation.ts";
 
 const SPACING_MD = "1rem";
 
@@ -55,7 +56,7 @@ export const areDeeplyEqual = <T>(left: T, right: T): boolean => {
   if (leftKeys.length !== rightKeys.length) return false;
   return leftKeys.every(
     (key) =>
-      Object.prototype.hasOwnProperty.call(rightObj, key) &&
+      Object.hasOwn(rightObj, key) &&
       areDeeplyEqual(leftObj[key], rightObj[key]),
   );
 };

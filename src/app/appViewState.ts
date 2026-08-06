@@ -61,10 +61,15 @@ export const readInitialAppViewState = (): StoredAppViewState => {
   const fromQuery = parseMainTab(search.get("tab"));
 
   const panelIsMessages = search.get("panel") === "messages";
-  return {
-    activeTab: fromHash ?? fromQuery ?? (panelIsMessages ? ("messages" as const) : null) ?? stored?.activeTab ?? "movies",
-    showMessages: false,
-  };
+  const activeTab =
+    fromHash ??
+    fromQuery ??
+    (panelIsMessages ? "messages" : undefined) ??
+    stored?.activeTab ??
+    "movies";
+  const showMessages = panelIsMessages || Boolean(stored?.showMessages);
+
+  return { activeTab, showMessages };
 };
 
 /** Resolve the tab to show on first load. */

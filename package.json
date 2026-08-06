@@ -14,7 +14,7 @@
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"!./artifacts/mockup-sandbox\" --filter \"./scripts\" --if-present run typecheck",
     "check-types": "pnpm run typecheck",
     "lint": "eslint . --max-warnings 0 || true",
-    "test": "pnpm -r --if-present run test"
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "private": true,
   "pnpm": {
@@ -27,6 +27,9 @@
     "@types/pg": "^8.20.0",
     "pg": "^8.20.0",
     "prettier": "^3.8.3",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsx": "catalog:",
     "typescript": "~5.9.3",
     "zod": "catalog:"
   },
