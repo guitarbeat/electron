@@ -1250,9 +1250,9 @@ export const bootstrapMissingScopeFiles = async (): Promise<StateScopeDiagnostic
     throw new Error('DATABASE_URL is not configured.');
   }
 
-  for (const scope of STATE_SCOPES) {
-    await readScopeStoredData(scope, { bypassCache: true });
-  }
+  await Promise.all(
+    STATE_SCOPES.map((scope) => readScopeStoredData(scope, { bypassCache: true }))
+  );
 
   invalidateSharedStateCache();
   return getStateScopeDiagnostics();
