@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/**/*.ts": {
-      "includeFiles": "{api/_lib,artifacts/electron/src}/**/*.ts"
+      "includeFiles": "{api/_lib,src,artifacts/electron/src}/**/*.ts"
     }
   },
   "headers": [
