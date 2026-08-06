@@ -26,7 +26,11 @@ import {
 } from "./providerContexts";
 
 const debugSession = (...args: unknown[]) => {
-  if (import.meta.env.DEV) {
+  if (
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    window.localStorage.getItem("debugSession") === "true"
+  ) {
     console.debug(...args);
   }
 };
