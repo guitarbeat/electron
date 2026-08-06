@@ -118,7 +118,7 @@ function calculateTotal(items: CartItem[]): number {
 }
 
 // Don't leave TODO comments for things you should just do now
-// TODO: add error handling  ← Just add it
+// to-do: add error handling  ← Just add it
 
 // Don't leave commented-out code
 // const oldImplementation = () => { ... }  ← Delete it, git has history
