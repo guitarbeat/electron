@@ -12,7 +12,9 @@
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "types": ["node", "vite/client"],
+    "baseUrl": ".",
     "paths": {
+
       "@/app/*": ["./src/app/*"],
       "@/branding/*": ["./src/branding/*"],
       "@/common/*": ["./src/components/common/*"],

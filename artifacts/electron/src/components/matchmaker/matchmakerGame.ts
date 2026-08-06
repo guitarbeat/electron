@@ -1,4 +1,5 @@
-import type { MatchmakerGame, Movie, User } from "@/shared/types";
+import type { MatchmakerGame, Movie, User } from "../../shared/types.ts";
+
 
 const MATCHMAKER_POOL_SIZE = 10;
 
