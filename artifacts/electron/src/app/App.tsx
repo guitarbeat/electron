@@ -47,8 +47,10 @@ import { useTvSpatialNavigation } from "@/hooks/useTvSpatialNavigation";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
+import SidebarRail from "@/components/ui/SidebarRail";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import "./App.scss";
+
 
 const AppWorkspaceShell = React.lazy(
   () => import("@/app/AppWorkspaceShell"),

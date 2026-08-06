@@ -85,13 +85,18 @@
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.ups-card:hover:not(:disabled) {
+.ups-card:hover:not(:disabled),
+.ups-card:focus-visible:not(:disabled) {
   transform: scale(1.06);
+  outline: 3px solid #ffb703;
+  outline-offset: 6px;
+  border-radius: 12px;
 }
 
 .ups-card:active:not(:disabled) {
   transform: scale(0.97);
 }
+
 
 .ups-card:disabled {
   opacity: 0.5;
