@@ -34,12 +34,12 @@ export function usePwaRuntime(): PwaRuntimeResult {
   const updateToastIdRef = useRef<string | null>(null);
   const updateRegistrationRef = useRef<ServiceWorkerRegistration | null>(null);
   const offlineToastIdRef = useRef<string | null>(null);
+  const hasReloadedRef = useRef(false);
 
   // Service worker: watch for updates
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     let isMounted = true;
-    let hasReloaded = false;
 
     const showUpdateToast = (reg: ServiceWorkerRegistration) => {
       setHasUpdateReady(true);
@@ -73,8 +73,8 @@ export function usePwaRuntime(): PwaRuntimeResult {
       .catch(() => undefined);
 
     const onControllerChange = () => {
-      if (hasReloaded) return;
-      hasReloaded = true;
+      if (hasReloadedRef.current) return;
+      hasReloadedRef.current = true;
       setHasUpdateReady(false);
       window.location.reload();
     };

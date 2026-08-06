@@ -92,7 +92,10 @@ export const calculateQuizResults = (
 
   const percentages: Record<QuizCharacter, number> = CHARACTERS.reduce(
     (acc, char) => {
-      acc[char] = Math.round((scores[char] / totalScore) * 100) || 0;
+      acc[char] =
+        totalScore > 0
+          ? Math.round((scores[char] / totalScore) * 100) || 0
+          : 0;
       return acc;
     },
     {} as Record<QuizCharacter, number>,
@@ -103,7 +106,7 @@ export const calculateQuizResults = (
   // Also default to "Neither" if total score is 0
   const topScore = scores[topCharacter];
   const isNeither =
-    totalScore === 0 || (totalScore > 0 && topScore / totalScore < 0.35);
+    totalScore <= 0 || (totalScore > 0 && topScore / totalScore < 0.35);
 
   const result: QuizResult = {
     character: isNeither ? "Neither" : topCharacter,

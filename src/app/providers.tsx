@@ -277,6 +277,62 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       );
   }, [refreshSession]);
 
+  const setCurrentUser = useCallback(
+    async (user: User | null, pin?: string) => {
+      if (user) {
+        debugSession("[session] Logging in as:", user);
+      } else {
+        debugSession("[session] Logging out");
+      }
+      try {
+        const response = await fetch("/api/session/profile", {
+          method: user ? "POST" : "DELETE",
+          credentials: "include",
+          cache: "no-store",
+          headers: user
+            ? {
+                "Content-Type": "application/json",
+              }
+            : undefined,
+          body: user
+            ? JSON.stringify({ user, ...(pin ? { pin } : {}) })
+            : undefined,
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          debugSession(
+            "[session] Profile update rejected (status",
+            response.status,
+            ") — refreshing session",
+          );
+          await refreshSession();
+          return false;
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            await readApiErrorMessage(
+              response,
+              "Failed to update profile session.",
+            ),
+          );
+        }
+
+        const session = (await response.json()) as SessionState;
+        debugSession("[session] Profile update succeeded:", session);
+        applySessionState(session);
+        return true;
+      } catch (error) {
+        debugSession("[session] Profile update error:", error);
+        throw new Error(
+          getErrorMessage(error, "Profile login is unavailable right now."),
+          { cause: error },
+        );
+      }
+    },
+    [applySessionState, refreshSession],
+  );
+
   const value = useMemo(
     () => ({
       hasAccess,
@@ -284,68 +340,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       usersMissingPins,
       isSessionLoading,
       currentUser,
-      setCurrentUser: async (user: User | null, pin?: string) => {
-        if (user) {
-          debugSession("[session] Logging in as:", user);
-        } else {
-          debugSession("[session] Logging out");
-        }
-        try {
-          const response = await fetch("/api/session/profile", {
-            method: user ? "POST" : "DELETE",
-            credentials: "include",
-            cache: "no-store",
-            headers: user
-              ? {
-                  "Content-Type": "application/json",
-                }
-              : undefined,
-            body: user
-              ? JSON.stringify({ user, ...(pin ? { pin } : {}) })
-              : undefined,
-          });
-
-          if (response.status === 401 || response.status === 403) {
-            debugSession(
-              "[session] Profile update rejected (status",
-              response.status,
-              ") — refreshing session",
-            );
-            await refreshSession();
-            return false;
-          }
-
-          if (!response.ok) {
-            throw new Error(
-              await readApiErrorMessage(
-                response,
-                "Failed to update profile session.",
-              ),
-            );
-          }
-
-          const session = (await response.json()) as SessionState;
-          debugSession("[session] Profile update succeeded:", session);
-          applySessionState(session);
-          return true;
-        } catch (error) {
-          debugSession("[session] Profile update error:", error);
-          throw new Error(
-            getErrorMessage(error, "Profile login is unavailable right now."),
-            { cause: error },
-          );
-        }
-      },
+      setCurrentUser,
       refreshSession,
     }),
     [
-      applySessionState,
       currentUser,
       hasAccess,
       isSessionLoading,
       pinProtectedUsers,
-      usersMissingPins,
       refreshSession,
+      setCurrentUser,
+      usersMissingPins,
     ],
   );
 

@@ -35,7 +35,6 @@ export const useModalBehavior = ({
   const { playPop } = useAudio();
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
-
   // Store onClose and closeDisabled in refs so the effect only depends on
   // `isOpen`. This prevents the scroll-lock effect from tearing down and
   // recapturing `prevOverflow` (as "hidden") when callers pass unstable
