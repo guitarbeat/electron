@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useToast } from "@/app/useProviders";
 import type { Message } from "@/shared/types";
-import { spacing, typography } from "@/theme/tokens";
+import { colors, radius, spacing, typography } from "@/theme/tokens";
 import ConfirmDialog from "@/ui/ConfirmDialog";
 import SyncBanner from "@/ui/SyncBanner";
 import { useMessages } from "@/hooks/useMessages";
@@ -91,17 +91,16 @@ const MessageBoard: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             height: "100%",
-            backgroundColor: "#ffffff",
-            borderRadius: "20px",
+            backgroundColor: colors.surface,
+            borderRadius: radius.lg,
             overflow: "hidden",
             boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+            fontFamily: typography.fontFamily.body.join(", "),
           }}
         >
           <div
             style={{
-              background: "rgba(249, 249, 249, 0.94)",
+              background: colors.surface0,
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
               padding: `${spacing.sm} ${spacing.md}`,
@@ -109,7 +108,7 @@ const MessageBoard: React.FC = () => {
               alignItems: "center",
               justifyContent: "space-between",
               minHeight: "52px",
-              borderBottom: "0.5px solid rgba(0, 0, 0, 0.1)",
+              borderBottom: `0.5px solid ${colors.borderSecondary}`,
               gap: spacing.sm,
             }}
           >
@@ -119,8 +118,8 @@ const MessageBoard: React.FC = () => {
                 style={{
                   fontFamily: typography.fontFamily.heading.join(", "),
                   fontWeight: typography.fontWeight.semibold,
-                  fontSize: "17px",
-                  color: "#000000",
+                  fontSize: typography.fontSize.base,
+                  color: colors.textPrimary,
                   letterSpacing: "-0.01em",
                 }}
               >
@@ -128,8 +127,8 @@ const MessageBoard: React.FC = () => {
               </div>
               <div
                 style={{
-                  fontSize: "12px",
-                  color: "#8e8e93",
+                  fontSize: typography.fontSize.xs,
+                  color: colors.textTertiary,
                 }}
               >
                 {currentUser ?? "Guest mode"}
@@ -139,8 +138,8 @@ const MessageBoard: React.FC = () => {
               style={{
                 minWidth: "52px",
                 textAlign: "right",
-                fontSize: "13px",
-                color: "#8e8e93",
+                fontSize: typography.fontSize.sm,
+                color: colors.textTertiary,
               }}
             >
               {messages.length} total
@@ -178,15 +177,14 @@ const MessageBoard: React.FC = () => {
           ) : (
             <div
               style={{
-                background: "#f5f5f5",
+                background: colors.surface2,
                 padding: "10px 20px",
-                borderTop: "0.5px solid rgba(0, 0, 0, 0.1)",
+                borderTop: `0.5px solid ${colors.borderSecondary}`,
                 paddingBottom: "max(env(safe-area-inset-bottom), 12px)",
                 textAlign: "center",
-                fontSize: "13px",
-                color: "#8e8e93",
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+                fontSize: typography.fontSize.sm,
+                color: colors.textTertiary,
+                fontFamily: typography.fontFamily.body.join(", "),
               }}
             >
               Select a profile above to send a message

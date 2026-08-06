@@ -11,6 +11,7 @@ import {
   MediaCardSubtext,
   MediaCardSuccessBadge,
   MediaCardTitle,
+  MediaCardTypeBadge,
 } from "./MediaCardParts";
 
 interface MediaCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -55,4 +56,5 @@ export {
   MediaCardRatingBadge,
   MediaCardSuccessBadge,
   MediaCardStatusBadge,
+  MediaCardTypeBadge,
 };

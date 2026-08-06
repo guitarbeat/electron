@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer, useRef } from "react";
 import type { User } from "@/shared/types";
-import { isFocusWithin } from "@/components/ui/lib/modalPrimitives";
+import { isFocusWithin, trapFocusOnTab } from "@/components/ui/lib/modalPrimitives";
 import { useAudio } from "@/hooks/useAudio";
 import Button from "@/components/ui/Button";
 import { getErrorMessage, consoleError } from "@/utils";
@@ -68,6 +68,10 @@ const PinDialog: React.FC<PinDialogProps> = ({
       if (event.key === "Escape" && isFocusWithin(formRef.current)) {
         event.preventDefault();
         onCancel();
+        return;
+      }
+      if (event.key === "Tab" && isFocusWithin(formRef.current)) {
+        trapFocusOnTab(event, formRef.current);
       }
     };
     window.addEventListener("keydown", handleKeyDown);

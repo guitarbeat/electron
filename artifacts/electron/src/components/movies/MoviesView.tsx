@@ -23,6 +23,7 @@ import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
+import { filterMoviesByMediaType, isTvSeries, type MediaTypeFilter } from "./lib/movieType";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import { createPortal } from "react-dom";
 import {
@@ -127,9 +128,14 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     });
     return memoriesByMovieId;
   }, [memories, movies]);
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("all");
+  const filteredMovies = useMemo(
+    () => filterMoviesByMediaType(movies, mediaTypeFilter),
+    [movies, mediaTypeFilter],
+  );
   const sections = useMemo(
-    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
-    [movies, pendingSuggestions, sortOrder],
+    () => buildMovieSections(filteredMovies, pendingSuggestions, sortOrder),
+    [filteredMovies, pendingSuggestions, sortOrder],
   );
 
   const movieStats = useMemo(
@@ -323,6 +329,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             togglePin: toggleMemoryPin,
           }}
           sectionIds={MOVIE_SECTION_IDS}
+          mediaTypeFilter={mediaTypeFilter}
+          onMediaTypeFilterChange={setMediaTypeFilter}
+          totalMoviesCount={movies.filter((m) => !isTvSeries(m)).length}
+          totalSeriesCount={movies.filter((m) => isTvSeries(m)).length}
         />
         {movieToDelete && (
           <ConfirmDialog

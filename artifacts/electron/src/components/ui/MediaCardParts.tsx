@@ -163,3 +163,20 @@ export const MediaCardStatusBadge: React.FC<{
     {label}
   </div>
 );
+
+export const MediaCardTypeBadge: React.FC<{
+  type: "movie" | "series";
+  className?: string;
+}> = ({ type, className = "" }) => (
+  <div
+    className={`media-card__type-badge media-card__type-badge--${type} ${className}`.trim()}
+    aria-label={type === "series" ? "TV Series" : "Movie"}
+  >
+    <span className="media-card__type-badge-icon">
+      {type === "series" ? "📺" : "🎬"}
+    </span>
+    <span className="media-card__type-badge-label">
+      {type === "series" ? "TV Series" : "Movie"}
+    </span>
+  </div>
+);

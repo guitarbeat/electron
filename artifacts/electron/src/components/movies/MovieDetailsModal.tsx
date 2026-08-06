@@ -53,6 +53,8 @@ function buildGalleryPhotos(
   return photos.slice(0, 5);
 }
 
+import { isTvSeries } from "./lib/movieType";
+
 interface MovieDetailsModalProps {
   movie: Movie;
   memories?: SharedMemory[];
@@ -254,10 +256,11 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const shouldShowPoster = Boolean(movie.posterUrl) && !hasPosterError;
   const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || "No Poster")}?fontSize=18&width=400&height=600`;
   const metadataItems = [
+    isTvSeries(movie) ? "📺 TV Series" : "🎬 Movie",
     movie.year,
     movie.runtime,
     movie.genre?.split(",")[0]?.trim(),
-    movie.category,
+    movie.category && movie.category !== "TV Series" ? movie.category : null,
     movie.director ? `Dir. ${movie.director}` : null,
   ].filter(Boolean) as string[];
   const canManageMemories = Boolean(
@@ -350,19 +353,35 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
           <div className="movie-details-modal__poster-shell">
             {shouldShowPoster ? (
-              <img
-                src={movie.posterUrl}
-                alt={`${movie.title} poster`}
-                className="movie-details-modal__poster"
-                onError={() => setHasPosterError(true)}
-              />
+              <>
+                <img
+                  src={movie.posterUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className="movie-details-modal__poster-bg"
+                />
+                <img
+                  src={movie.posterUrl}
+                  alt={`${movie.title} poster`}
+                  className="movie-details-modal__poster"
+                  onError={() => setHasPosterError(true)}
+                />
+              </>
             ) : !hasCatError ? (
-              <img
-                src={catUrl}
-                alt={`A cat representing ${movie.title}`}
-                className="movie-details-modal__poster"
-                onError={() => setHasCatError(true)}
-              />
+              <>
+                <img
+                  src={catUrl}
+                  alt=""
+                  aria-hidden="true"
+                  className="movie-details-modal__poster-bg"
+                />
+                <img
+                  src={catUrl}
+                  alt={`A cat representing ${movie.title}`}
+                  className="movie-details-modal__poster"
+                  onError={() => setHasCatError(true)}
+                />
+              </>
             ) : (
               <div className="movie-details-modal__poster movie-details-modal__poster--fallback">
                 No Poster Available
@@ -482,17 +501,6 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 ) : null}
               </div>
 
-              {/* Interactive folder gallery — opens to reveal movie stills and
-                  memory photos. Photos come from memory imageUrls, the movie
-                  poster, and cinematic Unsplash fallbacks. */}
-              <InteractiveFolderGallery
-                photos={buildGalleryPhotos(memories, movie)}
-                folderName={`${movie.title}.gallery`}
-                dragHintText="Drag any photo down to close"
-                className="movie-details-modal__gallery"
-                accentColor="var(--color-accent)"
-              />
-
               {currentUser && onAddMemory ? (
                 <div className="movie-details-modal__composer-shell">
                   <p className="movie-details-modal__composer-copy">
@@ -520,6 +528,17 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                   />
                 </div>
               ) : null}
+
+              {/* Interactive folder gallery — opens to reveal movie stills and
+                  memory photos. Photos come from memory imageUrls, the movie
+                  poster, and cinematic Unsplash fallbacks. */}
+              <InteractiveFolderGallery
+                photos={buildGalleryPhotos(memories, movie)}
+                folderName={`${movie.title}.gallery`}
+                dragHintText="Drag any photo down to close"
+                className="movie-details-modal__gallery"
+                accentColor="var(--color-accent)"
+              />
 
               {canManageMemories ? (
                 memories.length > 0 ? (

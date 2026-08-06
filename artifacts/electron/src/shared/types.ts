@@ -55,6 +55,7 @@ export interface Movie {
   genre?: string;
   director?: string;
   category?: string; // e.g. "Humor", "Action", "Drama"
+  mediaType?: "movie" | "series";
 }
 
 export interface MovieSuggestion {

@@ -11,6 +11,10 @@ import { spacing } from '@/theme/tokens';
 import SuggestionCard from '@/components/movies/SuggestionCard';
 import MovieCard from '@/components/movies/MovieCard';
 import type { MovieSections } from '@/components/movies/lib/movieSections';
+import WorkspaceCollectionLoading from '@/components/ui/WorkspaceCollectionLoading';
+
+import MagicToggle from '@/components/ui/MagicToggle';
+import { isTvSeries, type MediaTypeFilter } from '@/components/movies/lib/movieType';
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -43,6 +47,10 @@ interface Props {
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
   sectionIds?: MovieSectionIds;
+  mediaTypeFilter?: MediaTypeFilter;
+  onMediaTypeFilterChange?: (filter: MediaTypeFilter) => void;
+  totalMoviesCount?: number;
+  totalSeriesCount?: number;
 }
 
 const SK_MOBILE = ['m1', 'm2', 'm3', 'm4'];
@@ -64,6 +72,10 @@ const MovieSectionBody: React.FC<Props> = ({
   onToggleError,
   actions,
   sectionIds,
+  mediaTypeFilter = 'all',
+  onMediaTypeFilterChange,
+  totalMoviesCount = 0,
+  totalSeriesCount = 0,
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
   const isEmpty = (arr: unknown[]) => arr.length === 0;
@@ -118,21 +130,8 @@ const MovieSectionBody: React.FC<Props> = ({
     </div>
   );
 
-  // ── Loading skeleton ──────────────────────────────────────────────────────
   if (showInitialLoading) {
-    return (
-      <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
-        <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
-          <CollectionEmptyState padding={spacing.xl} className="collection-empty-state--tight">
-            <span style={{ fontSize: '1.75rem', lineHeight: 1, opacity: 0.7 }} aria-hidden="true">🍿</span>
-            <strong>Loading your movies</strong>
-          </CollectionEmptyState>
-          <div style={{ display: 'grid', gridTemplateColumns: 'inherit', gap: 'inherit' }}>
-            {sk.map((key) => <MovieCardSkeleton key={key} />)}
-          </div>
-        </div>
-      </CollectionGrid>
-    );
+    return <WorkspaceCollectionLoading tab="movies" minColumnWidth={GRID} />;
   }
 
   const isQueueEmpty = isEmpty(sections.queue) && isEmpty(sections.suggestions) && !isSuggestionsLoading;
@@ -140,6 +139,20 @@ const MovieSectionBody: React.FC<Props> = ({
   // ── Full section body ─────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
+      {onMediaTypeFilterChange && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.xs }}>
+          <MagicToggle
+            options={[
+              { value: 'all', label: 'All Format' },
+              { value: 'movie', label: `🎬 Movies (${totalMoviesCount})` },
+              { value: 'series', label: `📺 TV Series (${totalSeriesCount})` },
+            ]}
+            activeValue={mediaTypeFilter}
+            onChange={(v) => onMediaTypeFilterChange(v as MediaTypeFilter)}
+            ariaLabel="Filter by media type"
+          />
+        </div>
+      )}
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
         isSuggestionsLoading && isEmpty(sections.suggestions) ? (
           <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>

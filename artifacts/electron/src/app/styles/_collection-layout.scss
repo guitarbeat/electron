@@ -170,32 +170,22 @@ section[id^="places-section-"] {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin: 0 0 0.75rem;
-  font-family: var(--font-interface, var(--font-body, sans-serif));
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
+  margin: 0 0 1rem;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--color-text-primary);
   text-shadow: none;
 
   &::after {
-    content: '';
-    flex: 1;
-    min-width: 1.5rem;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-border) 80%, transparent),
-      transparent 85%
-    );
-    border-radius: 1px;
-    opacity: 0.6;
+    display: none;
   }
 
   @media (max-width: 640px) {
-    margin-bottom: 0.5rem;
-    font-size: 0.625rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
   }
 }
 

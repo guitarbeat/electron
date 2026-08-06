@@ -16,7 +16,7 @@ import { useCollection } from "../useCollection";
 const POLLING_INTERVAL = 15000;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
-  const { poster, year, plot, imdbRating, runtime, genre, director } = metadata;
+  const { poster, year, plot, imdbRating, runtime, genre, director, type } = metadata;
   const result: Partial<Movie> = {};
   if (poster && isValidUrl(poster)) result.posterUrl = poster;
   if (year) result.year = year;
@@ -26,6 +26,8 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   if (genre && Array.isArray(genre))
     result.genre = sanitizeInput(genre.join(", "));
   if (director) result.director = sanitizeInput(director);
+  if (type === "series" || type === "movie") result.mediaType = type;
+  if (type === "series") result.category = "TV Series";
   return result;
 };
 
@@ -142,6 +144,8 @@ export const useMovies = (
         addedBy: currentUser,
         watchedBy: [],
         createdAt: new Date().toISOString(),
+        mediaType: selectedResult?.type,
+        category: selectedResult?.type === "series" ? "TV Series" : undefined,
       };
 
       await performMutation(

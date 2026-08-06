@@ -1,106 +1,52 @@
-/* Theme-aware shell overrides and workspace polish — extracted from App.scss */
+/* Theme-aware shell overrides — clean streaming aesthetic */
 
 /* ============================================================================
    Theme-aware shell (palette from themes.ts via applyTheme)
    ============================================================================ */
 
-body[data-theme='movies'] {
-  background-image:
-    radial-gradient(circle at 14% 18%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 26%),
-    radial-gradient(circle at 84% 12%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0%, transparent 22%),
-    radial-gradient(circle at 52% 0%, color-mix(in srgb, var(--color-accent-light) 10%, transparent) 0%, transparent 24%),
-    radial-gradient(circle at 48% 100%, color-mix(in srgb, var(--color-tertiary) 14%, transparent) 0%, transparent 34%),
-    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 5%, transparent) 0%, transparent 12%),
-    var(--gradient-shell);
-}
-
+body[data-theme='movies'],
 body[data-theme='places'] {
-  background-image:
-    radial-gradient(circle at 16% 16%, color-mix(in srgb, var(--color-accent) 17%, transparent) 0%, transparent 24%),
-    radial-gradient(circle at 82% 10%, color-mix(in srgb, var(--color-secondary) 15%, transparent) 0%, transparent 22%),
-    radial-gradient(circle at 78% 82%, color-mix(in srgb, var(--color-tertiary) 14%, transparent) 0%, transparent 24%),
-    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-accent-light) 9%, transparent) 0%, transparent 22%),
-    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 5%, transparent) 0%, transparent 12%),
-    var(--gradient-shell);
+  background-image: var(--gradient-shell);
 }
 
 .app-shell {
-  background:
-    radial-gradient(ellipse at top, color-mix(in srgb, var(--color-accent-light) 9%, transparent) 0%, transparent 34%),
-    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 4%, transparent) 0%, transparent 12%),
-    var(--gradient-shell);
+  background: var(--gradient-shell);
 }
 
-/* ── Ambient overlay pseudo-elements (fixed decorative gradients) ── */
+/* ── Subtle top-edge highlight (streaming hero glow) ── */
 
-.app-shell::before,
-.app-shell::after {
+.app-shell::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-}
-
-.app-shell::before {
   background:
-    radial-gradient(circle at 15% 8%, rgba(125, 211, 252, 0.1) 0%, transparent 25%),
-    radial-gradient(circle at 85% 8%, rgba(244, 114, 182, 0.14) 0%, transparent 28%),
-    radial-gradient(ellipse 60% 45% at 85% 10%, rgba(244, 114, 182, 0.11) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 15% 8%, rgba(125, 211, 252, 0.08) 0%, transparent 65%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 18%);
-  mix-blend-mode: screen;
-  opacity: 0.65;
+    radial-gradient(ellipse 80% 30% at 50% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 70%);
+  opacity: 0.6;
 }
 
 .app-shell::after {
-  background:
-    linear-gradient(
-      118deg,
-      transparent 10%,
-      rgba(255, 255, 255, 0.08) 34%,
-      rgba(255, 210, 150, 0.04) 40%,
-      transparent 54%
-    );
-  opacity: 0.18;
-  transform: translate3d(-16%, 0, 0);
-  animation: none;
+  display: none;
 }
 
-/* ── Per-tab ambient workspace glow ────────────────────────────── */
+/* ── Remove per-tab ambient workspace glows ─────────────────────── */
 
 .app-workspace-stack--movies::before,
 .app-workspace-stack--places::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse 60% 45% at 85% 10%, rgba(244, 114, 182, 0.11) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 15% 8%, rgba(125, 211, 252, 0.08) 0%, transparent 65%);
+  display: none;
 }
 
-.app-workspace-stack--places::before {
-  background:
-    radial-gradient(ellipse 60% 45% at 85% 10%, rgba(167, 139, 250, 0.11) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 15% 8%, rgba(45, 212, 191, 0.09) 0%, transparent 65%);
-}
+/* ── Card surfaces — clean, opaque ── */
 
 .ui-control-surface,
 .places-map-card,
 .ui-card {
   border-color: var(--color-border) !important;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-text-primary) 8%, transparent) 0%, transparent 16%),
-    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--color-accent-light) 14%, transparent) 0%, transparent 26%),
-    var(--gradient-card) !important;
-  box-shadow:
-    var(--shell-panel-shadow),
-    inset 0 1px 0 color-mix(in srgb, var(--color-text-primary) 6%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--color-tertiary) 22%, transparent) !important;
-  backdrop-filter: blur(8px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+  background: var(--gradient-card) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* Queue workspace: no tinted panel — list sits on the shell background */

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Spinner } from "@/common/Icons";
 import { MAX_MESSAGE_LENGTH, getErrorMessage } from "@/utils";
 import type { User } from "@/shared/types";
-import { spacing } from "@/theme/tokens";
+import { colors, radius, spacing, typography } from "@/theme/tokens";
 import { shouldSubmitMessageOnKeyDown } from "./lib/messageUtils";
 
 interface MessageInputProps {
@@ -81,9 +81,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <div
       style={{
-        background: "#f5f5f5",
+        background: colors.surface2,
         padding: `${spacing.sm} ${spacing.md}`,
-        borderTop: "0.5px solid rgba(0, 0, 0, 0.1)",
+        borderTop: `0.5px solid ${colors.borderSecondary}`,
         paddingBottom: "max(env(safe-area-inset-bottom), 12px)",
       }}
     >
@@ -108,9 +108,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
             style={{
               width: "44px",
               height: "44px",
-              borderRadius: "50%",
+              borderRadius: radius.full,
               backgroundColor: "transparent",
-              color: "#8e8e93",
+              color: colors.textTertiary,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -143,13 +143,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
               style={{
                 width: "100%",
                 padding: "8px 40px 8px 16px",
-                backgroundColor: "#ffffff",
-                border: "1px solid #e5e5ea",
-                borderRadius: "18px",
-                color: "#000000",
-                fontSize: "17px",
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+                backgroundColor: colors.surface,
+                border: `1px solid ${colors.borderSubtle}`,
+                borderRadius: radius.lg,
+                color: colors.textPrimary,
+                fontSize: typography.fontSize.base,
+                fontFamily: typography.fontFamily.body.join(", "),
                 lineHeight: 1.25,
                 resize: "none",
                 minHeight: "44px",
@@ -163,10 +162,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <div
               style={{
                 marginTop: "6px",
-                fontSize: "12px",
-                color: "#8e8e93",
-                fontFamily:
-                  '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+                fontSize: typography.fontSize.xs,
+                color: colors.textTertiary,
+                fontFamily: typography.fontFamily.body.join(", "),
               }}
             >
               Enter to send. Shift+Enter for a new line.
@@ -181,11 +179,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
                   fontSize: "11px",
                   color:
                     content.length >= MAX_MESSAGE_LENGTH
-                      ? "#ff3b30"
-                      : "#8e8e93",
+                      ? colors.error
+                      : colors.textTertiary,
                   pointerEvents: "none",
-                  fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+                  fontFamily: typography.fontFamily.body.join(", "),
                 }}
               >
                 {MAX_MESSAGE_LENGTH - content.length}
@@ -205,11 +202,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
             style={{
               width: "44px",
               height: "44px",
-              borderRadius: "50%",
+              borderRadius: radius.full,
               backgroundColor:
-                showSendButton && currentUser ? "#007aff" : "transparent",
+                showSendButton && currentUser ? colors.accent : "transparent",
               border: "none",
-              color: showSendButton && currentUser ? "#ffffff" : "#8e8e93",
+              color: showSendButton && currentUser ? colors.textPrimary : colors.textTertiary,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -229,7 +226,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           >
             {isSubmitting ? (
               <Spinner
-                style={{ width: "18px", height: "18px", color: "#ffffff" }}
+                style={{ width: "18px", height: "18px", color: colors.textPrimary }}
               />
             ) : (
               <svg
@@ -241,7 +238,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               >
                 <path
                   d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
-                  stroke={showSendButton && currentUser ? "#ffffff" : "#8e8e93"}
+                  stroke={showSendButton && currentUser ? colors.textPrimary : colors.textTertiary}
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -256,13 +253,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
             role="alert"
             aria-live="polite"
             style={{
-              color: "#ff3b30",
-              fontSize: "13px",
+              color: colors.error,
+              fontSize: typography.fontSize.sm,
               padding: `${spacing.xs} ${spacing.sm}`,
-              backgroundColor: "rgba(255, 59, 48, 0.1)",
-              borderRadius: "8px",
-              fontFamily:
-                '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              borderRadius: radius.sm,
+              fontFamily: typography.fontFamily.body.join(", "),
             }}
           >
             {submitError}
