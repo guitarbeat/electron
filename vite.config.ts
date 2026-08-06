@@ -166,7 +166,6 @@ export default defineConfig(({ mode }) => {
             }
 
             if (
-              id.includes('/node_modules/framer-motion/') ||
               id.includes('/node_modules/motion/')
             ) {
               return 'framer-vendor';

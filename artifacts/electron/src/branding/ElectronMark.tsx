@@ -1,5 +1,5 @@
 import React, { useId } from "react";
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "dompurify";
 import parse from "html-react-parser";
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
