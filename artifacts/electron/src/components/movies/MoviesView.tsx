@@ -128,7 +128,27 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     });
     return memoriesByMovieId;
   }, [memories, movies]);
-  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("all");
+  const [mediaTypeFilter, setMediaTypeFilterState] = useState<MediaTypeFilter>(() => {
+    const param = new URLSearchParams(window.location.search).get("format");
+    return (param === "movie" || param === "series" ? param : "all") as MediaTypeFilter;
+  });
+
+  const setMediaTypeFilter = useCallback((next: MediaTypeFilter) => {
+    setMediaTypeFilterState(next);
+    const params = new URLSearchParams(window.location.search);
+    if (next === "all") {
+      params.delete("format");
+    } else {
+      params.set("format", next);
+    }
+    const qs = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`,
+    );
+  }, []);
+
   const filteredMovies = useMemo(
     () => filterMoviesByMediaType(movies, mediaTypeFilter),
     [movies, mediaTypeFilter],

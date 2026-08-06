@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
@@ -7,7 +8,6 @@ import {
   updateMemoriesBatch as updateMemoriesBatchService,
 } from "../../services/content/memoryService";
 import type { MovieAutocompleteResult } from "../../services/metadata/types";
-import { usePolling } from "../../services/polling";
 import { Movie, MovieSuggestion, User } from "../../shared/types";
 import { useMovies } from "./useMovies";
 import { useSuggestions } from "../suggestions";
@@ -62,6 +62,7 @@ export const useMoviesWorkspace = ({
   isPaused,
 }: UseMoviesWorkspaceProps) => {
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const readMemories = useCallback(() => readScope("memories"), []);
 
   // Local view state
@@ -119,15 +120,13 @@ export const useMoviesWorkspace = ({
     retrySync: retrySuggestionsSync,
   } = useSuggestions(isPaused);
 
-  const { data: memoriesSnapshot, refresh: refreshMemories } = usePolling(
-    readMemories,
-    POLLING_INTERVAL,
-    areScopeSnapshotsEqual,
-    {
-      key: "memories",
-      isPaused,
-    },
-  );
+  const { data: memoriesSnapshot, refetch: refreshMemoriesQuery } = useQuery({
+    queryKey: ["memories"],
+    queryFn: readMemories,
+    refetchInterval: isPaused ? false : POLLING_INTERVAL,
+    refetchOnWindowFocus: !isPaused,
+    structuralSharing: false,
+  });
   const memories = useMemo(() => {
     return [...(memoriesSnapshot?.data || [])].sort((a, b) => {
       if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
@@ -140,10 +139,11 @@ export const useMoviesWorkspace = ({
   const withMemoryRefresh = useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
       const result = await operation();
-      refreshMemories();
+      // Invalidate so all subscribers (MovieDetailsModal, MemoryList) pick up fresh data.
+      void queryClient.invalidateQueries({ queryKey: ["memories"] });
       return result;
     },
-    [refreshMemories],
+    [queryClient],
   );
 
   const addMemory = useCallback(
@@ -298,7 +298,7 @@ export const useMoviesWorkspace = ({
 
         if (batchUpdates.length > 0) {
           await updateMemoriesBatchService(batchUpdates);
-          refreshMemories();
+          refreshMemoriesQuery();
         }
       } catch (error) {
         console.warn(
@@ -307,7 +307,7 @@ export const useMoviesWorkspace = ({
         );
       }
     },
-    [memories, movies, refreshMemories, renameMovieService],
+    [memories, movies, refreshMemoriesQuery, renameMovieService],
   );
 
   const rejectPendingSuggestion = useCallback(
@@ -336,8 +336,8 @@ export const useMoviesWorkspace = ({
       retrySuggestionsSync(),
       retryScopeSync("memories"),
     ]);
-    refreshMemories();
-  }, [refreshMemories, retryMoviesSync, retrySuggestionsSync]);
+    refreshMemoriesQuery();
+  }, [refreshMemoriesQuery, retryMoviesSync, retrySuggestionsSync]);
 
   const isMoviesWorkspaceDegraded =
     isMoviesDegraded ||

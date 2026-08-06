@@ -8,9 +8,11 @@
     "build": "vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx --test \"../../src/**/*.test.ts\""
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "devDependencies": {
+    "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@replit/vite-plugin-runtime-error-modal": "catalog:",
     "@tailwindcss/oxide-darwin-arm64": "4.3.0",
     "@tailwindcss/vite": "catalog:",

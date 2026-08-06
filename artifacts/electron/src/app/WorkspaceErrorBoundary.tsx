@@ -8,6 +8,7 @@ interface Props {
 interface State {
   hasError: boolean;
   errorMessage: string | null;
+  errorStack: string | null;
 }
 
 /**
@@ -18,14 +19,13 @@ interface State {
 class WorkspaceErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, errorMessage: null };
+    this.state = { hasError: false, errorMessage: null, errorStack: null };
   }
 
   static getDerivedStateFromError(error: unknown): State {
-    return {
-      hasError: true,
-      errorMessage: getErrorMessage(error, "An unexpected error occurred."),
-    };
+    const message = getErrorMessage(error, "An unexpected error occurred.");
+    const stack = error instanceof Error ? error.stack ?? null : null;
+    return { hasError: true, errorMessage: message, errorStack: stack };
   }
 
   componentDidCatch(error: unknown, info: React.ErrorInfo) {
@@ -39,14 +39,58 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
   };
 
   private handleRetry = () => {
-    this.setState({ hasError: false, errorMessage: null });
+    this.setState({ hasError: false, errorMessage: null, errorStack: null });
   };
+
+  private getErrorCategory(): {
+    icon: string;
+    title: string;
+    description: string;
+    suggestion: string;
+  } {
+    const msg = (this.state.errorMessage ?? "").toLowerCase();
+
+    if (msg.includes("failed to fetch") || msg.includes("dynamically imported") || msg.includes("loading chunk")) {
+      return {
+        icon: "⚡",
+        title: "Connection interrupted",
+        description: "A part of the app couldn't be loaded from the server.",
+        suggestion: "This usually happens after a deploy or on an unstable connection. Reloading should fix it.",
+      };
+    }
+
+    if (msg.includes("network") || msg.includes("offline") || msg.includes("timeout")) {
+      return {
+        icon: "📡",
+        title: "Network issue",
+        description: "The app couldn't reach the server.",
+        suggestion: "Check your internet connection and try again.",
+      };
+    }
+
+    if (msg.includes("permission") || msg.includes("unauthorized") || msg.includes("403") || msg.includes("401")) {
+      return {
+        icon: "🔒",
+        title: "Access denied",
+        description: "You don't have permission to view this content.",
+        suggestion: "Try signing in again or switching profiles.",
+      };
+    }
+
+    return {
+      icon: "⚠️",
+      title: "Something went wrong",
+      description: "The workspace encountered an error it couldn't recover from.",
+      suggestion: "Try again, or reload the page if the problem persists.",
+    };
+  }
 
   render() {
     if (!this.state.hasError) {
       return this.props.children;
     }
 
+    const { icon, title, description, suggestion } = this.getErrorCategory();
     const isNetworkError =
       this.state.errorMessage?.toLowerCase().includes("failed to fetch") ||
       this.state.errorMessage?.toLowerCase().includes("dynamically imported");
@@ -59,63 +103,128 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
           alignItems: "center",
           justifyContent: "center",
           padding: "2rem",
-          minHeight: "40vh",
+          minHeight: "50vh",
         }}
       >
         <div
           style={{
-            maxWidth: "28rem",
+            maxWidth: "32rem",
             width: "100%",
             textAlign: "center",
-            padding: "2rem 1.5rem",
+            padding: "2.5rem 2rem",
             borderRadius: "1rem",
-            border: "1px solid rgba(148, 163, 200, 0.22)",
-            background:
-              "linear-gradient(180deg, rgba(14,22,58,0.9) 0%, rgba(8,12,36,0.94) 100%)",
-            boxShadow:
-              "0 24px 56px rgba(2,4,18,0.36), inset 0 1px 0 rgba(200,215,255,0.06)",
+            border: "1px solid var(--color-border-subtle, rgba(148,163,200,0.12))",
+            background: "var(--color-surface-1, rgba(12,18,42,0.85))",
+            boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
           }}
         >
+          {/* Icon */}
           <span
             aria-hidden="true"
             style={{
-              fontSize: "2rem",
+              fontSize: "2.5rem",
               lineHeight: 1,
               display: "block",
-              marginBottom: "0.75rem",
+              marginBottom: "1rem",
             }}
           >
-            🎬
+            {icon}
           </span>
+
+          {/* Title */}
           <h2
             style={{
               margin: "0 0 0.5rem",
-              fontFamily: "Inter, system-ui, sans-serif",
-              fontSize: "1.1rem",
-              fontWeight: 600,
-              color: "#e8efff",
+              fontFamily: "var(--font-body, system-ui, sans-serif)",
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "var(--color-text-primary, #f0f4ff)",
               letterSpacing: "-0.01em",
             }}
           >
-            Something went wrong
+            {title}
           </h2>
+
+          {/* Description */}
           <p
             style={{
-              margin: "0 0 1.25rem",
-              fontFamily: "Inter, system-ui, sans-serif",
-              fontSize: "0.875rem",
-              lineHeight: 1.55,
-              color: "#94a3c8",
+              margin: "0 0 0.5rem",
+              fontFamily: "var(--font-body, system-ui, sans-serif)",
+              fontSize: "0.9rem",
+              lineHeight: 1.5,
+              color: "var(--color-text-secondary, #94a3b8)",
             }}
           >
-            {isNetworkError
-              ? "A part of the app failed to load. This can happen after an update or on a slow connection."
-              : "An unexpected error occurred in the workspace."}
+            {description}
           </p>
+
+          {/* Suggestion */}
+          <p
+            style={{
+              margin: "0 0 1.5rem",
+              fontFamily: "var(--font-body, system-ui, sans-serif)",
+              fontSize: "0.8rem",
+              lineHeight: 1.5,
+              color: "var(--color-text-tertiary, #4a5a7a)",
+              fontStyle: "italic",
+            }}
+          >
+            {suggestion}
+          </p>
+
+          {/* Error details (dev mode or expandable) */}
+          {this.state.errorMessage && (
+            <details
+              style={{
+                margin: "0 0 1.25rem",
+                textAlign: "left",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                background: "rgba(0,0,0,0.3)",
+                border: "1px solid var(--color-border-subtle, rgba(148,163,200,0.1))",
+              }}
+            >
+              <summary
+                style={{
+                  fontFamily: "var(--font-body, system-ui, sans-serif)",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "var(--color-text-tertiary, #4a5a7a)",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+              >
+                Error details
+              </summary>
+              <pre
+                style={{
+                  margin: "0.5rem 0 0",
+                  fontFamily: "var(--font-mono, monospace)",
+                  fontSize: "0.7rem",
+                  lineHeight: 1.4,
+                  color: "var(--color-error, #fca5a5)",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  maxHeight: "8rem",
+                  overflow: "auto",
+                }}
+              >
+                {this.state.errorMessage}
+                {import.meta.env.DEV && this.state.errorStack && (
+                  <>
+                    {"\n\n"}
+                    {this.state.errorStack}
+                  </>
+                )}
+              </pre>
+            </details>
+          )}
+
+          {/* Actions */}
           <div
             style={{
               display: "flex",
-              gap: "0.625rem",
+              gap: "0.75rem",
               justifyContent: "center",
               flexWrap: "wrap",
             }}
@@ -125,16 +234,14 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
                 type="button"
                 onClick={this.handleRetry}
                 style={{
-                  padding: "0.5rem 1.25rem",
-                  borderRadius: "9999px",
-                  border: "1px solid rgba(148,163,200,0.3)",
-                  background: "rgba(148,163,200,0.1)",
-                  color: "#c8d5f0",
-                  fontFamily: "Inter, system-ui, sans-serif",
-                  fontSize: "0.8125rem",
+                  padding: "0.6rem 1.5rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid var(--color-border, rgba(148,163,200,0.18))",
+                  background: "transparent",
+                  color: "var(--color-text-primary, #f0f4ff)",
+                  fontFamily: "var(--font-body, system-ui, sans-serif)",
+                  fontSize: "0.85rem",
                   fontWeight: 600,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
                   cursor: "pointer",
                 }}
               >
@@ -145,17 +252,16 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
               type="button"
               onClick={this.handleReload}
               style={{
-                padding: "0.5rem 1.25rem",
-                borderRadius: "9999px",
-                border: "1px solid rgba(244,114,182,0.4)",
-                background: "rgba(244,114,182,0.15)",
-                color: "#f0e8ff",
-                fontFamily: "Inter, system-ui, sans-serif",
-                fontSize: "0.8125rem",
+                padding: "0.6rem 1.5rem",
+                borderRadius: "0.5rem",
+                border: "none",
+                background: "var(--color-accent, #38bdf8)",
+                color: "#fff",
+                fontFamily: "var(--font-body, system-ui, sans-serif)",
+                fontSize: "0.85rem",
                 fontWeight: 600,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
                 cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(56, 189, 248, 0.25)",
               }}
             >
               Reload page

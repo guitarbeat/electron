@@ -176,6 +176,15 @@ const MovieCard: React.FC<MovieCardProps> = ({
             {movie.title}
           </MediaCardTitle>
 
+          {(movie.year || movie.imdbRating) && (
+            <div className="movie-item-meta-external">
+              {movie.year && <span className="movie-item-meta__year">{movie.year}</span>}
+              {movie.imdbRating && /^\d/.test(movie.imdbRating) && (
+                <span className="movie-item-meta__rating">★ {movie.imdbRating}</span>
+              )}
+            </div>
+          )}
+
           <div className="movie-item-actions-external">
             <MovieActions
               movie={movie}

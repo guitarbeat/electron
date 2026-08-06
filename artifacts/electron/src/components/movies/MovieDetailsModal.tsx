@@ -93,8 +93,8 @@ const getDialogMetrics = (isMobile: boolean) => {
     typeof window === "undefined" ? 1280 : window.innerWidth;
   const viewportHeight =
     typeof window === "undefined" ? 800 : window.innerHeight;
-  const targetWidth = Math.min(viewportWidth - 32, isMobile ? 544 : 1216);
-  const targetHeight = Math.min(viewportHeight - 32, isMobile ? 768 : 672);
+  const targetWidth = Math.min(viewportWidth - 32, isMobile ? 544 : 1440);
+  const targetHeight = Math.min(viewportHeight - 32, isMobile ? 768 : 900);
   return { targetWidth, targetHeight };
 };
 

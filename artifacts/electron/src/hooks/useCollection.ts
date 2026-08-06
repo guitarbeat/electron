@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { pollingManager, usePolling } from "@/services/polling";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { mutateScope, readScope, retryScopeSync } from "@/services/state";
 import type {
   StateScope,
   StateScopeDataMap,
 } from "@/services/state/stateTypes";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import { areDeeplyEqual } from "@/utils";
 import { User } from "@/shared/types";
 
@@ -51,17 +50,24 @@ export const useCollection = <T>(
   options: CollectionOptions = {},
 ) => {
   const { pollingInterval = 15000, isPaused = false } = options;
+  const queryClient = useQueryClient();
 
-  const readFunc = useCallback(() => readScope(scope), [scope]);
   const {
     data: snapshot,
-    error,
+    error: queryError,
     isLoading,
-    refresh,
-  } = usePolling(readFunc, pollingInterval, areScopeSnapshotsEqual, {
-    key: scope,
-    isPaused,
+    refetch,
+  } = useQuery({
+    queryKey: [scope],
+    queryFn: () => readScope(scope),
+    refetchInterval: isPaused ? false : pollingInterval,
+    refetchOnWindowFocus: !isPaused,
+    // Disable structural sharing so our existing areDeeplyEqual guard in the
+    // setData effect is the single source of truth for identity checks.
+    structuralSharing: false,
   });
+
+  const error = queryError instanceof Error ? queryError : null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -106,7 +112,9 @@ export const useCollection = <T>(
           optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
         });
         setData(nextSnapshot.data as T[]);
-        await pollingManager.refresh(scope);
+        // Invalidate the TanStack Query cache so any subscribers pick up the
+        // fresh data from the server on next refetch.
+        await queryClient.invalidateQueries({ queryKey: [scope] });
         if (nextSnapshot.degraded) {
           throw new Error(
             nextSnapshot.warning ??
@@ -119,13 +127,13 @@ export const useCollection = <T>(
         setIsSubmitting(false);
       }
     },
-    [currentUser, scope],
+    [currentUser, queryClient, scope],
   );
 
   const retrySync = useCallback(async () => {
     await retryScopeSync(scope);
-    refresh();
-  }, [refresh, scope]);
+    void refetch();
+  }, [refetch, scope]);
 
   return {
     data,
@@ -135,7 +143,7 @@ export const useCollection = <T>(
     isDegraded: snapshot?.degraded ?? false,
     isSyncBlocked: snapshot?.blocked ?? false,
     syncWarning: snapshot?.warning,
-    refresh,
+    refresh: refetch,
     retrySync,
     performMutation,
   };

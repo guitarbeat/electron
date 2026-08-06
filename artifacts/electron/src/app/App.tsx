@@ -4,6 +4,18 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Keep data fresh for 5s before a background refetch is triggered
+      staleTime: 5000,
+      // Automatically refetch when the tab/window regains focus
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import {
   APP_VIEW_STATE_KEY,
@@ -298,16 +310,18 @@ const App: React.FC = () => {
 };
 
 const AppWithProviders: React.FC = () => (
-  <UserProvider>
-    <ToastProvider>
-      <PwaInstallProvider>
-        <ViewportProvider>
-          <App />
-          <SpeedInsights />
-        </ViewportProvider>
-      </PwaInstallProvider>
-    </ToastProvider>
-  </UserProvider>
+  <QueryClientProvider client={queryClient}>
+    <UserProvider>
+      <ToastProvider>
+        <PwaInstallProvider>
+          <ViewportProvider>
+            <App />
+            <SpeedInsights />
+          </ViewportProvider>
+        </PwaInstallProvider>
+      </ToastProvider>
+    </UserProvider>
+  </QueryClientProvider>
 );
 
 export default AppWithProviders;
