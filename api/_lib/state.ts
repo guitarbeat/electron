@@ -6,15 +6,15 @@ import {
   applyMatchmakerSwipe,
   undoMatchmakerSwipe,
 } from './gameHelpers.ts';
-import { normalizeMovieRecord } from '../../src/services/content/movieRecords.ts';
-import type { PinRecord } from '../../src/services/content/pinHelpers.ts';
+import { normalizeMovieRecord } from '../../artifacts/electron/src/services/content/movieRecords.ts';
+import type { PinRecord } from '../../artifacts/electron/src/services/content/pinHelpers.ts';
 import {
   mockMovies,
   mockSuggestions,
   mockMessages,
   mockMemories,
   mockPlaces,
-} from '../../src/services/state/mockData.ts';
+} from '../../artifacts/electron/src/services/state/mockData.ts';
 import {
   appendDailySpinEntry,
   cloneQuizData,
@@ -29,14 +29,14 @@ import {
   normalizeStoredPins,
   normalizeSuggestionRecord,
   normalizePlaceSuggestionRecord,
-} from '../../src/services/state/stateSchemas.ts';
+} from '../../artifacts/electron/src/services/state/stateSchemas.ts';
 import type {
   DailySpinRecord,
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../src/services/state/stateTypes.ts';
-import { STATE_SCOPES } from '../../src/services/state/stateTypes.ts';
+} from '../../artifacts/electron/src/services/state/stateTypes.ts';
+import { STATE_SCOPES } from '../../artifacts/electron/src/services/state/stateTypes.ts';
 import type {
   MatchmakerGame,
   Message,
@@ -46,7 +46,7 @@ import type {
   PlaceSuggestion,
   SharedMemory,
   User,
-} from '../../src/shared/types.ts';
+} from '../../artifacts/electron/src/shared/types.ts';
 import {
   USER_OPTIONS,
   isValidUrl,

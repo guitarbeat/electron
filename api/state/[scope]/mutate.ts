@@ -1,7 +1,7 @@
 import { jsonResponse, methodNotAllowedResponse } from '../../_lib/http.ts';
 import { createMutateHandler } from '../../_lib/state.ts';
 import { withWebHandler } from '../../_lib/webHandler.ts';
-import { isStateScope } from '../../../src/services/state/stateTypes.ts';
+import { isStateScope } from '../../../artifacts/electron/src/services/state/stateTypes.ts';
 
 const resolveScope = (req: Request): string => {
   // Vercel may pass a relative `req.url` which requires a base.

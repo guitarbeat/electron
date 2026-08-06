@@ -2,7 +2,7 @@ import { jsonResponse, methodNotAllowedResponse } from './_lib/http.ts';
 import { getSessionState } from './_lib/session.ts';
 import { getPinCoverageState } from './_lib/state.ts';
 import { withWebHandler } from './_lib/webHandler.ts';
-import type { User } from '../src/shared/types.ts';
+import type { User } from '../artifacts/electron/src/shared/types.ts';
 import { logger } from './_lib/logger.ts';
 
 async function handler(req: Request): Promise<Response> {
