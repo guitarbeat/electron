@@ -43,10 +43,10 @@ import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useTvSpatialNavigation } from "@/hooks/useTvSpatialNavigation";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
-import SidebarRail from "@/components/ui/SidebarRail";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import "./App.scss";
 
@@ -76,10 +76,13 @@ const App: React.FC = () => {
     handleRetryPendingSync,
     handleInstallApp,
   } = usePwaRuntime();
-  const { isMobile } = useViewport();
+  const { isMobile, isTv } = useViewport();
+  useTvSpatialNavigation(isTv);
+
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
+
   const [isBootReady, setIsBootReady] = useState(false);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
