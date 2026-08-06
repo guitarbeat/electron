@@ -180,7 +180,7 @@ export const useMovies = (
               ),
           );
         } catch (metadataError) {
-          console.warn("Metadata enrichment failed:", metadataError);
+          // Background metadata fetch failed silently
         }
       })();
 
@@ -242,7 +242,7 @@ export const useMovies = (
               ),
           );
         } catch (metadataError) {
-          console.warn("Metadata refresh failed after rename:", metadataError);
+          // Background metadata fetch failed silently
         }
       })();
     },
@@ -392,7 +392,7 @@ export const useMovies = (
       try {
         await updateMovieMetadata(movie);
       } catch (error) {
-        console.warn(`Auto-sync failed for ${movie.title}:`, error);
+        // Background metadata fetch failed silently
       }
     });
   }, [currentUser, isSubmitting, movies, updateMovieMetadata]);
