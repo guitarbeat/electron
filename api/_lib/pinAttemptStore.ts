@@ -108,6 +108,9 @@ export interface PinAttemptRecord {
  * Fails silently (returns zeroed record) so a DB outage never blocks login.
  */
 export const getPinAttemptRecord = async (user: string): Promise<PinAttemptRecord> => {
+  if (!getDatabaseUrl()) {
+    return { failures: 0, lockedUntil: null };
+  }
   try {
     await ensureSchema();
     const rows = await query<{ failures: number; locked_until: string | null }>(

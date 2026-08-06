@@ -154,53 +154,60 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            if (
+              id.includes('/node_modules/react/') ||
+              id.includes('/node_modules/react-dom/') ||
+              id.includes('/node_modules/scheduler/') ||
+              id.includes('/node_modules/use-sync-external-store/') ||
+              id.includes('/node_modules/object-assign/') ||
+              id.includes('/node_modules/react-is/')
+            ) {
               return 'react-vendor';
             }
 
             if (
-              id.includes('node_modules/framer-motion/') ||
-              id.includes('node_modules/motion/')
+              id.includes('/node_modules/framer-motion/') ||
+              id.includes('/node_modules/motion/')
             ) {
               return 'framer-vendor';
             }
 
-            if (id.includes('node_modules/maplibre-gl')) {
+            if (id.includes('/node_modules/maplibre-gl/')) {
               return 'map-vendor';
             }
 
             if (
-              id.includes('node_modules/ogl') ||
-              id.includes('node_modules/three')
+              id.includes('/node_modules/ogl/') ||
+              id.includes('/node_modules/three/')
             ) {
               return 'graphics-vendor';
             }
 
-            if (id.includes('node_modules/gsap')) {
+            if (id.includes('/node_modules/gsap/')) {
               return 'motion-vendor';
             }
 
-            if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
+            if (id.includes('/node_modules/recharts/') || id.includes('/node_modules/d3-')) {
               return 'charts-vendor';
             }
 
-            if (id.includes('node_modules/date-fns')) {
+            if (id.includes('/node_modules/date-fns/')) {
               return 'date-vendor';
             }
 
-            if (id.includes('node_modules/lucide-react')) {
+            if (id.includes('/node_modules/lucide-react/')) {
               return 'icons-vendor';
             }
 
             if (
-              id.includes('node_modules/dompurify') ||
-              id.includes('node_modules/isomorphic-dompurify') ||
-              id.includes('node_modules/html-react-parser')
+              id.includes('/node_modules/dompurify/') ||
+              id.includes('/node_modules/isomorphic-dompurify/') ||
+              id.includes('/node_modules/html-react-parser/')
             ) {
               return 'sanitize-vendor';
             }
 
-            if (id.includes('node_modules')) {
+            if (id.includes('/node_modules/')) {
               return 'vendor';
             }
 

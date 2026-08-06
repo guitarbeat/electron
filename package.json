@@ -5,6 +5,9 @@
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "dev": "pnpm --filter ./artifacts/electron dev",
+    "preview": "pnpm --filter ./artifacts/electron serve",
+    "verify": "pnpm run check-types && pnpm run lint && pnpm run test && pnpm run build",
     "build": "pnpm run typecheck && pnpm -r --filter \"!./artifacts/electron-mobile\" --filter \"!./artifacts/mockup-sandbox\" --if-present run build",
     "typecheck:libs": "tsc --build --force",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"!./artifacts/mockup-sandbox\" --filter \"./scripts\" --if-present run typecheck",

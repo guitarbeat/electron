@@ -108,6 +108,9 @@ export interface PinAttemptRecord {
  * Fails silently (returns zeroed record) so a DB outage never blocks login.
  */
 export const getPinAttemptRecord = async (user: string): Promise<PinAttemptRecord> => {
+  if (!getDatabaseUrl()) {
+    return { failures: 0, lockedUntil: null };
+  }
   try {
     await ensureSchema();
     const rows = await query<{ failures: number; locked_until: string | null }>(
@@ -122,7 +125,9 @@ export const getPinAttemptRecord = async (user: string): Promise<PinAttemptRecor
     };
   } catch (error) {
     console.error('[pinAttemptStore] Failed to read pin attempt record:', error);
-    return { failures: 0, lockedUntil: null };
+    // Fail closed: deny access when we cannot verify the actual lockout state.
+    // This prevents an attacker from exploiting transient DB failures to bypass lockout.
+    return { failures: Infinity, lockedUntil: Date.now() + 60_000 };
   }
 };
 
