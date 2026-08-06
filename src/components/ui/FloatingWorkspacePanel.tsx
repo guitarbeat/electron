@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -9,11 +10,15 @@ import ProfileMenu from "@/ui/ProfileMenu";
 import RadialFabToggleIcon from "@/components/effects/RadialFabToggleIcon";
 import { useAudio } from "@/hooks/useAudio";
 import {
-  clampPositionToViewport,
-  getDockedPositionForViewport,
-  getRadialMenuMetricsForWidth,
   MOBILE_BREAKPOINT,
 } from "@/components/effects/lib/radialMenuLayout";
+import {
+  clampFloatingControlPosition,
+  FLOATING_CONTROL_SIZE,
+  getDockedFloatingControlPosition,
+  getFloatingPanelPosition,
+  type FloatingPanelPosition,
+} from "./floatingWorkspacePanelLayout";
 import MagicToggle, { type MagicToggleOption } from "./MagicToggle";
 import { MessageIcon } from "@/common/Icons";
 import type { MainTab } from "@/shared/types";
@@ -38,7 +43,6 @@ const SpinIcon = () => (
 
 const STORAGE_KEY = "floatingPanel.position";
 const DISCOVERED_KEY = "floatingPanel.discovered";
-const FAB_SIZE = 52;
 
 interface PwaStatus {
   isOnline: boolean;
@@ -94,8 +98,6 @@ const getViewportBox = () => {
   };
 };
 
-const getMetrics = () => getRadialMenuMetricsForWidth(window.innerWidth);
-
 const readStoredPos = (): { x: number; y: number } | null => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -109,33 +111,16 @@ const readStoredPos = (): { x: number; y: number } | null => {
 const clamp = (pos: { x: number; y: number }) =>
   typeof window === "undefined"
     ? pos
-    : clampPositionToViewport(pos, getViewportBox(), getMetrics());
+    : clampFloatingControlPosition(pos, getViewportBox());
 
 const getInitialPos = () => {
   if (typeof window === "undefined") return { x: 0, y: 0 };
   const stored = readStoredPos();
-  return stored ? clamp(stored) : getDockedPositionForViewport(getViewportBox(), getMetrics());
+  return stored ? clamp(stored) : getDockedFloatingControlPosition(getViewportBox());
 };
 
 const persistPos = (pos: { x: number; y: number }) => {
   try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(pos)); } catch { /* noop */ }
-};
-
-/** Which side has more space — panel expands toward the open area */
-const getPanelDirection = (pos: { x: number; y: number }): "up" | "down" | "left" | "right" => {
-  if (typeof window === "undefined") return "up";
-  const vb = getViewportBox();
-  const cx = pos.x + FAB_SIZE / 2;
-  const cy = pos.y + FAB_SIZE / 2;
-  const spaceRight = vb.width - cx;
-  const spaceLeft = cx;
-  const spaceDown = vb.height - cy;
-  const spaceUp = cy;
-  const max = Math.max(spaceRight, spaceLeft, spaceDown, spaceUp);
-  if (max === spaceUp) return "up";
-  if (max === spaceDown) return "down";
-  if (max === spaceRight) return "right";
-  return "left";
 };
 
 // ── Component ───────────────────────────────────────────────────────
@@ -161,6 +146,11 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [pos, setPos] = useState(getInitialPos);
+  const [panelPosition, setPanelPosition] = useState<FloatingPanelPosition>({
+    left: 0,
+    top: 0,
+    placement: "above",
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [hasDiscovered, setHasDiscovered] = useState(() => {
     try { return window.localStorage.getItem(DISCOVERED_KEY) === "1"; } catch { return false; }
@@ -172,8 +162,23 @@ const FloatingWorkspacePanel: React.FC<FloatingWorkspacePanelProps> = ({
   const dragPointerIdRef = useRef<number | null>(null);
 const DRAG_THRESHOLD = 8;
 
-  const panelDir = getPanelDirection(pos);
   const hasViewModes = (viewModes?.length ?? 0) > 1 && Boolean(activeViewMode) && Boolean(onViewModeChange);
+
+  const positionPanel = useCallback(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    setPanelPosition(
+      getFloatingPanelPosition(
+        pos,
+        { width: panel.offsetWidth, height: panel.offsetHeight },
+        getViewportBox(),
+      ),
+    );
+  }, [pos]);
+
+  useLayoutEffect(() => {
+    if (isOpen) positionPanel();
+  }, [isOpen, positionPanel]);
 
   const markDiscovered = useCallback(() => {
     setHasDiscovered((prev) => {
@@ -214,8 +219,8 @@ const DRAG_THRESHOLD = 8;
     }
     if (!isDraggingRef.current || !fabRef.current) return;
     e.preventDefault();
-    const newX = e.clientX - FAB_SIZE / 2;
-    const newY = e.clientY - FAB_SIZE / 2;
+    const newX = e.clientX - FLOATING_CONTROL_SIZE / 2;
+    const newY = e.clientY - FLOATING_CONTROL_SIZE / 2;
     fabRef.current.style.left = `${newX}px`;
     fabRef.current.style.top = `${newY}px`;
   }, []);
@@ -248,7 +253,10 @@ const DRAG_THRESHOLD = 8;
       if (!(t instanceof Node)) return;
       if (!fabRef.current?.contains(t) && !panelRef.current?.contains(t)) close();
     };
-    const onResize = () => setPos((prev) => clamp(prev));
+    const onResize = () => {
+      setPos((prev) => clamp(prev));
+      if (isOpen) requestAnimationFrame(positionPanel);
+    };
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
 
     window.addEventListener("resize", onResize);
@@ -263,7 +271,7 @@ const DRAG_THRESHOLD = 8;
       window.visualViewport?.removeEventListener("resize", onResize);
       window.removeEventListener("keydown", onKey);
     };
-  }, [close]);
+  }, [close, isOpen, positionPanel]);
 
   const handleAction = (cb?: () => void) => { playClick(); cb?.(); close(); };
 
@@ -276,7 +284,7 @@ const DRAG_THRESHOLD = 8;
   return (
     <div
         ref={fabRef}
-        className={`fwp-fab fwp-fab--dir-${panelDir} ${isOpen ? "fwp-fab--open" : ""}`}
+        className={`fwp-fab ${isOpen ? "fwp-fab--open" : ""}`}
         style={{ left: pos.x, top: pos.y }}
         aria-label={ariaLabel ?? "Workspace controls"}
       >
@@ -300,10 +308,12 @@ const DRAG_THRESHOLD = 8;
         {/* ── Floating panel ── */}
         <div
           ref={panelRef}
-          className={`fwp-panel fwp-panel--${panelDir} ${isOpen ? "fwp-panel--open" : ""} bento-ctrl--${activeTab}`}
+          className={`fwp-panel fwp-panel--${panelPosition.placement} ${isOpen ? "fwp-panel--open" : ""} bento-ctrl--${activeTab}`}
+          style={{ left: panelPosition.left, top: panelPosition.top }}
           role="dialog"
           aria-label="Workspace controls panel"
           aria-hidden={!isOpen}
+          inert={!isOpen}
         >
           {/* Nav + Profile */}
           <div className="fwp-panel__topbar">

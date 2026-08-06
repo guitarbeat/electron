@@ -87,8 +87,9 @@
 /* ── Panel ───────────────────────────────────────────────────────── */
 
 .fwp-panel {
-  position: absolute;
+  position: fixed;
   width: min(92vw, 340px);
+  max-height: calc(100dvh - 24px);
   pointer-events: none;
   opacity: 0;
   transform: scale(0.92) translateY(4px);
@@ -110,7 +111,8 @@
     0 0 60px color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 8%, transparent);
   backdrop-filter: blur(40px) saturate(2.2);
   -webkit-backdrop-filter: blur(40px) saturate(2.2);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Top accent line — holo */
@@ -131,45 +133,10 @@
   pointer-events: auto;
 }
 
-/* ── Panel direction positioning ─────────────────────────────────── */
+/* ── Collision-aware panel placement ────────────────────────────── */
 
-/* FAB at bottom-right → panel opens up-left */
-.fwp-panel--up {
-  --fwp-origin: bottom right;
-  bottom: calc(100% + 10px);
-  right: 0;
-}
-
-/* FAB at top-left/top-center → panel opens downward */
-.fwp-panel--down {
-  --fwp-origin: top left;
-  top: calc(100% + 10px);
-  left: 0;
-}
-
-/* FAB on right edge → panel opens left */
-.fwp-panel--left {
-  --fwp-origin: center right;
-  right: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%) scale(0.94);
-}
-
-.fwp-panel--left.fwp-panel--open {
-  transform: translateY(-50%) scale(1);
-}
-
-/* FAB on left edge → panel opens right */
-.fwp-panel--right {
-  --fwp-origin: center left;
-  left: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%) scale(0.94);
-}
-
-.fwp-panel--right.fwp-panel--open {
-  transform: translateY(-50%) scale(1);
-}
+.fwp-panel--above { --fwp-origin: bottom right; }
+.fwp-panel--below { --fwp-origin: top right; }
 
 /* ── Panel sections ──────────────────────────────────────────────── */
 
@@ -348,6 +315,12 @@
   background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 16%, transparent);
   border-color: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 38%, transparent);
   transform: translateY(-1px);
+}
+
+.fwp-toggle:focus-visible,
+.fwp-action:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 78%, white);
+  outline-offset: 3px;
 }
 
 .fwp-action--teal  { --fwp-action-color: #6ee5d8; }
