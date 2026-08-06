@@ -326,10 +326,14 @@ export const useMovies = (
       });
 
       const currentMovies = moviesRef.current;
+      const currentMovieIds = new Set<string>();
+      for (const m of currentMovies) {
+        currentMovieIds.add(m.id);
+      }
       const validUpdates = refreshed.filter(
         (update) =>
           Object.keys(update.metadata).length > 0 &&
-          currentMovies.some((m) => m.id === update.movieId),
+          currentMovieIds.has(update.movieId),
       );
 
       const updatesMap = new Map<string, Partial<Movie>>(
