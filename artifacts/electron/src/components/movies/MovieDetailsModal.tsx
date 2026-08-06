@@ -114,7 +114,8 @@ const getWatchStatus = (movie: Movie, memoryCount: number) => {
 
   if (movie.watchedBy.length === 1) {
     const watcher = movie.watchedBy[0];
-    const remaining = ALL_USERS.find((user) => !movie.watchedBy.includes(user));
+    const watchedSet = new Set(movie.watchedBy);
+    const remaining = ALL_USERS.find((user) => !watchedSet.has(user));
     return {
       label: `${watcher} watched`,
       title: `${watcher} is ahead on this one`,

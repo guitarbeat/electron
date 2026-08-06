@@ -1,0 +1,2 @@
+## 2024-05-18 - [Optimization] Set for O(1) Lookups
+When checking for non-included elements in an array, converting the exclusion array to a Set before looping gives theoretically O(1) lookups per iteration. However, for extremely small arrays (e.g. n=1), the overhead of Set instantiation may outweigh the benefits over Array.includes(). Still, using Set is an algorithmic improvement for scalability.
