@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
@@ -79,8 +79,14 @@ const resolveApiModulePath = (apiPath: string): string => {
   return exactFilePath;
 };
 
-export default defineConfig({
-  base: basePath,
+export default defineConfig(async ({ mode }) => {
+  const rootDir = path.resolve(import.meta.dirname, "../..");
+  const envRoot = loadEnv(mode, rootDir, "");
+  const envLocal = loadEnv(mode, import.meta.dirname, "");
+  Object.assign(process.env, envRoot, envLocal);
+
+  return {
+    base: basePath,
   plugins: [
     react(),
     tailwindcss(),
@@ -271,4 +277,5 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: true,
   },
+  };
 });

@@ -49,9 +49,9 @@ const resolveApiModulePath = (apiPath: string): string => {
 };
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
-  // Ensure VITE_ variables are available in process.env for our serverless handlers
-  Object.assign(process.env, env);
+  const envRoot = loadEnv(mode, __dirname, '');
+  const envLocal = loadEnv(mode, process.cwd(), '');
+  Object.assign(process.env, envRoot, envLocal);
 
   return {
     css: { transformer: 'lightningcss' },
