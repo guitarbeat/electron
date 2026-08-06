@@ -4,8 +4,6 @@
  */
 import React from "react";
 import type { MainTab } from "@/shared/types";
-import { USER_PHOTOS } from "@/shared/types";
-import { useUser } from "@/app/useProviders";
 import ProfileMenu from "@/ui/ProfileMenu";
 import { MessageIcon } from "@/common/Icons";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
@@ -97,8 +95,6 @@ const SidebarRail: React.FC<SidebarRailProps> = ({
   onTogglePanel,
   onSearchFocus,
 }) => {
-  const { currentUser } = useUser();
-
   return (
     <nav className="sidebar-rail" aria-label="Main navigation">
       {/* Brand */}
