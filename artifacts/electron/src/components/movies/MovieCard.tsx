@@ -21,8 +21,10 @@ const MovieDetailsModal = React.lazy(() => import("./MovieDetailsModal"));
 import MediaPoster from "@/ui/MediaPoster";
 import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
+import StremioButton from "@/components/ui/StremioButton";
 
 export interface MovieTransitionOrigin {
+
   top: number;
   left: number;
   width: number;
@@ -307,17 +309,21 @@ const MovieActions: React.FC<MovieActionsProps> = ({
         ) : null
       }
       cluster={
-        onEdit && !actionState.isGuest ? (
-          <CardActionButton
-            variant="outline"
-            onClick={handleEditAction}
-            leftIcon={<EditIcon />}
-            className="movie-action-btn--star"
-            disabled={isUpdating}
-            aria-label={`Edit "${movie.title}"`}
-          />
-        ) : null
+        <>
+          <StremioButton movie={movie} variant="icon" />
+          {onEdit && !actionState.isGuest ? (
+            <CardActionButton
+              variant="outline"
+              onClick={handleEditAction}
+              leftIcon={<EditIcon />}
+              className="movie-action-btn--star"
+              disabled={isUpdating}
+              aria-label={`Edit "${movie.title}"`}
+            />
+          ) : null}
+        </>
       }
     />
   );
 };
+

@@ -12,22 +12,20 @@ html.is-silk-browser {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* Solid / Semi-opaque background fallbacks for blurred overlays */
+  /* Opaque background fallbacks for blurred overlays using OKLCH color mixing */
   .app-header,
   .app-header__popover,
   .app-header__menu-dropdown,
   .minigame-modal__backdrop,
   .modal-overlay,
   .sidebar-rail {
-    background-color: rgba(16, 18, 27, 0.96) !important;
+    background-color: color-mix(in oklch, #10121b 96%, transparent) !important;
   }
 
-  /* 10-Foot UI Overscan Protection Margins */
+  /* 10-Foot UI Overscan Protection Margins using CSS Logical Properties */
   .app-shell__canvas {
-    padding-left: max(24px, 3vw) !important;
-    padding-right: max(24px, 3vw) !important;
-    padding-top: max(16px, 2vh) !important;
-    padding-bottom: max(16px, 2vh) !important;
+    padding-inline: max(24px, 3vw) !important;
+    padding-block: max(16px, 2vh) !important;
   }
 
   /* Distinct High-Contrast D-Pad Focus Ring for Remote Navigation */
@@ -42,7 +40,7 @@ html.is-silk-browser {
   .card-tilt-wrap:focus-within {
     outline: 3px solid #ffb703 !important;
     outline-offset: 3px !important;
-    box-shadow: 0 0 16px rgba(255, 183, 3, 0.5) !important;
+    box-shadow: 0 0 16px color-mix(in oklch, #ffb703 50%, transparent) !important;
     border-radius: 6px;
     z-index: 20 !important;
   }
@@ -72,7 +70,8 @@ html.is-silk-browser {
     height: 8px;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 183, 3, 0.4);
+    background: color-mix(in oklch, #ffb703 40%, transparent);
     border-radius: 4px;
   }
 }
+

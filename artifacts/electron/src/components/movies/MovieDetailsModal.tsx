@@ -13,6 +13,8 @@ import { submitMemory } from "./lib/memorySubmit";
 import type { MovieTransitionOrigin } from "./MovieCard";
 import { InteractiveFolderGallery, type GalleryPhoto } from "@/components/ui/interactive-folder-gallery";
 import { HandWritingText } from "@/components/ui/hand-writing-text";
+import StremioButton from "@/components/ui/StremioButton";
+
 
 // Curated cinematic Unsplash fallbacks used to pad the gallery when a movie
 // has fewer than 3 memory photos (or no memory photos at all).
@@ -433,7 +435,9 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                     {movie.imdbRating} IMDb
                   </span>
                 ) : null}
+                <StremioButton movie={movie} variant="pill" />
               </div>
+
               <p className="movie-details-modal__relationship">
                 {watchStatus.title}
               </p>

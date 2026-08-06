@@ -1,4 +1,5 @@
 import React, { useEffect, useReducer, useRef } from "react";
+import { createPortal } from "react-dom";
 import type { User } from "@/shared/types";
 import { isFocusWithin, trapFocusOnTab } from "@/components/ui/lib/modalPrimitives";
 import { useAudio } from "@/hooks/useAudio";
@@ -200,8 +201,9 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const title = getPinFlowTitle(flow, user, isRequiredSetup);
   const submitLabel = getPinSubmitLabel(flow, isRequiredSetup);
 
-  return (
-    <section className="pin-panel"  aria-labelledby="pin-dialog-title">
+  return createPortal(
+    <div className="pin-panel__overlay">
+      <section className="pin-panel" aria-labelledby="pin-dialog-title">
       <form ref={formRef} className="pin-panel__form" onSubmit={handleSubmit}>
         <div className="pin-panel__header">
           <h2 id="pin-dialog-title" className="pin-panel__title">
@@ -310,7 +312,10 @@ const PinDialog: React.FC<PinDialogProps> = ({
         ) : null}
       </form>
     </section>
-  );
+  </div>,
+  document.body
+ );
 };
 
 export default PinDialog;
+
