@@ -139,6 +139,8 @@ export const recordPinFailure = async (
   failures: number,
   lockedUntil: number | null
 ): Promise<void> => {
+  if (!getDatabaseUrl()) return;
+
   try {
     await ensureSchema();
     await query(
@@ -160,6 +162,8 @@ export const recordPinFailure = async (
  * Called after a successful PIN verification.
  */
 export const clearPinAttempts = async (user: string): Promise<void> => {
+  if (!getDatabaseUrl()) return;
+
   try {
     await ensureSchema();
     await query(
