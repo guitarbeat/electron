@@ -9,27 +9,28 @@
 }
 
 .movie-item-info-external {
-  padding: 0.45rem 0.15rem 0.15rem;
+  padding: 0.55rem 0.2rem 0.2rem;
 }
 
 .movie-item-title-external {
-  margin: 0 0 0.5rem 0;
-  font-size: clamp(0.78rem, 8.5cqi, 0.93rem);
-  font-weight: 550;
-  color: rgba(255, 241, 220, 0.93);
+  margin: 0 0 0.55rem 0;
+  font-size: clamp(0.8rem, 8.5cqi, 0.95rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: var(--type-body-family);
-  line-height: 1.28;
-  letter-spacing: 0.008em;
+  line-height: 1.3;
+  letter-spacing: 0.005em;
+  font-style: normal;
 }
 
 .workspace-card-rail-external {
   display: grid;
-  --movie-action-side-size: clamp(2.45rem, 22cqi, 3.4rem);
+  --movie-action-side-size: clamp(2.35rem, 20cqi, 3rem);
   grid-template-columns: minmax(0, 1fr) var(--movie-action-side-size) var(--movie-action-side-size);
-  gap: clamp(0.28rem, 2.5cqi, 0.45rem);
+  gap: clamp(0.32rem, 2.5cqi, 0.5rem);
   width: 100%;
   align-items: stretch;
 }

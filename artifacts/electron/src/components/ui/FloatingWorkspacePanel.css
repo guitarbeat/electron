@@ -88,7 +88,7 @@
 
 .fwp-panel {
   position: fixed;
-  width: min(92vw, 340px);
+  width: min(92vw, 360px);
   max-height: calc(100dvh - 24px);
   pointer-events: none;
   opacity: 0;
@@ -104,7 +104,7 @@
     color-mix(in srgb, var(--color-surface-0) 90%, #0a0514) 100%
   );
   border: 1px solid color-mix(in srgb, var(--y2k-pink, var(--color-accent)) 28%, transparent);
-  border-radius: 1.5rem;
+  border-radius: 1.75rem;
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.65),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset,
@@ -113,6 +113,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(2.2);
   overflow-x: hidden;
   overflow-y: auto;
+  padding: 0.25rem 0;
 }
 
 /* Top accent line — holo */
@@ -143,9 +144,9 @@
 .fwp-panel__topbar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem 0.55rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent);
+  gap: 0.75rem;
+  padding: 0.85rem 1rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
 .fwp-panel__nav {
@@ -173,7 +174,7 @@
 }
 
 .fwp-panel__search {
-  padding: 0.5rem 0.65rem;
+  padding: 0.7rem 0.85rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
@@ -244,7 +245,7 @@
 }
 
 .fwp-panel__viewmodes {
-  padding: 0.45rem 0.65rem;
+  padding: 0.6rem 0.85rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
@@ -284,8 +285,8 @@
 
 .fwp-panel__actions {
   display: flex;
-  gap: 0.4rem;
-  padding: 0.55rem 0.65rem 0.65rem;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem 0.85rem;
 }
 
 .fwp-action {
@@ -293,28 +294,35 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.6rem 0.4rem 0.55rem;
-  border-radius: 0.8rem;
+  gap: 0.4rem;
+  padding: 0.75rem 0.5rem 0.7rem;
+  border-radius: 1rem;
   border: 1px solid color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 20%, transparent);
-  background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 8%, transparent);
+  background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 6%, transparent);
   color: var(--fwp-action-color, var(--color-accent));
   cursor: pointer;
   font-family: var(--font-interface, var(--font-body, sans-serif));
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   transition:
-    background 0.1s ease,
-    border-color 0.1s ease,
-    transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.12s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .fwp-action:hover {
-  background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 16%, transparent);
+  background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 14%, transparent);
   border-color: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 38%, transparent);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 18%, transparent);
+  transform: translateY(-2px);
+}
+
+.fwp-action:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.06s;
 }
 
 .fwp-toggle:focus-visible,
@@ -331,10 +339,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 14%, transparent);
+  background: color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fwp-action-color, var(--color-accent)) 16%, transparent);
 }
 
 .fwp-action__label {
