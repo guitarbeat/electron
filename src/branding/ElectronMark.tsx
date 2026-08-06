@@ -50,7 +50,13 @@ const ElectronMark: React.FC<ElectronMarkProps> = ({
         ...style,
       }}
     >
-      {parse(DOMPurify.sanitize(markup))}
+      {parse(
+        DOMPurify.sanitize(markup, {
+          USE_PROFILES: { svg: true },
+          FORBID_TAGS: ["use", "foreignObject"],
+          FORBID_ATTR: ["href", "xlink:href"],
+        }),
+      )}
     </span>
   );
 };
