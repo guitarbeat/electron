@@ -33,20 +33,21 @@ Command behavior:
 ## Recommended Workflow
 
 1. Install dependencies with `pnpm install`.
-2. Copy `.env.example` to `.env.local` when working with remote sync or external APIs.
+2. Pull development secrets using `npx vercel env pull .env.local --yes` (or copy `.env.example` to `.env.local` if working offline).
 3. Start local development with `pnpm dev`.
 4. Before handing work off or deploying to Vercel, run `pnpm verify`.
 
 ## App and API Workflow
 
 - There is no separate local backend process. `vite.config.ts` mounts a custom middleware that executes `api/*.ts` for `/api/*` requests during local development.
+- `vite.config.ts` loads environment variables from both the workspace root (`.env.local`) and package directory into `process.env`, making database connections and secrets available during `pnpm dev`.
 - Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and shared persistence in `api/_lib/sharedStateStore.ts` (Neon/Postgres).
 - Profile selection and PIN login are handled through signed cookies in `api/session.ts`, `api/session/profile.ts`, and `api/_lib/session.ts`.
 - `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
 - In development, `src/services/metadataService.ts` defaults metadata reads to the local `/api/omdb` and `/api/tvmaze` proxies. Set `VITE_OMDB_API_URL` or `VITE_TVMAZE_API_URL` only when intentionally bypassing those proxies.
 - Watchlist autocomplete tries OMDb movie search first, then falls back to TVMaze show search when OMDb has no usable match.
 - In local Vite development, `VITE_DATABASE_URL` is accepted as a fallback when `DATABASE_URL` is not set.
-- If database configuration is missing, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
+- If database configuration is missing, the app falls back to degraded local snapshot/outbox storage and mock seed arrays (`mockMovies`, `mockSuggestions`, `mockMemories`) instead of crashing.
 
 ## Environment Variables
 

@@ -205,12 +205,14 @@ test("dynamic state read route falls back to default state when DATABASE_URL is 
         new Request("https://example.com/api/state/movies"),
       );
       const payload = (await response.json()) as {
+        data: Movie[];
         degraded: boolean;
         warning?: string;
       };
 
       assert.equal(response.status, 200);
       assert.equal(payload.degraded, true);
+      assert.ok(Array.isArray(payload.data) && payload.data.length > 0);
       assert.match(payload.warning ?? "", /DATABASE_URL|VITE_DATABASE/i);
     } finally {
       console.warn = originalWarn;
