@@ -73,6 +73,13 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <ProfilePinProvider>
+        <h1 className="sr-only">
+          {activeTab === "movies" ? "Movie Queue & Watchlist" :
+           activeTab === "places" ? "Places Tracker" :
+           activeTab === "memories" ? "Memory Board" :
+           "Message Board"}
+        </h1>
+
         <p className="sr-only" aria-live="polite" aria-atomic="true">
           {activeTab === "movies" ? "Movies workspace" :
            activeTab === "places" ? "Places workspace" :

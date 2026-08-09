@@ -344,7 +344,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
 
       <div className="quiz-retro-main">
         <div className="quiz-retro-title-banner">
-          <h2>🌟 WHICH CHARACTER ARE YOU?! 🌟</h2>
+          <h3>🌟 WHICH CHARACTER ARE YOU?! 🌟</h3>
           <p>*** TAKE THE OFFICIAL QUIZ NOW - IT&apos;S TOTALLY FREE!!! ***</p>
         </div>
 
