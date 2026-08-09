@@ -5,7 +5,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.28.0",
   "scripts": {
-    "preinstall": "echo skip",
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "dev": "pnpm --filter ./artifacts/electron dev",
     "preview": "pnpm --filter ./artifacts/electron serve",
     "verify": "pnpm run check-types && pnpm run lint && pnpm run test && pnpm run build",
@@ -22,15 +22,15 @@
     "strictPeerDependencies": false
   },
   "devDependencies": {
-    "@types/node": "^25.3.3",
+    "@types/node": "catalog:",
     "@types/pg": "^8.20.0",
     "pg": "^8.20.0",
     "prettier": "^3.8.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "tsx": "^4.21.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsx": "catalog:",
     "typescript": "~5.9.3",
-    "zod": "^3.25.76"
+    "zod": "catalog:"
   },
   "dependencies": {
     "@vercel/speed-insights": "^2.0.0",
