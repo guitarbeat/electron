@@ -6,21 +6,21 @@ import {
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
   updateMemoriesBatch as updateMemoriesBatchService,
-} from "../../services/content/memoryService";
-import type { MovieAutocompleteResult } from "../../services/metadata/types";
-import { Movie, MovieSuggestion, User } from "../../shared/types";
-import { useMovies } from "./useMovies";
-import { useSuggestions } from "../suggestions";
-import { useToast } from "@/app/useProviders";
+} from "../../services/content/memoryService.ts";
+import type { MovieAutocompleteResult } from "../../services/metadata/types.ts";
+import { Movie, MovieSuggestion, User } from "../../shared/types.ts";
+import { useMovies } from "./useMovies.ts";
+import { useSuggestions } from "../suggestions/index.ts";
+import { useToast } from "../../app/useProviders.ts";
 import {
   compareCreatedAtDesc,
   normalizeMovieTitle,
   sanitizeInput,
-} from "../../utils";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
-import { trackMetric } from "@/services/analytics";
-import { readScope, retryScopeSync } from "../../services/state";
-import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner";
+} from "../../utils/index.ts";
+import { areScopeSnapshotsEqual } from "../../services/state/stateCompare.ts";
+import { trackMetric } from "../../services/analytics.ts";
+import { readScope, retryScopeSync } from "../../services/state/index.ts";
+import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner.ts";
 
 const POLLING_INTERVAL = 30000;
 
@@ -274,27 +274,24 @@ export const useMoviesWorkspace = ({
       }
 
       try {
-        const batchUpdates = relatedMemories
-          .map((memory) => {
-            const nextMovieId = memory.movieId ?? movieId;
-            if (
-              memory.movieTitle === cleanTitle &&
-              memory.movieId === nextMovieId
-            ) {
-              return null;
-            }
-            return {
+        const batchUpdates = relatedMemories.flatMap((memory) => {
+          const nextMovieId = memory.movieId ?? movieId;
+          if (
+            memory.movieTitle === cleanTitle &&
+            memory.movieId === nextMovieId
+          ) {
+            return [];
+          }
+          return [
+            {
               memoryId: memory.id,
               updates: {
                 movieId: nextMovieId,
                 movieTitle: cleanTitle,
               },
-            };
-          })
-          .filter(Boolean) as Array<{
-          memoryId: string;
-          updates: { movieId: string; movieTitle: string };
-        }>;
+            },
+          ];
+        });
 
         if (batchUpdates.length > 0) {
           await updateMemoriesBatchService(batchUpdates);
