@@ -1,5 +1,5 @@
 import type { Movie, User } from "../shared/types.ts";
-import { spacing } from "../theme/tokens.ts";
+import { spacing } from "../theme/tokens.js";
 
 /**
  * Consolidated Utilities

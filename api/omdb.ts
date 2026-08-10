@@ -1,6 +1,6 @@
-import { fetchWithRetry } from './_lib/retryFetch.ts';
-import { withWebHandler } from './_lib/webHandler.ts';
-import { resolveConfig } from './_lib/config.ts';
+import { fetchWithRetry } from './_lib/retryFetch.js';
+import { withWebHandler } from './_lib/webHandler.js';
+import { resolveConfig } from './_lib/config.js';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;

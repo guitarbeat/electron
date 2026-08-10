@@ -1,7 +1,7 @@
 import { createHmac, pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
 
-import type { User } from './common.ts';
-import { isUser } from './common.ts';
+import type { User } from './common.js';
+import { isUser } from './common.js';
 
 const PROFILE_COOKIE = 'movie_watch_profile';
 const PIN_ATTEMPT_COOKIE = 'movie_watch_pin_attempt';

@@ -8,7 +8,7 @@
  */
 
 import type pg from 'pg';
-import { createPostgresPool, getDatabaseUrl } from './dbCommon.ts';
+import { createPostgresPool, getDatabaseUrl } from './dbCommon.js';
 
 let pool: pg.Pool | null = null;
 let poolUrl = '';

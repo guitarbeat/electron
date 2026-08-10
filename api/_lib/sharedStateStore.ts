@@ -1,5 +1,5 @@
 import type pg from 'pg';
-import { createPostgresPool, getDatabaseUrl } from './dbCommon.ts';
+import { createPostgresPool, getDatabaseUrl } from './dbCommon.js';
 
 const CACHE_TTL_MS = 30000;
 

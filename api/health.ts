@@ -1,6 +1,6 @@
-import { jsonResponse, mergeHeaders, methodNotAllowedResponse } from './_lib/http.ts';
-import { getPinCoverageState, getStateScopeDiagnostics } from './_lib/state.ts';
-import { withWebHandler } from './_lib/webHandler.ts';
+import { jsonResponse, mergeHeaders, methodNotAllowedResponse } from './_lib/http.js';
+import { getPinCoverageState, getStateScopeDiagnostics } from './_lib/state.js';
+import { withWebHandler } from './_lib/webHandler.js';
 
 async function handler(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {

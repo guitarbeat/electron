@@ -16,7 +16,8 @@
     "lint": "eslint . --max-warnings 0 || true",
     "test": "pnpm -r --if-present run test",
     "test:unit": "node scripts/run-node-tests.mjs",
-    "test:smoke": "node scripts/smoke-test-deployment.mjs"
+    "test:smoke": "node scripts/smoke-test-deployment.mjs",
+    "test:serverless-output": "node scripts/verify-vercel-output.mjs"
   },
   "private": true,
   "pnpm": {
@@ -39,7 +40,7 @@
     "lightningcss": "^1.32.0"
   },
   "optionalDependencies": {
-    "@esbuild/darwin-arm64": "^0.27.3",
+    "@esbuild/darwin-arm64": "0.27.3",
     "@rollup/rollup-darwin-arm64": "^4.62.2",
     "lightningcss-darwin-arm64": "1.32.0"
   }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { sanitizeInput, consoleError } from "../../utils/shared.ts";
+import { sanitizeInput, consoleError } from "../../utils/shared.js";
 
 export interface UserPins {
   Aaron?: string;

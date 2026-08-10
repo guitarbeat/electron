@@ -1,4 +1,4 @@
-import { getAppTheme, type ThemeName } from "./themes.ts";
+import { getAppTheme, type ThemeName } from "./themes.js";
 
 const SHELL_VAR_KEYS = [
   "--shell-canvas-gap",

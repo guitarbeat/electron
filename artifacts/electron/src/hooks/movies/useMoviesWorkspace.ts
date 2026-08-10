@@ -18,7 +18,7 @@ import {
   sanitizeInput,
 } from "../../utils/index.ts";
 import { areScopeSnapshotsEqual } from "../../services/state/stateCompare.ts";
-import { trackMetric } from "../../services/analytics.ts";
+import { trackMetric } from "../../services/analytics/index.ts";
 import { readScope, retryScopeSync } from "../../services/state/index.ts";
 import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner.ts";
 

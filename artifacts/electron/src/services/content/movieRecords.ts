@@ -1,5 +1,5 @@
 import type { Movie } from "../../shared/types.ts";
-import { isUser, isValidUrl, sanitizeInput } from "../../utils/shared.ts";
+import { isUser, isValidUrl, sanitizeInput } from "../../utils/shared.js";
 
 const normalizeRequiredString = (value: unknown): string | null => {
   if (typeof value !== "string") {

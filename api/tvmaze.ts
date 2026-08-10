@@ -1,6 +1,6 @@
-import { fetchWithRetry } from './_lib/retryFetch.ts';
-import { withWebHandler } from './_lib/webHandler.ts';
-import { resolveConfig } from './_lib/config.ts';
+import { fetchWithRetry } from './_lib/retryFetch.js';
+import { withWebHandler } from './_lib/webHandler.js';
+import { resolveConfig } from './_lib/config.js';
 
 const TVMAZE_API_BASE_URL = resolveConfig(
   process.env.TVMAZE_API_URL || process.env.VITE_TVMAZE_API_URL,

@@ -5,16 +5,16 @@ import {
   SPIN_HISTORY_MAX,
   applyMatchmakerSwipe,
   undoMatchmakerSwipe,
-} from './gameHelpers.ts';
-import { normalizeMovieRecord } from '../../artifacts/electron/src/services/content/movieRecords.ts';
-import type { PinRecord } from '../../artifacts/electron/src/services/content/pinHelpers.ts';
+} from './gameHelpers.js';
+import { normalizeMovieRecord } from '../../artifacts/electron/src/services/content/movieRecords.js';
+import type { PinRecord } from '../../artifacts/electron/src/services/content/pinHelpers.js';
 import {
   mockMovies,
   mockSuggestions,
   mockMessages,
   mockMemories,
   mockPlaces,
-} from '../../artifacts/electron/src/services/state/mockData.ts';
+} from '../../artifacts/electron/src/services/state/mockData.js';
 import {
   appendDailySpinEntry,
   cloneQuizData,
@@ -29,14 +29,14 @@ import {
   normalizeStoredPins,
   normalizeSuggestionRecord,
   normalizePlaceSuggestionRecord,
-} from '../../artifacts/electron/src/services/state/stateSchemas.ts';
+} from '../../artifacts/electron/src/services/state/stateSchemas.js';
 import type {
   DailySpinRecord,
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../artifacts/electron/src/services/state/stateTypes.ts';
-import { STATE_SCOPES } from '../../artifacts/electron/src/services/state/stateTypes.ts';
+} from '../../artifacts/electron/src/services/state/stateTypes.js';
+import { STATE_SCOPES } from '../../artifacts/electron/src/services/state/stateTypes.js';
 import type {
   MatchmakerGame,
   Message,
@@ -46,7 +46,7 @@ import type {
   PlaceSuggestion,
   SharedMemory,
   User,
-} from '../../artifacts/electron/src/shared/types.ts';
+} from '../../artifacts/electron/src/shared/types.js';
 import {
   USER_OPTIONS,
   isValidUrl,
@@ -55,7 +55,7 @@ import {
   MAX_MESSAGE_LENGTH,
   MAX_MOVIE_TITLE_LENGTH,
   findMovieByNormalizedTitle,
-} from './common.ts';
+} from './common.js';
 import {
   badRequestResponse,
   conflictResponse,
@@ -65,7 +65,7 @@ import {
   serverErrorResponse,
   toQuotedEtag,
   unauthorizedResponse,
-} from './http.ts';
+} from './http.js';
 import {
   invalidateSharedStateCache,
   isSharedStateConfigured,
@@ -73,8 +73,8 @@ import {
   listSharedStateFilenames,
   patchSharedStateFile,
   readSharedStateFileRecord,
-} from './sharedStateStore.ts';
-import { hashPin, requireProfileUser, hasAccessSession, verifyStoredPin } from './session.ts';
+} from './sharedStateStore.js';
+import { hashPin, requireProfileUser, hasAccessSession, verifyStoredPin } from './session.js';
 
 interface MutationContext {
   currentUser: User | null;

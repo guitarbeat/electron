@@ -1,11 +1,11 @@
-import { serverErrorResponse } from './http.ts';
+import { serverErrorResponse } from './http.js';
 import {
   isWebRequest,
   toWebRequest,
   writeFetchResponse,
   type NodeLikeRequest,
   type NodeLikeResponse,
-} from './nodeBridge.ts';
+} from './nodeBridge.js';
 
 type WebHandler = (req: Request) => Promise<Response> | Response;
 
