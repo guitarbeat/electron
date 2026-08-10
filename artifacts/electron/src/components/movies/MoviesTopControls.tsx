@@ -322,6 +322,18 @@ const MoviesTopControls = React.forwardRef<
     [autocompleteError, autocompleteQuery, autocompleteResults.length, isAutocompleteLoading, trimmedSearchQuery]
   );
   const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
+
+  const categoryCounts = useMemo(() => {
+    let movieCount = 0;
+    let seriesCount = 0;
+    for (let i = 0; i < autocompleteResults.length; i++) {
+      const type = autocompleteResults[i].type;
+      if (type === 'movie') movieCount++;
+      else if (type === 'series') seriesCount++;
+    }
+    return { all: autocompleteResults.length, movie: movieCount, series: seriesCount };
+  }, [autocompleteResults]);
+
   const filteredAutocompleteResults = useMemo(
     () =>
       autocompleteTypeFilter === 'all'
@@ -460,10 +472,7 @@ const MoviesTopControls = React.forwardRef<
                         { value: 'series', label: 'TV Series' },
                       ] as const
                     ).map(({ value, label }) => {
-                      const count =
-                        value === 'all'
-                          ? autocompleteResults.length
-                          : autocompleteResults.filter((r) => r.type === value).length;
+                      const count = categoryCounts[value];
                       const isDisabled = count === 0 && value !== 'all';
                       return {
                         value,

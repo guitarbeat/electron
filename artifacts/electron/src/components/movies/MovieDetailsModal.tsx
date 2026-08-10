@@ -114,7 +114,8 @@ const getWatchStatus = (movie: Movie, memoryCount: number) => {
 
   if (movie.watchedBy.length === 1) {
     const watcher = movie.watchedBy[0];
-    const remaining = ALL_USERS.find((user) => !movie.watchedBy.includes(user));
+    const watchedSet = new Set(movie.watchedBy);
+    const remaining = ALL_USERS.find((user) => !watchedSet.has(user));
     return {
       label: `${watcher} watched`,
       title: `${watcher} is ahead on this one`,
@@ -270,9 +271,17 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   );
   const featuredMemory =
     memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
-  const secondaryMemories = canManageMemories
-    ? []
-    : memories.filter((memory) => memory.id !== featuredMemory?.id).slice(0, 2);
+  const secondaryMemories = (() => {
+    if (canManageMemories) return [];
+    const result: typeof memories = [];
+    for (const memory of memories) {
+      if (memory.id !== featuredMemory?.id) {
+        result.push(memory);
+        if (result.length === 2) break;
+      }
+    }
+    return result;
+  })();
   const watchStatus = getWatchStatus(movie, memories.length);
   const source = clampOrigin(origin ?? null);
   const { targetWidth, targetHeight } = getDialogMetrics(isMobile);

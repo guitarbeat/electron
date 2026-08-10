@@ -16,8 +16,14 @@ const walk = (dir) => {
   return out;
 };
 
-const srcDir = fileURLToPath(new URL('../src', import.meta.url));
-const files = walk(srcDir);
+import { existsSync } from 'node:fs';
+
+const targetDirs = [
+  fileURLToPath(new URL('../artifacts/electron/src', import.meta.url)),
+  fileURLToPath(new URL('../src', import.meta.url)),
+].filter((d) => existsSync(d));
+
+const files = targetDirs.flatMap((dir) => walk(dir));
 if (files.length === 0) {
   process.exit(0);
 }
