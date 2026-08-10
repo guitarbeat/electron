@@ -28,7 +28,8 @@ if (files.length === 0) {
   process.exit(0);
 }
 
-const result = spawnSync(process.execPath, ['--test', ...files], {
+const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
+const result = spawnSync(process.execPath, [tsxCli, '--test', ...files], {
   stdio: 'inherit',
 });
 process.exit(result.status ?? 1);
