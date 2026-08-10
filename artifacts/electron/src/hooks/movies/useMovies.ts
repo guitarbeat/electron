@@ -153,6 +153,10 @@ export const useMovies = (
         {
           id: newMovie.id,
           title: newMovie.title,
+          metadata: {
+            mediaType: newMovie.mediaType,
+            category: newMovie.category,
+          },
         },
         [...movies, newMovie],
       );

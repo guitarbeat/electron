@@ -282,6 +282,105 @@ test("dynamic state mutate route renames a movie when a profile session is prese
   );
 });
 
+test("movie creation stores validated metadata in the initial mutation", async () => {
+  await withMovieStore([], async ({ getMovies }) => {
+    const cookie = buildProfileCookie(
+      new Request("https://example.com/api/session/profile"),
+      "Aaron",
+    );
+    const readResponse = await readHandler(
+      new Request("https://example.com/api/state/movies", { headers: { cookie } }),
+    );
+    const { version } = (await readResponse.json()) as { version: string };
+
+    const response = await mutateHandler(
+      new Request("https://example.com/api/state/movies/mutate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie },
+        body: JSON.stringify({
+          baseVersion: version,
+          op: "add_movie",
+          payload: {
+            id: "movie-bsg",
+            title: "Battlestar Galactica",
+            metadata: {
+              year: "2004–2009",
+              mediaType: "series",
+              category: "TV Series",
+              posterUrl: "https://example.com/bsg.jpg",
+            },
+          },
+        }),
+      }),
+    );
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(getMovies()[0], {
+      id: "movie-bsg",
+      title: "Battlestar Galactica",
+      addedBy: "Aaron",
+      watchedBy: [],
+      createdAt: getMovies()[0]?.createdAt,
+      year: "2004–2009",
+      mediaType: "series",
+      category: "TV Series",
+      posterUrl: "https://example.com/bsg.jpg",
+    });
+  });
+});
+
+test("add_movies creates a deduplicated batch in one mutation", async () => {
+  await withMovieStore(
+    [{
+      id: "existing",
+      title: "Tiger King",
+      addedBy: "Electra",
+      watchedBy: [],
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }],
+    async ({ getMovies, patchBodies }) => {
+      const cookie = buildProfileCookie(
+        new Request("https://example.com/api/session/profile"),
+        "Aaron",
+      );
+      const readResponse = await readHandler(
+        new Request("https://example.com/api/state/movies", { headers: { cookie } }),
+      );
+      const { version } = (await readResponse.json()) as { version: string };
+
+      const response = await mutateHandler(
+        new Request("https://example.com/api/state/movies/mutate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", cookie },
+          body: JSON.stringify({
+            baseVersion: version,
+            op: "add_movies",
+            payload: {
+              items: [
+                { id: "stepford", title: "  The Stepford Wives  ", metadata: { year: "2004" } },
+                { id: "tiger-duplicate", title: "tiger king" },
+                { id: "stepford-duplicate", title: "the stepford wives" },
+                { title: "The Tatami Galaxy", metadata: { mediaType: "series" } },
+              ],
+            },
+          }),
+        }),
+      );
+
+      assert.equal(response.status, 200);
+      assert.equal(patchBodies.length, 1);
+      assert.deepEqual(getMovies().map((movie) => movie.title), [
+        "Tiger King",
+        "The Stepford Wives",
+        "The Tatami Galaxy",
+      ]);
+      assert.equal(getMovies()[1]?.year, "2004");
+      assert.equal(getMovies()[2]?.mediaType, "series");
+      assert.match(getMovies()[2]?.id ?? "", /^[0-9a-f-]{36}$/);
+    },
+  );
+});
+
 test("dynamic state mutate route lets guests create movie suggestions", async () => {
   await withSuggestionStore([], async ({ getSuggestions, patchBodies }) => {
     const readResponse = await readHandler(

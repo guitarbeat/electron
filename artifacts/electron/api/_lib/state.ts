@@ -263,7 +263,40 @@ const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
     }
   }
 
+  if (metadata.mediaType === 'movie' || metadata.mediaType === 'series') {
+    next.mediaType = metadata.mediaType;
+  }
+
+  if (typeof metadata.category === 'string') {
+    const normalized = sanitizeInput(metadata.category);
+    if (normalized) next.category = normalized;
+  } else if (next.mediaType === 'series') {
+    next.category = 'TV Series';
+  }
+
   return next;
+};
+
+const MAX_MOVIE_BATCH_SIZE = 25;
+
+const createMovieFromPayload = (
+  value: unknown,
+  context: MutationContext,
+): Movie | null => {
+  if (!value || typeof value !== 'object' || !context.currentUser) return null;
+  const payload = value as { id?: unknown; title?: unknown; metadata?: unknown };
+  const id = extractString(payload.id) || randomUUID();
+  const title = extractString(payload.title);
+  if (!title || title.length > MAX_MOVIE_TITLE_LENGTH) return null;
+
+  return {
+    id,
+    title,
+    addedBy: context.currentUser,
+    watchedBy: [],
+    createdAt: context.now,
+    ...sanitizeMovieMetadata(payload.metadata),
+  };
 };
 
 const ensureFourDigitPin = (value: unknown): string | null => {
@@ -302,19 +335,16 @@ const scopes: {
 
       switch (op) {
         case 'add_movie': {
-          const nextPayload = payload as { id?: unknown; title?: unknown };
-          const id = extractString(nextPayload.id);
-          const title = extractString(nextPayload.title);
-
-          if (!id || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
+          const movie = createMovieFromPayload(payload, context);
+          if (!movie || !(payload as { id?: unknown }).id) {
             return { ok: false, conflict: 'Invalid movie payload.' };
           }
 
-          if (movies.some((movie) => movie.id === id)) {
+          if (movies.some((entry) => entry.id === movie.id)) {
             return { ok: false, conflict: 'Movie already exists.' };
           }
 
-          if (findMovieByNormalizedTitle(movies, title)) {
+          if (findMovieByNormalizedTitle(movies, movie.title)) {
             return {
               ok: false,
               conflict: 'A movie with this title is already in the queue.',
@@ -323,17 +353,34 @@ const scopes: {
 
           return {
             ok: true,
-            data: [
-              ...movies,
-              {
-                id,
-                title,
-                addedBy: context.currentUser!,
-                watchedBy: [],
-                createdAt: context.now,
-              },
-            ],
+            data: [...movies, movie],
           };
+        }
+        case 'add_movies': {
+          const items = (payload as { items?: unknown })?.items;
+          if (!Array.isArray(items) || items.length === 0 || items.length > MAX_MOVIE_BATCH_SIZE) {
+            return {
+              ok: false,
+              conflict: `Movie batches must contain 1-${MAX_MOVIE_BATCH_SIZE} items.`,
+            };
+          }
+
+          const parsed = items.map((item) => createMovieFromPayload(item, context));
+          if (parsed.some((movie) => movie === null)) {
+            return { ok: false, conflict: 'Invalid movie batch payload.' };
+          }
+
+          const next = [...movies];
+          const knownIds = new Set(movies.map((movie) => movie.id));
+          for (const movie of parsed as Movie[]) {
+            if (knownIds.has(movie.id)) {
+              return { ok: false, conflict: 'Movie already exists.' };
+            }
+            if (findMovieByNormalizedTitle(next, movie.title)) continue;
+            knownIds.add(movie.id);
+            next.push(movie);
+          }
+          return { ok: true, data: next };
         }
         case 'rename_movie': {
           const nextPayload = payload as {
