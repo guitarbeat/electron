@@ -25,7 +25,7 @@ export function calculateVelocity(
   return (currentX - lastX) / dt;
 }
 
-export function filterCandidates<T extends { watchedBy: any[] }>(movies: T[]): T[] {
-  const queue = movies.filter((m) => m.watchedBy.length < 2);
-  return queue.length > 0 ? queue : movies;
+export function filterCandidates<T extends { watchedBy: unknown[] }>(movies: T[]): T[] {
+  return getUnwatchedCandidatePool(movies);
 }
+import { getUnwatchedCandidatePool } from "../../games/movieCandidatePool";

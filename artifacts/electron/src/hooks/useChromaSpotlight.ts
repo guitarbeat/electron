@@ -31,7 +31,6 @@ export function useChromaSpotlight({
 
   const enabled = useRef(true);
   const frameRef = useRef<number | null>(null);
-  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Start the rAF lerp loop
   const startLoop = useCallback((el: HTMLDivElement) => {
@@ -80,15 +79,11 @@ export function useChromaSpotlight({
     el.style.setProperty("--y", `${current.current.y}px`);
 
     const unsubscribe = subscribeMotionPreferences(syncEnabled);
-
     return () => {
       unsubscribe();
       if (frameRef.current !== null) {
         cancelAnimationFrame(frameRef.current);
         frameRef.current = null;
-      }
-      if (fadeTimerRef.current !== null) {
-        clearTimeout(fadeTimerRef.current);
       }
     };
   }, [radius]);
@@ -107,7 +102,6 @@ export function useChromaSpotlight({
 
       // Show spotlight
       if (fadeRef.current) {
-        if (fadeTimerRef.current !== null) clearTimeout(fadeTimerRef.current);
         fadeRef.current.style.transition = "opacity 0.25s ease";
         fadeRef.current.style.opacity = "0";
       }

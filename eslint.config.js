@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
-const reactHooksRecommended = reactHooks.configs.flat.recommended;
+const [reactHooksRecommended] = reactHooks.configs['flat/recommended'];
 
 export default tseslint.config(
   { ignores: ['dist', 'scripts', 'docs', 'public', '.next', 'node_modules'] },
@@ -23,7 +23,7 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./artifacts/electron/tsconfig.json'],
+        project: ['./artifacts/electron/tsconfig.eslint.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -43,6 +43,21 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       'react/prop-types': 'off', // Not needed with TS
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+    },
+  },
+  {
+    files: ['artifacts/electron/src/**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^(_|id$|query$|t$)', varsIgnorePattern: '^_' },
+      ],
     },
   },
 );

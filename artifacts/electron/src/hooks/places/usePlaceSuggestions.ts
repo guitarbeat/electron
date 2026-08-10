@@ -1,14 +1,13 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { sanitizeInput } from "@/utils";
-import type { PlaceSuggestion, User } from "@/shared/types";
-import { useUser } from "@/app/useProviders";
-import { mutateScope } from "@/services/state";
-import { useCollection } from "../useCollection";
+import type { PlaceSuggestion } from "@/shared/types";
+import { useSuggestionCollection } from "../suggestions/suggestionCollection";
 
 export const usePlaceSuggestions = (isPaused: boolean = false) => {
-  const { currentUser } = useUser();
   const {
-    data: suggestions,
+    suggestions,
+    pendingSuggestions,
+    currentUser,
     isLoading,
     isSubmitting,
     error,
@@ -17,45 +16,17 @@ export const usePlaceSuggestions = (isPaused: boolean = false) => {
     syncWarning,
     refresh,
     retrySync,
-    performMutation,
-  } = useCollection<PlaceSuggestion>("placeSuggestions", currentUser, {
-    pollingInterval: 60000,
-    isPaused,
-  });
-
-  const pendingSuggestions = useMemo(
-    () => suggestions.filter((s) => s.status === "pending"),
-    [suggestions],
-  );
-
-  const respondToSuggestion = useCallback(
-    async (
-      suggestionId: string,
-      status: "accepted" | "rejected",
-      respondedBy: User,
-      op: string,
-    ) => {
-      const suggestion = suggestions.find((entry) => entry.id === suggestionId);
-      if (!suggestion) {
-        throw new Error("Suggestion not found");
-      }
-
-      await performMutation(
-        op,
-        { suggestionId },
-        suggestions.map((entry) =>
-          entry.id === suggestionId
-            ? {
-                ...entry,
-                status,
-                respondedAt: new Date().toISOString(),
-                respondedBy,
-              }
-            : entry,
-        ),
-      );
+    add,
+    accept,
+    reject,
+  } = useSuggestionCollection<PlaceSuggestion>(
+    {
+      scope: "placeSuggestions",
+      addOperation: "add_place_suggestion",
+      acceptOperation: "accept_place_suggestion",
+      rejectOperation: "reject_place_suggestion",
     },
-    [performMutation, suggestions],
+    isPaused,
   );
 
   const addPlaceSuggestion = useCallback(
@@ -78,64 +49,21 @@ export const usePlaceSuggestions = (isPaused: boolean = false) => {
         ...metadata,
       };
 
-      if (currentUser) {
-        await performMutation(
-          "add_place_suggestion",
-          {
-            id: nextSuggestion.id,
-            name: nextSuggestion.name,
-            notes: nextSuggestion.notes,
-            category: nextSuggestion.category,
-            rating: nextSuggestion.rating,
-            description: nextSuggestion.description,
-            imageUrl: nextSuggestion.imageUrl,
-          },
-          [...suggestions, nextSuggestion],
-        );
-      } else {
-        await mutateScope("placeSuggestions", {
-          op: "add_place_suggestion",
-          payload: {
-            id: nextSuggestion.id,
-            name: nextSuggestion.name,
-            notes: nextSuggestion.notes,
-            category: nextSuggestion.category,
-            rating: nextSuggestion.rating,
-            description: nextSuggestion.description,
-            imageUrl: nextSuggestion.imageUrl,
-            suggestedBy: nextSuggestion.suggestedBy,
-          },
-          optimisticData: [...suggestions, nextSuggestion],
-        });
-      }
-
-      return nextSuggestion;
+      const payload = {
+        id: nextSuggestion.id,
+        name: nextSuggestion.name,
+        notes: nextSuggestion.notes,
+        category: nextSuggestion.category,
+        rating: nextSuggestion.rating,
+        description: nextSuggestion.description,
+        imageUrl: nextSuggestion.imageUrl,
+      };
+      return add(nextSuggestion, payload, {
+        ...payload,
+        suggestedBy: nextSuggestion.suggestedBy,
+      });
     },
-    [currentUser, suggestions, performMutation],
-  );
-
-  const acceptPlaceSuggestion = useCallback(
-    async (suggestionId: string, respondedBy: User): Promise<void> => {
-      await respondToSuggestion(
-        suggestionId,
-        "accepted",
-        respondedBy,
-        "accept_place_suggestion",
-      );
-    },
-    [respondToSuggestion],
-  );
-
-  const rejectPlaceSuggestion = useCallback(
-    async (suggestionId: string, respondedBy: User): Promise<void> => {
-      await respondToSuggestion(
-        suggestionId,
-        "rejected",
-        respondedBy,
-        "reject_place_suggestion",
-      );
-    },
-    [respondToSuggestion],
+    [add, currentUser],
   );
 
   return {
@@ -150,7 +78,7 @@ export const usePlaceSuggestions = (isPaused: boolean = false) => {
     refresh,
     retrySync,
     addPlaceSuggestion,
-    acceptPlaceSuggestion,
-    rejectPlaceSuggestion,
+    acceptPlaceSuggestion: accept,
+    rejectPlaceSuggestion: reject,
   };
 };

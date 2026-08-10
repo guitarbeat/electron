@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { mutateScope, readScope, retryScopeSync } from "@/services/state";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSyncedScope } from "./useSyncedScope";
 import type {
   StateScope,
   StateScopeDataMap,
@@ -50,33 +49,27 @@ export const useCollection = <T>(
   options: CollectionOptions = {},
 ) => {
   const { pollingInterval = 15000, isPaused = false } = options;
-  const queryClient = useQueryClient();
-
   const {
-    data: snapshot,
-    error: queryError,
+    data: remoteData,
+    snapshot,
+    error,
     isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: [scope],
-    queryFn: () => readScope(scope),
-    refetchInterval: isPaused ? false : pollingInterval,
-    refetchOnWindowFocus: !isPaused,
-    // Disable structural sharing so our existing areDeeplyEqual guard in the
-    // setData effect is the single source of truth for identity checks.
-    structuralSharing: false,
+    isMutating,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
+    refresh,
+    retrySync,
+    mutate,
+  } = useSyncedScope(scope, {
+    pollingInterval,
+    isPaused,
   });
-
-  const error = queryError instanceof Error ? queryError : null;
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const polledData = useMemo(() => (snapshot?.data as T[]) ?? [], [snapshot]);
+  const polledData = useMemo(() => (remoteData as T[]) ?? [], [remoteData]);
   const [data, setData] = useState<T[]>(polledData);
-  const mutationsInFlightRef = useRef(0);
 
   useEffect(() => {
-    if (mutationsInFlightRef.current > 0) {
+    if (isMutating) {
       return;
     }
 
@@ -94,7 +87,7 @@ export const useCollection = <T>(
 
       return polledData;
     });
-  }, [polledData, snapshot?.blocked, snapshot?.degraded]);
+  }, [isMutating, polledData, snapshot?.blocked, snapshot?.degraded]);
 
   const performMutation = useCallback(
     async (op: string, payload: unknown, optimisticData: T[]) => {
@@ -102,48 +95,33 @@ export const useCollection = <T>(
         throw new Error("Profile required");
       }
 
-      setIsSubmitting(true);
-      mutationsInFlightRef.current += 1;
       setData(optimisticData);
-      try {
-        const nextSnapshot = await mutateScope(scope, {
-          op,
-          payload,
-          optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
-        });
+      const nextSnapshot = await mutate({
+        op,
+        payload,
+        optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
+      });
         setData(nextSnapshot.data as T[]);
-        // Invalidate the TanStack Query cache so any subscribers pick up the
-        // fresh data from the server on next refetch.
-        await queryClient.invalidateQueries({ queryKey: [scope] });
-        if (nextSnapshot.degraded) {
-          throw new Error(
-            nextSnapshot.warning ??
-              "Change was kept locally because shared sync is unavailable. Retry sync when you are back online.",
-          );
-        }
-        return true;
-      } finally {
-        mutationsInFlightRef.current -= 1;
-        setIsSubmitting(false);
+      if (nextSnapshot.degraded) {
+        throw new Error(
+          nextSnapshot.warning ??
+            "Change was kept locally because shared sync is unavailable. Retry sync when you are back online.",
+        );
       }
+      return true;
     },
-    [currentUser, queryClient, scope],
+    [currentUser, mutate],
   );
-
-  const retrySync = useCallback(async () => {
-    await retryScopeSync(scope);
-    void refetch();
-  }, [refetch, scope]);
 
   return {
     data,
     isLoading,
-    isSubmitting,
+    isSubmitting: isMutating,
     error,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
-    refresh: refetch,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
+    refresh,
     retrySync,
     performMutation,
   };

@@ -1,5 +1,5 @@
 import MagicToggle from "./MagicToggle";
-import React, { useCallback } from 'react';
+import React from 'react';
 import './BentoWorkspaceController.css';
 import type { MainTab } from '@/shared/types';
 import type { AppNavStripStatus } from './AppNavStrip';

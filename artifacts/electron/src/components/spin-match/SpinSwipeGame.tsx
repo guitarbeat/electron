@@ -15,8 +15,6 @@ import {
   computeSpinOutcome,
 } from "@/components/spin-wheel/lib/spinWheelEngine";
 import {
-  SWIPE_THRESHOLD,
-  SWIPE_VELOCITY_THRESHOLD,
   evaluateSwipe,
   calculateVelocity,
   filterCandidates,

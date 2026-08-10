@@ -10,7 +10,6 @@ import React, {
 import { useUser } from "@/app/useProviders";
 import type {
   Movie,
-  MovieSuggestion,
   SharedMemory,
   MoviesViewProps,
 } from "@/shared/types";
@@ -19,14 +18,12 @@ import { CheckIcon, FilmIcon, MessageIcon } from "../common/Icons.tsx";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
 import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
-import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
 import { filterMoviesByMediaType, isTvSeries, type MediaTypeFilter } from "./lib/movieType";
 import type { MovieAutocompleteResult } from "@/services/metadata";
-import { createPortal } from "react-dom";
 import {
   type BentoStatTileConfig,
   type BentoSortChipConfig,
@@ -50,7 +47,7 @@ const MOVIE_SORTS: BentoSortChipConfig[] = [
 
 const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-  const { registerTabConfig, searchPortalEl } = useBentoSlot();
+  const { registerTabConfig } = useBentoSlot();
   const { isMobile } = useViewport();
   const setConfig = React.useCallback(
     (config: Parameters<typeof registerTabConfig>[1]) =>
@@ -334,7 +331,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           processingSuggestionId={processingSuggestionId}
           successMovieId={successMovieId}
           movieMemories={movieMemories}
-          onAddMovieFocus={focusSearchInput}
           onAcceptSuggestion={handleAcceptSuggestion}
           onRejectSuggestion={handleRejectSuggestion}
           onDeleteRequest={setMovieToDelete}
@@ -347,7 +343,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             deleteMemory: deleteMemoryRecord,
             togglePin: toggleMemoryPin,
           }}
-          sectionIds={MOVIE_SECTION_IDS}
           mediaTypeFilter={mediaTypeFilter}
           onMediaTypeFilterChange={setMediaTypeFilter}
           totalMoviesCount={movies.filter((m) => !isTvSeries(m)).length}

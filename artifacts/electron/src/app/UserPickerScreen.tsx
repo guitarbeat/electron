@@ -121,7 +121,7 @@ const UserPickerScreen: FC = () => {
       <div className="ups-glow ups-glow--right" aria-hidden="true" />
 
       <div className="ups-content">
-        <h1 className="ups-heading">Who's watching?</h1>
+        <h1 className="ups-heading">Who&apos;s watching?</h1>
 
         <div className="ups-grid">
           {(USER_OPTIONS as User[]).map((user) => (

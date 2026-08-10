@@ -11,51 +11,18 @@ import { formatMemoryTimestamp } from "@/utils";
 import { MAX_MOVIE_NOTE_LENGTH } from "./lib/movieSections";
 import { submitMemory } from "./lib/memorySubmit";
 import type { MovieTransitionOrigin } from "./MovieCard";
-import { InteractiveFolderGallery, type GalleryPhoto } from "@/components/ui/interactive-folder-gallery";
+import { InteractiveFolderGallery } from "@/components/ui/interactive-folder-gallery";
 import { HandWritingText } from "@/components/ui/hand-writing-text";
 import StremioButton from "@/components/ui/StremioButton";
-
-
-// Curated cinematic Unsplash fallbacks used to pad the gallery when a movie
-// has fewer than 3 memory photos (or no memory photos at all).
-const CINEMATIC_FALLBACKS = [
-  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=800&auto=format&fit=crop",
-];
-
-/** Build gallery photos from memory imageUrls + movie poster + Unsplash fillers */
-function buildGalleryPhotos(
-  memories: SharedMemory[],
-  movie: Movie,
-): GalleryPhoto[] {
-  const photos: GalleryPhoto[] = [];
-
-  // 1. Pull images from memories (up to 5)
-  memories.forEach((m) => {
-    if (m.imageUrl && photos.length < 5) {
-      photos.push({ id: `memory-${m.id}`, image: m.imageUrl });
-    }
-  });
-
-  // 2. Pad with the movie poster if it exists and we still need photos
-  if (movie.posterUrl && movie.posterUrl !== "N/A" && photos.length < 3) {
-    photos.push({ id: `poster-${movie.id}`, image: movie.posterUrl });
-  }
-
-  // 3. Fill remaining slots up to 5 with cinematic Unsplash stills
-  let fbIndex = 0;
-  while (photos.length < 5 && fbIndex < CINEMATIC_FALLBACKS.length) {
-    photos.push({ id: `fb-${fbIndex}`, image: CINEMATIC_FALLBACKS[fbIndex] });
-    fbIndex++;
-  }
-
-  return photos.slice(0, 5);
-}
-
 import { isTvSeries } from "./lib/movieType";
+import {
+  buildGalleryPhotos,
+  clampMovieTransitionOrigin,
+  getMovieDialogMetrics,
+  getMovieNotePreview,
+  getMovieWatchStatus,
+  getSecondaryMovieMemories,
+} from "./lib/movieDetailsModel";
 
 interface MovieDetailsModalProps {
   movie: Movie;
@@ -69,96 +36,6 @@ interface MovieDetailsModalProps {
   onTogglePin?: (memoryId: string) => Promise<void>;
   onClose: () => void;
 }
-
-const ALL_USERS: User[] = ["Aaron", "Electra"];
-
-const clampOrigin = (origin: MovieTransitionOrigin | null) => {
-  if (!origin) {
-    return {
-      top: "50dvh",
-      left: "50vw",
-      width: "18rem",
-      height: "27rem",
-    };
-  }
-
-  return {
-    top: `${origin.top}px`,
-    left: `${origin.left}px`,
-    width: `${origin.width}px`,
-    height: `${origin.height}px`,
-  };
-};
-
-const getDialogMetrics = (isMobile: boolean) => {
-  const viewportWidth =
-    typeof window === "undefined" ? 1280 : window.innerWidth;
-  const viewportHeight =
-    typeof window === "undefined" ? 800 : window.innerHeight;
-  const targetWidth = Math.min(viewportWidth - 32, isMobile ? 544 : 1440);
-  const targetHeight = Math.min(viewportHeight - 32, isMobile ? 768 : 900);
-  return { targetWidth, targetHeight };
-};
-
-const getWatchStatus = (movie: Movie, memoryCount: number) => {
-  if (movie.watchedBy.length === ALL_USERS.length) {
-    return {
-      label: "Seen together",
-      title: "Already a shared watch",
-      detail:
-        memoryCount > 0
-          ? "You both finished this one, and the poster is already carrying your notes."
-          : "You both marked this watched already.",
-    };
-  }
-
-  if (movie.watchedBy.length === 1) {
-    const watcher = movie.watchedBy[0];
-    const watchedSet = new Set(movie.watchedBy);
-    const remaining = ALL_USERS.find((user) => !watchedSet.has(user));
-    return {
-      label: `${watcher} watched`,
-      title: `${watcher} is ahead on this one`,
-      detail: remaining
-        ? `${remaining} still has this waiting in the queue.`
-        : "One watch logged so far.",
-    };
-  }
-
-  return {
-    label: "Still queued",
-    title: "Still sitting in the lineup",
-    detail:
-      memoryCount > 0
-        ? `${movie.addedBy} queued it, and there is already a note attached to the poster.`
-        : `${movie.addedBy} queued it for a future night.`,
-  };
-};
-
-const getNotePreview = (note: string): string => {
-  const trimmed = note.trim();
-  if (trimmed.length <= 96) {
-    return trimmed;
-  }
-
-  return `${trimmed.slice(0, 93).trimEnd()}...`;
-};
-
-const getSecondaryMemories = (
-  memories: SharedMemory[],
-  featuredId: string | undefined,
-  canManage: boolean,
-): SharedMemory[] => {
-  if (canManage) return [];
-  const result: SharedMemory[] = [];
-  for (const memory of memories) {
-    if (memory.id !== featuredId) {
-      result.push(memory);
-      if (result.length === 2) break;
-    }
-  }
-  return result;
-};
 
 const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   movie,
@@ -287,14 +164,14 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   );
   const featuredMemory =
     memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
-  const secondaryMemories = getSecondaryMemories(
+  const secondaryMemories = getSecondaryMovieMemories(
     memories,
     featuredMemory?.id,
     canManageMemories,
   );
-  const watchStatus = getWatchStatus(movie, memories.length);
-  const source = clampOrigin(origin ?? null);
-  const { targetWidth, targetHeight } = getDialogMetrics(isMobile);
+  const watchStatus = getMovieWatchStatus(movie, memories.length);
+  const source = clampMovieTransitionOrigin(origin ?? null);
+  const { targetWidth, targetHeight } = getMovieDialogMetrics(isMobile);
   const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
   const canSubmitNote =
     !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
@@ -642,7 +519,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                               {memory.author}
                             </span>
                             <p className="movie-details-modal__memory-row-note">
-                              {getNotePreview(memory.note)}
+                              {getMovieNotePreview(memory.note)}
                             </p>
                           </div>
                           <span className="movie-details-modal__memory-row-date">

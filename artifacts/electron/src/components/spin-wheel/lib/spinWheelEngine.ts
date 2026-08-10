@@ -1,4 +1,8 @@
 import type { Movie } from "../../../shared/types.ts";
+import {
+  getUnwatchedCandidatePool,
+  selectCandidateSubset,
+} from "../../games/movieCandidatePool";
 
 const SEGMENT_COLORS = [
   "#ff7ea8",
@@ -24,8 +28,7 @@ export const getSpinCandidates = (movies: Movie[], mode: SpinMode): Movie[] => {
     return movies;
   }
 
-  const queue = movies.filter((movie) => movie.watchedBy.length < 2);
-  return queue.length > 0 ? queue : movies;
+  return getUnwatchedCandidatePool(movies);
 };
 
 export const getSpinPool = (
@@ -34,12 +37,7 @@ export const getSpinPool = (
   selectedMovieIds: ReadonlySet<string> = new Set<string>(),
 ): Movie[] => {
   const candidates = getSpinCandidates(movies, mode);
-  if (selectedMovieIds.size === 0) {
-    return candidates;
-  }
-
-  const selected = candidates.filter((movie) => selectedMovieIds.has(movie.id));
-  return selected.length > 0 ? selected : candidates;
+  return selectCandidateSubset(candidates, selectedMovieIds);
 };
 
 export const buildSpinWheelGradient = (

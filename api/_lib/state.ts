@@ -10,7 +10,6 @@ import { normalizeMovieRecord } from '../../artifacts/electron/src/services/cont
 import type { PinRecord } from '../../artifacts/electron/src/services/content/pinHelpers.js';
 import {
   mockMovies,
-  mockSuggestions,
   mockMessages,
   mockMemories,
   mockPlaces,
@@ -27,8 +26,6 @@ import {
   normalizeDailySpinRecord,
   normalizeSpinHistoryParsed,
   normalizeStoredPins,
-  normalizeSuggestionRecord,
-  normalizePlaceSuggestionRecord,
 } from '../../artifacts/electron/src/services/state/stateSchemas.js';
 import type {
   DailySpinRecord,
@@ -41,9 +38,7 @@ import type {
   MatchmakerGame,
   Message,
   Movie,
-  MovieSuggestion,
   Place,
-  PlaceSuggestion,
   SharedMemory,
   User,
 } from '../../artifacts/electron/src/shared/types.js';
@@ -57,16 +52,6 @@ import {
   findMovieByNormalizedTitle,
 } from './common.js';
 import {
-  badRequestResponse,
-  conflictResponse,
-  jsonResponse,
-  methodNotAllowedResponse,
-  normalizeEtag,
-  serverErrorResponse,
-  toQuotedEtag,
-  unauthorizedResponse,
-} from './http.js';
-import {
   invalidateSharedStateCache,
   isSharedStateConfigured,
   isSharedStateWriteConfigured,
@@ -74,9 +59,10 @@ import {
   patchSharedStateFile,
   readSharedStateFileRecord,
 } from './sharedStateStore.js';
-import { hashPin, requireProfileUser, hasAccessSession, verifyStoredPin } from './session.js';
+import { hashPin, verifyStoredPin } from './session.js';
+import { suggestionScopeDefinitions } from './stateScopes/suggestions.js';
 
-interface MutationContext {
+export interface MutationContext {
   currentUser: User | null;
   now: string;
 }
@@ -107,7 +93,7 @@ type MutationSuccess<T> = {
 
 type MutationResult<T> = MutationFailure | MutationSuccess<T>;
 
-interface ScopeDefinition<
+export interface ScopeDefinition<
   TScope extends StateScope,
   TStored,
   TClient = StateScopeDataMap[TScope]
@@ -223,7 +209,7 @@ const parseDailySpin = (content: string | null): DailySpinRecord | null => {
   }
 };
 
-const computeVersion = (value: unknown): string =>
+export const computeVersion = (value: unknown): string =>
   createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
@@ -786,176 +772,7 @@ const scopes: {
       }
     },
   },
-  suggestions: {
-    filename: 'suggestions.json',
-    parse: (content) =>
-      parseArrayScope<MovieSuggestion>(
-        content,
-        'suggestions',
-        normalizeSuggestionRecord,
-        mockSuggestions
-      ),
-    serialize: (value) => JSON.stringify(value, null, 2),
-    toClient: (value) => value as StateScopeDataMap['suggestions'],
-    allowAnonymousMutation: (op) => op === 'add_suggestion',
-    mutate: (current, op, payload, context) => {
-      const suggestions = current as MovieSuggestion[];
-
-      switch (op) {
-        case 'add_suggestion': {
-          const nextPayload = payload as {
-            id?: unknown;
-            title?: unknown;
-            reason?: unknown;
-            suggestedBy?: unknown;
-            imdbID?: unknown;
-            type?: unknown;
-          };
-          const id = extractString(nextPayload.id);
-          const title = extractString(nextPayload.title);
-          const suggestedBy = context.currentUser ?? (extractString(nextPayload.suggestedBy) || 'Guest');
-          const imdbID = extractString(nextPayload.imdbID) || undefined;
-          const type =
-            nextPayload.type === 'movie' || nextPayload.type === 'series'
-              ? nextPayload.type
-              : undefined;
-
-          if (!id || !title) {
-            return { ok: false, conflict: 'Invalid suggestion payload.' };
-          }
-
-          if (suggestions.some((suggestion) => suggestion.id === id)) {
-            return { ok: false, conflict: 'Suggestion already exists.' };
-          }
-
-          return {
-            ok: true,
-            data: [
-              ...suggestions,
-              {
-                id,
-                title,
-                suggestedBy,
-                reason: extractString(nextPayload.reason) || undefined,
-                imdbID,
-                type,
-                status: 'pending',
-                createdAt: context.now,
-              },
-            ],
-          };
-        }
-        case 'accept_suggestion':
-        case 'reject_suggestion': {
-          const suggestionId = extractString((payload as { suggestionId?: unknown }).suggestionId);
-
-          if (!suggestions.some((suggestion) => suggestion.id === suggestionId)) {
-            return { ok: false, conflict: 'Suggestion not found.' };
-          }
-
-          return {
-            ok: true,
-            data: suggestions.map((suggestion) =>
-              suggestion.id === suggestionId
-                ? {
-                    ...suggestion,
-                    status: op === 'accept_suggestion' ? 'accepted' : 'rejected',
-                    respondedAt: context.now,
-                    respondedBy: context.currentUser!,
-                  }
-                : suggestion
-            ),
-          };
-        }
-        default:
-          return { ok: false, conflict: `Unsupported suggestions operation: ${op}` };
-      }
-    },
-  },
-  placeSuggestions: {
-    filename: 'placesuggestions.json',
-    parse: (content) =>
-      parseArrayScope<PlaceSuggestion>(
-        content,
-        'placeSuggestions',
-        normalizePlaceSuggestionRecord
-      ),
-    serialize: (value) => JSON.stringify(value, null, 2),
-    toClient: (value) => value as StateScopeDataMap['placeSuggestions'],
-    allowAnonymousMutation: (op) => op === 'add_place_suggestion',
-    mutate: (current, op, payload, context) => {
-      const suggestions = current as PlaceSuggestion[];
-
-      switch (op) {
-        case 'add_place_suggestion': {
-          const nextPayload = payload as {
-            id?: unknown;
-            name?: unknown;
-            notes?: unknown;
-            category?: unknown;
-            rating?: unknown;
-            description?: unknown;
-            imageUrl?: unknown;
-            suggestedBy?: unknown;
-          };
-          const id = extractString(nextPayload.id);
-          const name = extractString(nextPayload.name);
-          const suggestedBy = context.currentUser ?? (extractString(nextPayload.suggestedBy) || 'Guest');
-
-          if (!id || !name || !suggestedBy) {
-            return { ok: false, conflict: 'Invalid place suggestion payload.' };
-          }
-
-          if (suggestions.some((suggestion) => suggestion.id === id)) {
-            return { ok: false, conflict: 'Suggestion already exists.' };
-          }
-
-          return {
-            ok: true,
-            data: [
-              ...suggestions,
-              {
-                id,
-                name,
-                suggestedBy,
-                notes: extractString(nextPayload.notes) || undefined,
-                category: extractString(nextPayload.category) || undefined,
-                rating: extractString(nextPayload.rating) || undefined,
-                description: extractString(nextPayload.description) || undefined,
-                imageUrl: extractString(nextPayload.imageUrl) || undefined,
-                status: 'pending',
-                createdAt: context.now,
-              },
-            ],
-          };
-        }
-        case 'accept_place_suggestion':
-        case 'reject_place_suggestion': {
-          const suggestionId = extractString((payload as { suggestionId?: unknown }).suggestionId);
-
-          if (!suggestions.some((suggestion) => suggestion.id === suggestionId)) {
-            return { ok: false, conflict: 'Suggestion not found.' };
-          }
-
-          return {
-            ok: true,
-            data: suggestions.map((suggestion) =>
-              suggestion.id === suggestionId
-                ? {
-                    ...suggestion,
-                    status: op === 'accept_place_suggestion' ? 'accepted' : 'rejected',
-                    respondedAt: context.now,
-                    respondedBy: context.currentUser!,
-                  }
-                : suggestion
-            ),
-          };
-        }
-        default:
-          return { ok: false, conflict: `Unsupported placeSuggestions operation: ${op}` };
-      }
-    },
-  },
+  ...suggestionScopeDefinitions,
   quiz: {
     filename: 'quiz.json',
     parse: parseQuiz,
@@ -1158,7 +975,7 @@ const scopes: {
   },
 };
 
-const getScopeDefinition = <TScope extends StateScope>(
+export const getScopeDefinition = <TScope extends StateScope>(
   scope: TScope
 ): ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]> =>
   scopes[scope] as ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]>;
@@ -1179,7 +996,7 @@ const repairMissingScopeFile = async <TScope extends StateScope>(
   }
 };
 
-const readScopeStoredData = async <TScope extends StateScope>(
+export const readScopeStoredData = async <TScope extends StateScope>(
   scope: TScope,
   options: { bypassCache?: boolean } = {}
 ): Promise<{
@@ -1187,6 +1004,7 @@ const readScopeStoredData = async <TScope extends StateScope>(
   clientData: StateScopeDataMap[TScope];
   version: string;
   fileMissing: boolean;
+  usesFallbackStore: boolean;
 }> => {
   const definition = getScopeDefinition(scope);
 
@@ -1200,6 +1018,7 @@ const readScopeStoredData = async <TScope extends StateScope>(
       clientData,
       version,
       fileMissing: true,
+      usesFallbackStore: true,
     };
   }
 
@@ -1220,10 +1039,11 @@ const readScopeStoredData = async <TScope extends StateScope>(
     clientData,
     version,
     fileMissing: !file.exists,
+    usesFallbackStore: false,
   };
 };
 
-const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
+export const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
   const definition = getScopeDefinition(scope);
   const stored = definition.parse(null);
   const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
@@ -1326,7 +1146,7 @@ export const getScopeWarning = (error: unknown): string | undefined => {
   return 'Shared state could not be loaded. Check server logs and Neon connectivity.';
 };
 
-const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
+export const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
   let payload: unknown;
   try {
     payload = await req.json();
@@ -1383,170 +1203,3 @@ export const verifyProfilePin = async (
 
   return pin ? verifyStoredPin(pin, storedHash) : false;
 };
-
-export const createReadHandler =
-  <TScope extends StateScope>(scope: TScope) =>
-  async (req: Request): Promise<Response> => {
-    try {
-      if (req.method !== 'GET') {
-        return methodNotAllowedResponse('GET');
-      }
-
-      if (!hasAccessSession(req)) {
-        return unauthorizedResponse();
-      }
-
-      let clientData: StateScopeDataMap[TScope];
-      let version: string;
-      let degraded = false;
-      let warning: string | undefined;
-
-      try {
-        // Bypass shared-state cache so GET version matches mutate (which bypasses).
-        // Otherwise a 30s cached read can lag behind fresh reads on POST and clients
-        // send a stale baseVersion, which breaks sync (409 / blocked outbox).
-        const stored = await readScopeStoredData(scope, { bypassCache: true });
-        clientData = stored.clientData;
-        version = stored.version;
-        if (!isSharedStateConfigured()) {
-          degraded = true;
-          warning = getScopeWarning(new Error('DATABASE_URL is not configured.'));
-        }
-      } catch (error) {
-        const fallback = buildFallbackScopeData(scope);
-        clientData = fallback.clientData;
-        version = fallback.version;
-        degraded = true;
-        warning = getScopeWarning(error);
-        console.warn(`Falling back to default ${scope} state.`, error);
-      }
-
-      const incomingEtag = normalizeEtag(req.headers.get('if-none-match'));
-      if (!degraded && incomingEtag && incomingEtag === normalizeEtag(version)) {
-        return new Response(null, {
-          status: 304,
-          headers: {
-            ETag: toQuotedEtag(version),
-            'Cache-Control': 'no-store',
-          },
-        });
-      }
-
-      return jsonResponse(
-        {
-          data: clientData,
-          version,
-          degraded,
-          warning,
-        },
-        {
-          headers: {
-            ETag: toQuotedEtag(version),
-          },
-        }
-      );
-    } catch (error) {
-      console.error(`Failed to read ${scope} state during ${req.method} ${req.url}:`, error);
-      const fallback = buildFallbackScopeData(scope);
-      return jsonResponse(
-        {
-          data: fallback.clientData,
-          version: fallback.version,
-          degraded: true,
-          warning: getScopeWarning(error),
-        },
-        {
-          status: 200,
-        }
-      );
-    }
-  };
-
-export const createMutateHandler =
-  <TScope extends StateScope>(scope: TScope) =>
-  async (req: Request): Promise<Response> => {
-    try {
-      if (req.method !== 'POST') {
-        return methodNotAllowedResponse('POST');
-      }
-
-      if (!hasAccessSession(req)) {
-        return unauthorizedResponse();
-      }
-
-      const definition = getScopeDefinition(scope);
-      if (!definition.mutate) {
-        return badRequestResponse(`Mutations are not supported for ${scope}.`);
-      }
-
-      let mutation: MutationRequest;
-      try {
-        mutation = await parseMutationRequest(req);
-      } catch (error) {
-        return badRequestResponse(
-          error instanceof Error ? error.message : 'Invalid mutation request.'
-        );
-      }
-
-      const currentUser = requireProfileUser(req);
-      const isAnonymousMutationAllowed =
-        !currentUser &&
-        Boolean(definition.allowAnonymousMutation?.(mutation.op, mutation.payload));
-
-      if (!currentUser && !isAnonymousMutationAllowed) {
-        return unauthorizedResponse('Profile session required.');
-      }
-
-      const latest = await readScopeStoredData(scope, { bypassCache: true });
-
-      // Version-aware last-writer-wins: we intentionally allow writes even when
-      // baseVersion lags. Two devices can race; the in-flight operation is validated
-      // and merged against current server state rather than forcing a 409 refresh.
-      // We log divergence for observability and future opt-in strict locking.
-      if (mutation.baseVersion !== latest.version) {
-        console.warn(
-          `[state] Version divergence on "${scope}" (op: ${mutation.op}): ` +
-            `client sent ${mutation.baseVersion.slice(0, 8)}…, ` +
-            `server has ${latest.version.slice(0, 8)}…. ` +
-            `Proceeding with last-writer-wins merge.`
-        );
-      }
-
-      // Apply mutation against the current server snapshot (last-writer-wins).
-
-      const result = definition.mutate(latest.stored, mutation.op, mutation.payload, {
-        currentUser,
-        now: new Date().toISOString(),
-      });
-
-      if (!result.ok) {
-        return conflictResponse({
-          currentData: latest.clientData,
-          currentVersion: latest.version,
-          conflict: result.conflict,
-        });
-      }
-
-      const clientData = definition.toClient(result.data) as StateScopeDataMap[TScope];
-      const nextVersion = computeVersion(clientData);
-
-      await patchSharedStateFile(definition.filename, definition.serialize(result.data));
-
-      return jsonResponse(
-        {
-          data: clientData,
-          version: nextVersion,
-          degraded: false,
-          applied: true,
-        },
-        {
-          headers: {
-            ETag: toQuotedEtag(nextVersion),
-          },
-        }
-      );
-    } catch (error) {
-      console.error(`Failed to mutate ${scope} state during ${req.method} ${req.url}:`, error);
-      return serverErrorResponse(error);
-    }
-  };

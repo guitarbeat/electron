@@ -1,22 +1,19 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { sanitizeInput } from "@/utils";
-import { MovieSuggestion, User } from "@/shared/types";
-import { useUser } from "@/app/useProviders";
-import { mutateScope } from "@/services/state";
+import type { MovieSuggestion } from "@/shared/types";
 import type { MovieAutocompleteResult } from "@/services/metadata/types";
-import { useCollection } from "../useCollection";
+import {
+  type SuggestionRecord as BaseSuggestion,
+  useSuggestionCollection,
+} from "./suggestionCollection";
 
-export interface BaseSuggestion {
-  id: string;
-  status: "pending" | "accepted" | "rejected";
-  respondedAt?: string;
-  respondedBy?: User;
-}
+export type { BaseSuggestion };
 
 export const useSuggestions = (isPaused: boolean = false) => {
-  const { currentUser } = useUser();
   const {
-    data: suggestions,
+    suggestions,
+    pendingSuggestions,
+    currentUser,
     isLoading,
     isSubmitting,
     error,
@@ -25,45 +22,17 @@ export const useSuggestions = (isPaused: boolean = false) => {
     syncWarning,
     refresh,
     retrySync,
-    performMutation,
-  } = useCollection<MovieSuggestion>("suggestions", currentUser, {
-    pollingInterval: 60000,
-    isPaused,
-  });
-
-  const pendingSuggestions = useMemo(
-    () => suggestions.filter((s) => s.status === "pending"),
-    [suggestions],
-  );
-
-  const respondToSuggestion = useCallback(
-    async (
-      suggestionId: string,
-      status: "accepted" | "rejected",
-      respondedBy: User,
-      op: string,
-    ) => {
-      const suggestion = suggestions.find((entry) => entry.id === suggestionId);
-      if (!suggestion) {
-        throw new Error("Suggestion not found");
-      }
-
-      await performMutation(
-        op,
-        { suggestionId },
-        suggestions.map((entry) =>
-          entry.id === suggestionId
-            ? {
-                ...entry,
-                status,
-                respondedAt: new Date().toISOString(),
-                respondedBy,
-              }
-            : entry,
-        ),
-      );
+    add,
+    accept,
+    reject,
+  } = useSuggestionCollection<MovieSuggestion>(
+    {
+      scope: "suggestions",
+      addOperation: "add_suggestion",
+      acceptOperation: "accept_suggestion",
+      rejectOperation: "reject_suggestion",
     },
-    [performMutation, suggestions],
+    isPaused,
   );
 
   const addSuggestion = useCallback(
@@ -87,60 +56,19 @@ export const useSuggestions = (isPaused: boolean = false) => {
         createdAt: new Date().toISOString(),
       };
 
-      if (currentUser) {
-        await performMutation(
-          "add_suggestion",
-          {
-            id: nextSuggestion.id,
-            title: nextSuggestion.title,
-            reason: nextSuggestion.reason,
-            imdbID: nextSuggestion.imdbID,
-            type: nextSuggestion.type,
-          },
-          [...suggestions, nextSuggestion],
-        );
-      } else {
-        await mutateScope("suggestions", {
-          op: "add_suggestion",
-          payload: {
-            id: nextSuggestion.id,
-            title: nextSuggestion.title,
-            reason: nextSuggestion.reason,
-            suggestedBy: nextSuggestion.suggestedBy,
-            imdbID: nextSuggestion.imdbID,
-            type: nextSuggestion.type,
-          },
-          optimisticData: [...suggestions, nextSuggestion],
-        });
-      }
-
-      return nextSuggestion;
+      const payload = {
+        id: nextSuggestion.id,
+        title: nextSuggestion.title,
+        reason: nextSuggestion.reason,
+        imdbID: nextSuggestion.imdbID,
+        type: nextSuggestion.type,
+      };
+      return add(nextSuggestion, payload, {
+        ...payload,
+        suggestedBy: nextSuggestion.suggestedBy,
+      });
     },
-    [currentUser, performMutation, suggestions],
-  );
-
-  const acceptSuggestion = useCallback(
-    async (suggestionId: string, respondedBy: User): Promise<void> => {
-      await respondToSuggestion(
-        suggestionId,
-        "accepted",
-        respondedBy,
-        "accept_suggestion",
-      );
-    },
-    [respondToSuggestion],
-  );
-
-  const rejectSuggestion = useCallback(
-    async (suggestionId: string, respondedBy: User): Promise<void> => {
-      await respondToSuggestion(
-        suggestionId,
-        "rejected",
-        respondedBy,
-        "reject_suggestion",
-      );
-    },
-    [respondToSuggestion],
+    [add, currentUser],
   );
 
   return {
@@ -155,7 +83,7 @@ export const useSuggestions = (isPaused: boolean = false) => {
     refresh,
     retrySync,
     addSuggestion,
-    acceptSuggestion,
-    rejectSuggestion,
+    acceptSuggestion: accept,
+    rejectSuggestion: reject,
   };
 };

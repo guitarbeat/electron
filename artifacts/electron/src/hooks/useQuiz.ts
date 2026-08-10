@@ -4,54 +4,51 @@
  * Provides quiz data with polling and mutation support
  */
 
-import { useState, useCallback } from "react";
-import { usePolling } from "@/services/polling";
+import { useCallback } from "react";
 import { QuizQuestion, QuizCharacter } from "@/components/quiz/lib/types";
 import { consoleError } from "@/utils";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
-import { mutateScope, readScope, retryScopeSync } from "@/services/state";
 import type { QuizData } from "@/services/state/stateTypes";
+import { useSyncedScope } from "./useSyncedScope";
 
 const POLLING_INTERVAL = 30000;
 
 export type { QuizData } from "@/services/state/stateTypes";
 
 export const useQuiz = (isPaused: boolean = false) => {
-  const readQuiz = useCallback(() => readScope("quiz"), []);
   const {
-    data: snapshot,
+    data: quizData,
     error,
     isLoading,
+    isMutating: isSaving,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
-  } = usePolling(readQuiz, POLLING_INTERVAL, areScopeSnapshotsEqual, {
-    key: "quiz",
+    retrySync,
+    mutate,
+  } = useSyncedScope("quiz", {
+    pollingInterval: POLLING_INTERVAL,
     isPaused,
   });
-  const [isSaving, setIsSaving] = useState(false);
-
-  const quizData = snapshot?.data;
 
   const performMutation = useCallback(
     async (mutationFn: (data: QuizData) => QuizData) => {
       if (!quizData) return;
 
-      setIsSaving(true);
       try {
         const updatedData = mutationFn(quizData);
-        await mutateScope("quiz", {
+        await mutate({
           op: "replace_quiz",
           payload: { quizData: updatedData },
           optimisticData: updatedData,
         });
-        refresh();
+        void refresh();
       } catch (err) {
         consoleError("Quiz mutation failed:", err);
         throw err;
-      } finally {
-        setIsSaving(false);
       }
     },
-    [quizData, refresh],
+    [mutate, quizData, refresh],
   );
 
   const updateQuestions = useCallback(
@@ -120,34 +117,24 @@ export const useQuiz = (isPaused: boolean = false) => {
     async (data: QuizData) => {
       if (!data) return;
 
-      setIsSaving(true);
-      try {
-        await mutateScope("quiz", {
-          op: "replace_quiz",
-          payload: { quizData: data },
-          optimisticData: data,
-        });
-        refresh();
-      } finally {
-        setIsSaving(false);
-      }
+      await mutate({
+        op: "replace_quiz",
+        payload: { quizData: data },
+        optimisticData: data,
+      });
+      void refresh();
     },
-    [refresh],
+    [mutate, refresh],
   );
-
-  const retrySync = useCallback(async () => {
-    await retryScopeSync("quiz");
-    refresh();
-  }, [refresh]);
 
   return {
     quizData,
     error,
     isLoading,
     isSaving,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
     retrySync,
     updateQuestions,

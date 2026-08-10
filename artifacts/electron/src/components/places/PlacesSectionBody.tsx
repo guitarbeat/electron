@@ -16,6 +16,7 @@ import {
   workspaceSectionIds,
   workspaceSectionLabels,
 } from "@/utils/workspaceConfig";
+import { getWorkspaceCollectionState } from "@/utils/workspace";
 
 interface PlacesSectionBodyProps {
   sections: PlaceSections;
@@ -67,22 +68,18 @@ const PlacesSectionBody: React.FC<PlacesSectionBodyProps> = ({
   const sectionIds = workspaceSectionIds("places");
 
   const allPlaces = [...sections.queue, ...sections.completed];
-  const hasPlaces = allPlaces.length > 0;
-  const showInitialLoading =
-    (isLoading || isSuggestionsLoading) &&
-    !hasPlaces &&
-    pendingSuggestions.length === 0;
-  const showGlobalEmpty =
-    !isLoading &&
-    !isSuggestionsLoading &&
-    !hasPlaces &&
-    pendingSuggestions.length === 0;
+  const collectionState = getWorkspaceCollectionState({
+    itemCount: allPlaces.length,
+    suggestionCount: pendingSuggestions.length,
+    isLoadingItems: isLoading,
+    isLoadingSuggestions: isSuggestionsLoading,
+  });
 
-  if (showInitialLoading) {
+  if (collectionState === "loading") {
     return <WorkspaceCollectionLoading tab="places" />;
   }
 
-  if (showGlobalEmpty) {
+  if (collectionState === "empty") {
     return (
       <WorkspaceCollectionGlobalEmpty
         tab="places"

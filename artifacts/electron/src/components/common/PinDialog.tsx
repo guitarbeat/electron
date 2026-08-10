@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef } from "react";
+import React, { useCallback, useEffect, useReducer, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { User } from "@/shared/types";
 import { isFocusWithin, trapFocusOnTab } from "@/components/ui/lib/modalPrimitives";
@@ -79,13 +79,13 @@ const PinDialog: React.FC<PinDialogProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onCancel]);
 
-  const reportError = (message: string, clearDigits = false) => {
+  const reportError = useCallback((message: string, clearDigits = false) => {
     dispatch({ type: "set-error", message });
     playError();
     if (clearDigits) {
       dispatch({ type: "clear-digits" });
     }
-  };
+  }, [playError]);
 
   useEffect(() => {
     if (flow.mode !== "enter" || flow.digits.length !== PIN_LENGTH || isLoading) {
@@ -107,7 +107,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
     }, 100);
     return () => window.clearTimeout(id);
-  }, [flow.digits, flow.mode, isLoading, onSubmit, playError]);
+  }, [flow.digits, flow.mode, isLoading, onSubmit, reportError]);
 
   const appendDigit = (value: number) => {
     if (flow.digits.length >= PIN_LENGTH) return;
@@ -318,4 +318,3 @@ const PinDialog: React.FC<PinDialogProps> = ({
 };
 
 export default PinDialog;
-

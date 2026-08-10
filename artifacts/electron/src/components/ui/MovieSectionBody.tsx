@@ -1,20 +1,19 @@
 import React from 'react';
 import type { Movie, MovieSuggestion, SharedMemory, User } from '@/shared/types';
-import { MovieCardSkeleton } from '@/ui/LegacySkeleton';
+import { MovieCardSkeleton } from '@/ui/Skeleton';
 import {
   CollectionEmptyState,
   CollectionGrid,
-  CollectionSection,
 } from '@/ui/CollectionLayout';
-import Button from '@/ui/LegacyButton';
 import { spacing } from '@/theme/tokens';
 import SuggestionCard from '@/components/movies/SuggestionCard';
 import MovieCard from '@/components/movies/MovieCard';
 import type { MovieSections } from '@/components/movies/lib/movieSections';
 import WorkspaceCollectionLoading from '@/components/ui/WorkspaceCollectionLoading';
+import { getWorkspaceCollectionState } from '@/utils/workspace';
 
 import MagicToggle from '@/components/ui/MagicToggle';
-import { isTvSeries, type MediaTypeFilter } from '@/components/movies/lib/movieType';
+import type { MediaTypeFilter } from '@/components/movies/lib/movieType';
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -40,13 +39,11 @@ interface Props {
   processingSuggestionId: string | null;
   successMovieId: string | null;
   movieMemories: Map<string, SharedMemory[]>;
-  onAddMovieFocus: () => void;
   onAcceptSuggestion: (s: MovieSuggestion) => void;
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
-  sectionIds?: MovieSectionIds;
   mediaTypeFilter?: MediaTypeFilter;
   onMediaTypeFilterChange?: (filter: MediaTypeFilter) => void;
   totalMoviesCount?: number;
@@ -65,13 +62,11 @@ const MovieSectionBody: React.FC<Props> = ({
   processingSuggestionId,
   successMovieId,
   movieMemories,
-  onAddMovieFocus,
   onAcceptSuggestion,
   onRejectSuggestion,
   onDeleteRequest,
   onToggleError,
   actions,
-  sectionIds,
   mediaTypeFilter = 'all',
   onMediaTypeFilterChange,
   totalMoviesCount = 0,
@@ -87,9 +82,12 @@ const MovieSectionBody: React.FC<Props> = ({
     ? 'clamp(0.45rem, 1.5vw, 0.65rem)'
     : 'clamp(0.3rem, 0.6vw, 0.5rem)';
 
-  const showInitialLoading =
-    isLoading && isSuggestionsLoading &&
-    isEmpty(sections.queue) && isEmpty(sections.suggestions) && isEmpty(sections.completed);
+  const collectionState = getWorkspaceCollectionState({
+    itemCount: sections.queue.length + sections.completed.length,
+    suggestionCount: sections.suggestions.length,
+    isLoadingItems: isLoading && isSuggestionsLoading,
+    isLoadingSuggestions: false,
+  });
 
   const movieGrid = (movies: Movie[], emptyLabel: string) => (
     <div
@@ -130,11 +128,9 @@ const MovieSectionBody: React.FC<Props> = ({
     </div>
   );
 
-  if (showInitialLoading) {
+  if (collectionState === 'loading') {
     return <WorkspaceCollectionLoading tab="movies" minColumnWidth={GRID} />;
   }
-
-  const isQueueEmpty = isEmpty(sections.queue) && isEmpty(sections.suggestions) && !isSuggestionsLoading;
 
   // ── Full section body ─────────────────────────────────────────────────────
   return (

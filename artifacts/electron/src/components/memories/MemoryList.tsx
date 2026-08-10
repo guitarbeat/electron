@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { SharedMemory, User } from '@/shared/types';
-import Button from '@/ui/LegacyButton';
+import Button from '@/ui/Button';
 import { Textarea } from '@/ui/FormFields';
 import ConfirmDialog from '@/ui/ConfirmDialog';
-import { colors, radius, spacing, typography, layouts, sanitizeInput } from '@/utils';
+import { colors, radius, spacing, typography, layouts } from '@/utils';
 import { formatMemoryTimestamp } from '@/utils';
 import {
   ALL_MOVIES_FILTER,
@@ -13,6 +13,7 @@ import {
   getStickyNoteRotation,
   getStickyNoteTheme,
 } from "./lib/memoryUtils";
+import { useMemoryListActions } from "./lib/useMemoryListActions";
 
 interface MemoryListProps {
   memories: SharedMemory[];
@@ -87,12 +88,24 @@ const MemoryList: React.FC<MemoryListProps> = ({
   onDeleteMemory,
   onTogglePin,
 }) => {
-  const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
-  const [draftNote, setDraftNote] = useState("");
-  const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
-  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(
-    null,
-  );
+  const {
+    editingMemoryId,
+    draftNote,
+    setDraftNote,
+    isBusyMemoryId,
+    memoryToDelete,
+    setMemoryToDelete,
+    confirmDeleteMemory,
+    startEditing,
+    saveEdit,
+    cancelEdit,
+    togglePin,
+  } = useMemoryListActions({
+    currentUser,
+    onEditMemory,
+    onDeleteMemory,
+    onTogglePin,
+  });
 
   // Validation for memory editing
   const canManageMemories = Boolean(currentUser);
@@ -100,61 +113,6 @@ const MemoryList: React.FC<MemoryListProps> = ({
   const pinnedCount = useMemo(
     () => sortedMemories.filter((memory) => memory.isPinned).length,
     [sortedMemories],
-  );
-
-  const confirmDeleteMemory = useCallback(async () => {
-    if (!memoryToDelete) return;
-    if (!currentUser || memoryToDelete.author !== currentUser) {
-      setMemoryToDelete(null);
-      return;
-    }
-
-    setIsBusyMemoryId(memoryToDelete.id);
-    try {
-      await onDeleteMemory(memoryToDelete);
-      setMemoryToDelete(null);
-    } finally {
-      setIsBusyMemoryId(null);
-    }
-  }, [memoryToDelete, currentUser, onDeleteMemory]);
-
-  const startEditing = useCallback((memory: SharedMemory) => {
-    setEditingMemoryId(memory.id);
-    setDraftNote(memory.note);
-  }, []);
-
-  const saveEdit = useCallback(
-    async (memory: SharedMemory) => {
-      const trimmedNote = sanitizeInput(draftNote.trim());
-      if (!trimmedNote) return;
-
-      setIsBusyMemoryId(memory.id);
-      try {
-        await onEditMemory(memory, trimmedNote);
-        setEditingMemoryId(null);
-        setDraftNote("");
-      } finally {
-        setIsBusyMemoryId(null);
-      }
-    },
-    [draftNote, onEditMemory],
-  );
-
-  const cancelEdit = useCallback(() => {
-    setEditingMemoryId(null);
-    setDraftNote("");
-  }, []);
-
-  const togglePin = useCallback(
-    async (memory: SharedMemory) => {
-      setIsBusyMemoryId(memory.id);
-      try {
-        await onTogglePin(memory);
-      } finally {
-        setIsBusyMemoryId(null);
-      }
-    },
-    [onTogglePin],
   );
 
   return (

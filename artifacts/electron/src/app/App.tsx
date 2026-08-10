@@ -308,17 +308,6 @@ const App: React.FC = () => {
                   <AppWorkspaceShell
                     activeTab={activeTab}
                     onTabChange={handleTabChange}
-                    pwaStatus={{
-                      isOnline,
-                      isStandalone,
-                      canInstall: canInstallApp,
-                      hasUpdateReady,
-                      pendingSyncCount: outboxStatus.pendingCount,
-                      blockedSyncCount: outboxStatus.blockedCount,
-                    }}
-                    onInstallApp={() => void handleInstallApp()}
-                    onApplyUpdate={handleApplyUpdate}
-                    onRetrySync={handleRetryPendingSync}
                     onOpenMessages={openMessages}
                     onOpenQuiz={openQuizExperience}
                     onOpenSpin={openSpinMatch}

@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import type { WorkspaceChromeHeaderProps } from "@/components/ui/BentoWorkspaceController";
 import ProfilePinPanel from "@/components/ui/ProfilePinPanel";
 import { ProfilePinProvider } from "@/app/ProfilePinContext";
 import { useUser } from "@/app/useProviders";
@@ -18,11 +17,11 @@ const MessageBoard = React.lazy(() => import("@/components/messages/MessageBoard
 const QuizExperience = React.lazy(() => import("@/components/quiz/QuizExperience"));
 const SpinSwipeGame = React.lazy(() => import("@/components/spin-match/SpinSwipeGame"));
 
-const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
-
 export type TogglePanel = "messages" | "quiz" | "spin";
 
-type AppWorkspaceShellProps = WorkspaceChromeHeaderProps & {
+type AppWorkspaceShellProps = {
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
   onOpenMessages?: () => void;
   onOpenQuiz?: () => void;
   onOpenSpin?: () => void;
@@ -33,16 +32,10 @@ type AppWorkspaceShellProps = WorkspaceChromeHeaderProps & {
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
   onTabChange,
-  pwaStatus,
-  onInstallApp,
-  onApplyUpdate,
-  onRetrySync,
   openPanels,
   onTogglePanel,
 }) => {
-  const [tabConfigs, setTabConfigs] = useState<
-    Partial<Record<MainTab, RegisteredBentoSlotConfig>>
-  >({});
+  const [, setTabConfigs] = useState<Partial<Record<MainTab, RegisteredBentoSlotConfig>>>({});
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );

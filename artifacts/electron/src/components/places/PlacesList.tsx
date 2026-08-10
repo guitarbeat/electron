@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-refresh/only-export-components */
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useUser, useToast } from '@/app/useProviders';
 import { usePlaces } from '@/hooks/places';
@@ -8,7 +7,7 @@ import {
   CollectionGrid,
   CollectionSection,
 } from '@/ui/CollectionLayout';
-import { MovieCardSkeleton } from '@/ui/LegacySkeleton';
+import { MovieCardSkeleton } from '@/ui/Skeleton';
 import { CheckIcon, MapPinIcon, MessageIcon } from '../common/Icons.tsx';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';

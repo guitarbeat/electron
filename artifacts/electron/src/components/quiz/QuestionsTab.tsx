@@ -15,8 +15,8 @@ import QuestionEditorPanel, {
   XYAxisSummary,
 } from './QuestionEditorPanel';
 import { getQuestionDetail, QUESTION_TYPE_LABELS } from './lib/QuestionEditorMeta';
-import Card from '@/ui/LegacyCard';
-import Button from '@/ui/LegacyButton';
+import Card from '@/ui/Card';
+import Button from '@/ui/Button';
 import ConfirmDialog from '@/ui/ConfirmDialog';
 import { deepClone } from '@/utils';
 

@@ -22,57 +22,19 @@ import type { DailySpinRecord, SpinEntry } from "./stateTypes.ts";
 import {
   deepClone,
   isUser,
-  isValidUrl,
   parseJsonContent,
   sanitizeInput,
 } from "../../utils/shared.js";
 import type { PinsState, QuizData } from "./stateTypes.ts";
-
-const normalizeRequiredString = (value: unknown): string | null => {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const normalized = sanitizeInput(value);
-  return normalized || null;
-};
-
-const normalizeOptionalString = (value: unknown): string | undefined => {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
-  const normalized = sanitizeInput(value);
-  return normalized || undefined;
-};
-
-const normalizeCreatedAt = (value: unknown): string | null => {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  return Number.isNaN(Date.parse(value)) ? null : value;
-};
-
-const normalizeOptionalDate = (value: unknown): string | undefined => {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
-  return Number.isNaN(Date.parse(value)) ? undefined : value;
-};
-
-const normalizeOptionalUrl = (value: unknown): string | undefined => {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
-  const normalized = sanitizeInput(value);
-  return normalized && isValidUrl(normalized) ? normalized : undefined;
-};
-
-const normalizeOptionalNumber = (value: unknown): number | undefined =>
-  typeof value === "number" && Number.isFinite(value) ? value : undefined;
+import {
+  normalizeOptionalDate,
+  normalizeOptionalFiniteNumber,
+  normalizeOptionalString,
+  normalizeOptionalUrl,
+  normalizeRecordList,
+  normalizeRequiredDate,
+  normalizeRequiredString,
+} from "./normalization.js";
 
 export const defaultQuizData: QuizData = {
   questions: defaultQuestions,
@@ -137,7 +99,7 @@ export const normalizeMessageRecord = (value: unknown): Message | null => {
   const id = normalizeRequiredString(message.id);
   const author = normalizeRequiredString(message.author);
   const content = normalizeRequiredString(message.content);
-  const createdAt = normalizeCreatedAt(message.createdAt);
+  const createdAt = normalizeRequiredDate(message.createdAt);
 
   if (!id || !author || !content || !createdAt) {
     return null;
@@ -162,12 +124,7 @@ export const parseMessagesContent = (
   }
 
   const parsed = parseJsonContent(content, "messages");
-  return Array.isArray(parsed)
-    ? parsed.flatMap((message) => {
-        const normalized = normalizeMessageRecord(message);
-        return normalized ? [normalized] : [];
-      })
-    : [];
+  return normalizeRecordList(parsed, normalizeMessageRecord);
 };
 
 export const cloneMemories = (memories: SharedMemory[]): SharedMemory[] =>
@@ -187,7 +144,7 @@ export const normalizeSharedMemoryRecord = (
   const movieTitle = normalizeRequiredString(memory.movieTitle);
   const author = normalizeRequiredString(memory.author);
   const note = normalizeRequiredString(memory.note);
-  const createdAt = normalizeCreatedAt(memory.createdAt);
+  const createdAt = normalizeRequiredDate(memory.createdAt);
 
   if (!id || !movieTitle || !author || !note || !createdAt) {
     return null;
@@ -208,12 +165,7 @@ export const normalizeSharedMemoryRecord = (
 };
 
 export const normalizeMemories = (value: unknown): SharedMemory[] =>
-  Array.isArray(value)
-    ? value.flatMap((entry) => {
-        const normalized = normalizeSharedMemoryRecord(entry);
-        return normalized ? [normalized] : [];
-      })
-    : [];
+  normalizeRecordList(value, normalizeSharedMemoryRecord);
 
 const isSuggestionStatus = (
   value: unknown,
@@ -236,7 +188,7 @@ export const normalizeSuggestionRecord = (
   const id = normalizeRequiredString(suggestion.id);
   const title = normalizeRequiredString(suggestion.title);
   const suggestedBy = normalizeRequiredString(suggestion.suggestedBy);
-  const createdAt = normalizeCreatedAt(suggestion.createdAt);
+  const createdAt = normalizeRequiredDate(suggestion.createdAt);
 
   if (
     !id ||
@@ -265,12 +217,7 @@ export const normalizeSuggestionRecord = (
 };
 
 export const normalizeSuggestions = (value: unknown): MovieSuggestion[] =>
-  Array.isArray(value)
-    ? value.flatMap((entry) => {
-        const normalized = normalizeSuggestionRecord(entry);
-        return normalized ? [normalized] : [];
-      })
-    : [];
+  normalizeRecordList(value, normalizeSuggestionRecord);
 
 const isPlaceSuggestionStatus = (
   value: unknown,
@@ -288,7 +235,7 @@ export const normalizePlaceSuggestionRecord = (
   const id = normalizeRequiredString(suggestion.id);
   const name = normalizeRequiredString(suggestion.name);
   const suggestedBy = normalizeRequiredString(suggestion.suggestedBy);
-  const createdAt = normalizeCreatedAt(suggestion.createdAt);
+  const createdAt = normalizeRequiredDate(suggestion.createdAt);
 
   if (
     !id ||
@@ -319,12 +266,7 @@ export const normalizePlaceSuggestionRecord = (
 };
 
 export const normalizePlaceSuggestions = (value: unknown): PlaceSuggestion[] =>
-  Array.isArray(value)
-    ? value.flatMap((entry) => {
-        const normalized = normalizePlaceSuggestionRecord(entry);
-        return normalized ? [normalized] : [];
-      })
-    : [];
+  normalizeRecordList(value, normalizePlaceSuggestionRecord);
 
 export const clonePlaces = (places: Place[]): Place[] =>
   places.map((place) => ({
@@ -339,7 +281,7 @@ export const normalizePlaceRecord = (value: unknown): Place | null => {
   const place = value as Partial<Place>;
   const id = normalizeRequiredString(place.id);
   const name = normalizeRequiredString(place.name);
-  const createdAt = normalizeCreatedAt(place.createdAt);
+  const createdAt = normalizeRequiredDate(place.createdAt);
 
   if (!id || !name || !createdAt) {
     return null;
@@ -352,8 +294,8 @@ export const normalizePlaceRecord = (value: unknown): Place | null => {
     notes: normalizeOptionalString(place.notes),
     createdAt,
     visitedAt: normalizeOptionalDate(place.visitedAt),
-    lat: normalizeOptionalNumber(place.lat),
-    lng: normalizeOptionalNumber(place.lng),
+    lat: normalizeOptionalFiniteNumber(place.lat),
+    lng: normalizeOptionalFiniteNumber(place.lng),
     category: normalizeOptionalString(place.category),
     rating: normalizeOptionalString(place.rating),
     description: normalizeOptionalString(place.description),
@@ -362,12 +304,7 @@ export const normalizePlaceRecord = (value: unknown): Place | null => {
 };
 
 export const normalizePlaces = (value: unknown): Place[] =>
-  Array.isArray(value)
-    ? value.flatMap((entry) => {
-        const normalized = normalizePlaceRecord(entry);
-        return normalized ? [normalized] : [];
-      })
-    : [];
+  normalizeRecordList(value, normalizePlaceRecord);
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
@@ -386,7 +323,7 @@ export const normalizeMatchmakerGame = (
 
   const game = value as Partial<MatchmakerGame>;
   const id = normalizeRequiredString(game.id);
-  const createdAt = normalizeCreatedAt(game.createdAt);
+  const createdAt = normalizeRequiredDate(game.createdAt);
 
   if (
     !id ||
@@ -493,7 +430,7 @@ export const normalizeSpinEntry = (value: unknown): SpinEntry | null => {
   const entry = value as Partial<SpinEntry>;
   const movieId = normalizeRequiredString(entry.movieId);
   const movieTitle = normalizeRequiredString(entry.movieTitle);
-  const createdAt = normalizeCreatedAt(entry.createdAt);
+  const createdAt = normalizeRequiredDate(entry.createdAt);
 
   if (!movieId || !movieTitle || !createdAt || !isUser(entry.spunBy)) {
     return null;

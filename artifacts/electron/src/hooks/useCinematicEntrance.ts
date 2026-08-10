@@ -82,12 +82,12 @@ export function useCinematicEntrance(
       }
     }
 
+    const cleanupContainer = containerRef.current;
     return () => {
       cancelled = true;
       observer?.disconnect();
       if (!hasAnimated.current) {
-        const container = containerRef.current;
-        container?.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+        cleanupContainer?.querySelectorAll<HTMLElement>(selector).forEach((el) => {
           el.style.removeProperty("transform");
           el.style.removeProperty("opacity");
           el.style.removeProperty("filter");

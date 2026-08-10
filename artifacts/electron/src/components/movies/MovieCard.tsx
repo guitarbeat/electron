@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { useCardTilt } from '@/hooks/useCardTilt';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
 import { executeAction, getErrorMessage, consoleError } from '@/utils';
-import Card from '@/ui/LegacyCard';
+import Card from '@/ui/Card';
 import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import {
   MediaCardPosterWrap,
@@ -326,4 +324,3 @@ const MovieActions: React.FC<MovieActionsProps> = ({
     />
   );
 };
-
