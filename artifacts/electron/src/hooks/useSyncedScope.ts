@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { mutateScope, readScope, retryScopeSync } from "@/services/state";
+import { mutateScope, readScope, retryScopeSync } from "../services/state";
 import type {
   StateScope,
   StateScopeDataMap,
-} from "@/services/state/stateTypes";
+} from "../services/state/stateTypes";
 
 interface SyncedScopeOptions {
   pollingInterval?: number;

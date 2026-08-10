@@ -3,9 +3,9 @@ import { useSyncedScope } from "./useSyncedScope";
 import type {
   StateScope,
   StateScopeDataMap,
-} from "@/services/state/stateTypes";
-import { areDeeplyEqual } from "@/utils";
-import { User } from "@/shared/types";
+} from "../services/state/stateTypes";
+import { areDeeplyEqual } from "../utils";
+import { User } from "../shared/types";
 
 interface CollectionOptions {
   pollingInterval?: number;
