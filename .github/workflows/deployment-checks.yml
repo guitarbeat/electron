@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, master]
   repository_dispatch:
-    types: [vercel.deployment.ready]
+    types: [vercel.deployment.success]
   workflow_dispatch:
     inputs:
       deployment_url:
@@ -99,7 +99,11 @@ jobs:
 
   deployment-smoke-check:
     name: "Deployment Smoke & Health Verification"
-    if: github.event_name == 'repository_dispatch' || (github.event_name == 'workflow_dispatch' && inputs.deployment_url != '')
+    if: >-
+      (github.event_name == 'repository_dispatch' &&
+       github.event.client_payload.environment == 'production' &&
+       github.event.client_payload.project.name == 'electra-and-aaron-movies') ||
+      (github.event_name == 'workflow_dispatch' && inputs.deployment_url != '')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -118,7 +122,7 @@ jobs:
       - name: Extract Target Deployment URL
         id: target
         env:
-          VERCEL_DEPLOYMENT_URL: ${{ github.event.client_payload.url }}
+          VERCEL_DEPLOYMENT_URL: ${{ github.event_name == 'repository_dispatch' && 'https://electra-and-aaron-movies.vercel.app' || '' }}
           MANUAL_DEPLOYMENT_URL: ${{ inputs.deployment_url }}
         run: |
           URL="${VERCEL_DEPLOYMENT_URL:-$MANUAL_DEPLOYMENT_URL}"
@@ -130,6 +134,8 @@ jobs:
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Run Deployment Smoke Tests
+        env:
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/smoke-test-deployment.mjs "${{ steps.target.outputs.url }}"
 
       - name: Notify Vercel Deployment Check Status

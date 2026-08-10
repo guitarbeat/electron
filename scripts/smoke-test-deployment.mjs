@@ -6,6 +6,7 @@
 
 const targetUrl = process.argv[2] || process.env.DEPLOYMENT_URL || 'http://localhost:5173';
 const normalizedBase = targetUrl.replace(/\/+$/, '');
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
 
 console.log(`[Smoke Test] Target deployment URL: ${normalizedBase}`);
 
@@ -66,6 +67,9 @@ for (const test of tests) {
       headers: {
         'User-Agent': 'Vercel-Deployment-Check-Smoke-Runner/1.0',
         Accept: 'application/json, text/html, */*',
+        ...(bypassSecret
+          ? { 'x-vercel-protection-bypass': bypassSecret }
+          : {}),
       },
       signal: AbortSignal.timeout(15000),
     });
