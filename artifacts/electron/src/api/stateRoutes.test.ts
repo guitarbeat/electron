@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getScopeWarning } from "../../api/_lib/state.ts";
-import { invalidateSharedStateCache } from "../../api/_lib/sharedStateStore.ts";
-import { buildProfileCookie } from "../../api/_lib/session.ts";
+import { getScopeWarning } from "../../../../api/_lib/state.ts";
+import { invalidateSharedStateCache } from "../../../../api/_lib/sharedStateStore.ts";
+import { buildProfileCookie } from "../../../../api/_lib/session.ts";
 import { createSharedStateMemoryMock } from "./test/sharedStateMock.ts";
-import mutateHandler from "../../api/state/[scope]/mutate.ts";
-import readHandler from "../../api/state/[scope].ts";
+import mutateHandler from "../../../../api/state/[scope]/mutate.ts";
+import readHandler from "../../../../api/state/[scope].ts";
 import type {
   Movie,
   MovieSuggestion,

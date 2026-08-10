@@ -1,4 +1,4 @@
-import { installSharedStateMemoryStoreForTests } from "../../../api/_lib/sharedStateStore.ts";
+import { installSharedStateMemoryStoreForTests } from "../../../../../api/_lib/sharedStateStore.ts";
 
 export interface SharedStateMemoryMockContext {
   /** Filename → JSON string (same shape as shared_state_files content). */

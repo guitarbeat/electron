@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import handler from "../../api/health.ts";
+import handler from "../../../../api/health.ts";
 import { createSharedStateMemoryMock } from "./test/sharedStateMock.ts";
 
 test("health liveness works when req.url is a relative path", async () => {

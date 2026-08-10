@@ -6,9 +6,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useUser } from "@/app/useProviders";
 import { useViewport } from "@/app/ViewportContext";
-import { usePolling } from "@/services/polling";
-import { readScope, retryScopeSync } from "@/services/state";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
+import { useSyncedScope } from "@/hooks/useSyncedScope";
 import {
   deleteMemory as deleteMemoryService,
   toggleMemoryPin as toggleMemoryPinService,
@@ -37,19 +35,22 @@ const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) => {
   const { isMobile } = useViewport();
 
   // ── Data fetching ────────────────────────────────────────────────────────
-  const readMemories = useCallback(() => readScope("memories"), []);
-
   const {
-    data: memoriesSnapshot,
+    data: remoteMemories,
+    error: memoriesError,
     isLoading,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh: refreshMemories,
-  } = usePolling(readMemories, POLLING_INTERVAL, areScopeSnapshotsEqual, {
-    key: "memories-tab",
+    retrySync,
+  } = useSyncedScope("memories", {
+    pollingInterval: POLLING_INTERVAL,
   });
 
   const memories = useMemo(
-    () => [...(memoriesSnapshot?.data ?? [])].sort(compareCreatedAtAsc),
-    [memoriesSnapshot],
+    () => [...(remoteMemories ?? [])].sort(compareCreatedAtAsc),
+    [remoteMemories],
   );
 
   // ── Local UI state ───────────────────────────────────────────────────────
@@ -90,18 +91,6 @@ const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) => {
     }
     return options;
   }, [memories]);
-
-  const memoriesError = useMemo(
-    () =>
-      memoriesSnapshot && "error" in memoriesSnapshot && memoriesSnapshot.error
-        ? String((memoriesSnapshot as { error: unknown }).error)
-        : null,
-    [memoriesSnapshot],
-  );
-
-  const isDegraded = memoriesSnapshot?.degraded ?? false;
-  const isSyncBlocked = memoriesSnapshot?.blocked ?? false;
-  const syncWarning = memoriesSnapshot?.warning;
 
   // ── Mutation helpers ─────────────────────────────────────────────────────
   const withRefresh = useCallback(
@@ -166,7 +155,7 @@ const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) => {
         <SyncBanner
           isBlocked={isSyncBlocked}
           label={syncWarning ?? undefined}
-          onRetry={() => void retryScopeSync("memories")}
+          onRetry={() => void retrySync()}
         />
       ) : null}
 
@@ -183,7 +172,7 @@ const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) => {
         onShowLess={handleShowLess}
         visibleCount={visibleCount}
         isLoading={isLoading}
-        memoriesError={memoriesError}
+        memoriesError={memoriesError?.message ?? null}
         isMobile={isMobile}
         currentUser={currentUser}
         onJumpToMovie={handleJumpToMovie}

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import agentHandler from "../../../../api/agent.ts";
+import { AGENT_ACTIONS } from "../../../../api/_lib/agentContracts.ts";
 import { resetAgentSecurityStoreForTests } from "../../../../api/_lib/agentSecurityStore.ts";
 import { installSharedStateMemoryStoreForTests } from "../../../../api/_lib/sharedStateStore.ts";
 
@@ -23,14 +24,28 @@ const withAgentEnvironment = async (run: () => Promise<void>) => {
 const request = (path: string, init: RequestInit = {}) =>
   agentHandler(new Request(`https://example.com/api/agent/v1/${path}`, init));
 
-test("agent OpenAPI document advertises the versioned contract", async () => {
+test("agent OpenAPI document advertises every registered action without internal routing", async () => {
   const response = await request("openapi.json");
-  const document = (await response.json()) as { openapi: string; paths: Record<string, unknown> };
+  const document = (await response.json()) as {
+    openapi: string;
+    paths: Record<string, unknown>;
+    "x-electron-actions": Record<string, Record<string, unknown>>;
+  };
 
   assert.equal(response.status, 200);
   assert.equal(document.openapi, "3.1.0");
   assert.ok(document.paths["/catalog/{resource}"]);
   assert.ok(document.paths["/actions"]);
+  assert.deepEqual(
+    Object.keys(document["x-electron-actions"]),
+    Object.keys(AGENT_ACTIONS),
+  );
+  for (const action of Object.values(document["x-electron-actions"])) {
+    assert.equal(typeof action.description, "string");
+    assert.equal(typeof action.inputExample, "object");
+    assert.equal("scope" in action, false);
+    assert.equal("op" in action, false);
+  }
 });
 
 test("public movie catalog is paginated and strips personal activity", async () => {

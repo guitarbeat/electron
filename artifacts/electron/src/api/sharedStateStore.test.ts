@@ -6,7 +6,7 @@ import {
   readSharedStateFileRecord,
   patchSharedStateFile,
   listSharedStateFilenames,
-} from "../../api/_lib/sharedStateStore.ts";
+} from "../../../../api/_lib/sharedStateStore.ts";
 
 test("readSharedStateFileRecord distinguishes missing rows from present empty strings", async () => {
   const mock = installSharedStateMemoryStoreForTests({

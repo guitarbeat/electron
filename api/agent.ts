@@ -4,7 +4,6 @@ import type { StateScope } from '../artifacts/electron/src/services/state/stateT
 import type { User } from '../artifacts/electron/src/shared/types.js';
 import {
   AGENT_ACTIONS,
-  CONFIRMATION_ACTIONS,
   agentActionRequestSchema,
   agentActorSchema,
   isPrivateScope,
@@ -168,10 +167,11 @@ const performAction = async (request: Request, requestId: string): Promise<Respo
   const parsed = agentActionRequestSchema.safeParse(await readJsonBody(request));
   if (!parsed.success) return errorResponse(requestId, 422, 'VALIDATION_ERROR', 'Invalid action request.', parsed.error.flatten());
   const { actor, action, input, confirmationToken } = parsed.data;
-  const [scope, op] = AGENT_ACTIONS[action];
+  const definition = AGENT_ACTIONS[action];
+  const { scope, op } = definition;
   const digest = createHash('sha256').update(canonical({ actor, action, input })).digest('base64url');
 
-  if (CONFIRMATION_ACTIONS.has(action)) {
+  if ('requiresConfirmation' in definition && definition.requiresConfirmation) {
     if (!confirmationToken) {
       const confirmation = signConfirmation({ id: randomUUID(), actor, action, digest, exp: Date.now() + CONFIRMATION_TTL_MS });
       await recordAgentAudit({ requestId, actor, operation: action, outcome: 'confirmation_required' });

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import sessionHandler from "../../api/session.ts";
-import readHandler from "../../api/state/[scope].ts";
+import sessionHandler from "../../../../api/session.ts";
+import readHandler from "../../../../api/state/[scope].ts";
 import { createSharedStateMemoryMock } from "./test/sharedStateMock.ts";
 
 test("reading a missing placeSuggestions scope bootstraps the default shared-state row once", async () => {

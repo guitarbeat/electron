@@ -23,14 +23,12 @@ import MoviesTopControls, {
 } from "./MoviesTopControls";
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
 import { filterMoviesByMediaType, isTvSeries, type MediaTypeFilter } from "./lib/movieType";
-import type { MovieAutocompleteResult } from "@/services/metadata";
 import {
   type BentoStatTileConfig,
   type BentoSortChipConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import { useMoviesWorkspaceActions } from "@/hooks/movies/useMoviesWorkspaceActions";
 import "./MoviesPhotoMode.css";
 
 const MOVIE_SECTION_IDS = {
@@ -55,35 +53,40 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [registerTabConfig],
   );
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
-  const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
-    useState(false);
-  const [recommendationReason, setRecommendationReason] = useState("");
-  const [guestName, setGuestName] = useState("");
-  const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
-    useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
+  const focusSearchInput = useCallback(() => {
+    moviesTopControlsRef.current?.focusSearchInput();
+  }, []);
   const {
     searchQuery,
     setSearchQuery,
     isAdding,
-    setIsAdding,
     movieToDelete,
     setMovieToDelete,
     setToast,
     successMovieId,
     setSuccessMovieId,
+    suggestionError,
+    isRecommendationComposerOpen,
+    recommendationReason,
+    guestName,
+    setGuestName,
+    selectedAutocompleteResult,
+    setSelectedAutocompleteResult,
+    resetRecommendationComposer,
+    handleRecommendationReasonChange,
+    openRecommendationComposer,
+    handleAddAction,
+    handleSubmitRecommendation,
+    handleAcceptSuggestion,
+    handleRejectSuggestion,
+    confirmDelete,
     processingSuggestionId,
     isSubmittingRecommendation,
     previousMoviesRef,
     movies,
     isLoading,
-    addMovie,
-    deleteMovie,
     pendingSuggestions,
-    submitRecommendation,
-    acceptSuggestionToWatchlist,
-    rejectPendingSuggestion,
     isSuggestionsLoading,
     memories,
     isMoviesWorkspaceDegraded,
@@ -96,7 +99,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     updateMemory,
     deleteMemoryRecord,
     toggleMemoryPin,
-  } = useMoviesWorkspace({ currentUser, isPaused });
+  } = useMoviesWorkspace({ currentUser, isPaused, focusSearchInput });
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
     const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
@@ -233,51 +236,16 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     previousMoviesRef.current = movies;
   }, [movies, previousMoviesRef, setSuccessMovieId, setToast]);
 
-  const focusSearchInput = useCallback(() => {
-    moviesTopControlsRef.current?.focusSearchInput();
-  }, []);
-
-  const {
-    resetRecommendationComposer,
-    handleRecommendationReasonChange,
-    openRecommendationComposer,
-    handleAddAction,
-    handleSubmitRecommendation,
-    handleAcceptSuggestion,
-    handleRejectSuggestion,
-    confirmDelete,
-  } = useMoviesWorkspaceActions({
-    currentUser,
-    guestName,
-    isAdding,
-    setIsAdding,
-    isSubmittingRecommendation,
-    searchQuery,
-    setSearchQuery,
-    selectedAutocompleteResult,
-    setSelectedAutocompleteResult,
-    recommendationReason,
-    setRecommendationReason,
-    setIsRecommendationComposerOpen,
-    setSuggestionError,
-    setSuccessMovieId,
-    setToast,
-    addMovie,
-    submitRecommendation,
-    acceptSuggestionToWatchlist,
-    rejectPendingSuggestion,
-    deleteMovie,
-    movieToDelete,
-    setMovieToDelete,
-    focusSearchInput,
-  });
-
   useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
     }
-  }, [resetRecommendationComposer, searchQuery]);
+  }, [
+    resetRecommendationComposer,
+    searchQuery,
+    setSelectedAutocompleteResult,
+  ]);
 
   return (
     <>

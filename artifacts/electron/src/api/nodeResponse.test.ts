@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { applyFetchResponseHeaders } from "../../api/_lib/nodeBridge.ts";
+import { applyFetchResponseHeaders } from "../../../../api/_lib/nodeBridge.ts";
 
 test("applyFetchResponseHeaders preserves multiple Set-Cookie headers", () => {
   const headers = new Headers();

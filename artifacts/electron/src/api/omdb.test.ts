@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import handler from "../../api/omdb.ts";
+import handler from "../../../../api/omdb.ts";
 
 const ENV_KEYS = [
   "OMDB_API_KEY",

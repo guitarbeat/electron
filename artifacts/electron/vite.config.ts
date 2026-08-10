@@ -1,10 +1,9 @@
-import fs from "fs";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
-import { applyFetchResponseHeaders } from "./nodeBridge.ts";
+import { createServerlessRuntimeAdapter } from "./devServerlessRuntime.ts";
 
 // PORT and BASE_PATH are only meaningful for the dev/preview server. During a
 // production `vite build` (e.g. on Vercel) they are not provided, so we fall
@@ -48,53 +47,6 @@ const aliasEntries = {
   "@": resolveFromRoot("src"),
 };
 
-const resolveApiModulePath = (apiPath: string): string => {
-  if (apiPath === "/api/agent/v1" || apiPath.startsWith("/api/agent/v1/")) {
-    return path.resolve(import.meta.dirname, "../../api/agent.ts");
-  }
-
-  const localExact = path.resolve(import.meta.dirname, `.${apiPath}.ts`);
-  if (fs.existsSync(localExact)) {
-    return localExact;
-  }
-
-  const rootExact = path.resolve(import.meta.dirname, `../../${apiPath.replace(/^\//, '')}.ts`);
-  if (fs.existsSync(rootExact)) {
-    return rootExact;
-  }
-
-  const segments = apiPath.split("/").filter(Boolean);
-
-  if (
-    segments.length === 3 &&
-    segments[0] === "api" &&
-    segments[1] === "state"
-  ) {
-    const localState = path.resolve(import.meta.dirname, "./api/state/[scope].ts");
-    if (fs.existsSync(localState)) return localState;
-    return path.resolve(import.meta.dirname, "../../api/state/[scope].ts");
-  }
-
-  if (
-    segments.length === 4 &&
-    segments[0] === "api" &&
-    segments[1] === "state" &&
-    segments[3] === "mutate"
-  ) {
-    const localMutate = path.resolve(
-      import.meta.dirname,
-      "./api/state/[scope]/mutate.ts",
-    );
-    if (fs.existsSync(localMutate)) return localMutate;
-    return path.resolve(
-      import.meta.dirname,
-      "../../api/state/[scope]/mutate.ts",
-    );
-  }
-
-  return localExact;
-};
-
 export default defineConfig(({ mode }) => {
   const rootDir = path.resolve(import.meta.dirname, "../..");
   const envRoot = loadEnv(mode, rootDir, "");
@@ -107,83 +59,7 @@ export default defineConfig(({ mode }) => {
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
-    {
-      name: "api-proxy",
-      configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          if (req.url && req.url.startsWith("/api/")) {
-            res.setHeader("Access-Control-Allow-Origin", "*");
-            res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-            res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-            if (req.method === "OPTIONS") {
-              res.statusCode = 204;
-              res.end();
-              return;
-            }
-            try {
-              const apiPath = req.url.split("?")[0];
-              const filePath = resolveApiModulePath(apiPath);
-
-              const module = await server.ssrLoadModule(filePath);
-              const handler = module.default;
-
-              if (typeof handler === "function") {
-                const url = new URL(req.url, `http://${req.headers.host}`);
-
-                let body: ArrayBuffer | undefined;
-                if (req.method !== "GET" && req.method !== "HEAD") {
-                  const rawBody = await new Promise<Buffer>((resolve) => {
-                    const chunks: Buffer[] = [];
-                    req.on("data", (chunk) => chunks.push(chunk));
-                    req.on("end", () => resolve(Buffer.concat(chunks)));
-                  });
-                  const bodyBytes = new Uint8Array(rawBody.byteLength);
-                  bodyBytes.set(rawBody);
-                  body = bodyBytes.buffer;
-                }
-
-                const headers = new Headers();
-                for (const [key, value] of Object.entries(req.headers)) {
-                  if (value === undefined) continue;
-                  if (Array.isArray(value)) {
-                    value.forEach((v) => headers.append(key, v));
-                  } else {
-                    headers.set(key, value);
-                  }
-                }
-
-                const init: RequestInit = {
-                  method: req.method,
-                  headers,
-                };
-
-                if (
-                  body !== undefined &&
-                  req.method !== "GET" &&
-                  req.method !== "HEAD"
-                ) {
-                  init.body = body;
-                }
-
-                const request = new Request(url, init);
-
-                const response = await handler(request);
-
-                res.statusCode = response.status;
-                applyFetchResponseHeaders(res, response);
-
-                const responseBody = await response.arrayBuffer();
-                res.end(Buffer.from(responseBody));
-                return;
-              }
-            } catch (err) {
-              console.error(`Error in API proxy for ${req.url}:`, err);
-            }
-          }
-          next();
-        });
-      },
-    },
+    createServerlessRuntimeAdapter(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
