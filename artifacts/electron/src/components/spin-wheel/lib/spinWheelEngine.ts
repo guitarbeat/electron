@@ -1,4 +1,4 @@
-import type { Movie } from "@/shared/types";
+import type { Movie } from "../../../shared/types.ts";
 
 const SEGMENT_COLORS = [
   "#ff7ea8",
@@ -67,18 +67,10 @@ export const appendSpinHistory = (
 ): string[] => [title, ...history].slice(0, maxEntries);
 
 const secureRandom = () => {
-  if (
-    typeof window !== "undefined" &&
-    window.crypto &&
-    window.crypto.getRandomValues
-  ) {
+  const cryptoObj = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
+  if (cryptoObj?.getRandomValues) {
     const array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
-    return array[0] / 4294967296;
-  }
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
-    const array = new Uint32Array(1);
-    crypto.getRandomValues(array);
+    cryptoObj.getRandomValues(array);
     return array[0] / 4294967296;
   }
   throw new Error(

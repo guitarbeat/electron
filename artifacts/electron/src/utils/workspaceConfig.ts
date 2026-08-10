@@ -1,4 +1,4 @@
-import type { MainTab } from "@/shared/types";
+import type { MainTab } from "../shared/types.ts";
 
 export interface WorkspaceMeta {
   eyebrow: string;

@@ -153,26 +153,17 @@ export const applyMatchmakerSwipe = (
     return game;
   }
 
-  const updatedGame =
-    user === "Aaron"
-      ? {
-          ...game,
-          aaronLikes: liked ? [...game.aaronLikes, movieId] : game.aaronLikes,
-          aaronDislikes: liked
-            ? game.aaronDislikes
-            : [...game.aaronDislikes, movieId],
-          aaronSwipeOrder: [...(game.aaronSwipeOrder ?? []), movieId],
-        }
-      : {
-          ...game,
-          electraLikes: liked
-            ? [...game.electraLikes, movieId]
-            : game.electraLikes,
-          electraDislikes: liked
-            ? game.electraDislikes
-            : [...game.electraDislikes, movieId],
-          electraSwipeOrder: [...(game.electraSwipeOrder ?? []), movieId],
-        };
+  const isAaron = user === "Aaron";
+  const likesKey = isAaron ? "aaronLikes" : "electraLikes";
+  const dislikesKey = isAaron ? "aaronDislikes" : "electraDislikes";
+  const swipeOrderKey = isAaron ? "aaronSwipeOrder" : "electraSwipeOrder";
+
+  const updatedGame = {
+    ...game,
+    [likesKey]: liked ? [...game[likesKey], movieId] : game[likesKey],
+    [dislikesKey]: liked ? game[dislikesKey] : [...game[dislikesKey], movieId],
+    [swipeOrderKey]: [...(game[swipeOrderKey] ?? []), movieId],
+  };
 
   return reconcileMatchmakerStatus(updatedGame);
 };
@@ -181,51 +172,34 @@ export const undoMatchmakerSwipe = (
   game: MatchmakerGame,
   user: User,
 ): MatchmakerGame => {
-  const swipeOrder =
-    user === "Aaron"
-      ? (game.aaronSwipeOrder ?? [])
-      : (game.electraSwipeOrder ?? []);
+  const isAaron = user === "Aaron";
+  const likesKey = isAaron ? "aaronLikes" : "electraLikes";
+  const dislikesKey = isAaron ? "aaronDislikes" : "electraDislikes";
+  const swipeOrderKey = isAaron ? "aaronSwipeOrder" : "electraSwipeOrder";
+
+  const swipeOrder = game[swipeOrderKey] ?? [];
 
   // Fall back to pool-order search for games that predate swipe order tracking
-  const lastSwipedId = (() => {
-    if (swipeOrder.length > 0) {
-      return swipeOrder[swipeOrder.length - 1];
-    }
-    // Optimization: Convert swiped IDs to a Set outside the loop to change
-    // the time complexity from O(N * M) (where N is movie pool size and M is swiped count)
-    // to O(N + M) and avoid O(N^2) array regeneration and search overhead.
-    const swipedIdsSet = new Set(getUserSwipedIds(game, user));
-    return [...game.moviePool]
-      .reverse()
-      .find((movieId) => swipedIdsSet.has(movieId));
-  })();
+  const lastSwipedId =
+    swipeOrder.length > 0
+      ? swipeOrder[swipeOrder.length - 1]
+      : (() => {
+          const swipedIdsSet = new Set(getUserSwipedIds(game, user));
+          return [...game.moviePool]
+            .reverse()
+            .find((movieId) => swipedIdsSet.has(movieId));
+        })();
 
   if (!lastSwipedId) {
     return game;
   }
 
-  const updatedGame =
-    user === "Aaron"
-      ? {
-          ...game,
-          aaronLikes: game.aaronLikes.filter(
-            (movieId) => movieId !== lastSwipedId,
-          ),
-          aaronDislikes: game.aaronDislikes.filter(
-            (movieId) => movieId !== lastSwipedId,
-          ),
-          aaronSwipeOrder: swipeOrder.slice(0, -1),
-        }
-      : {
-          ...game,
-          electraLikes: game.electraLikes.filter(
-            (movieId) => movieId !== lastSwipedId,
-          ),
-          electraDislikes: game.electraDislikes.filter(
-            (movieId) => movieId !== lastSwipedId,
-          ),
-          electraSwipeOrder: swipeOrder.slice(0, -1),
-        };
+  const updatedGame = {
+    ...game,
+    [likesKey]: game[likesKey].filter((id) => id !== lastSwipedId),
+    [dislikesKey]: game[dislikesKey].filter((id) => id !== lastSwipedId),
+    [swipeOrderKey]: swipeOrder.slice(0, -1),
+  };
 
   return reconcileMatchmakerStatus(updatedGame);
 };
