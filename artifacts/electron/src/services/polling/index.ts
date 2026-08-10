@@ -27,37 +27,41 @@ class PollingManager {
     }
 
     this.visibilityListenerBound = true;
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
+    document.addEventListener("visibilitychange", () => this.handleVisibilityChange());
+  }
+
+  private handleVisibilityChange() {
+    if (typeof document !== "undefined" && document.hidden) {
+      return;
+    }
+
+    const keys = Array.from(this.subscribers.keys());
+    if (keys.length === 0) {
+      return;
+    }
+
+    const BATCH_SIZE = 5;
+    const DELAY_MS = 50;
+
+    const processBatch = (startIndex: number) => {
+      if (typeof document !== "undefined" && document.hidden) {
         return;
       }
 
-      const keys = Array.from(this.subscribers.keys());
-      const BATCH_SIZE = 5;
-      const DELAY_MS = 50;
-
-      const processBatch = (startIndex: number) => {
-        if (typeof document !== "undefined" && document.hidden) {
-          return;
+      const endIndex = Math.min(startIndex + BATCH_SIZE, keys.length);
+      for (let i = startIndex; i < endIndex; i++) {
+        const key = keys[i];
+        if (key !== undefined) {
+          void this.execute(key);
         }
-
-        const endIndex = Math.min(startIndex + BATCH_SIZE, keys.length);
-        for (let i = startIndex; i < endIndex; i++) {
-          const key = keys[i];
-          if (key !== undefined) {
-             void this.execute(key);
-          }
-        }
-
-        if (endIndex < keys.length) {
-          setTimeout(() => processBatch(endIndex), DELAY_MS);
-        }
-      };
-
-      if (keys.length > 0) {
-        processBatch(0);
       }
-    });
+
+      if (endIndex < keys.length) {
+        setTimeout(() => processBatch(endIndex), DELAY_MS);
+      }
+    };
+
+    processBatch(0);
   }
 
   /**

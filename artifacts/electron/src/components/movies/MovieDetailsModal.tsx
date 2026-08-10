@@ -144,6 +144,22 @@ const getNotePreview = (note: string): string => {
   return `${trimmed.slice(0, 93).trimEnd()}...`;
 };
 
+const getSecondaryMemories = (
+  memories: SharedMemory[],
+  featuredId: string | undefined,
+  canManage: boolean,
+): SharedMemory[] => {
+  if (canManage) return [];
+  const result: SharedMemory[] = [];
+  for (const memory of memories) {
+    if (memory.id !== featuredId) {
+      result.push(memory);
+      if (result.length === 2) break;
+    }
+  }
+  return result;
+};
+
 const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   movie,
   memories = [],
@@ -271,17 +287,11 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   );
   const featuredMemory =
     memories.find((memory) => memory.isPinned) ?? memories[0] ?? null;
-  const secondaryMemories = (() => {
-    if (canManageMemories) return [];
-    const result: typeof memories = [];
-    for (const memory of memories) {
-      if (memory.id !== featuredMemory?.id) {
-        result.push(memory);
-        if (result.length === 2) break;
-      }
-    }
-    return result;
-  })();
+  const secondaryMemories = getSecondaryMemories(
+    memories,
+    featuredMemory?.id,
+    canManageMemories,
+  );
   const watchStatus = getWatchStatus(movie, memories.length);
   const source = clampOrigin(origin ?? null);
   const { targetWidth, targetHeight } = getDialogMetrics(isMobile);

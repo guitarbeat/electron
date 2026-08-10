@@ -18,7 +18,7 @@ const buildCacheKey = (
 ): string => `${imdbID ?? title.trim().toLowerCase()}::${type ?? "movie"}`;
 
 const evictOldest = () => {
-  while (metadataCache.size >= MAX_CACHE_SIZE) {
+  while (metadataCache.size > MAX_CACHE_SIZE) {
     let oldestKey: string | null = null;
     let oldestTimestamp = Infinity;
 
@@ -29,9 +29,8 @@ const evictOldest = () => {
       }
     }
 
-    if (oldestKey) {
-      metadataCache.delete(oldestKey);
-    }
+    if (!oldestKey) break;
+    metadataCache.delete(oldestKey);
   }
 };
 
