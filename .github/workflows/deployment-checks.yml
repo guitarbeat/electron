@@ -20,12 +20,13 @@ permissions:
   checks: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.client_payload.deploymentId || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.client_payload.id || github.run_id }}
   cancel-in-progress: true
 
 jobs:
   typecheck-and-lint:
     name: "Type Check & Lint"
+    if: github.event_name != 'repository_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -51,6 +52,7 @@ jobs:
 
   unit-tests:
     name: "Unit Tests"
+    if: github.event_name != 'repository_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -73,6 +75,7 @@ jobs:
 
   build-validation:
     name: "Build Validation"
+    if: github.event_name != 'repository_dispatch'
     needs: [typecheck-and-lint]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -100,7 +103,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out deployment commit
+        if: github.event_name == 'repository_dispatch'
+        uses: vercel/repository-dispatch/actions/checkout@v1
+
+      - name: Check out workflow dispatch commit
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -108,8 +117,15 @@ jobs:
 
       - name: Extract Target Deployment URL
         id: target
+        env:
+          VERCEL_DEPLOYMENT_URL: ${{ github.event.client_payload.url }}
+          MANUAL_DEPLOYMENT_URL: ${{ inputs.deployment_url }}
         run: |
-          URL="${{ github.event.client_payload.deploymentUrl || github.event.client_payload.deployment.url || inputs.deployment_url }}"
+          URL="${VERCEL_DEPLOYMENT_URL:-$MANUAL_DEPLOYMENT_URL}"
+          if [[ ! "$URL" =~ ^https:// ]]; then
+            echo "Missing or invalid HTTPS deployment URL" >&2
+            exit 1
+          fi
           echo "Target deployment URL: $URL"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 

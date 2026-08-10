@@ -9,7 +9,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 const [reactHooksRecommended] = reactHooks.configs['flat/recommended'];
 
 export default tseslint.config(
-  { ignores: ['dist', 'scripts', 'docs', 'public', '.next', 'node_modules'] },
+  { ignores: ['dist', 'scripts', 'docs', 'public', '.next', '.vercel', 'node_modules'] },
   {
     extends: [
       js.configs.recommended,

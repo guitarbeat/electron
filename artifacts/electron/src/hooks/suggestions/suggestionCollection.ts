@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from "react";
-import { useUser } from "@/app/useProviders";
-import type { User } from "@/shared/types";
-import { mutateScope } from "@/services/state";
-import type { StateScopeDataMap } from "@/services/state/stateTypes";
+import { useUser } from "../../app/useProviders";
+import type { User } from "../../shared/types";
+import { mutateScope } from "../../services/state";
+import type { StateScopeDataMap } from "../../services/state/stateTypes";
 import { useCollection } from "../useCollection";
 
 export interface SuggestionRecord {
