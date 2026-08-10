@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage, consoleError } from '@/utils';
+import { getErrorMessage, consoleError } from '@/utils';
 import Card from '@/ui/Card';
 import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import {
@@ -9,17 +9,10 @@ import {
   MediaCardTitle,
   MediaCardRatingBadge,
 } from "@/ui/MediaCard";
-import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from "@/common/Icons";
-import {
-  getMovieActionState,
-  type MovieActionState,
-} from "./lib/movieActionState";
 import MovieTitleEditModal from "./MovieTitleEditModal";
 const MovieDetailsModal = React.lazy(() => import("./MovieDetailsModal"));
 import MediaPoster from "@/ui/MediaPoster";
-import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
-import StremioButton from "@/components/ui/StremioButton";
 
 export interface MovieTransitionOrigin {
 
@@ -72,15 +65,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const isMobile = isCompact;
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
-  const actionState = React.useMemo(
-    () =>
-      getMovieActionState({
-        movie,
-        currentUser,
-        memoriesCount: memories.length,
-      }),
-    [currentUser, memories.length, movie],
-  );
   const handleOpenDetails = () => {
     const rect =
       posterRef.current?.getBoundingClientRect() ??
@@ -185,16 +169,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
             </div>
           )}
 
-          <div className="movie-item-actions-external">
-            <MovieActions
-              movie={movie}
-              actionState={actionState}
-              isUpdating={isUpdating}
-              onToggle={handleToggle}
-              onToggleNotes={handleOpenDetails}
-              onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
-            />
-          </div>
         </div>
       </div>
 
@@ -217,6 +191,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
           isOpen={isDetailsOpen}
           origin={detailsOrigin}
           currentUser={currentUser}
+          onToggleWatched={currentUser ? handleToggle : undefined}
+          isWatchedByCurrentUser={Boolean(
+            currentUser && movie.watchedBy.includes(currentUser),
+          )}
+          isUpdatingWatchStatus={isUpdating}
+          onEdit={
+            onRename
+              ? () => {
+                  setIsDetailsOpen(false);
+                  setIsTitleEditorOpen(true);
+                }
+              : undefined
+          }
           onAddMemory={onAddMemory}
           onUpdateMemory={onUpdateMemory}
           onDeleteMemory={onDeleteMemory}
@@ -229,98 +216,3 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 export default React.memo(MovieCard);
-
-interface MovieActionsProps {
-  movie: Movie;
-  actionState: MovieActionState;
-  isUpdating: boolean;
-  onToggle: () => void;
-  onToggleNotes: () => void;
-  onEdit?: () => void;
-}
-
-const MovieActions: React.FC<MovieActionsProps> = ({
-  movie,
-  actionState,
-  isUpdating,
-  onToggle,
-  onToggleNotes,
-  onEdit,
-}) => {
-  const handlePrimaryAction = () => {
-    executeAction(onToggle);
-  };
-
-  const handleToggleNotes = () => {
-    executeAction(onToggleNotes);
-  };
-
-  const handleEditAction = () => {
-    if (actionState.isGuest || !onEdit) {
-      return;
-    }
-
-    executeAction(onEdit);
-  };
-
-  if (!actionState.showActionRail) {
-    return null;
-  }
-
-  return (
-    <CardActionRail
-      className="movie-actions-external"
-      variant="external"
-      primary={
-        actionState.showWatchedAction && (
-          <CardActionButton
-            variant="primary"
-            onClick={handlePrimaryAction}
-            aria-pressed={actionState.watchedByCurrentUser}
-            aria-label={
-              actionState.primaryActionAriaLabel ??
-              actionState.primaryActionLabel
-            }
-            leftIcon={
-              actionState.watchedByCurrentUser ? <CheckIcon /> : <PlayIcon />
-            }
-            className="movie-action-btn--watch"
-            disabled={isUpdating}
-          >
-            {actionState.primaryActionCompactLabel}
-          </CardActionButton>
-        )
-      }
-      secondary={
-        actionState.showNotesAction ? (
-          <CardActionButton
-            variant="outline"
-            onClick={handleToggleNotes}
-            leftIcon={<BookmarkIcon />}
-            className="movie-action-btn--bookmark"
-            disabled={isUpdating}
-            aria-label={
-              actionState.notesButtonAriaLabel ?? actionState.notesButtonLabel
-            }
-            title={actionState.notesButtonLabel}
-          />
-        ) : null
-      }
-      cluster={
-        <>
-          <StremioButton movie={movie} variant="icon" />
-          {onEdit && !actionState.isGuest ? (
-            <CardActionButton
-              variant="outline"
-              onClick={handleEditAction}
-              leftIcon={<EditIcon />}
-              className="movie-action-btn--star"
-              disabled={isUpdating}
-              aria-label={`Edit "${movie.title}"`}
-            />
-          ) : null}
-        </>
-      }
-    />
-  );
-};

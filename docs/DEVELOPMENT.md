@@ -70,6 +70,7 @@ Server-side variables used by deployed handlers:
 - `DATABASE_URL_UNPOOLED` (optional; for tooling that needs a direct Neon connection)
 - `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING` (optional Vercel Postgres-compatible aliases)
 - `SESSION_SIGNING_SECRET`
+- `AGENT_API_TOKEN` — shared server-only bearer credential for `/api/agent/v1/private/*` and `/api/agent/v1/actions`
 - `OMDB_API_URL`
 - `OMDB_API_KEY` for the default `/api/omdb` proxy path
 - `TVMAZE_API_URL`

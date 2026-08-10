@@ -49,6 +49,10 @@ const aliasEntries = {
 };
 
 const resolveApiModulePath = (apiPath: string): string => {
+  if (apiPath === "/api/agent/v1" || apiPath.startsWith("/api/agent/v1/")) {
+    return path.resolve(import.meta.dirname, "../../api/agent.ts");
+  }
+
   const localExact = path.resolve(import.meta.dirname, `.${apiPath}.ts`);
   if (fs.existsSync(localExact)) {
     return localExact;

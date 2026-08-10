@@ -14,6 +14,8 @@ import type { MovieTransitionOrigin } from "./MovieCard";
 import { InteractiveFolderGallery } from "@/components/ui/interactive-folder-gallery";
 import { HandWritingText } from "@/components/ui/hand-writing-text";
 import StremioButton from "@/components/ui/StremioButton";
+import { BookmarkIcon, CheckIcon, EditIcon, PlayIcon } from "@/common/Icons";
+import { CardActionButton } from "@/ui/CardActionRail";
 import { isTvSeries } from "./lib/movieType";
 import {
   buildGalleryPhotos,
@@ -30,6 +32,10 @@ interface MovieDetailsModalProps {
   isOpen: boolean;
   origin?: MovieTransitionOrigin | null;
   currentUser?: User | null;
+  onToggleWatched?: () => void | Promise<void>;
+  isWatchedByCurrentUser?: boolean;
+  isUpdatingWatchStatus?: boolean;
+  onEdit?: () => void;
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
   onDeleteMemory?: (memoryId: string) => Promise<void>;
@@ -43,6 +49,10 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   isOpen,
   origin,
   currentUser = null,
+  onToggleWatched,
+  isWatchedByCurrentUser = false,
+  isUpdatingWatchStatus = false,
+  onEdit,
   onAddMemory,
   onUpdateMemory,
   onDeleteMemory,
@@ -64,6 +74,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const closeTimeoutRef = React.useRef<number | null>(null);
   const successTimeoutRef = React.useRef<number | null>(null);
   const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
+  const notesSectionRef = React.useRef<HTMLDivElement>(null);
   const { dialogRef, closeButtonRef, playPop } = useModalBase(
     isVisible,
     onClose,
@@ -207,6 +218,14 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     });
   };
 
+  const handleShowNotes = () => {
+    notesSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    window.requestAnimationFrame(() => noteInputRef.current?.focus());
+  };
+
   return createPortal(
     <div
       className={`movie-details-modal${isEntering ? " is-open" : ""}`}
@@ -331,7 +350,37 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                     {movie.imdbRating} IMDb
                   </span>
                 ) : null}
-                <StremioButton movie={movie} variant="pill" />
+              </div>
+
+              <div className="movie-details-modal__actions" aria-label="Movie actions">
+                {onToggleWatched ? (
+                  <CardActionButton
+                    variant="primary"
+                    onClick={() => void onToggleWatched()}
+                    aria-pressed={isWatchedByCurrentUser}
+                    disabled={isUpdatingWatchStatus}
+                    leftIcon={isWatchedByCurrentUser ? <CheckIcon /> : <PlayIcon />}
+                  >
+                    {isWatchedByCurrentUser ? "Watched" : "Mark watched"}
+                  </CardActionButton>
+                ) : null}
+                <StremioButton movie={movie} variant="full" />
+                <CardActionButton
+                  variant="outline"
+                  onClick={handleShowNotes}
+                  leftIcon={<BookmarkIcon />}
+                >
+                  {memories.length > 0 ? `Notes (${memories.length})` : "Add note"}
+                </CardActionButton>
+                {onEdit ? (
+                  <CardActionButton
+                    variant="outline"
+                    onClick={onEdit}
+                    leftIcon={<EditIcon />}
+                  >
+                    Edit
+                  </CardActionButton>
+                ) : null}
               </div>
 
               <p className="movie-details-modal__relationship">
@@ -389,7 +438,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
               </div>
             ) : null}
 
-            <div className="movie-details-modal__section">
+            <div ref={notesSectionRef} className="movie-details-modal__section">
               <div className="movie-details-modal__section-head">
                 <p className="movie-details-modal__section-label">
                   Poster notes
