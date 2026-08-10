@@ -8,6 +8,7 @@ import React, {
 import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/useProviders";
 import type { Movie } from "@/shared/types";
+import { FilmIcon, SparklesIcon } from "../common/Icons.tsx";
 const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
 import {
   buildSpinWheelGradient,
@@ -883,7 +884,9 @@ function DoneCard({ kept, onReset }: { kept: number; onReset: () => void }) {
         boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
       }}
     >
-      <span style={{ fontSize: "2.5rem" }}>{kept === 0 ? "😅" : "🎬"}</span>
+      <span style={{ color: "var(--color-accent)", display: "inline-flex" }}>
+        {kept === 0 ? <FilmIcon size={40} /> : <SparklesIcon size={40} />}
+      </span>
       <p
         style={{
           color: "var(--color-text-primary)",

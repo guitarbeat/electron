@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/ui/Button";
-import { PlusIcon, Spinner } from "@/common/Icons";
+import { MapPinIcon, PlusIcon, Spinner } from "@/common/Icons";
 import type { PlaceSuggestion } from "@/shared/types";
 import WorkspaceSearchShell, {
   WorkspaceSearchActions,
@@ -130,7 +130,7 @@ const PlacesTopControls = React.forwardRef<
 
     return (
       <WorkspaceSearchShell
-        icon="📍"
+        icon={<MapPinIcon size={16} />}
         isAutocompleteActive={showSuggestionList || showNoMatchHint}
         shellRef={autocompleteRegionRef}
         onShellFocusCapture={() => {

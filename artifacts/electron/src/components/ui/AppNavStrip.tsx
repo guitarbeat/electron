@@ -1,5 +1,5 @@
 import { type FC, useRef, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from 'lucide-react';
+import { Film, MapPin, RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from 'lucide-react';
 import type { MainTab } from '@/shared/types';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import MagicToggle from './MagicToggle';
@@ -111,8 +111,26 @@ const AppNavStrip: FC<Props> = ({
       <div className="ans__magic-toggle-wrapper">
         <MagicToggle
           options={[
-            { value: 'movies', label: '🎬 Movies' },
-            { value: 'places', label: '📍 Places' }
+            {
+              value: 'movies',
+              label: (
+                <span className="ans__tab-label">
+                  <Film size={13} strokeWidth={2.2} aria-hidden="true" />
+                  <span>Movies</span>
+                </span>
+              ),
+              ariaLabel: 'Movies workspace',
+            },
+            {
+              value: 'places',
+              label: (
+                <span className="ans__tab-label">
+                  <MapPin size={13} strokeWidth={2.2} aria-hidden="true" />
+                  <span>Places</span>
+                </span>
+              ),
+              ariaLabel: 'Places workspace',
+            },
           ]}
           activeValue={activeTab}
           onChange={(val) => onTabChange(val as MainTab)}

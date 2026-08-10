@@ -275,7 +275,7 @@ const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const shouldShowPoster = Boolean(movie.posterUrl) && !hasPosterError;
   const catUrl = `https://cataas.com/cat/says/${encodeURIComponent(movie.title || "No Poster")}?fontSize=18&width=400&height=600`;
   const metadataItems = [
-    isTvSeries(movie) ? "📺 TV Series" : "🎬 Movie",
+    isTvSeries(movie) ? "TV Series" : "Movie",
     movie.year,
     movie.runtime,
     movie.genre?.split(",")[0]?.trim(),

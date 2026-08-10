@@ -1,5 +1,5 @@
 import React from "react";
-import { StarIcon } from "@/common/Icons";
+import { FilmIcon, StarIcon, TvIcon } from "../common/Icons.tsx";
 
 interface PosterWrapProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -173,7 +173,7 @@ export const MediaCardTypeBadge: React.FC<{
     aria-label={type === "series" ? "TV Series" : "Movie"}
   >
     <span className="media-card__type-badge-icon">
-      {type === "series" ? "📺" : "🎬"}
+      {type === "series" ? <TvIcon size={12} /> : <FilmIcon size={12} />}
     </span>
     <span className="media-card__type-badge-label">
       {type === "series" ? "TV Series" : "Movie"}

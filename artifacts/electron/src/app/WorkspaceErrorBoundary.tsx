@@ -1,4 +1,5 @@
 import React from "react";
+import { AlertCircle, Lock, RefreshCw, WifiOff } from "lucide-react";
 import { getErrorMessage } from "@/utils";
 
 interface Props {
@@ -43,7 +44,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
   };
 
   private getErrorCategory(): {
-    icon: string;
+    icon: React.ReactNode;
     title: string;
     description: string;
     suggestion: string;
@@ -52,7 +53,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
 
     if (msg.includes("failed to fetch") || msg.includes("dynamically imported") || msg.includes("loading chunk")) {
       return {
-        icon: "⚡",
+        icon: <RefreshCw size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
         title: "Connection interrupted",
         description: "A part of the app couldn't be loaded from the server.",
         suggestion: "This usually happens after a deploy or on an unstable connection. Reloading should fix it.",
@@ -61,7 +62,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
 
     if (msg.includes("network") || msg.includes("offline") || msg.includes("timeout")) {
       return {
-        icon: "📡",
+        icon: <WifiOff size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
         title: "Network issue",
         description: "The app couldn't reach the server.",
         suggestion: "Check your internet connection and try again.",
@@ -70,7 +71,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
 
     if (msg.includes("permission") || msg.includes("unauthorized") || msg.includes("403") || msg.includes("401")) {
       return {
-        icon: "🔒",
+        icon: <Lock size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
         title: "Access denied",
         description: "You don't have permission to view this content.",
         suggestion: "Try signing in again or switching profiles.",
@@ -78,7 +79,7 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
     }
 
     return {
-      icon: "⚠️",
+      icon: <AlertCircle size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
       title: "Something went wrong",
       description: "The workspace encountered an error it couldn't recover from.",
       suggestion: "Try again, or reload the page if the problem persists.",
@@ -119,17 +120,17 @@ class WorkspaceErrorBoundary extends React.Component<Props, State> {
           }}
         >
           {/* Icon */}
-          <span
+          <div
             aria-hidden="true"
             style={{
-              fontSize: "2.5rem",
-              lineHeight: 1,
-              display: "block",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               marginBottom: "1rem",
             }}
           >
             {icon}
-          </span>
+          </div>
 
           {/* Title */}
           <h2

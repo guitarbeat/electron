@@ -184,10 +184,7 @@ body[data-theme='places'] {
 }
 
 .watchlist-empty-state::before {
-  content: '✦';
-  color: var(--color-accent-light);
-  opacity: 0.72;
-  filter: none;
+  content: none;
 }
 
 /* ── Queue empty state ─────────────────────────────────────── */

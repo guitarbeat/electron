@@ -9,6 +9,7 @@ import {
   CollectionSection,
 } from '@/ui/CollectionLayout';
 import { MovieCardSkeleton } from '@/ui/LegacySkeleton';
+import { CheckIcon, MapPinIcon, MessageIcon } from '../common/Icons.tsx';
 import SyncBanner from '../ui/SyncBanner.tsx';
 import type { Place, PlaceSuggestion } from '../../shared/types.ts';
 import type { PlacesMapHandle } from './PlacesMap.tsx';
@@ -101,7 +102,7 @@ const PlacesList: React.FC = () => {
       id: 'incoming',
       label: 'Incoming',
       count: pendingSuggestions.length,
-      icon: '💌',
+      icon: <MessageIcon size={14} />,
       sectionId: PLACE_SECTION_IDS.incoming,
       tone: 'incoming',
     },
@@ -109,7 +110,7 @@ const PlacesList: React.FC = () => {
       id: 'queue',
       label: 'To Try',
       count: sections.queue.length,
-      icon: '📍',
+      icon: <MapPinIcon size={14} />,
       sectionId: PLACE_SECTION_IDS.queue,
       tone: 'default',
     },
@@ -117,7 +118,7 @@ const PlacesList: React.FC = () => {
       id: 'visited',
       label: 'Visited',
       count: sections.completed.length,
-      icon: '✓',
+      icon: <CheckIcon size={14} />,
       sectionId: PLACE_SECTION_IDS.completed,
       tone: 'completed',
     },

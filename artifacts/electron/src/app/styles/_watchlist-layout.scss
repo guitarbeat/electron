@@ -300,10 +300,7 @@
 }
 
 .watchlist-empty-state::before {
-  content: '🎬';
-  font-size: 2.5rem;
-  opacity: 0.55;
-  filter: grayscale(0.3);
+  content: none;
 }
 
 @include breakpoint-down('lg') {

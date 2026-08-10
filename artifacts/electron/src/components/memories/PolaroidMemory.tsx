@@ -3,6 +3,7 @@ import type { SharedMemory } from "@/shared/types";
 import { getStickyNoteRotation } from "./lib/memoryUtils";
 import { typography } from "@/theme/tokens";
 import { formatMemoryTimestamp } from "@/utils";
+import { PinIcon, TrashIcon } from "../common/Icons.tsx";
 
 interface PolaroidMemoryProps {
   memory: SharedMemory;
@@ -179,18 +180,22 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({
             onPin();
           }}
           style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
             minWidth: "34px",
             height: "28px",
             borderRadius: "999px",
             border: "1px solid rgba(63, 48, 31, 0.12)",
-            background: "rgba(255,255,255,0.88)",
+            background: memory.isPinned ? "var(--color-accent)" : "rgba(255,255,255,0.88)",
+            color: memory.isPinned ? "#fff" : "inherit",
             cursor: "pointer",
             fontSize: "0.85rem",
           }}
           aria-label={memory.isPinned ? "Unpin" : "Pin"}
           title={memory.isPinned ? "Unpin" : "Pin"}
         >
-          {memory.isPinned ? "📍" : "📌"}
+          <PinIcon size={14} />
         </button>
         {onDelete ? (
           <button
@@ -200,6 +205,9 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({
               onDelete();
             }}
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               minWidth: "34px",
               height: "28px",
               borderRadius: "999px",
@@ -208,10 +216,10 @@ const PolaroidMemory: React.FC<PolaroidMemoryProps> = ({
               cursor: "pointer",
               fontSize: "0.85rem",
             }}
-            aria-label="Delete memory"
-            title="Delete"
+            aria-label="Delete note"
+            title="Delete note"
           >
-            🗑️
+            <TrashIcon size={14} />
           </button>
         ) : null}
       </div>

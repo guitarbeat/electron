@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from "react";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import Button from "@/ui/Button";
+import { CheckIcon, FilmIcon, MapPinIcon, MessageIcon } from "../common/Icons.tsx";
 import { CollectionEmptyState } from "@/ui/CollectionLayout";
 import { spacing } from "@/theme/tokens";
 import { useViewport } from "@/app/ViewportContext";
@@ -37,7 +38,7 @@ export const WorkspaceSectionEmpty: FC<WorkspaceSectionEmptyProps> = ({
           className="watchlist-empty-watched-state__icon"
           aria-hidden="true"
         >
-          ✓
+          <CheckIcon size={16} />
         </span>
         <span className="watchlist-empty-watched-state__text">{label}</span>
       </CollectionEmptyState>
@@ -70,9 +71,20 @@ export const WorkspaceGlobalEmpty: FC<WorkspaceGlobalEmptyProps> = ({
   children,
 }) => {
   const { isMobile } = useViewport();
-  const { icon, title, copy, actionLabel: defaultActionLabel } =
+  const { title, copy, actionLabel: defaultActionLabel } =
     WORKSPACE_GLOBAL_EMPTY[tab];
   const actionLabel = actionLabelOverride ?? defaultActionLabel;
+
+  const renderTabIcon = () => {
+    switch (tab) {
+      case "movies":
+        return <FilmIcon size={32} />;
+      case "places":
+        return <MapPinIcon size={32} />;
+      default:
+        return <MessageIcon size={32} />;
+    }
+  };
 
   return (
     <CollectionEmptyState
@@ -80,7 +92,7 @@ export const WorkspaceGlobalEmpty: FC<WorkspaceGlobalEmptyProps> = ({
       className={`watchlist-empty-queue-state${isMobile ? " collection-empty-state--tight" : ""}`}
     >
       <span className="watchlist-empty-queue-state__icon" aria-hidden="true">
-        {icon}
+        {renderTabIcon()}
       </span>
       <strong className="watchlist-empty-queue-state__title">{title}</strong>
       <span className="watchlist-empty-queue-state__copy">{copy}</span>

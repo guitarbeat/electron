@@ -324,3 +324,36 @@ export const Spinner: React.FC<IconProps> = ({
     />
   </svg>
 );
+
+export const FilmIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    <rect x="2" y="2" width="20" height="20" rx="2.18" stroke="currentColor" strokeWidth={2} />
+    {path("M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5")}
+  </StrokeIcon>
+);
+
+export const MapPinIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path("M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z")}
+    <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth={2} />
+  </StrokeIcon>
+);
+
+export const TvIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    <rect x="2" y="7" width="20" height="15" rx="2" stroke="currentColor" strokeWidth={2} />
+    {path("M17 2l-5 5-5-5")}
+  </StrokeIcon>
+);
+
+export const PinIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path("M12 17v5M9 3h6l1 7 2 2v2H4v-2l2-2 1-7z")}
+  </StrokeIcon>
+);
+
+export const SparklesIcon: React.FC<IconProps> = (props) => (
+  <StrokeIcon {...props}>
+    {path("M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83")}
+  </StrokeIcon>
+);

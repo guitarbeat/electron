@@ -15,6 +15,7 @@ import type {
   MoviesViewProps,
 } from "@/shared/types";
 import ConfirmDialog from "@/ui/ConfirmDialog";
+import { CheckIcon, FilmIcon, MessageIcon } from "../common/Icons.tsx";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
 import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
@@ -164,7 +165,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         id: "incoming",
         label: "Incoming",
         count: sections.suggestions.length,
-        icon: "💌",
+        icon: <MessageIcon size={14} />,
         sectionId: MOVIE_SECTION_IDS.incoming,
         tone: "incoming",
       },
@@ -172,7 +173,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         id: "queue",
         label: "Up Next",
         count: sections.queue.length,
-        icon: "🎞",
+        icon: <FilmIcon size={14} />,
         sectionId: MOVIE_SECTION_IDS.queue,
         tone: "default",
       },
@@ -180,7 +181,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         id: "watched",
         label: "Watched",
         count: sections.completed.length,
-        icon: "✓",
+        icon: <CheckIcon size={14} />,
         sectionId: MOVIE_SECTION_IDS.completed,
         tone: "completed",
       },

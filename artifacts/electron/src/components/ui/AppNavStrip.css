@@ -79,6 +79,12 @@
   font-weight: 700;
 }
 
+.ans__tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* Separators */
 .ans__sep {
   display: block;

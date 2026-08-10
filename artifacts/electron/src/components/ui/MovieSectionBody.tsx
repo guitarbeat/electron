@@ -143,9 +143,9 @@ const MovieSectionBody: React.FC<Props> = ({
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.xs }}>
           <MagicToggle
             options={[
-              { value: 'all', label: 'All Format' },
-              { value: 'movie', label: `🎬 Movies (${totalMoviesCount})` },
-              { value: 'series', label: `📺 TV Series (${totalSeriesCount})` },
+              { value: 'all', label: 'All Formats' },
+              { value: 'movie', label: `Movies (${totalMoviesCount})` },
+              { value: 'series', label: `TV Series (${totalSeriesCount})` },
             ]}
             activeValue={mediaTypeFilter}
             onChange={(v) => onMediaTypeFilterChange(v as MediaTypeFilter)}

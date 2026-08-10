@@ -9,7 +9,7 @@ test("getWorkspaceMeta returns movie workspace copy", () => {
   const meta = getWorkspaceMeta("movies");
 
   assert.equal(meta.title, "Movies");
-  assert.equal(meta.icon, "🎬");
+  assert.equal(meta.icon, "film");
   assert.equal("description" in meta, false);
 });
 
@@ -17,7 +17,7 @@ test("getWorkspaceMeta returns places workspace copy", () => {
   const meta = getWorkspaceMeta("places");
 
   assert.equal(meta.title, "Date Ideas");
-  assert.equal(meta.icon, "📍");
+  assert.equal(meta.icon, "map-pin");
   assert.equal("description" in meta, false);
 });
 
