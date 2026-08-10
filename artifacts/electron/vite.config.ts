@@ -49,9 +49,14 @@ const aliasEntries = {
 };
 
 const resolveApiModulePath = (apiPath: string): string => {
-  const exactFilePath = path.resolve(import.meta.dirname, `.${apiPath}.ts`);
-  if (fs.existsSync(exactFilePath)) {
-    return exactFilePath;
+  const localExact = path.resolve(import.meta.dirname, `.${apiPath}.ts`);
+  if (fs.existsSync(localExact)) {
+    return localExact;
+  }
+
+  const rootExact = path.resolve(import.meta.dirname, `../../${apiPath.replace(/^\//, '')}.ts`);
+  if (fs.existsSync(rootExact)) {
+    return rootExact;
   }
 
   const segments = apiPath.split("/").filter(Boolean);
@@ -61,7 +66,9 @@ const resolveApiModulePath = (apiPath: string): string => {
     segments[0] === "api" &&
     segments[1] === "state"
   ) {
-    return path.resolve(import.meta.dirname, "./api/state/[scope].ts");
+    const localState = path.resolve(import.meta.dirname, "./api/state/[scope].ts");
+    if (fs.existsSync(localState)) return localState;
+    return path.resolve(import.meta.dirname, "../../api/state/[scope].ts");
   }
 
   if (
@@ -70,13 +77,18 @@ const resolveApiModulePath = (apiPath: string): string => {
     segments[1] === "state" &&
     segments[3] === "mutate"
   ) {
-    return path.resolve(
+    const localMutate = path.resolve(
       import.meta.dirname,
       "./api/state/[scope]/mutate.ts",
     );
+    if (fs.existsSync(localMutate)) return localMutate;
+    return path.resolve(
+      import.meta.dirname,
+      "../../api/state/[scope]/mutate.ts",
+    );
   }
 
-  return exactFilePath;
+  return localExact;
 };
 
 export default defineConfig(({ mode }) => {

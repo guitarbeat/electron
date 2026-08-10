@@ -14,7 +14,9 @@
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"!./artifacts/mockup-sandbox\" --filter \"./scripts\" --if-present run typecheck",
     "check-types": "pnpm run typecheck",
     "lint": "eslint . --max-warnings 0 || true",
-    "test": "pnpm -r --if-present run test"
+    "test": "pnpm -r --if-present run test",
+    "test:unit": "node scripts/run-node-tests.mjs",
+    "test:smoke": "node scripts/smoke-test-deployment.mjs"
   },
   "private": true,
   "pnpm": {
