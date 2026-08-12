@@ -187,8 +187,8 @@ export const useMovies = (
                   : entry,
               ),
           );
-        } catch (metadataError) {
-          console.warn("Metadata enrichment failed:", metadataError);
+        } catch {
+          // Ignore non-critical metadata fetch errors
         }
       })();
 
@@ -248,8 +248,8 @@ export const useMovies = (
                   : movie,
               ),
           );
-        } catch (metadataError) {
-          console.warn("Metadata refresh failed after rename:", metadataError);
+        } catch {
+          // Ignore non-critical metadata fetch errors
         }
       })();
     },
@@ -395,8 +395,8 @@ export const useMovies = (
       if (!currentUser) return;
       try {
         await updateMovieMetadata(movie);
-      } catch (error) {
-        console.warn(`Auto-sync failed for ${movie.title}:`, error);
+      } catch {
+        // Ignore non-critical metadata fetch errors
       }
     });
   }, [currentUser, isSubmitting, movies, updateMovieMetadata]);
