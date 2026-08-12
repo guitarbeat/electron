@@ -85,11 +85,13 @@
 
 /* With sidebar rail — shift content right */
 .app-shell__canvas--with-rail {
+  width: calc(100% - 68px);
   margin-left: 68px;
 }
 
 @media (max-width: 768px) {
   .app-shell__canvas--with-rail {
+    width: 100%;
     margin-left: 0;
     padding-bottom: 70px; /* space for mobile bottom bar */
   }

@@ -162,6 +162,19 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--color-surface-0);
   background-repeat: no-repeat;
