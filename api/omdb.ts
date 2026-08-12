@@ -129,15 +129,13 @@ const isPrivateIp = (ip: string): boolean => {
 const getClientIp = (req: Request): string => {
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    const ips = forwardedFor.split(',').map((ip) => ip.trim());
-    for (let i = ips.length - 1; i >= 0; i--) {
-      if (!isPrivateIp(ips[i])) {
-        return ips[i];
-      }
-    }
-    return ips[ips.length - 1] || 'unknown';
+    // The right-most IP is the one appended by the last proxy in the chain.
+    // All IPs to the left could potentially be spoofed by the client.
+    const ips = forwardedFor.split(',');
+    return ips[ips.length - 1].trim() || 'unknown';
   }
 
+  // Fallback if x-forwarded-for is missing (e.g., local development or direct connection)
   return req.headers.get('x-real-ip') || 'unknown';
 };
 
