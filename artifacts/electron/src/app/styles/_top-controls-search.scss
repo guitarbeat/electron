@@ -490,6 +490,15 @@
   line-height: 1.35;
 }
 
+.workspace-search__autocomplete-group {
+  padding: 0.45rem 0.9rem 0.2rem;
+  color: color-mix(in srgb, var(--color-text-tertiary) 80%, var(--color-text-secondary) 20%);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .workspace-search__autocomplete-status {
   padding: 0.9rem 1rem;
   color: color-mix(in srgb, var(--color-text-secondary) 86%, var(--color-secondary) 14%);

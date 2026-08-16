@@ -133,6 +133,18 @@ export const WorkspaceAutocompletePoster: React.FC<
   </span>
 );
 
+interface WorkspaceAutocompleteGroupProps {
+  children: React.ReactNode;
+}
+
+export const WorkspaceAutocompleteGroup: React.FC<
+  WorkspaceAutocompleteGroupProps
+> = ({ children }) => (
+  <div className="workspace-search__autocomplete-group" role="presentation">
+    {children}
+  </div>
+);
+
 interface WorkspaceAutocompleteNoMatchPanelProps {
   children: React.ReactNode;
 }

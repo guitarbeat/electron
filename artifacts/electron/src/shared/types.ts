@@ -106,6 +106,7 @@ export interface MatchmakerGame {
 
 export interface MoviesViewProps {
   isPaused?: boolean;
+  hideSearch?: boolean;
 }
 
 export type { QuizCharacter } from "../components/quiz/lib/types.ts";

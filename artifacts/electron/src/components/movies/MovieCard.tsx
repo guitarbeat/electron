@@ -13,6 +13,7 @@ import MovieTitleEditModal from "./MovieTitleEditModal";
 const MovieDetailsModal = React.lazy(() => import("./MovieDetailsModal"));
 import MediaPoster from "@/ui/MediaPoster";
 import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
+import { nextPosterClickAction } from "./lib/posterTitleReveal";
 
 export interface MovieTransitionOrigin {
 
@@ -56,6 +57,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   priorityPoster = false,
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
+  const [isTitleVisible, setIsTitleVisible] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const [detailsOrigin, setDetailsOrigin] =
     React.useState<MovieTransitionOrigin | null>(null);
@@ -77,8 +79,32 @@ const MovieCard: React.FC<MovieCardProps> = ({
         height: rect.height,
       });
     }
+    setIsTitleVisible(true);
     setIsDetailsOpen(true);
   };
+
+  const handlePosterClick = () => {
+    if (nextPosterClickAction(isTitleVisible) === "reveal-title") {
+      setIsTitleVisible(true);
+      return;
+    }
+    handleOpenDetails();
+  };
+
+  React.useEffect(() => {
+    if (!isTitleVisible || isDetailsOpen) {
+      return;
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!cardRef.current?.contains(event.target as Node)) {
+        setIsTitleVisible(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [isDetailsOpen, isTitleVisible]);
 
   const handleToggle = async () => {
     if (isGuest) {
@@ -101,7 +127,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   return (
     <>
       <div
-        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""}`}
+        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""}`}
         data-movie-id={movie.id}
       >
         <CardTiltShell disabled={isCompact}>
@@ -143,33 +169,38 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 />
               ) : null}
 
+              <div className="movie-item-title-overlay" aria-hidden="true">
+                <MediaCardTitle className="movie-item-title-overlay__title">
+                  {movie.title}
+                </MediaCardTitle>
+                {(movie.year || movie.imdbRating) && (
+                  <div className="movie-item-title-overlay__meta">
+                    {movie.year && (
+                      <span className="movie-item-meta__year">{movie.year}</span>
+                    )}
+                    {movie.imdbRating && /^\d/.test(movie.imdbRating) && (
+                      <span className="movie-item-meta__rating">
+                        ★ {movie.imdbRating}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 className="movie-item-details-hit-area"
-                onClick={handleOpenDetails}
-                aria-label={`View details for "${movie.title}"`}
-              >
-                <span className="sr-only">{`View details for "${movie.title}"`}</span>
-              </button>
+                onClick={handlePosterClick}
+                aria-expanded={isTitleVisible}
+                aria-label={
+                  isTitleVisible
+                    ? `View details for "${movie.title}"`
+                    : `Show title for "${movie.title}"`
+                }
+              />
             </MediaCardPosterWrap>
           </Card>
         </CardTiltShell>
-
-        <div className="movie-item-info-external">
-          <MediaCardTitle className="movie-item-title-external">
-            {movie.title}
-          </MediaCardTitle>
-
-          {(movie.year || movie.imdbRating) && (
-            <div className="movie-item-meta-external">
-              {movie.year && <span className="movie-item-meta__year">{movie.year}</span>}
-              {movie.imdbRating && /^\d/.test(movie.imdbRating) && (
-                <span className="movie-item-meta__rating">★ {movie.imdbRating}</span>
-              )}
-            </div>
-          )}
-
-        </div>
       </div>
 
       {onRename ? (

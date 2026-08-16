@@ -7,6 +7,7 @@ import type { MainTab } from "@/shared/types";
 import ProfileMenu from "@/ui/ProfileMenu";
 import { MessageIcon } from "@/common/Icons";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
+import { isLibraryWorkspaceTab } from "@/utils/libraryWorkspace";
 import "./SidebarRail.css";
 
 // ── Icons ─────────────────────────────────────────────────────────
@@ -37,13 +38,6 @@ const MoviesIcon = () => (
     <line x1="2" y1="17" x2="7" y2="17" />
     <line x1="17" y1="7" x2="22" y2="7" />
     <line x1="17" y1="17" x2="22" y2="17" />
-  </svg>
-);
-
-const PlacesIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
   </svg>
 );
 
@@ -130,24 +124,13 @@ const SidebarRail: React.FC<SidebarRailProps> = ({
       <div className="sidebar-rail__section sidebar-rail__section--tabs">
         <button
           type="button"
-          className={`sidebar-rail__item ${activeTab === "movies" ? "sidebar-rail__item--active" : ""}`}
+          className={`sidebar-rail__item ${isLibraryWorkspaceTab(activeTab) ? "sidebar-rail__item--active" : ""}`}
           onClick={() => onTabChange("movies")}
-          aria-label="Movies"
-          aria-current={activeTab === "movies" ? "page" : undefined}
+          aria-label="Movies and places"
+          aria-current={isLibraryWorkspaceTab(activeTab) ? "page" : undefined}
         >
           <span className="sidebar-rail__icon"><MoviesIcon /></span>
-          <span className="sidebar-rail__label">Movies</span>
-        </button>
-
-        <button
-          type="button"
-          className={`sidebar-rail__item ${activeTab === "places" ? "sidebar-rail__item--active" : ""}`}
-          onClick={() => onTabChange("places")}
-          aria-label="Places"
-          aria-current={activeTab === "places" ? "page" : undefined}
-        >
-          <span className="sidebar-rail__icon"><PlacesIcon /></span>
-          <span className="sidebar-rail__label">Places</span>
+          <span className="sidebar-rail__label">Movies & Places</span>
         </button>
       </div>
 

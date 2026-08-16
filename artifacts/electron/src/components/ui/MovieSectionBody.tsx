@@ -14,6 +14,10 @@ import { getWorkspaceCollectionState } from '@/utils/workspace';
 
 import MagicToggle from '@/components/ui/MagicToggle';
 import type { MediaTypeFilter } from '@/components/movies/lib/movieType';
+import {
+  MOVIES_POSTER_GRID_GAP,
+  MOVIES_POSTER_GRID_MIN_COL,
+} from '@/utils/workspaceConfig';
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
@@ -75,12 +79,8 @@ const MovieSectionBody: React.FC<Props> = ({
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
   const isEmpty = (arr: unknown[]) => arr.length === 0;
 
-  const GRID = isMobile
-    ? 'clamp(8.5rem, 42vw, 12rem)'
-    : 'clamp(6.5rem, 10vw, 9rem)';
-  const GRID_GAP = isMobile
-    ? 'clamp(0.45rem, 1.5vw, 0.65rem)'
-    : 'clamp(0.3rem, 0.6vw, 0.5rem)';
+  const GRID = MOVIES_POSTER_GRID_MIN_COL;
+  const GRID_GAP = MOVIES_POSTER_GRID_GAP;
 
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
@@ -91,7 +91,7 @@ const MovieSectionBody: React.FC<Props> = ({
 
   const movieGrid = (movies: Movie[], emptyLabel: string) => (
     <div
-      className="watchlist-content"
+      className="watchlist-content watchlist-content--posters"
       style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${GRID}, 1fr))`, gap: GRID_GAP }}
     >
       {movies.length > 0 ? (
@@ -151,11 +151,11 @@ const MovieSectionBody: React.FC<Props> = ({
       )}
       {(isSuggestionsLoading || sections.suggestions.length > 0) && (
         isSuggestionsLoading && isEmpty(sections.suggestions) ? (
-          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
+          <CollectionGrid className="watchlist-content watchlist-content--posters" minColumnWidth={GRID} gap={GRID_GAP}>
             {sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
           </CollectionGrid>
         ) : (
-          <CollectionGrid className="watchlist-content" minColumnWidth={GRID} gap={GRID_GAP}>
+          <CollectionGrid className="watchlist-content watchlist-content--posters" minColumnWidth={GRID} gap={GRID_GAP}>
             {sections.suggestions.map((suggestion) => (
               <SuggestionCard
                 key={suggestion.id}
