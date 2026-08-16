@@ -13,8 +13,7 @@ import {
   isLibraryWorkspaceTab,
 } from "@/utils/libraryWorkspace";
 
-const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
-const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
+const LibraryWorkspace = React.lazy(() => import("@/components/library/LibraryWorkspace"));
 const MemoriesView = React.lazy(() => import("@/components/memories/MemoriesView"));
 const MessageBoard = React.lazy(() => import("@/components/messages/MessageBoard"));
 const QuizExperience = React.lazy(() => import("@/components/quiz/QuizExperience"));
@@ -61,10 +60,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   );
 
   const workspaceContent = isLibraryWorkspaceTab(activeTab) ? (
-    <div className="library-workspace">
-      <MoviesView />
-      <PlacesList />
-    </div>
+    <LibraryWorkspace />
   ) : activeTab === "memories" ? (
     <MemoriesView onJumpToMovies={() => onTabChange("movies")} />
   ) : (

@@ -33,10 +33,7 @@ const staggerPreloads = (
 export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
   if (tab === "memories") return import("@/components/memories/MemoriesView");
   if (tab === "messages") return import("@/components/messages/MessageBoard");
-  return Promise.all([
-    import("@/components/movies/MoviesView"),
-    import("@/components/places/PlacesList"),
-  ]);
+  return import("@/components/library/LibraryWorkspace");
 };
 
 /** Warm the workspace shell chunk (header + bento layout). */

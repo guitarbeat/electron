@@ -40,7 +40,11 @@ const PLACE_SORTS: BentoSortChipConfig[] = [
 
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
-const PlacesList: React.FC = () => {
+interface PlacesListProps {
+  hideSearch?: boolean;
+}
+
+const PlacesList: React.FC<PlacesListProps> = ({ hideSearch = false }) => {
   const mapRef = useRef<PlacesMapHandle>(null);
   const placesBodyRef = useRef<HTMLDivElement>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
@@ -176,6 +180,9 @@ const PlacesList: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (hideSearch) {
+      return;
+    }
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.key === "/" &&
@@ -190,7 +197,7 @@ const PlacesList: React.FC = () => {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [focusPlacesSearch]);
+  }, [focusPlacesSearch, hideSearch]);
 
   const handleAcceptSuggestion = useCallback(
     async (suggestion: PlaceSuggestion) => {
@@ -375,6 +382,7 @@ const PlacesList: React.FC = () => {
           <span className="workspace-section-heading__label">Places</span>
         </span>
       </h2>
+      {hideSearch ? null : (
       <div className="places-search-container">
         <PlacesTopControls
           ref={placesTopControlsRef}
@@ -392,6 +400,7 @@ const PlacesList: React.FC = () => {
           canEdit={Boolean(currentUser)}
         />
       </div>
+      )}
       <div
         ref={placesBodyRef}
         className="watchlist-container places-container"

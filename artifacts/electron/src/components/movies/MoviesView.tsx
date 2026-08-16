@@ -43,7 +43,10 @@ const MOVIE_SORTS: BentoSortChipConfig[] = [
   { value: "rating", label: "★ Rating" },
 ];
 
-const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
+const MoviesView: React.FC<MoviesViewProps> = ({
+  isPaused = false,
+  hideSearch = false,
+}) => {
   const { currentUser } = useUser();
   const { registerTabConfig } = useBentoSlot();
   const { isMobile } = useViewport();
@@ -254,6 +257,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           <span className="workspace-section-heading__label">Movies</span>
         </span>
       </h2>
+      {hideSearch ? null : (
       <div className="movies-search-container">
         <MoviesTopControls
           ref={moviesTopControlsRef}
@@ -282,6 +286,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           canRecommend={true}
         />
       </div>
+      )}
       <div className="watchlist-container places-container">
         {isMoviesWorkspaceDegraded && (
           <SyncBanner
