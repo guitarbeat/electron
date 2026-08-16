@@ -19,15 +19,6 @@ const SearchIcon = () => (
   </svg>
 );
 
-const PlusIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-);
-
-// ── Icons ─────────────────────────────────────────────────────────
-
 const MoviesIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
@@ -97,26 +88,16 @@ const SidebarRail: React.FC<SidebarRailProps> = ({
         <span className="sidebar-rail__brand-label">Electron</span>
       </div>
 
-      {/* Search + Add */}
+      {/* Search and add */}
       <div className="sidebar-rail__section sidebar-rail__section--search">
-        <button
-          type="button"
-          className="sidebar-rail__item"
-          onClick={onSearchFocus}
-          aria-label="Search"
-        >
-          <span className="sidebar-rail__icon"><SearchIcon /></span>
-          <span className="sidebar-rail__label">Search</span>
-        </button>
-
         <button
           type="button"
           className="sidebar-rail__item sidebar-rail__item--accent"
           onClick={onSearchFocus}
-          aria-label="Add movie"
+          aria-label="Search and add"
         >
-          <span className="sidebar-rail__icon"><PlusIcon /></span>
-          <span className="sidebar-rail__label">Add</span>
+          <span className="sidebar-rail__icon"><SearchIcon /></span>
+          <span className="sidebar-rail__label">Search &amp; add</span>
         </button>
       </div>
 
