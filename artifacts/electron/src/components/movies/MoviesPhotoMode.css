@@ -1,37 +1,99 @@
 /*
  * MoviesPhotoMode.css
  * Transforms the movie card grid into a photo-dominant layout.
- * The poster image fills the card entirely; the action rail overlays the
- * bottom of the poster and slides up on hover (desktop) / always shows on mobile.
+ * Posters fill each cell; titles stay hidden until the poster is clicked.
  */
 
-/* ── Tighter grid — more columns, smaller gap ── */
-.watchlist-content {
-  grid-template-columns: repeat(auto-fill, minmax(min(clamp(7rem, 28vw, 10rem), calc(33% - 0.4rem)), 1fr)) !important;
-  gap: 7px !important;
+/* ── Dense poster wall — 4 columns on phones, more on desktop ── */
+.watchlist-content--posters {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(clamp(5rem, 21vw, 6.75rem), calc(25% - 0.25rem)), 1fr)
+  ) !important;
+  gap: 4px !important;
 }
 
 /* ── Card is purely the poster — no chrome, no shadow resting state ── */
-.watchlist-content > .movie-item-card {
-  border-radius: 10px !important;
+.watchlist-content--posters > .movie-item-card {
+  border-radius: 8px !important;
   box-shadow: none !important;
   background: transparent !important;
   position: relative !important;
 }
 
+.watchlist-content--posters .movie-item-container > .card-tilt-wrap > .movie-item-card,
+.watchlist-content--posters .movie-item-card {
+  margin-bottom: 0 !important;
+  border-radius: 8px;
+}
+
 /* Watched: keep the green top stripe, just drop the card-level glow */
-.watchlist-content > .movie-item-card--watched {
+.watchlist-content--posters > .movie-item-card--watched {
   box-shadow: none !important;
 }
 
 /* ── Poster-wrap — rounded corners match card ── */
-.watchlist-content > .movie-item-card .movie-item-poster-wrap {
-  border-radius: 10px !important;
+.watchlist-content--posters .movie-item-poster-wrap {
+  border-radius: 8px !important;
   overflow: hidden !important;
 }
 
+/* Always-visible captions are gone; name lives on the poster overlay */
+.watchlist-content--posters .movie-item-info-external {
+  display: none !important;
+}
+
+.movie-item-title-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1.6rem 0.4rem 0.4rem;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.55) 55%,
+    transparent 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.movie-item-container--title-visible .movie-item-title-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.movie-item-title-overlay__title {
+  margin: 0;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.movie-item-title-overlay__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.78);
+}
+
 /* ── Overlay: always slightly visible (title readable) ── */
-.watchlist-content > .movie-item-card .movie-item-overlay {
+.watchlist-content--posters > .movie-item-card .movie-item-overlay {
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.82) 0%,
@@ -42,7 +104,7 @@
 }
 
 /* ── Action rail: keep visible and static ── */
-.watchlist-content > .movie-item-card .movie-item-action-rail {
+.watchlist-content--posters > .movie-item-card .movie-item-action-rail {
   position: absolute !important;
   bottom: 0 !important;
   left: 0 !important;
@@ -56,7 +118,7 @@
 }
 
 /* Compact primary button */
-.watchlist-content > .movie-item-card .movie-item-primary-action {
+.watchlist-content--posters > .movie-item-card .movie-item-primary-action {
   min-height: 34px !important;
   font-size: 0.75rem !important;
   padding-inline: 0.7rem !important;
@@ -64,28 +126,35 @@
 }
 
 /* Compact secondary row (notes / edit / delete) */
-.watchlist-content > .movie-item-card .movie-actions {
+.watchlist-content--posters > .movie-item-card .movie-actions {
   gap: 0.3rem !important;
 }
-.watchlist-content > .movie-item-card .movie-actions__row {
+.watchlist-content--posters > .movie-item-card .movie-actions__row {
   gap: 0.3rem !important;
 }
 
 /* ── Watcher badges stay at top-right of poster ── */
-.watchlist-content > .movie-item-card .movie-item-watchers {
+.watchlist-content--posters .movie-item-watchers {
   z-index: 7 !important;
 }
 
 /* ── Full-width items (empty state, error) ── */
-.watchlist-content > .watchlist-empty-state,
-.watchlist-content > .watchlist-error {
+.watchlist-content--posters > .watchlist-empty-state,
+.watchlist-content--posters > .watchlist-error {
   grid-column: 1 / -1 !important;
 }
 
-/* ── Very small screens: 2 columns ── */
-@media (max-width: 380px) {
-  .watchlist-content {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 6px !important;
+/* ── Very small screens: 3 columns ── */
+@media (max-width: 360px) {
+  .watchlist-content--posters {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-item-title-overlay {
+    transition: none;
+    transform: none;
   }
 }

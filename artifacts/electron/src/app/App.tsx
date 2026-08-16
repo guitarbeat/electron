@@ -36,7 +36,6 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
 import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
-import type { ThemeName } from "@/theme/themes";
 import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import LoadingScreen from "@/app/LoadingScreen";
@@ -49,6 +48,10 @@ import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
 import SidebarRail from "@/components/ui/SidebarRail";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
+import {
+  isLibraryWorkspaceTab,
+  libraryWorkspaceStackClass,
+} from "@/utils/libraryWorkspace";
 import "./App.scss";
 
 
@@ -259,14 +262,14 @@ const App: React.FC = () => {
 
   if (!isBootReady) {
     return (
-      <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
+      <ThemeProvider themeName="movies">
         <LoadingScreen />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
+    <ThemeProvider themeName="movies">
       <div
         className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
       >
@@ -298,10 +301,10 @@ const App: React.FC = () => {
 
         <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
           <div
-            className={`app-workspace-stack app-workspace-stack--${activeTab}`}
+            className={`app-workspace-stack ${libraryWorkspaceStackClass(activeTab)}`}
           >
             <div
-              className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
+              className={`app-tab-shell ${isLibraryWorkspaceTab(activeTab) ? "app-tab-shell--movies" : `app-tab-shell--${activeTab}`} workspace-unified-shell`}
             >
               <WorkspaceErrorBoundary>
                 <React.Suspense fallback={null}>

@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   getWorkspaceMeta,
+  MOVIES_POSTER_GRID_GAP,
+  MOVIES_POSTER_GRID_MIN_COL,
   workspaceSectionLabel,
 } from "./workspaceConfig.ts";
 
@@ -39,4 +41,9 @@ test("workspaceSectionLabel returns place-specific queue labels", () => {
 test("workspaceSectionLabel shares incoming labels across tabs", () => {
   assert.equal(workspaceSectionLabel("movies", "incoming", false), "Incoming");
   assert.equal(workspaceSectionLabel("places", "incoming", true), "New");
+});
+
+test("movie poster grid uses a dense min column width", () => {
+  assert.equal(MOVIES_POSTER_GRID_MIN_COL, "clamp(5rem, 21vw, 6.75rem)");
+  assert.equal(MOVIES_POSTER_GRID_GAP, "0.25rem");
 });

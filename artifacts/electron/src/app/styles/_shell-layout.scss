@@ -216,6 +216,27 @@
   background: linear-gradient(180deg, var(--color-surface-0) 0%, var(--color-surface-0) 70%, transparent 100%);
 }
 
+.library-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.library-movies-heading {
+  margin: 0 0 0.35rem;
+}
+
+.places-search-container {
+  padding: 0.25rem 0 0.75rem;
+}
+
+.library-places-heading {
+  margin: 0.25rem 0 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+}
+
 
 /* ── Search form streaming overrides ── */
 

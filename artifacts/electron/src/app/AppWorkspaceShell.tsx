@@ -9,6 +9,9 @@ import {
   BentoSlotContext,
   type RegisteredBentoSlotConfig,
 } from "./BentoSlotContext";
+import {
+  isLibraryWorkspaceTab,
+} from "@/utils/libraryWorkspace";
 
 const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
 const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
@@ -57,25 +60,28 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     [activeTab, registerTabConfig, searchPortalEl],
   );
 
-  const workspaceContent =
-    activeTab === "movies" ? <MoviesView /> :
-    activeTab === "places" ? <PlacesList /> :
-    activeTab === "memories" ? <MemoriesView onJumpToMovies={() => onTabChange("movies")} /> :
-    <MessageBoard />;
+  const workspaceContent = isLibraryWorkspaceTab(activeTab) ? (
+    <div className="library-workspace">
+      <MoviesView />
+      <PlacesList />
+    </div>
+  ) : activeTab === "memories" ? (
+    <MemoriesView onJumpToMovies={() => onTabChange("movies")} />
+  ) : (
+    <MessageBoard />
+  );
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <ProfilePinProvider>
         <h1 className="sr-only">
-          {activeTab === "movies" ? "Movie Queue & Watchlist" :
-           activeTab === "places" ? "Places Tracker" :
+          {isLibraryWorkspaceTab(activeTab) ? "Movies & Places" :
            activeTab === "memories" ? "Memory Board" :
            "Message Board"}
         </h1>
 
         <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {activeTab === "movies" ? "Movies workspace" :
-           activeTab === "places" ? "Places workspace" :
+          {isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
            activeTab === "memories" ? "Memories workspace" :
            "Messages workspace"}
         </p>
@@ -157,11 +163,10 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 
           {/* Primary workspace content */}
           <section
-            className={`workspace-surface workspace-surface--${activeTab}`}
+            className={`workspace-surface workspace-surface--${isLibraryWorkspaceTab(activeTab) ? "movies" : activeTab}`}
             style={{ position: "relative", zIndex: 1, minWidth: 0 }}
             aria-label={
-              activeTab === "movies" ? "Movies workspace" :
-              activeTab === "places" ? "Places workspace" :
+              isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
               activeTab === "memories" ? "Memories workspace" :
               "Messages workspace"
             }

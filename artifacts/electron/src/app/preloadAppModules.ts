@@ -31,10 +31,12 @@ const staggerPreloads = (
 
 /** Warm the active workspace tab chunk. */
 export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
-  if (tab === "places") return import("@/components/places/PlacesList");
   if (tab === "memories") return import("@/components/memories/MemoriesView");
   if (tab === "messages") return import("@/components/messages/MessageBoard");
-  return import("@/components/movies/MoviesView");
+  return Promise.all([
+    import("@/components/movies/MoviesView"),
+    import("@/components/places/PlacesList"),
+  ]);
 };
 
 /** Warm the workspace shell chunk (header + bento layout). */
@@ -73,7 +75,7 @@ export const preloadDeferredAppModules = (): Promise<void> => {
   }
 
   const initialTab = readInitialMainTab();
-  const allTabs = ["movies", "places", "memories", "messages"] as const;
+  const allTabs = ["movies", "memories", "messages"] as const;
   const inactiveTabs = allTabs.filter((t) => t !== initialTab);
   deferredPreloadPromise = staggerPreloads([
     ...inactiveTabs.map((t) => () => preloadWorkspaceTab(t)),

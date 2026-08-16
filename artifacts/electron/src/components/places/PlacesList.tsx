@@ -19,13 +19,13 @@ import PlacesTopControls, { type PlacesTopControlsHandle } from './PlacesTopCont
 import { buildPlaceSections, type PlaceSortOrder } from './lib/placeSections.ts';
 import { usePlaceSuggestions } from '@/hooks/places';
 import { useCinematicEntrance } from '@/hooks/useCinematicEntrance';
-import { createPortal } from 'react-dom';
 import {
   type BentoStatTileConfig,
   type BentoSortChipConfig,
   type SortOrder,
 } from '@/components/ui/BentoWorkspaceController';
 import { useBentoSlot } from '@/app/BentoSlotContext';
+import { LIBRARY_PLACES_ANCHOR_ID } from '@/utils/libraryWorkspace';
 
 const PLACE_SECTION_IDS = {
   incoming: 'places-section-incoming',
@@ -45,7 +45,7 @@ const PlacesList: React.FC = () => {
   const placesBodyRef = useRef<HTMLDivElement>(null);
   const placesTopControlsRef = useRef<PlacesTopControlsHandle>(null);
   const { currentUser } = useUser();
-  const { registerTabConfig, searchPortalEl } = useBentoSlot();
+  const { registerTabConfig } = useBentoSlot();
   const setConfig = useCallback(
     (config: Parameters<typeof registerTabConfig>[1]) =>
       registerTabConfig("places", config),
@@ -361,9 +361,21 @@ const PlacesList: React.FC = () => {
     !isLoading && (hasPlaces || pendingSuggestions.length > 0);
   useCinematicEntrance(placesBodyRef, placeCardsReady, ".card-tilt-wrap");
 
+  useEffect(() => {
+    if (window.location.hash.replace(/^#/, "") !== "places") {
+      return;
+    }
+    placesBodyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
   return (
-    <>
-      {searchPortalEl && createPortal(
+    <section id={LIBRARY_PLACES_ANCHOR_ID} className="library-places" aria-label="Places">
+      <h2 className="workspace-section-heading library-places-heading">
+        <span className="workspace-section-heading__content">
+          <span className="workspace-section-heading__label">Places</span>
+        </span>
+      </h2>
+      <div className="places-search-container">
         <PlacesTopControls
           ref={placesTopControlsRef}
           queueCount={sections.queue.length}
@@ -378,10 +390,12 @@ const PlacesList: React.FC = () => {
           isSuggesting={isSuggesting}
           suggestionError={suggestionError}
           canEdit={Boolean(currentUser)}
-        />,
-        searchPortalEl
-      )}
-      <div ref={placesBodyRef} className="watchlist-container places-container">
+        />
+      </div>
+      <div
+        ref={placesBodyRef}
+        className="watchlist-container places-container"
+      >
       {isDegraded && (
         <SyncBanner
           isBlocked={isSyncBlocked}
@@ -533,7 +547,7 @@ const PlacesList: React.FC = () => {
         />
       )}
       </div>
-    </>
+    </section>
   );
 };
 

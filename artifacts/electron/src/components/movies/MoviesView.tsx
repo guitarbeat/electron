@@ -248,7 +248,12 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
   ]);
 
   return (
-    <>
+    <section className="library-movies" aria-label="Movies">
+      <h2 className="workspace-section-heading library-movies-heading">
+        <span className="workspace-section-heading__content">
+          <span className="workspace-section-heading__label">Movies</span>
+        </span>
+      </h2>
       <div className="movies-search-container">
         <MoviesTopControls
           ref={moviesTopControlsRef}
@@ -328,7 +333,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           />
         )}
       </div>
-    </>
+    </section>
   );
 };
 export default memo(MoviesView);
