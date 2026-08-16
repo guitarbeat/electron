@@ -408,7 +408,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
   const showPanel = isMounted && (isLoading || rows.length > 0 || Boolean(fetchError) || trimmed.length >= 2);
 
   return (
-    <div className="movies-search-container">
+    <>
       <WorkspaceSearchShell
         isAutocompleteActive={showPanel && isOpen}
         onSubmit={(event) => {
@@ -610,7 +610,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
           }}
         />
       ) : null}
-    </div>
+    </>
   );
 });
 
