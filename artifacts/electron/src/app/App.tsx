@@ -213,6 +213,29 @@ const App: React.FC = () => {
     handleTabChange("messages");
   }, [handleTabChange]);
 
+  const focusLibrarySearch = useCallback(() => {
+    if (!isLibraryWorkspaceTab(activeTab)) {
+      handleTabChange("movies");
+    }
+
+    let attempts = 0;
+    const focusWhenMounted = () => {
+      const input = document.querySelector<HTMLInputElement>(
+        ".workspace-search__search-field",
+      );
+      if (input) {
+        input.focus();
+        return;
+      }
+      attempts += 1;
+      if (attempts < 10) {
+        window.requestAnimationFrame(focusWhenMounted);
+      }
+    };
+
+    window.requestAnimationFrame(focusWhenMounted);
+  }, [activeTab, handleTabChange]);
+
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
@@ -293,10 +316,7 @@ const App: React.FC = () => {
           onRetrySync={handleRetryPendingSync}
           openPanels={openPanels}
           onTogglePanel={togglePanel}
-          onSearchFocus={() => {
-            const input = document.querySelector<HTMLInputElement>('.workspace-search__search-field');
-            input?.focus();
-          }}
+          onSearchFocus={focusLibrarySearch}
         />
 
         <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">

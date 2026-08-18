@@ -99,19 +99,34 @@ interface WorkspaceAutocompletePosterProps {
   fallbackLetter: string;
 }
 
-const WorkspaceAutocompletePosterImage: React.FC<{ src: string }> = ({
-  src,
-}) => {
+const WorkspaceAutocompletePosterImage: React.FC<{
+  src: string;
+  fallbackLetter: string;
+}> = ({ src, fallbackLetter }) => {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <span
+        className="workspace-search__autocomplete-poster-fallback"
+        aria-hidden
+      >
+        {fallbackLetter}
+      </span>
+    );
+  }
 
   return (
     <img
       src={src}
       alt=""
+      decoding="async"
       className={`workspace-search__autocomplete-poster-image${
         loaded ? " is-loaded" : ""
       }`}
       onLoad={() => setLoaded(true)}
+      onError={() => setFailed(true)}
     />
   );
 };
@@ -121,7 +136,11 @@ export const WorkspaceAutocompletePoster: React.FC<
 > = ({ src, fallbackLetter }) => (
   <span className="workspace-search__autocomplete-poster">
     {src ? (
-      <WorkspaceAutocompletePosterImage src={src} />
+      <WorkspaceAutocompletePosterImage
+        key={src}
+        src={src}
+        fallbackLetter={fallbackLetter}
+      />
     ) : (
       <span
         className="workspace-search__autocomplete-poster-fallback"

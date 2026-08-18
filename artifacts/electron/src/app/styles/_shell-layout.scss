@@ -208,12 +208,18 @@
 
 /* ── Movies search container — sticky top bar feel ── */
 
-.movies-search-container {
+.movies-search-container,
+.library-search-container {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
+  min-width: 0;
   padding: 1rem 0;
   background: linear-gradient(180deg, var(--color-surface-0) 0%, var(--color-surface-0) 70%, transparent 100%);
+}
+
+.library-search-container {
+  margin-bottom: -0.75rem;
 }
 
 .library-workspace {

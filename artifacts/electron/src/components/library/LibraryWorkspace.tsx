@@ -5,7 +5,9 @@ import LibrarySearch from "./LibrarySearch";
 
 const LibraryWorkspace: React.FC = () => (
   <div className="library-workspace">
-    <LibrarySearch />
+    <div className="library-search-container">
+      <LibrarySearch />
+    </div>
     <MoviesView hideSearch />
     <PlacesList hideSearch />
   </div>
