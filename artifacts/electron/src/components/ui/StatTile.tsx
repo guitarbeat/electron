@@ -1,5 +1,4 @@
 import React, { useCallback } from "react";
-import "./StatTile.css";
 
 export interface BentoStatTileConfig {
   id: string;

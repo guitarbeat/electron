@@ -3,7 +3,6 @@ import { Film, MapPin, RefreshCw, RotateCw, SatelliteDish, WifiOff, X } from 'lu
 import type { MainTab } from '@/shared/types';
 import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import MagicToggle from './MagicToggle';
-import './AppNavStrip.css';
 
 export interface AppNavStripStatus {
   isOnline: boolean;

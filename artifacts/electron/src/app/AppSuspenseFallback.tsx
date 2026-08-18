@@ -1,5 +1,4 @@
 import React from "react";
-import "./AppSuspenseFallback.css";
 
 interface AppSuspenseFallbackProps {
   label?: string;

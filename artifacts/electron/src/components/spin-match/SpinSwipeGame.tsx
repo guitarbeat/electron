@@ -19,7 +19,6 @@ import {
   calculateVelocity,
   filterCandidates,
 } from "./lib/swipeLogic";
-import "./SpinSwipeGame.css";
 
 type Phase = "swipe" | "spin" | "result";
 

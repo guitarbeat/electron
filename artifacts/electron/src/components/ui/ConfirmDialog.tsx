@@ -2,7 +2,6 @@ import React from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import Button from "./Button";
 import { useAudio } from "@/hooks/useAudio";
-import "./ConfirmDialog.css";
 
 interface ConfirmDialogProps {
   isOpen: boolean;

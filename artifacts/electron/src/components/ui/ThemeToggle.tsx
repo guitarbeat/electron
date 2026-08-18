@@ -1,7 +1,6 @@
 import React, { useRef, useLayoutEffect, useState, useCallback } from "react";
 import type { MainTab } from "@/shared/types";
 import { FilmIcon, MapPinIcon } from "../common/Icons.tsx";
-import "./ThemeToggle.css";
 
 interface ThemeToggleProps {
   activeTab: MainTab;

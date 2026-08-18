@@ -1,6 +1,5 @@
 import React from "react";
 import { getStremioUrls, type StremioTarget } from "@/utils/stremioUrl";
-import "./StremioButton.css";
 
 interface StremioButtonProps {
   movie: StremioTarget;

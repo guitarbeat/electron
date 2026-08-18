@@ -5,7 +5,6 @@ import { USER_OPTIONS, consoleError, getErrorMessage } from "@/utils";
 import { USER_PHOTOS } from "@/shared/types";
 import type { User } from "@/shared/types";
 import PinDialog from "@/common/PinDialog";
-import "./UserPickerScreen.css";
 
 const UserCard: FC<{
   user: User;

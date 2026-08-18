@@ -53,7 +53,7 @@ import {
   libraryWorkspaceStackClass,
 } from "@/utils/libraryWorkspace";
 import "./App.scss";
-
+import "./component-styles.css";
 
 const AppWorkspaceShell = React.lazy(
   () => import("@/app/AppWorkspaceShell"),

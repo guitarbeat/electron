@@ -20,7 +20,6 @@ import {
   readSavedQuizProgress,
   writeSavedQuizProgress,
 } from "./lib/quizProgressStorage";
-import "./retro-ad.css";
 
 interface QuizFlowProps {
   onComplete: () => void;

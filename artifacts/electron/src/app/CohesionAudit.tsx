@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { applyTheme } from "@/theme/applyTheme";
 import type { ThemeName } from "@/theme/themes";
 import { radius, spacing } from "@/theme/tokens";
-import "./CohesionAudit.css";
 
 const colorVars = [
   "--color-accent",

@@ -14,7 +14,6 @@ import {
   pinFlowReducer,
   type PinFlowMode,
 } from "./pinFlowReducer";
-import "./PinDialog.css";
 
 interface PinDialogProps {
   isOpen: boolean;

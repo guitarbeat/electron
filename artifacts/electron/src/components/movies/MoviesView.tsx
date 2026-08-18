@@ -29,7 +29,6 @@ import {
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import "./MoviesPhotoMode.css";
 
 const MOVIE_SECTION_IDS = {
   incoming: "movies-section-incoming",

@@ -9,7 +9,6 @@ import {
   IOS_TIMESTAMP,
   isMessageFromCurrentUser,
 } from "./lib/messageUtils";
-import "./MessageBubble.css";
 
 interface MessageBubbleProps {
   message: Message;

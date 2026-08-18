@@ -18,8 +18,6 @@ import Button from '@/ui/Button';
 import { spacing, colors } from '@/theme/tokens';
 import { ArrowLeftIcon, EyeIcon } from '@/common/Icons';
 import { useFeatureFonts } from "@/hooks/useFeatureFonts";
-import './retro-ad.css';
-import './QuizEditor.css';
 
 interface UseUndoRedoReturn<T> {
   state: T;

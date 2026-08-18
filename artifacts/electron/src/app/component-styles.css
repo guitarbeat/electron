@@ -1,0 +1,29 @@
+/*
+ * Runtime component styles are registered from one entry point.
+ *
+ * Keeping the source files colocated with their components makes ownership
+ * clear, while this single bundle avoids a long list of CSS side-effect
+ * imports scattered through the React module graph.
+ */
+@import "./AppSuspenseFallback.css";
+@import "./CohesionAudit.css";
+@import "./LoadingScreen.css";
+@import "./UserPickerScreen.css";
+@import "../components/common/PinDialog.css";
+@import "../components/effects/ChromaGrid.css";
+@import "../components/messages/MessageBubble.css";
+@import "../components/movies/MoviesPhotoMode.css";
+@import "../components/movies/SuggestionStack.css";
+@import "../components/quiz/QuizEditor.css";
+@import "../components/quiz/retro-ad.css";
+@import "../components/spin-match/SpinSwipeGame.css";
+@import "../components/ui/AppNavStrip.css";
+@import "../components/ui/BentoWorkspaceController.css";
+@import "../components/ui/ConfirmDialog.css";
+@import "../components/ui/MagicToggle.css";
+@import "../components/ui/SidebarRail.css";
+@import "../components/ui/Stack.css";
+@import "../components/ui/StatTile.css";
+@import "../components/ui/StremioButton.css";
+@import "../components/ui/ThemeToggle.css";
+@import "../components/ui/WorkspaceFeatureSection.css";

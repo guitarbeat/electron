@@ -1,5 +1,4 @@
 import React from "react";
-import "./LoadingScreen.css";
 
 /**
  * Lightweight boot screen — keeps first paint fast while session/chunks warm up.

@@ -8,7 +8,6 @@ import ProfileMenu from "@/ui/ProfileMenu";
 import { MessageIcon } from "@/common/Icons";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import { isLibraryWorkspaceTab } from "@/utils/libraryWorkspace";
-import "./SidebarRail.css";
 
 // ── Icons ─────────────────────────────────────────────────────────
 
