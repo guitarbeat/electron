@@ -16,7 +16,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import {
   APP_VIEW_STATE_KEY,
   readInitialAppViewState,
@@ -372,7 +371,6 @@ const AppWithProviders: React.FC = () => (
         <PwaInstallProvider>
           <ViewportProvider>
             <App />
-            <SpeedInsights />
           </ViewportProvider>
         </PwaInstallProvider>
       </ToastProvider>
