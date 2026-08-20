@@ -5,6 +5,8 @@ import type { User } from "@/shared/types";
 import { colors, radius, spacing, typography } from "@/theme/tokens";
 import { shouldSubmitMessageOnKeyDown } from "./lib/messageUtils";
 
+const FOCUS_DELAY_MS = 250;
+
 interface MessageInputProps {
   currentUser: User | null;
   isSubmitting: boolean;
@@ -57,7 +59,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
     try {
       await onSend(content);
       setContent("");
-      window.setTimeout(() => textareaRef.current?.focus(), 250);
+      window.setTimeout(() => textareaRef.current?.focus(), FOCUS_DELAY_MS);
     } catch (error) {
       setSubmitError(getErrorMessage(error, "Failed to send message."));
     }
