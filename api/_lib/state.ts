@@ -482,20 +482,20 @@ const scopes: {
             return { ok: false, conflict: 'Invalid metadata payload.' };
           }
 
-          if (!movies.some((movie) => movie.id === movieId)) {
+          const index = movies.findIndex((movie) => movie.id === movieId);
+          if (index < 0) {
             return { ok: false, conflict: 'Movie not found.' };
           }
 
+          const newMovies = [...movies];
+          newMovies[index] = {
+            ...newMovies[index],
+            ...metadata,
+          };
+
           return {
             ok: true,
-            data: movies.map((movie) =>
-              movie.id === movieId
-                ? {
-                    ...movie,
-                    ...metadata,
-                  }
-                : movie
-            ),
+            data: newMovies,
           };
         }
         default:
