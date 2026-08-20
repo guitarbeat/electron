@@ -32,8 +32,22 @@ export const isValidUrl = (url: string): boolean => {
   }
 };
 
-export const normalizeMovieTitle = (title: string): string =>
-  title.trim().toLowerCase().replace(/\s+/g, ' ');
+const normalizeCache = new Map<string, string>();
+
+export const normalizeMovieTitle = (title: string): string => {
+  let normalized = normalizeCache.get(title);
+  if (normalized === undefined) {
+    normalized = title.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (normalizeCache.size > 10000) {
+      const firstKey = normalizeCache.keys().next().value;
+      if (firstKey !== undefined) {
+        normalizeCache.delete(firstKey);
+      }
+    }
+    normalizeCache.set(title, normalized);
+  }
+  return normalized;
+};
 
 export const findMovieByNormalizedTitle = <T extends { title: string }>(
   movies: readonly T[],
