@@ -152,20 +152,20 @@ const FRIENDLY_CONTENT: Record<
     title: "Sync conflict",
     description: "A change from another device clashed with a local change.",
     whatItMeans: "Nothing is lost — your local changes are still here.",
-    whatToDo: "Refresh the page, then hit Retry sync to resolve the conflict.",
+    whatToDo: "Refresh the page, then select Retry sync to resolve the conflict.",
   },
   outbox: {
     title: "Saving in background…",
     description: "A recent change is still waiting to reach the shared backup.",
     whatItMeans: "Everything is safe on this device right now.",
     whatToDo:
-      "Stay connected and it will sync automatically, or tap Retry sync to push it now.",
+      "Stay connected and it will sync automatically, or select Retry sync to push it now.",
   },
   network: {
     title: "Saved on this device",
     description: "You're offline — changes stay here until you're back online.",
     whatItMeans: "Your watchlist and notes are safe locally.",
-    whatToDo: "When you're online again, tap Retry sync.",
+    whatToDo: "When you're online again, select Retry sync.",
   },
   missing_database: {
     title: "Shared backup not set up",
@@ -181,19 +181,19 @@ const FRIENDLY_CONTENT: Record<
     whatItMeans:
       "Your changes are safe locally. The other person may not see updates yet.",
     whatToDo:
-      "Tap Retry sync to try again. If it keeps failing, check the Neon database URL.",
+      "Select Retry sync to try again. If it keeps failing, check the Neon database URL.",
   },
   shared_state_load: {
     title: "Sync unavailable",
     description: "The shared backup couldn't be reached right now.",
     whatItMeans: "Your changes are safe on this device for now.",
-    whatToDo: "Tap Retry sync to try again.",
+    whatToDo: "Select Retry sync to try again.",
   },
   generic: {
     title: "Sync unavailable",
     description: "The shared backup couldn't be reached right now.",
     whatItMeans: "Your changes are safe on this device for now.",
-    whatToDo: "Tap Retry sync to try again.",
+    whatToDo: "Select Retry sync to try again.",
   },
 };
 
