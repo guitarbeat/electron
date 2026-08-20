@@ -43,6 +43,8 @@ const TOAST_STYLES = {
   },
 } as const;
 
+const EXIT_ANIMATION_DURATION_MS = 250;
+
 const Toast: React.FC<ToastProps> = ({
   message,
   type,
@@ -66,7 +68,7 @@ const Toast: React.FC<ToastProps> = ({
     if (duration > 0 && !persistent) {
       const exitTimer = setTimeout(
         () => setIsExiting(true),
-        Math.max(0, duration - 250),
+        Math.max(0, duration - EXIT_ANIMATION_DURATION_MS),
       );
       const dismissTimer = setTimeout(() => onDismiss?.(), duration);
       return () => {
@@ -79,7 +81,7 @@ const Toast: React.FC<ToastProps> = ({
 
   const handleDismiss = () => {
     setIsExiting(true);
-    setTimeout(() => onDismiss?.(), 250);
+    setTimeout(() => onDismiss?.(), EXIT_ANIMATION_DURATION_MS);
   };
 
   const styles = TOAST_STYLES[type] || TOAST_STYLES.info;
@@ -174,7 +176,7 @@ const Toast: React.FC<ToastProps> = ({
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
         animation: isExiting
-          ? "toast-slide-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards"
+          ? `toast-slide-out ${EXIT_ANIMATION_DURATION_MS}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`
           : "toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       }}
     >
