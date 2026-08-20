@@ -120,7 +120,9 @@ const publicCatalog = async (resource: string, url: URL, requestId: string): Pro
       ...places.map(({ id, name, notes, category, description, status }) => ({ id, kind: 'place', name, notes, category, description, status })),
     ];
   } else return errorResponse(requestId, 404, 'NOT_FOUND', 'Catalog resource not found.');
-  items.sort((a, b) => canonical(a).localeCompare(canonical(b)));
+    const mapped = items.map(item => ({ item, str: canonical(item) }));
+  mapped.sort((a, b) => a.str.localeCompare(b.str));
+  items = mapped.map(x => x.item);
   const result = paginate(items, url);
   return result
     ? responseJson(result, 200, { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' })
