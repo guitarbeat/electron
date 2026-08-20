@@ -676,7 +676,7 @@ body.modal-open {
   overscroll-behavior: none;
 }
 
-/* Fix for iOS Safari address bar */
+/* Workaround for iOS Safari address bar */
 @supports (-webkit-touch-callout: none) {
   body.modal-open {
     /* Store scroll position before fixing */
