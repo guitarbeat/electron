@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { BoundedResponseCache } from "../../../../api/_lib/cachedProxy.ts";
+import { BoundedResponseCache, isAbsoluteUrl } from "../../../../api/_lib/cachedProxy.ts";
 
 test("BoundedResponseCache expires entries and keeps its configured bound", () => {
   let now = 100;
@@ -18,4 +18,21 @@ test("BoundedResponseCache expires entries and keeps its configured bound", () =
 
   now = 111;
   assert.equal(cache.get("three"), undefined);
+});
+
+
+test("isAbsoluteUrl correctly identifies absolute URLs", () => {
+  // Valid absolute URLs
+  assert.equal(isAbsoluteUrl("http://example.com"), true);
+  assert.equal(isAbsoluteUrl("https://example.com"), true);
+  assert.equal(isAbsoluteUrl("ftp://example.com"), true);
+  assert.equal(isAbsoluteUrl("custom-scheme://test"), true);
+
+  // Invalid or relative URLs
+  assert.equal(isAbsoluteUrl("example.com"), false);
+  assert.equal(isAbsoluteUrl("/path/to/resource"), false);
+  assert.equal(isAbsoluteUrl("http:example.com"), false);
+  assert.equal(isAbsoluteUrl("://example.com"), false);
+  assert.equal(isAbsoluteUrl("123scheme://example.com"), false);
+  assert.equal(isAbsoluteUrl("some.schema://test"), true);
 });
