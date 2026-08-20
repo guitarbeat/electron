@@ -417,27 +417,25 @@ const scopes: {
         case 'toggle_watched': {
           const movieId = extractString((payload as { movieId?: unknown }).movieId);
 
-          const target = movies.find((movie) => movie.id === movieId);
-          if (!target) {
+          const targetIndex = movies.findIndex((movie) => movie.id === movieId);
+          if (targetIndex === -1) {
             return { ok: false, conflict: 'Movie not found.' };
           }
 
+          const target = movies[targetIndex];
+          const watchedBy = target.watchedBy.includes(context.currentUser!)
+            ? target.watchedBy.filter((user: User) => user !== context.currentUser!)
+            : [...target.watchedBy, context.currentUser!];
+
+          const data = [...movies];
+          data[targetIndex] = {
+            ...target,
+            watchedBy,
+          };
+
           return {
             ok: true,
-            data: movies.map((movie) => {
-              if (movie.id !== movieId) {
-                return movie;
-              }
-
-              const watchedBy = movie.watchedBy.includes(context.currentUser!)
-                ? movie.watchedBy.filter((user: User) => user !== context.currentUser!)
-                : [...movie.watchedBy, context.currentUser!];
-
-              return {
-                ...movie,
-                watchedBy,
-              };
-            }),
+            data,
           };
         }
         case 'delete_movie': {
