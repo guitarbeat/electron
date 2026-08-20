@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { renderToString } from 'react-dom/server';
 import test from 'node:test';
 import assert from 'node:assert/strict';
