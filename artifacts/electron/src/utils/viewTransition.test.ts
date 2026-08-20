@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runWithViewTransition } from "./viewTransition.ts";
+import { runWithViewTransition } from "./viewTransition";
 
 test("runWithViewTransition", async (t) => {
   const originalDocument = global.document;
