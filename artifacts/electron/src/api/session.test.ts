@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { invalidateSharedStateCache } from "../../../../api/_lib/sharedStateStore.ts";
-import { hashPin } from "../../../../api/_lib/session.ts";
+import { hashPin, buildProfileCookie, buildClearProfileCookie, buildPinAttemptCookie, buildClearPinAttemptCookie } from "../../../../api/_lib/session.ts";
 import profileHandler, {
   computeNextPinAttemptState,
   profilePinRateLimitConfig,
@@ -175,4 +175,65 @@ test("PIN lockout state sets lock duration at max failures", () => {
 
   assert.equal(next.failures, profilePinRateLimitConfig.maxAttempts);
   assert.equal(next.lockedUntil, now + profilePinRateLimitConfig.lockoutMs);
+});
+
+
+test("buildProfileCookie generates correct secure and non-secure cookie strings", () => {
+  const req = new Request("http://example.com");
+  const user = { name: "TestUser", icon: "icon" }; // Dummy user matching User interface shape if possible. The function just passes it to JSON.stringify
+
+  const cookie = buildProfileCookie(req, user as any);
+  assert.match(cookie, /^movie_watch_profile=/);
+  assert.match(cookie, /Path=\//);
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /SameSite=Lax/);
+  assert.match(cookie, /Max-Age=604800/);
+  assert.doesNotMatch(cookie, /Secure/);
+
+  const secureReq = new Request("https://example.com");
+  const secureCookie = buildProfileCookie(secureReq, user as any);
+  assert.match(secureCookie, /Secure/);
+
+  const forwardedReq = new Request("http://example.com", {
+    headers: { "x-forwarded-proto": "https" },
+  });
+  const forwardedCookie = buildProfileCookie(forwardedReq, user as any);
+  assert.match(forwardedCookie, /Secure/);
+});
+
+test("buildClearProfileCookie generates correct clear cookie string", () => {
+  const req = new Request("http://example.com");
+  const cookie = buildClearProfileCookie(req);
+  assert.match(cookie, /^movie_watch_profile=/);
+  assert.match(cookie, /Path=\//);
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /SameSite=Lax/);
+  assert.match(cookie, /Max-Age=0/);
+});
+
+test("buildPinAttemptCookie generates correct cookie string", () => {
+  const req = new Request("http://example.com");
+  const user = { name: "TestUser", icon: "icon" };
+  const payload = {
+    user: user as any,
+    failures: 3,
+    lockUntil: 1234567890
+  };
+
+  const cookie = buildPinAttemptCookie(req, payload);
+  assert.match(cookie, /^movie_watch_pin_attempt=/);
+  assert.match(cookie, /Path=\//);
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /SameSite=Lax/);
+  assert.match(cookie, /Max-Age=600/);
+});
+
+test("buildClearPinAttemptCookie generates correct clear cookie string", () => {
+  const req = new Request("http://example.com");
+  const cookie = buildClearPinAttemptCookie(req);
+  assert.match(cookie, /^movie_watch_pin_attempt=/);
+  assert.match(cookie, /Path=\//);
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /SameSite=Lax/);
+  assert.match(cookie, /Max-Age=0/);
 });
