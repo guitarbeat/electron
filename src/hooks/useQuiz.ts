@@ -11,6 +11,13 @@ import { consoleError } from "@/utils";
 import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import { mutateScope, readScope, retryScopeSync } from "@/services/state";
 import type { QuizData } from "@/services/state/stateTypes";
+import {
+  addQuestionToData,
+  updateQuestionInData,
+  deleteQuestionFromData,
+  updateCharacterDescriptionInData,
+  updateNeitherDescriptionInData,
+} from "@/components/quiz/lib/quizMutations";
 
 const POLLING_INTERVAL = 30000;
 
@@ -63,55 +70,35 @@ export const useQuiz = (isPaused: boolean = false) => {
 
   const addQuestion = useCallback(
     async (question: QuizQuestion) => {
-      await performMutation((data) => ({
-        ...data,
-        questions: [...data.questions, question],
-      }));
+      await performMutation((data) => addQuestionToData(data, question));
     },
     [performMutation],
   );
 
   const updateQuestion = useCallback(
     async (questionId: string, updatedQuestion: QuizQuestion) => {
-      await performMutation((data) => ({
-        ...data,
-        questions: data.questions.map((q) =>
-          q.id === questionId ? updatedQuestion : q,
-        ),
-      }));
+      await performMutation((data) => updateQuestionInData(data, questionId, updatedQuestion));
     },
     [performMutation],
   );
 
   const deleteQuestion = useCallback(
     async (questionId: string) => {
-      await performMutation((data) => ({
-        ...data,
-        questions: data.questions.filter((q) => q.id !== questionId),
-      }));
+      await performMutation((data) => deleteQuestionFromData(data, questionId));
     },
     [performMutation],
   );
 
   const updateCharacterDescription = useCallback(
     async (character: QuizCharacter, description: string) => {
-      await performMutation((data) => ({
-        ...data,
-        characterDescriptions: {
-          ...data.characterDescriptions,
-          [character]: description,
-        },
-      }));
+      await performMutation((data) => updateCharacterDescriptionInData(data, character, description));
     },
     [performMutation],
   );
 
   const updateNeitherDescription = useCallback(
     async (description: string) => {
-      await performMutation((data) => ({
-        ...data,
-        neitherDescription: description,
-      }));
+      await performMutation((data) => updateNeitherDescriptionInData(data, description));
     },
     [performMutation],
   );
