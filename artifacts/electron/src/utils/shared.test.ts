@@ -832,60 +832,6 @@ test("shuffleArray", async (t) => {
   });
 });
 
-test("shuffleArray", async (t) => {
-  await t.test("returns empty array when given empty array", () => {
-    assert.deepEqual(shuffleArray([]), []);
-  });
-
-  await t.test("returns same single element for array of length 1", () => {
-    assert.deepEqual(shuffleArray([1]), [1]);
-  });
-
-  await t.test("does not mutate original array", () => {
-    const original = [1, 2, 3];
-    const shuffled = shuffleArray(original);
-    assert.notStrictEqual(shuffled, original);
-    assert.deepEqual(original, [1, 2, 3]);
-  });
-
-  await t.test("contains all original elements", () => {
-    const original = [1, 2, 3, 4, 5];
-    const shuffled = shuffleArray(original);
-    assert.equal(shuffled.length, original.length);
-    for (const item of original) {
-      assert.ok(shuffled.includes(item));
-    }
-  });
-
-  await t.test("shuffles array based on pseudo-random values", () => {
-    const original = [1, 2, 3, 4, 5];
-    let m;
-    if (
-      typeof globalThis.crypto !== "undefined" &&
-      globalThis.crypto.getRandomValues
-    ) {
-      m = mock.method(globalThis.crypto, "getRandomValues", (arr) => {
-        arr[0] = 0; // Ensures getSecureRandom returns 0
-        return arr;
-      });
-    }
-
-    try {
-      const shuffled = shuffleArray(original);
-      // For j always 0:
-      // i=4, j=0: [shuffled[4], shuffled[0]] = [1, 5] -> [5, 2, 3, 4, 1]
-      // i=3, j=0: [shuffled[3], shuffled[0]] = [5, 4] -> [4, 2, 3, 5, 1]
-      // i=2, j=0: [shuffled[2], shuffled[0]] = [4, 3] -> [3, 2, 4, 5, 1]
-      // i=1, j=0: [shuffled[1], shuffled[0]] = [3, 2] -> [2, 3, 4, 5, 1]
-      if (m) {
-        assert.deepEqual(shuffled, [2, 3, 4, 5, 1]);
-      }
-    } finally {
-      if (m) m.mock.restore();
-    }
-  });
-});
-
 test("shallowCloneArray", async (t) => {
   await t.test("returns a new array instance", () => {
     const original = [1, 2, 3];
