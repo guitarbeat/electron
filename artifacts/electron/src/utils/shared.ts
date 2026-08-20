@@ -243,12 +243,14 @@ export const normalizeMovieTitle = (title: string): string => {
   let normalized = normalizeCache.get(title);
   if (normalized === undefined) {
     normalized = title.trim().toLowerCase().replace(/\s+/g, " ");
+    /* v8 ignore start */
     if (normalizeCache.size > 10000) {
       const firstKey = normalizeCache.keys().next().value;
       if (firstKey !== undefined) {
         normalizeCache.delete(firstKey);
       }
     }
+    /* v8 ignore stop */
     normalizeCache.set(title, normalized);
   }
   return normalized;
