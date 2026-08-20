@@ -14,6 +14,9 @@ import {
   pinFlowReducer,
   type PinFlowMode,
 } from "./pinFlowReducer";
+const FOCUS_DELAY_MS = 100;
+const SHAKE_DURATION_MS = 450;
+const AUTO_SUBMIT_DELAY_MS = 100;
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -49,7 +52,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    const id = window.setTimeout(() => inputRef.current?.focus(), 100);
+    const id = window.setTimeout(() => inputRef.current?.focus(), FOCUS_DELAY_MS);
     return () => window.clearTimeout(id);
   }, [isOpen, flow.phase]);
 
@@ -57,7 +60,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
     if (!flow.isShaking) return;
     const id = window.setTimeout(
       () => dispatch({ type: "clear-shake" }),
-      450,
+      SHAKE_DURATION_MS,
     );
     return () => window.clearTimeout(id);
   }, [flow.isShaking]);
@@ -104,7 +107,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
           true,
         );
       }
-    }, 100);
+    }, AUTO_SUBMIT_DELAY_MS);
     return () => window.clearTimeout(id);
   }, [flow.digits, flow.mode, isLoading, onSubmit, reportError]);
 
