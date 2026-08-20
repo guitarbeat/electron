@@ -14,6 +14,7 @@ import {
 import { useCollection } from "../useCollection";
 
 const POLLING_INTERVAL = 15000;
+const AUTO_SYNC_DELAY = 2000;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   const { poster, year, plot, imdbRating, runtime, genre, director, type } = metadata;
@@ -388,7 +389,7 @@ export const useMovies = (
     hasAutoSyncedRef.current = true;
 
     await new Promise((resolve) => {
-      window.setTimeout(resolve, 2000);
+      window.setTimeout(resolve, AUTO_SYNC_DELAY);
     });
 
     await concurrentMap(moviesMissingMetadata, 5, async (movie) => {
