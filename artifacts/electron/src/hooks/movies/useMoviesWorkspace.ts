@@ -1,27 +1,19 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  addMemory as addMemoryService,
-  deleteMemory as deleteMemoryService,
-  toggleMemoryPin as toggleMemoryPinService,
-  updateMemory as updateMemoryService,
-  updateMemoriesBatch as updateMemoriesBatchService,
-} from "../../services/content/memoryService.ts";
+import { useCallback, useRef, useState } from "react";
+import { updateMemoriesBatch as updateMemoriesBatchService } from "../../services/content/memoryService.ts";
 import type { MovieAutocompleteResult } from "../../services/metadata/types.ts";
 import { Movie, MovieSuggestion, User } from "../../shared/types.ts";
 import { useMovies } from "./useMovies.ts";
+import { useMemories } from "./useMemories.ts";
+
 import { useSuggestions } from "../suggestions/index.ts";
 import { useToast } from "../../app/useProviders.ts";
 import {
-  compareCreatedAtDesc,
   normalizeMovieTitle,
   sanitizeInput,
 } from "../../utils/index.ts";
 import { trackMetric } from "../../services/analytics/index.ts";
-import { readScope, retryScopeSync } from "../../services/state/index.ts";
+import { retryScopeSync } from "../../services/state/index.ts";
 import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner.ts";
-
-const POLLING_INTERVAL = 30000;
 
 interface UseMoviesWorkspaceProps {
   currentUser: User | null;
@@ -63,8 +55,6 @@ export const useMoviesWorkspace = ({
   focusSearchInput,
 }: UseMoviesWorkspaceProps) => {
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
-  const readMemories = useCallback(() => readScope("memories"), []);
 
   // Local view state
   const [isAdding, setIsAdding] = useState(false);
@@ -128,65 +118,15 @@ export const useMoviesWorkspace = ({
     retrySync: retrySuggestionsSync,
   } = useSuggestions(isPaused);
 
-  const { data: memoriesSnapshot, refetch: refreshMemoriesQuery } = useQuery({
-    queryKey: ["memories"],
-    queryFn: readMemories,
-    refetchInterval: isPaused ? false : POLLING_INTERVAL,
-    refetchOnWindowFocus: !isPaused,
-    structuralSharing: false,
-  });
-  const memories = useMemo(() => {
-    return [...(memoriesSnapshot?.data || [])].sort((a, b) => {
-      if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
-        return a.isPinned ? -1 : 1;
-      }
-      return compareCreatedAtDesc(a, b);
-    });
-  }, [memoriesSnapshot]);
-
-  const withMemoryRefresh = useCallback(
-    async <T,>(operation: () => Promise<T>): Promise<T> => {
-      const result = await operation();
-      // Invalidate so all subscribers (MovieDetailsModal, MemoryList) pick up fresh data.
-      void queryClient.invalidateQueries({ queryKey: ["memories"] });
-      return result;
-    },
-    [queryClient],
-  );
-
-  const addMemory = useCallback(
-    async (
-      movieId: string | undefined,
-      movieTitle: string,
-      author: string,
-      note: string,
-    ) =>
-      withMemoryRefresh(() =>
-        addMemoryService(movieId, movieTitle, author, note),
-      ),
-    [withMemoryRefresh],
-  );
-
-  const updateMemory = useCallback(
-    async (
-      memoryId: string,
-      updates: { note?: string; movieId?: string; movieTitle?: string },
-    ) => withMemoryRefresh(() => updateMemoryService(memoryId, updates)),
-    [withMemoryRefresh],
-  );
-
-  const deleteMemoryRecord = useCallback(
-    async (memoryId: string) => {
-      await withMemoryRefresh(() => deleteMemoryService(memoryId));
-    },
-    [withMemoryRefresh],
-  );
-
-  const toggleMemoryPin = useCallback(
-    async (memoryId: string) =>
-      withMemoryRefresh(() => toggleMemoryPinService(memoryId)),
-    [withMemoryRefresh],
-  );
+  const {
+    memories,
+    memoriesSnapshot,
+    refreshMemoriesQuery,
+    addMemory,
+    updateMemory,
+    deleteMemoryRecord,
+    toggleMemoryPin,
+  } = useMemories(isPaused);
 
   const withProcessingSuggestion = useCallback(
     async <T,>(suggestionId: string, operation: () => Promise<T>): Promise<T> => {
