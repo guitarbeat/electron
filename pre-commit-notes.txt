@@ -1,0 +1,1 @@
+Code health improvement: extracted timeouts to constants in PinDialog.tsx
