@@ -11,6 +11,8 @@ import {
 } from "@/theme/tokens";
 import { useAudio } from "@/hooks/useAudio";
 
+const EXIT_ANIMATION_DURATION = 250;
+
 interface ToastProps {
   message: string;
   type: "success" | "error" | "info";
@@ -66,7 +68,7 @@ const Toast: React.FC<ToastProps> = ({
     if (duration > 0 && !persistent) {
       const exitTimer = setTimeout(
         () => setIsExiting(true),
-        Math.max(0, duration - 250),
+        Math.max(0, duration - EXIT_ANIMATION_DURATION),
       );
       const dismissTimer = setTimeout(() => onDismiss?.(), duration);
       return () => {
@@ -79,7 +81,7 @@ const Toast: React.FC<ToastProps> = ({
 
   const handleDismiss = () => {
     setIsExiting(true);
-    setTimeout(() => onDismiss?.(), 250);
+    setTimeout(() => onDismiss?.(), EXIT_ANIMATION_DURATION);
   };
 
   const styles = TOAST_STYLES[type] || TOAST_STYLES.info;
