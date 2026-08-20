@@ -109,3 +109,81 @@ test("fetchWithRetry times out and retries", async () => {
   assert.equal(calls, 3);
   assert.ok(aborts >= 1);
 });
+
+test("fetchWithRetry does not retry when aborted by caller signal", async () => {
+  let calls = 0;
+  globalThis.fetch = async (_input, init) => {
+    calls += 1;
+    return new Promise((_, reject) => {
+      const error = new Error("The operation was aborted");
+      error.name = "AbortError";
+      reject(error);
+    });
+  };
+
+  const controller = new AbortController();
+  controller.abort();
+
+  await assert.rejects(
+    () => fetchWithRetry("https://example.com", { method: "GET", signal: controller.signal }, "test"),
+    (err) => err.name === "AbortError"
+  );
+
+  assert.equal(calls, 1);
+});
+
+test("fetchWithRetry retries on network error", async () => {
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    if (calls === 1) {
+      throw new Error("ECONNREFUSED");
+    }
+    return jsonResponse({ ok: true }, 200);
+  };
+
+  const res = await fetchWithRetry(
+    "https://example.com",
+    { method: "GET" },
+    "test",
+  );
+  assert.equal(res.status, 200);
+  assert.equal(calls, 2);
+});
+
+test("fetchWithRetry retries on 429 with Retry-After header", async () => {
+  let calls = 0;
+  const start = Date.now();
+  globalThis.fetch = async () => {
+    calls += 1;
+    if (calls === 1) {
+      return jsonResponse({ message: "rate limited" }, 429, { "Retry-After": "1" });
+    }
+    return jsonResponse({ ok: true }, 200);
+  };
+
+  const res = await fetchWithRetry(
+    "https://example.com",
+    { method: "GET" },
+    "test",
+  );
+  const duration = Date.now() - start;
+  assert.equal(res.status, 200);
+  assert.equal(calls, 2);
+  assert.ok(duration >= 900);
+});
+
+test("fetchWithRetry throws error when retries exhausted on network error", async () => {
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    throw new Error("ECONNRESET");
+  };
+
+  await assert.rejects(
+    () => fetchWithRetry("https://example.com", { method: "GET" }, "test"),
+    /ECONNRESET/
+  );
+
+  assert.equal(calls, 3); // MAX_ATTEMPTS is 3
+});
