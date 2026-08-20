@@ -15,6 +15,7 @@ import {
   decodeStorageData,
   encodeStorageData,
   formatMemoryTimestamp,
+  formatMessageTimestamp,
   normalizeMovieTitle,
 } from "./shared.ts";
 
@@ -751,7 +752,11 @@ test("formatMemoryTimestamp", async (t) => {
   });
 
   t.afterEach(() => {
-    process.env.TZ = originalTz;
+    if (originalTz === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTz;
+    }
   });
 
   await t.test("formats a valid date string correctly", () => {
@@ -1068,4 +1073,65 @@ test("throttle", (t) => {
   throttledFn(9, 10);
   assert.equal(count, 2);
   assert.deepEqual(lastArgs, [7, 8]);
+});
+
+
+test("formatMessageTimestamp", async (t) => {
+  const originalTz = process.env.TZ;
+
+  t.beforeEach(() => {
+    process.env.TZ = "UTC";
+  });
+
+  t.afterEach(() => {
+    if (originalTz === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTz;
+    }
+  });
+
+  await t.test("formats same day timestamps correctly", () => {
+    t.mock.timers.enable({ apis: ["Date"] });
+    try {
+      t.mock.timers.setTime(new Date("2025-01-05T15:45:00Z").getTime());
+
+      const resultPM = formatMessageTimestamp("2025-01-05T14:30:00Z");
+      assert.equal(resultPM, "2:30 PM");
+
+      const resultAM = formatMessageTimestamp("2025-01-05T08:15:00Z");
+      assert.equal(resultAM, "8:15 AM");
+    } finally {
+      t.mock.timers.reset();
+    }
+  });
+
+  await t.test("formats older timestamps correctly", () => {
+    t.mock.timers.enable({ apis: ["Date"] });
+    try {
+      t.mock.timers.setTime(new Date("2025-01-05T15:45:00Z").getTime());
+
+      const result = formatMessageTimestamp("2025-01-04T10:00:00Z");
+      assert.equal(result, "Jan 4");
+    } finally {
+      t.mock.timers.reset();
+    }
+  });
+
+  await t.test("returns empty string for invalid dates", () => {
+    const result = formatMessageTimestamp("invalid-date");
+    assert.equal(result, "");
+  });
+
+  await t.test("returns empty string for future dates", () => {
+    t.mock.timers.enable({ apis: ["Date"] });
+    try {
+      t.mock.timers.setTime(new Date("2025-01-05T15:45:00Z").getTime());
+
+      const result = formatMessageTimestamp("2025-01-06T10:00:00Z");
+      assert.equal(result, "");
+    } finally {
+      t.mock.timers.reset();
+    }
+  });
 });
