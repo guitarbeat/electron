@@ -35,10 +35,22 @@ export const isValidUrl = (url: string): boolean => {
 export const normalizeMovieTitle = (title: string): string =>
   title.trim().toLowerCase().replace(/\s+/g, ' ');
 
+const movieTitleCache = new WeakMap<object, string>();
+
 export const findMovieByNormalizedTitle = <T extends { title: string }>(
   movies: readonly T[],
   title: string
 ): T | undefined => {
   const normalized = normalizeMovieTitle(title);
-  return movies.find((movie) => normalizeMovieTitle(movie.title) === normalized);
+  return movies.find((movie) => {
+    if (typeof movie === 'object' && movie !== null) {
+      let movieNormalized = movieTitleCache.get(movie as unknown as object);
+      if (movieNormalized === undefined) {
+        movieNormalized = normalizeMovieTitle(movie.title);
+        movieTitleCache.set(movie as unknown as object, movieNormalized);
+      }
+      return movieNormalized === normalized;
+    }
+    return normalizeMovieTitle((movie as T).title) === normalized;
+  });
 };
