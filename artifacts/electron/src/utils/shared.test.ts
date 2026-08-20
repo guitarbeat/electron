@@ -398,6 +398,36 @@ test("parseJsonContent", async (t) => {
       },
     );
   });
+
+  await t.test("throws an error when JSON.parse throws a non-SyntaxError", () => {
+    // In Node.js, JSON.parse(undefined) actually throws a SyntaxError ("Unexpected token u in JSON at position 0")
+    // To reliably trigger a non-SyntaxError, we need to mock JSON.parse to throw something else
+    const originalParse = JSON.parse;
+
+    // Create a custom error that is NOT a SyntaxError
+    const customError = new TypeError("Custom error");
+
+    JSON.parse = () => {
+      throw customError;
+    };
+
+    try {
+      assert.throws(
+        () => parseJsonContent("{}", "TestContext"),
+        (err) => {
+          return (
+            err instanceof Error &&
+            err.message === "Failed to parse TestContext JSON." &&
+            err.cause === customError &&
+            !(err.cause instanceof SyntaxError)
+          );
+        },
+      );
+    } finally {
+      // Restore original function
+      JSON.parse = originalParse;
+    }
+  });
 });
 
 test("concurrentMap", async (t) => {
