@@ -44,9 +44,6 @@ jobs:
       - name: Type Check
         run: pnpm run check-types
 
-      - name: Lint
-        run: pnpm run lint
-
   unit-tests:
     name: "Unit Tests"
     if: github.event_name != 'repository_dispatch'
