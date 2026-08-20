@@ -83,7 +83,7 @@ test("fetchWithRetry times out and retries", async () => {
   let calls = 0;
   let aborts = 0;
 
-  globalThis.fetch = async (_input, init) => {
+  globalThis.fetch = async (_input, _init) => {
     calls += 1;
     const signal = init?.signal as AbortSignal | undefined;
 
@@ -112,7 +112,7 @@ test("fetchWithRetry times out and retries", async () => {
 
 test("fetchWithRetry does not retry when aborted by caller signal", async () => {
   let calls = 0;
-  globalThis.fetch = async (_input, init) => {
+  globalThis.fetch = async (_input, _init) => {
     calls += 1;
     return new Promise((_, reject) => {
       const error = new Error("The operation was aborted");
