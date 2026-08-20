@@ -1,0 +1,3 @@
+## 2025-02-23 - Testing complex React hooks via Pure Function Extraction
+When faced with testing a complex React hook containing multiple state mutation operations in an environment lacking `renderHook` or DOM setups (like node:test in an isolated library environment), extract the core state mutation logic (often encapsulated in a `performMutation` wrapper block) out into a separate file filled with pure, curried higher-order functions (e.g. `quizMutations.ts`).
+This allows you to write perfectly isolated and lightning-fast pure unit tests against those state update payloads without needing a React DOM environment or complex ESM mocks for `useState`/`useEffect`.
