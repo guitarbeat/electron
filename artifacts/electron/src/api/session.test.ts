@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { invalidateSharedStateCache } from "../../../../api/_lib/sharedStateStore.ts";
-import { hashPin } from "../../../../api/_lib/session.ts";
+import { hashPin, verifyStoredPin } from "../../../../api/_lib/session.ts";
 import profileHandler, {
   computeNextPinAttemptState,
   profilePinRateLimitConfig,
@@ -175,4 +175,44 @@ test("PIN lockout state sets lock duration at max failures", () => {
 
   assert.equal(next.failures, profilePinRateLimitConfig.maxAttempts);
   assert.equal(next.lockedUntil, now + profilePinRateLimitConfig.lockoutMs);
+});
+
+test("hashPin generates valid PBKDF2 hash format", () => {
+  const pin = "1234";
+  const hash1 = hashPin(pin);
+
+  assert.equal(typeof hash1, "string");
+  const parts = hash1.split(":");
+  assert.equal(parts.length, 4);
+  assert.equal(parts[0], "pbkdf2");
+  assert.equal(parts[1], "100000");
+  assert.match(parts[2], /^[0-9a-f]{32}$/); // 16 bytes hex
+  assert.match(parts[3], /^[0-9a-f]{64}$/); // 32 bytes hex
+
+  // Verify it uses a random salt (hashing the same pin should result in different hashes)
+  const hash2 = hashPin(pin);
+  assert.notEqual(hash1, hash2);
+});
+
+test("verifyStoredPin correctly verifies valid pins", () => {
+  const pin = "5678";
+  const hash = hashPin(pin);
+
+  assert.equal(verifyStoredPin(pin, hash), true);
+});
+
+test("verifyStoredPin rejects incorrect pins", () => {
+  const pin = "5678";
+  const hash = hashPin(pin);
+
+  assert.equal(verifyStoredPin("wrong", hash), false);
+  assert.equal(verifyStoredPin("5679", hash), false);
+});
+
+test("verifyStoredPin rejects malformed hashes gracefully", () => {
+  const pin = "1234";
+
+  assert.equal(verifyStoredPin(pin, "invalid:format"), false);
+  assert.equal(verifyStoredPin(pin, "notpbkdf2:100000:salt:hash"), false);
+  assert.equal(verifyStoredPin(pin, "pbkdf2:100000:salt"), false);
 });
