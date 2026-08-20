@@ -57,6 +57,7 @@ import {
   isSharedStateWriteConfigured,
   listSharedStateFilenames,
   patchSharedStateFile,
+  preloadSharedStateFiles,
   readSharedStateFileRecord,
 } from './sharedStateStore.js';
 import { hashPin, verifyStoredPin } from './session.js';
@@ -1135,8 +1136,11 @@ export const bootstrapMissingScopeFiles = async (): Promise<StateScopeDiagnostic
     throw new Error('DATABASE_URL is not configured.');
   }
 
+  const filenames = STATE_SCOPES.map((scope) => getScopeDefinition(scope).filename);
+  await preloadSharedStateFiles(filenames);
+
   await Promise.all(
-    STATE_SCOPES.map((scope) => readScopeStoredData(scope, { bypassCache: true }))
+    STATE_SCOPES.map((scope) => readScopeStoredData(scope, { bypassCache: false }))
   );
 
   invalidateSharedStateCache();
