@@ -38,6 +38,8 @@ const PLACE_SORTS: BentoSortChipConfig[] = [
   { value: 'alpha', label: 'A→Z' },
 ];
 
+const ACTIVE_CARD_TIMEOUT_MS = 2500;
+
 const PlacesMap = React.lazy(() => import("./PlacesMap.tsx"));
 
 interface PlacesListProps {
@@ -160,7 +162,7 @@ const PlacesList: React.FC<PlacesListProps> = ({ hideSearch = false }) => {
     }
     clearTimeout(activeTimerRef.current);
     setActiveCardId(place.id);
-    activeTimerRef.current = setTimeout(() => setActiveCardId(null), 2500);
+    activeTimerRef.current = setTimeout(() => setActiveCardId(null), ACTIVE_CARD_TIMEOUT_MS);
   }, []);
 
   const handleCardKeyDown = useCallback(
