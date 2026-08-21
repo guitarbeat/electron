@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.28.0",
   "scripts": {
     "preinstall": "echo skip",
     "dev": "pnpm --filter ./artifacts/electron dev",
