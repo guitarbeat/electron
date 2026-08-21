@@ -29,8 +29,7 @@ if (files.length === 0) {
 }
 
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
-const tsconfigPath = fileURLToPath(new URL('../artifacts/electron/tsconfig.json', import.meta.url));
-const result = spawnSync(process.execPath, [tsxCli, '--test', '--tsconfig', tsconfigPath, ...files], {
+const result = spawnSync(process.execPath, [tsxCli, '--test', ...files], {
   stdio: 'inherit',
 });
 process.exit(result.status ?? 1);
