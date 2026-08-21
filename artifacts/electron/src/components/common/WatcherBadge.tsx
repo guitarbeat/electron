@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/components/ui/lib/utils";
+import { cn } from "@/utils";
 import { USER_PHOTOS } from "./userPhotos.ts";
 
 interface WatcherBadgePhotoProps {

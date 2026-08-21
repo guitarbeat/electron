@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import Button from './LegacyButton';
+import Button from './Button';
 import { colors, radius, spacing, typography } from '@/theme/tokens';
 import { getSyncBannerContent, shouldShowSyncBanner } from './lib/syncBannerContent';
 import { isMockMode } from '@/services/state';

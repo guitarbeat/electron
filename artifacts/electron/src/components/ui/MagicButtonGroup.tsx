@@ -1,5 +1,4 @@
 import React from "react";
-import "./MagicToggle.css"; // Reuse magic-toggle styles for consistency
 
 export interface MagicButtonOption {
   id: string;

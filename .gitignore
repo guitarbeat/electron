@@ -53,3 +53,13 @@ Thumbs.db
 .env.local
 .env*.local
 .env*
+
+# Playwright CLI debugging artifacts
+.playwright-cli/
+
+# Vercel & AI bot artifacts
+.vercel/
+.Jules/
+commit_message.txt
+pr_description.txt
+.vercel

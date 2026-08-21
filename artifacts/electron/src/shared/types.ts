@@ -55,6 +55,7 @@ export interface Movie {
   genre?: string;
   director?: string;
   category?: string; // e.g. "Humor", "Action", "Drama"
+  mediaType?: "movie" | "series";
 }
 
 export interface MovieSuggestion {
@@ -105,6 +106,7 @@ export interface MatchmakerGame {
 
 export interface MoviesViewProps {
   isPaused?: boolean;
+  hideSearch?: boolean;
 }
 
 export type { QuizCharacter } from "../components/quiz/lib/types.ts";

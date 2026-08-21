@@ -649,7 +649,7 @@ export const readScope = async <TScope extends StateScope>(
       warning: parsed.warning,
     };
   } catch (error) {
-    if (error instanceof StateClientError) {
+    if (error instanceof StateClientError && error.code === "unauthorized") {
       throw error;
     }
 

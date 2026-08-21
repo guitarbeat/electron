@@ -1,16 +1,7 @@
-import React, { useEffect, useId, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import Card from './LegacyCard';
-import Button from './LegacyButton';
-import { colors, spacing, typography, zIndex, motion, shadows } from '@/theme/tokens';
-import {
-  getModalCloseButtonStyle,
-  getModalOverlayStyle,
-  isFocusWithin,
-  trapFocusOnTab,
-} from "./lib/modalPrimitives";
+import React from "react";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import Button from "./Button";
 import { useAudio } from "@/hooks/useAudio";
-import { CrossIcon } from "@/common/Icons";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -36,54 +27,6 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isLoading = false,
 }) => {
   const { playPop, playClick } = useAudio();
-  const titleId = useId();
-  const messageId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
-  const previousFocusedElement = useRef<HTMLElement | null>(null);
-  const hadModalOpenClassRef = useRef(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      previousFocusedElement.current?.focus?.();
-      return undefined;
-    }
-
-    previousFocusedElement.current = document.activeElement as HTMLElement;
-    hadModalOpenClassRef.current =
-      document.body.classList.contains("modal-open");
-    document.body.classList.add("modal-open");
-
-    const initialFocusTimer = window.setTimeout(() => {
-      confirmButtonRef.current?.focus();
-    }, 0);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isFocusWithin(dialogRef.current)) {
-        return;
-      }
-
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-        return;
-      }
-
-      trapFocusOnTab(event, dialogRef.current);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.clearTimeout(initialFocusTimer);
-      if (!hadModalOpenClassRef.current) {
-        document.body.classList.remove("modal-open");
-      }
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onCancel]);
-
-  if (!isOpen) return null;
 
   const handleConfirm = () => {
     playClick();
@@ -95,107 +38,32 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onCancel();
   };
 
-  return createPortal(
-    <div
-      style={{
-        ...getModalOverlayStyle(),
-        zIndex: zIndex.modal + 50,
-        animation: `fade-in ${motion.duration.normal} ${motion.easing.easeOut} both`,
-      }}
-      role="none presentation"
-    >
-      <div
-        ref={dialogRef}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={messageId}
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          animation: `ui-pop ${motion.duration.normal} ${motion.easing.spring} both`,
-        }}
-      >
-        <Card
-          variant="elevated"
-          style={{
-            padding: spacing.xl,
-            position: "relative",
-            border: `1px solid ${variant === "danger" ? colors.error : colors.accent}40`,
-            boxShadow: shadows.floating,
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleCancel}
-            aria-label="Close dialog"
-            style={{
-              ...getModalCloseButtonStyle(),
-              width: "32px",
-              height: "32px",
-              transition: `all ${motion.duration.button} ${motion.easing.ease}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = colors.surface3)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = colors.surface2)
-            }
-          >
-            <CrossIcon size={14} />
-          </button>
-
-          <h2
-            id={titleId}
-            style={{
-              marginTop: 0,
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-              color: colors.textPrimary,
-              marginBottom: spacing.md,
-              fontFamily: typography.fontFamilyValue.heading,
-              letterSpacing: typography.letterSpacing.tight,
-            }}
-          >
+  return (
+    <AlertDialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay className="confirm-dialog__overlay" />
+        <AlertDialog.Content className={`confirm-dialog__content confirm-dialog__content--${variant}`}>
+          <AlertDialog.Title className="confirm-dialog__title">
             {title}
-          </h2>
-          <p
-            id={messageId}
-            style={{
-              fontSize: typography.fontSize.base,
-              color: colors.textSecondary,
-              marginBottom: spacing.xl,
-              lineHeight: typography.lineHeight.normal,
-            }}
-          >
+          </AlertDialog.Title>
+          <AlertDialog.Description className="confirm-dialog__message">
             {message}
-          </p>
-          <div
-            style={{
-              display: "flex",
-              gap: spacing.md,
-              justifyContent: "flex-end",
-            }}
-          >
-            <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
-              {cancelText}
-            </Button>
-            <Button
-              ref={confirmButtonRef}
-              variant={variant}
-              onClick={handleConfirm}
-              isLoading={isLoading}
-            >
-              {confirmText}
-            </Button>
+          </AlertDialog.Description>
+          <div className="confirm-dialog__actions">
+            <AlertDialog.Cancel asChild>
+              <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
+                {cancelText}
+              </Button>
+            </AlertDialog.Cancel>
+            <AlertDialog.Action asChild>
+              <Button variant={variant} onClick={handleConfirm} isLoading={isLoading}>
+                {confirmText}
+              </Button>
+            </AlertDialog.Action>
           </div>
-        </Card>
-      </div>
-    </div>,
-    document.body,
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   );
 };
 

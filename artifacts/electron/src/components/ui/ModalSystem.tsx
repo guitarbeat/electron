@@ -9,7 +9,6 @@ import {
   trapFocusOnTab,
 } from './lib/modalPrimitives';
 import { useAudio } from '@/hooks/useAudio';
-import Button from './LegacyButton';
 import SharedBottomSheet from './BottomSheet';
 import SharedMinigameModal from './MinigameModal';
 
@@ -238,82 +237,9 @@ const Modal: React.FC<ModalProps> = ({
   );
 };
 
-// Confirm Dialog with unified modal
-interface ConfirmDialogProps {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  variant?: "danger" | "primary";
-  isLoading?: boolean;
-}
-
-const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  isOpen,
-  title,
-  message,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
-  onConfirm,
-  onCancel,
-  variant = "danger",
-  isLoading = false,
-}) => {
-  const { playClick } = useAudio();
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onCancel}
-      title={title}
-      ariaLabel={`${title} confirmation dialog`}
-      maxWidth={400}
-    >
-      <div style={{ padding: spacing.lg, paddingTop: 0 }}>
-        <p
-          style={{
-            margin: 0,
-            marginBottom: spacing.lg,
-            color: colors.textSecondary,
-            fontSize: typography.fontSize.base,
-            lineHeight: 1.5,
-          }}
-        >
-          {message}
-        </p>
-
-        <div
-          style={{
-            display: "flex",
-            gap: spacing.md,
-            justifyContent: "flex-end",
-          }}
-        >
-          <Button variant="ghost" onClick={onCancel} disabled={isLoading}>
-            {cancelText}
-          </Button>
-          <Button
-            variant={variant}
-            onClick={() => {
-              playClick();
-              onConfirm();
-            }}
-            isLoading={isLoading}
-          >
-            {confirmText}
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
 /** Canonical bottom sheet — see `../BottomSheet.tsx`; re-exported for one import surface. */
 const BottomSheet = SharedBottomSheet;
 
 const MinigameModal = SharedMinigameModal;
 
-export { Modal, ConfirmDialog, BottomSheet, MinigameModal, useModalBase };
+export { Modal, BottomSheet, MinigameModal, useModalBase };

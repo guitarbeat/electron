@@ -21,8 +21,8 @@
  */
 
 import React, { useId } from "react";
-import { motion, useInView } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion, useInView } from "motion/react";
+import { cn } from "@/utils";
 
 // ---------------------------------------------------------------------------
 // Preset SVG paths for common phrases used in the app

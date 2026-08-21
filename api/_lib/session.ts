@@ -1,7 +1,7 @@
 import { createHmac, pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
 
-import type { User } from './common.ts';
-import { isUser } from './common.ts';
+import type { User } from './common.js';
+import { isUser } from './common.js';
 
 const PROFILE_COOKIE = 'movie_watch_profile';
 const PIN_ATTEMPT_COOKIE = 'movie_watch_pin_attempt';
@@ -27,18 +27,20 @@ type SessionPayload = ProfileSessionPayload | PinAttemptPayload;
 const clean = (value: string | undefined): string =>
   (value || '').trim().replace(/^["']|["']$/g, '');
 
+let ephemeralSecret: string | null = null;
+
 const getSessionSigningSecret = (): string => {
   const configured = clean(process.env.SESSION_SIGNING_SECRET || process.env.SESSION_SECRET);
-  if (!configured) {
-    if (process.env.NODE_ENV === 'test') {
-      return 'test-session-signing-secret';
-    }
-    throw new Error(
-      'SESSION_SIGNING_SECRET is not configured. ' +
-      'Set SESSION_SIGNING_SECRET to a stable secret value in your environment.'
-    );
+  if (configured) {
+    return configured;
   }
-  return configured;
+  if (process.env.NODE_ENV === 'test') {
+    return 'test-session-signing-secret';
+  }
+  if (!ephemeralSecret) {
+    ephemeralSecret = randomBytes(32).toString('hex');
+  }
+  return ephemeralSecret;
 };
 
 const base64urlEncode = (value: string): string =>

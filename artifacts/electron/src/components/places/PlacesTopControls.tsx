@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/ui/Button";
-import { PlusIcon, Spinner } from "@/common/Icons";
+import { MapPinIcon, PlusIcon, Spinner } from "@/common/Icons";
 import type { PlaceSuggestion } from "@/shared/types";
 import WorkspaceSearchShell, {
   WorkspaceSearchActions,
@@ -12,10 +12,7 @@ import {
   WorkspaceAutocompleteOption,
   WorkspaceAutocompletePanel,
 } from "@/components/ui/WorkspaceAutocomplete";
-import {
-  getListEnterSelectionIndex,
-  getNextListIndex,
-} from "@/components/ui/lib/workspaceListAutocomplete";
+import { useWorkspaceAutocompleteNavigation } from "@/components/ui/lib/useWorkspaceAutocompleteNavigation";
 import {
   useAutocompleteFocusBoundary,
   useWorkspaceAutocompleteDismiss,
@@ -61,7 +58,12 @@ const PlacesTopControls = React.forwardRef<
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const autocompleteRegionRef = useRef<HTMLDivElement>(null);
-    const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
+    const {
+      activeIndex: activeAutocompleteIndex,
+      resetActiveIndex,
+      moveActiveIndex,
+      getEnterSelectionIndex,
+    } = useWorkspaceAutocompleteNavigation();
     const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
     const isBusy = isAdding || Boolean(isSuggesting);
     const hasQuery = searchQuery.trim().length > 0;
@@ -85,13 +87,13 @@ const PlacesTopControls = React.forwardRef<
         return;
       }
       setIsAutocompleteOpen(true);
-      setActiveAutocompleteIndex(-1);
-    }, [hasQuery]);
+      resetActiveIndex();
+    }, [hasQuery, resetActiveIndex]);
 
     const hideAutocomplete = useCallback(() => {
       setIsAutocompleteOpen(false);
-      setActiveAutocompleteIndex(-1);
-    }, []);
+      resetActiveIndex();
+    }, [resetActiveIndex]);
 
     const { onFocusCapture, onBlurCapture } =
       useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete);
@@ -104,8 +106,8 @@ const PlacesTopControls = React.forwardRef<
     );
 
     useEffect(() => {
-      setActiveAutocompleteIndex(-1);
-    }, [normalizedQuery, visibleSuggestions.length]);
+      resetActiveIndex();
+    }, [normalizedQuery, resetActiveIndex, visibleSuggestions.length]);
 
     useEffect(() => {
       if (!hasQuery) {
@@ -115,7 +117,7 @@ const PlacesTopControls = React.forwardRef<
 
     const selectSuggestion = (suggestion: PlaceSuggestion) => {
       setSearchQuery(suggestion.name);
-      setActiveAutocompleteIndex(-1);
+      resetActiveIndex();
       hideAutocomplete();
       inputRef.current?.focus();
     };
@@ -130,7 +132,7 @@ const PlacesTopControls = React.forwardRef<
 
     return (
       <WorkspaceSearchShell
-        icon="📍"
+        icon={<MapPinIcon size={16} />}
         isAutocompleteActive={showSuggestionList || showNoMatchHint}
         shellRef={autocompleteRegionRef}
         onShellFocusCapture={() => {
@@ -175,25 +177,18 @@ const PlacesTopControls = React.forwardRef<
                 if (visibleSuggestions.length === 0) return;
                 event.preventDefault();
                 openAutocomplete();
-                setActiveAutocompleteIndex((currentIndex) =>
-                  getNextListIndex(currentIndex, "next", visibleSuggestions.length),
-                );
+                moveActiveIndex("next", visibleSuggestions.length);
                 return;
               }
               if (event.key === "ArrowUp") {
                 if (visibleSuggestions.length === 0) return;
                 event.preventDefault();
                 openAutocomplete();
-                setActiveAutocompleteIndex((currentIndex) =>
-                  getNextListIndex(currentIndex, "previous", visibleSuggestions.length),
-                );
+                moveActiveIndex("previous", visibleSuggestions.length);
                 return;
               }
               if (event.key === "Enter" && isAutocompleteOpen) {
-                const selectedIndex = getListEnterSelectionIndex(
-                  activeAutocompleteIndex,
-                  visibleSuggestions.length,
-                );
+                const selectedIndex = getEnterSelectionIndex(visibleSuggestions.length);
                 if (
                   selectedIndex < 0 ||
                   !visibleSuggestions[selectedIndex] ||
@@ -216,7 +211,7 @@ const PlacesTopControls = React.forwardRef<
                 if (searchQuery) {
                   event.preventDefault();
                   setSearchQuery("");
-                  setActiveAutocompleteIndex(-1);
+                  resetActiveIndex();
                   hideAutocomplete();
                   inputRef.current?.blur();
                 }

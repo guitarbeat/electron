@@ -1,5 +1,5 @@
 import { areDeeplyEqual } from "../../utils/index.ts";
-import type { ScopeSnapshot } from "./stateTypes";
+import type { ScopeSnapshot } from "./stateTypes.ts";
 
 /**
  * Fast path when version + metadata match; still compares data if the reference changed.

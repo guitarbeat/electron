@@ -1,5 +1,5 @@
 import React, { useId } from "react";
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "dompurify";
 import parse from "html-react-parser";
 import {
   DEFAULT_ELECTRON_MARK_VARIANT,
@@ -50,7 +50,13 @@ const ElectronMark: React.FC<ElectronMarkProps> = ({
         ...style,
       }}
     >
-      {parse(DOMPurify.sanitize(markup))}
+      {parse(
+        DOMPurify.sanitize(markup, {
+          USE_PROFILES: { svg: true },
+          FORBID_TAGS: ["use", "foreignObject"],
+          FORBID_ATTR: ["href", "xlink:href"],
+        }),
+      )}
     </span>
   );
 };

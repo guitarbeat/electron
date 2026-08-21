@@ -94,7 +94,7 @@
   border-radius: 1.15rem;
   border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
   background:
-    radial-gradient(circle at 50% 0%, rgba(244, 114, 182, 0.08) 0%, transparent 42%),
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 42%),
     color-mix(in srgb, var(--color-surface-0) 88%, transparent);
   outline: none;
 }
@@ -122,14 +122,14 @@
 
 .movie-deck-stack-scroll__hint {
   margin: 0;
-  color: rgba(244, 114, 182, 0.5);
+  color: color-mix(in srgb, var(--color-accent) 50%, transparent);
   font-family: var(--font-heading);
   font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   user-select: none;
-  text-shadow: 0 0 12px rgba(244, 114, 182, 0.3);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 30%, transparent);
 }
 
 .movie-deck-stack-scroll__deck {
@@ -147,7 +147,7 @@
   height: 80px;
   background: radial-gradient(
     ellipse at center,
-    rgba(244, 114, 182, 0.22) 0%,
+    color-mix(in srgb, var(--color-accent) 22%, transparent) 0%,
     transparent 72%
   );
   filter: blur(16px);
@@ -181,7 +181,7 @@
 }
 
 .movie-deck-stack-scroll__counter span {
-  color: rgba(244, 114, 182, 0.88);
+  color: color-mix(in srgb, var(--color-accent) 88%, transparent);
 }
 
 .movie-deck-stack-scroll__counter {
@@ -300,10 +300,7 @@
 }
 
 .watchlist-empty-state::before {
-  content: '🎬';
-  font-size: 2.5rem;
-  opacity: 0.55;
-  filter: grayscale(0.3);
+  content: none;
 }
 
 @include breakpoint-down('lg') {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { MatchmakerGame, Movie } from "@/shared/types";
+import type { MatchmakerGame, Movie } from "../../shared/types.ts";
 import {
   SHORT_AND_SWEET_VIBE,
   applyMatchmakerSwipe,

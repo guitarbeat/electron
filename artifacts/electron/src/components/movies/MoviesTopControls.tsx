@@ -9,8 +9,7 @@ import React, {
   useState,
 } from 'react';
 import type { User } from '@/shared/types';
-import Button from '@/ui/LegacyButton';
-import { Input } from '@/ui/FormFields';
+import Button from '@/ui/Button';
 import MagicToggle from '@/components/ui/MagicToggle';
 import { PlusIcon } from '@/common/Icons';
 import {
@@ -20,8 +19,6 @@ import {
 import MovieRecommendationComposer from './MovieRecommendationComposer';
 
 import {
-  getNextMovieAutocompleteIndex,
-  getMovieAutocompleteEnterSelectionIndex,
   hasStoredMovieAutocompleteFeedback,
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
@@ -47,6 +44,7 @@ import {
   useWorkspaceAutocompleteDismiss,
   useWorkspaceSearchInputHandle,
 } from '@/components/ui/lib/useWorkspaceAutocompleteDismiss';
+import { useWorkspaceAutocompleteNavigation } from '@/components/ui/lib/useWorkspaceAutocompleteNavigation';
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
@@ -110,7 +108,13 @@ const MoviesTopControls = React.forwardRef<
 
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
-  const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
+  const {
+    activeIndex: activeAutocompleteIndex,
+    setActiveIndex: setActiveAutocompleteIndex,
+    resetActiveIndex,
+    moveActiveIndex,
+    getEnterSelectionIndex,
+  } = useWorkspaceAutocompleteNavigation();
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
   const autocompleteCloseTimerRef = useRef<number | null>(null);
@@ -137,11 +141,11 @@ const MoviesTopControls = React.forwardRef<
       autocompleteCloseTimerRef.current = null;
     }
     setIsAutocompleteOpen(false);
-    setActiveAutocompleteIndex(-1);
+    resetActiveIndex();
     setIsAutocompleteLoading(false);
     setAutocompleteTypeFilter('all');
     setIsAutocompleteMounted(false);
-  }, []);
+  }, [resetActiveIndex]);
 
   const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
     useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete, {
@@ -166,14 +170,14 @@ const MoviesTopControls = React.forwardRef<
     }
     setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
-    setActiveAutocompleteIndex(-1);
-  }, []);
+    resetActiveIndex();
+  }, [resetActiveIndex]);
 
   const resetAutocomplete = useCallback(() => {
     autocompleteRequestIdRef.current += 1;
     setAutocompleteQuery('');
     setAutocompleteResults([]);
-    setActiveAutocompleteIndex(-1);
+    resetActiveIndex();
     setIsAutocompleteOpen(false);
     setIsAutocompleteMounted(false);
     setAutocompleteTypeFilter('all');
@@ -183,7 +187,7 @@ const MoviesTopControls = React.forwardRef<
     }
     setIsAutocompleteLoading(false);
     setAutocompleteError(null);
-  }, []);
+  }, [resetActiveIndex]);
 
   const selectAutocompleteResult = useCallback(
     (result: MovieAutocompleteResult) => {
@@ -261,7 +265,7 @@ const MoviesTopControls = React.forwardRef<
     const requestId = autocompleteRequestIdRef.current + 1;
     autocompleteRequestIdRef.current = requestId;
     setAutocompleteQuery(normalizedSearchQuery);
-    setActiveAutocompleteIndex(-1);
+    resetActiveIndex();
     if (autocompleteCloseTimerRef.current !== null) {
       window.clearTimeout(autocompleteCloseTimerRef.current);
       autocompleteCloseTimerRef.current = null;
@@ -279,12 +283,12 @@ const MoviesTopControls = React.forwardRef<
         if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) return;
         setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults(nextResults);
-        setActiveAutocompleteIndex(-1);
+        resetActiveIndex();
       } catch (error) {
         if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) return;
         setAutocompleteQuery(normalizedSearchQuery);
         setAutocompleteResults([]);
-        setActiveAutocompleteIndex(-1);
+        resetActiveIndex();
         setAutocompleteError(
           error instanceof Error && error.message
             ? error.message
@@ -306,6 +310,7 @@ const MoviesTopControls = React.forwardRef<
     isAutocompleteRegionFocused,
     normalizedSearchQuery,
     resetAutocomplete,
+    resetActiveIndex,
     selectedAutocompleteResult,
     trimmedSearchQuery,
   ]);
@@ -322,6 +327,18 @@ const MoviesTopControls = React.forwardRef<
     [autocompleteError, autocompleteQuery, autocompleteResults.length, isAutocompleteLoading, trimmedSearchQuery]
   );
   const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
+
+  const categoryCounts = useMemo(() => {
+    let movieCount = 0;
+    let seriesCount = 0;
+    for (let i = 0; i < autocompleteResults.length; i++) {
+      const type = autocompleteResults[i].type;
+      if (type === 'movie') movieCount++;
+      else if (type === 'series') seriesCount++;
+    }
+    return { all: autocompleteResults.length, movie: movieCount, series: seriesCount };
+  }, [autocompleteResults]);
+
   const filteredAutocompleteResults = useMemo(
     () =>
       autocompleteTypeFilter === 'all'
@@ -335,7 +352,7 @@ const MoviesTopControls = React.forwardRef<
       if (filteredAutocompleteResults.length === 0) return -1;
       return currentIndex >= 0 && currentIndex < filteredAutocompleteResults.length ? currentIndex : -1;
     });
-  }, [filteredAutocompleteResults.length]);
+  }, [filteredAutocompleteResults.length, setActiveAutocompleteIndex]);
 
   const handleFormSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -354,6 +371,7 @@ const MoviesTopControls = React.forwardRef<
       <WorkspaceSearchShell
         isAutocompleteActive={isAutocompleteElevated}
         onSubmit={handleFormSubmit}
+        icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
         shellRef={autocompleteRegionRef}
         onShellFocusCapture={() => {
           onFocusCapture();
@@ -381,18 +399,14 @@ const MoviesTopControls = React.forwardRef<
                 if (filteredAutocompleteResults.length === 0) return;
                 event.preventDefault();
                 setIsAutocompleteOpen(true);
-                setActiveAutocompleteIndex((currentIndex) =>
-                  getNextMovieAutocompleteIndex(currentIndex, 'next', filteredAutocompleteResults.length)
-                );
+                moveActiveIndex('next', filteredAutocompleteResults.length);
                 return;
               }
               if (event.key === 'ArrowUp') {
                 if (filteredAutocompleteResults.length === 0) return;
                 event.preventDefault();
                 setIsAutocompleteOpen(true);
-                setActiveAutocompleteIndex((currentIndex) =>
-                  getNextMovieAutocompleteIndex(currentIndex, 'previous', filteredAutocompleteResults.length)
-                );
+                moveActiveIndex('previous', filteredAutocompleteResults.length);
                 return;
               }
               if (event.key === 'Escape') {
@@ -400,10 +414,7 @@ const MoviesTopControls = React.forwardRef<
                 return;
               }
               if (event.key === 'Enter' && isAutocompleteOpen) {
-                const selectedIndex = getMovieAutocompleteEnterSelectionIndex(
-                  activeAutocompleteIndex,
-                  filteredAutocompleteResults.length
-                );
+                const selectedIndex = getEnterSelectionIndex(filteredAutocompleteResults.length);
                 if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) return;
                 event.preventDefault();
                 selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
@@ -459,10 +470,7 @@ const MoviesTopControls = React.forwardRef<
                         { value: 'series', label: 'TV Series' },
                       ] as const
                     ).map(({ value, label }) => {
-                      const count =
-                        value === 'all'
-                          ? autocompleteResults.length
-                          : autocompleteResults.filter((r) => r.type === value).length;
+                      const count = categoryCounts[value];
                       const isDisabled = count === 0 && value !== 'all';
                       return {
                         value,

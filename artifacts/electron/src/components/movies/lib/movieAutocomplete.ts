@@ -1,4 +1,4 @@
-import type { MovieAutocompleteResult } from "@/services/metadata";
+import type { MovieAutocompleteResult } from "../../../services/metadata/index.ts";
 
 import {
   getListEnterSelectionIndex,

@@ -1,6 +1,6 @@
 import React, { useRef, useLayoutEffect, useState, useCallback } from "react";
 import type { MainTab } from "@/shared/types";
-import "./ThemeToggle.css";
+import { FilmIcon, MapPinIcon } from "../common/Icons.tsx";
 
 interface ThemeToggleProps {
   activeTab: MainTab;
@@ -11,9 +11,9 @@ interface ThemeToggleProps {
   style?: React.CSSProperties;
 }
 
-const TABS: { id: MainTab; icon: string; label: string }[] = [
-  { id: "movies", icon: "🎬", label: "Movies" },
-  { id: "places", icon: "📍", label: "Places" },
+const TABS: { id: MainTab; icon: React.FC<{ size?: number | string }>; label: string }[] = [
+  { id: "movies", icon: FilmIcon, label: "Movies" },
+  { id: "places", icon: MapPinIcon, label: "Places" },
 ];
 
 const ThemeToggle: React.FC<ThemeToggleProps> = ({
@@ -78,7 +78,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
           aria-pressed={activeTab === tab.id}
         >
           <span className="seg-control__icon" aria-hidden="true">
-            {tab.icon}
+            <tab.icon size={13} />
           </span>
           <span className="seg-control__label">{tab.label}</span>
         </button>

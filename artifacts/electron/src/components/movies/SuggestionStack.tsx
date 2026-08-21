@@ -3,7 +3,6 @@ import type { MovieSuggestion, User } from "@/shared/types";
 import Stack from "@/components/ui/Stack";
 import SuggestionCard from "./SuggestionCard";
 import { useViewport } from "@/app/ViewportContext";
-import "./SuggestionStack.css";
 
 interface SuggestionStackProps {
   suggestions: MovieSuggestion[];

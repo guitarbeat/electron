@@ -1,32 +1,32 @@
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemory as addMemoryService,
   deleteMemory as deleteMemoryService,
   toggleMemoryPin as toggleMemoryPinService,
   updateMemory as updateMemoryService,
   updateMemoriesBatch as updateMemoriesBatchService,
-} from "../../services/content/memoryService";
-import type { MovieAutocompleteResult } from "../../services/metadata/types";
-import { usePolling } from "../../services/polling";
-import { Movie, MovieSuggestion, User } from "../../shared/types";
-import { useMovies } from "./useMovies";
-import { useSuggestions } from "../suggestions";
-import { useToast } from "@/app/useProviders";
+} from "../../services/content/memoryService.ts";
+import type { MovieAutocompleteResult } from "../../services/metadata/types.ts";
+import { Movie, MovieSuggestion, User } from "../../shared/types.ts";
+import { useMovies } from "./useMovies.ts";
+import { useSuggestions } from "../suggestions/index.ts";
+import { useToast } from "../../app/useProviders.ts";
 import {
   compareCreatedAtDesc,
   normalizeMovieTitle,
   sanitizeInput,
-} from "../../utils";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
-import { trackMetric } from "@/services/analytics";
-import { readScope, retryScopeSync } from "../../services/state";
-import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner";
+} from "../../utils/index.ts";
+import { trackMetric } from "../../services/analytics/index.ts";
+import { readScope, retryScopeSync } from "../../services/state/index.ts";
+import { useWorkspaceSyncBanner } from "../useWorkspaceSyncBanner.ts";
 
 const POLLING_INTERVAL = 30000;
 
 interface UseMoviesWorkspaceProps {
   currentUser: User | null;
   isPaused: boolean;
+  focusSearchInput: () => void;
 }
 
 interface MoviesWorkspaceToast {
@@ -60,8 +60,10 @@ export const getMovieSelectionFromSuggestion = (
 export const useMoviesWorkspace = ({
   currentUser,
   isPaused,
+  focusSearchInput,
 }: UseMoviesWorkspaceProps) => {
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const readMemories = useCallback(() => readScope("memories"), []);
 
   // Local view state
@@ -74,6 +76,13 @@ export const useMoviesWorkspace = ({
   const [isSubmittingRecommendation, setIsSubmittingRecommendation] =
     useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
+    useState(false);
+  const [recommendationReason, setRecommendationReason] = useState("");
+  const [guestName, setGuestName] = useState("");
+  const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
+    useState<MovieAutocompleteResult | null>(null);
 
   // Refs
   const previousMoviesRef = useRef<Movie[] | null>(null);
@@ -119,15 +128,13 @@ export const useMoviesWorkspace = ({
     retrySync: retrySuggestionsSync,
   } = useSuggestions(isPaused);
 
-  const { data: memoriesSnapshot, refresh: refreshMemories } = usePolling(
-    readMemories,
-    POLLING_INTERVAL,
-    areScopeSnapshotsEqual,
-    {
-      key: "memories",
-      isPaused,
-    },
-  );
+  const { data: memoriesSnapshot, refetch: refreshMemoriesQuery } = useQuery({
+    queryKey: ["memories"],
+    queryFn: readMemories,
+    refetchInterval: isPaused ? false : POLLING_INTERVAL,
+    refetchOnWindowFocus: !isPaused,
+    structuralSharing: false,
+  });
   const memories = useMemo(() => {
     return [...(memoriesSnapshot?.data || [])].sort((a, b) => {
       if (Boolean(a.isPinned) !== Boolean(b.isPinned)) {
@@ -140,10 +147,11 @@ export const useMoviesWorkspace = ({
   const withMemoryRefresh = useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
       const result = await operation();
-      refreshMemories();
+      // Invalidate so all subscribers (MovieDetailsModal, MemoryList) pick up fresh data.
+      void queryClient.invalidateQueries({ queryKey: ["memories"] });
       return result;
     },
-    [refreshMemories],
+    [queryClient],
   );
 
   const addMemory = useCallback(
@@ -274,31 +282,28 @@ export const useMoviesWorkspace = ({
       }
 
       try {
-        const batchUpdates = relatedMemories
-          .map((memory) => {
-            const nextMovieId = memory.movieId ?? movieId;
-            if (
-              memory.movieTitle === cleanTitle &&
-              memory.movieId === nextMovieId
-            ) {
-              return null;
-            }
-            return {
+        const batchUpdates = relatedMemories.flatMap((memory) => {
+          const nextMovieId = memory.movieId ?? movieId;
+          if (
+            memory.movieTitle === cleanTitle &&
+            memory.movieId === nextMovieId
+          ) {
+            return [];
+          }
+          return [
+            {
               memoryId: memory.id,
               updates: {
                 movieId: nextMovieId,
                 movieTitle: cleanTitle,
               },
-            };
-          })
-          .filter(Boolean) as Array<{
-          memoryId: string;
-          updates: { movieId: string; movieTitle: string };
-        }>;
+            },
+          ];
+        });
 
         if (batchUpdates.length > 0) {
           await updateMemoriesBatchService(batchUpdates);
-          refreshMemories();
+          refreshMemoriesQuery();
         }
       } catch (error) {
         console.warn(
@@ -307,7 +312,7 @@ export const useMoviesWorkspace = ({
         );
       }
     },
-    [memories, movies, refreshMemories, renameMovieService],
+    [memories, movies, refreshMemoriesQuery, renameMovieService],
   );
 
   const rejectPendingSuggestion = useCallback(
@@ -330,14 +335,188 @@ export const useMoviesWorkspace = ({
     [currentUser, pendingSuggestions, rejectSuggestion, withProcessingSuggestion],
   );
 
+  const resetRecommendationComposer = useCallback(() => {
+    setIsRecommendationComposerOpen(false);
+    setRecommendationReason("");
+    setSuggestionError(null);
+  }, []);
+
+  const handleRecommendationReasonChange = useCallback((value: string) => {
+    setSuggestionError(null);
+    setRecommendationReason(value);
+  }, []);
+
+  const openRecommendationComposer = useCallback(() => {
+    if (!searchQuery.trim()) return;
+    setSuggestionError(null);
+    setIsRecommendationComposerOpen(true);
+  }, [searchQuery]);
+
+  const handleAddAction = useCallback(async () => {
+    if (isAdding || isSubmittingRecommendation) return;
+    const title =
+      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+    if (!title) return;
+
+    setIsAdding(true);
+    try {
+      if (!currentUser) {
+        const suggestion = await submitRecommendation({
+          title,
+          suggestedBy: guestName.trim() || undefined,
+          selectedResult: selectedAutocompleteResult,
+        });
+        setToast({
+          message: `"${title}" sent to suggestions as ${suggestion.suggestedBy}.`,
+          type: "success",
+        });
+      } else {
+        const addedMovie = await addMovie(
+          title,
+          selectedAutocompleteResult ?? undefined,
+        );
+        setSuccessMovieId(addedMovie.id);
+        window.setTimeout(
+          () =>
+            setSuccessMovieId((value) =>
+              value === addedMovie.id ? null : value,
+            ),
+          2400,
+        );
+        setToast({ message: `"${title}" added to movies!`, type: "success" });
+      }
+      setSearchQuery("");
+      setSelectedAutocompleteResult(null);
+      window.requestAnimationFrame(focusSearchInput);
+    } catch (error) {
+      setToast({
+        message:
+          error instanceof Error
+            ? error.message
+            : currentUser
+              ? "Failed to add movie"
+              : "Failed to send suggestion",
+        type: "error",
+      });
+    } finally {
+      setIsAdding(false);
+    }
+  }, [
+    addMovie,
+    currentUser,
+    focusSearchInput,
+    guestName,
+    isAdding,
+    isSubmittingRecommendation,
+    searchQuery,
+    selectedAutocompleteResult,
+    setToast,
+    submitRecommendation,
+  ]);
+
+  const handleSubmitRecommendation = useCallback(async () => {
+    if (isAdding || isSubmittingRecommendation) return;
+    const title =
+      selectedAutocompleteResult?.title.trim() || searchQuery.trim();
+    if (!title) return;
+
+    setSuggestionError(null);
+    try {
+      await submitRecommendation({
+        title,
+        reason: recommendationReason,
+        suggestedBy: guestName.trim() || undefined,
+        selectedResult: selectedAutocompleteResult,
+      });
+      resetRecommendationComposer();
+      setSearchQuery("");
+      setSelectedAutocompleteResult(null);
+      setToast({
+        message: currentUser
+          ? `"${title}" suggested for review!`
+          : `"${title}" sent to suggestions${guestName.trim() ? ` as ${guestName.trim()}` : ""}!`,
+        type: "success",
+      });
+      window.requestAnimationFrame(focusSearchInput);
+    } catch (error) {
+      setSuggestionError(
+        error instanceof Error ? error.message : "Failed to add suggestion",
+      );
+      setToast({ message: "Failed to add suggestion", type: "error" });
+    }
+  }, [
+    currentUser,
+    focusSearchInput,
+    guestName,
+    isAdding,
+    isSubmittingRecommendation,
+    recommendationReason,
+    resetRecommendationComposer,
+    searchQuery,
+    selectedAutocompleteResult,
+    setToast,
+    submitRecommendation,
+  ]);
+
+  const handleAcceptSuggestion = useCallback(
+    async (suggestion: MovieSuggestion) => {
+      try {
+        await acceptSuggestionToWatchlist(suggestion.id);
+        setToast({
+          message: `"${suggestion.title}" added to movies!`,
+          type: "success",
+        });
+      } catch (error) {
+        setToast({
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to accept suggestion",
+          type: "error",
+        });
+      }
+    },
+    [acceptSuggestionToWatchlist, setToast],
+  );
+
+  const handleRejectSuggestion = useCallback(
+    async (suggestion: MovieSuggestion) => {
+      try {
+        await rejectPendingSuggestion(suggestion.id);
+        setToast({ message: `"${suggestion.title}" rejected.`, type: "info" });
+      } catch (error) {
+        setToast({
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to reject suggestion",
+          type: "error",
+        });
+      }
+    },
+    [rejectPendingSuggestion, setToast],
+  );
+
+  const confirmDelete = useCallback(async () => {
+    if (!movieToDelete) return;
+    try {
+      await deleteMovie(movieToDelete.id);
+      setToast({ message: `"${movieToDelete.title}" removed!`, type: "info" });
+    } catch {
+      setToast({ message: "Failed to remove movie", type: "error" });
+    } finally {
+      setMovieToDelete(null);
+    }
+  }, [deleteMovie, movieToDelete, setToast]);
+
   const retryMoviesWorkspaceSync = useCallback(async () => {
     await Promise.all([
       retryMoviesSync(),
       retrySuggestionsSync(),
       retryScopeSync("memories"),
     ]);
-    refreshMemories();
-  }, [refreshMemories, retryMoviesSync, retrySuggestionsSync]);
+    refreshMemoriesQuery();
+  }, [refreshMemoriesQuery, retryMoviesSync, retrySuggestionsSync]);
 
   const isMoviesWorkspaceDegraded =
     isMoviesDegraded ||
@@ -397,6 +576,21 @@ export const useMoviesWorkspace = ({
     isSubmittingRecommendation,
     searchQuery,
     setSearchQuery,
+    suggestionError,
+    isRecommendationComposerOpen,
+    recommendationReason,
+    guestName,
+    setGuestName,
+    selectedAutocompleteResult,
+    setSelectedAutocompleteResult,
+    resetRecommendationComposer,
+    handleRecommendationReasonChange,
+    openRecommendationComposer,
+    handleAddAction,
+    handleSubmitRecommendation,
+    handleAcceptSuggestion,
+    handleRejectSuggestion,
+    confirmDelete,
     previousMoviesRef,
     movies,
     isLoading,

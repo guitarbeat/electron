@@ -1,5 +1,4 @@
 import type { FC, ReactNode } from "react";
-import "./WorkspaceFeatureSection.css";
 
 export interface WorkspaceFeatureSectionProps {
   id: string;

@@ -4,23 +4,23 @@ import {
   methodNotAllowedResponse,
   mergeHeaders,
   serverErrorResponse,
-} from '../_lib/http.ts';
+} from '../_lib/http.js';
 import {
   buildClearPinAttemptCookie,
   buildClearProfileCookie,
   buildPinAttemptCookie,
   buildProfileCookie,
   getSessionState,
-} from '../_lib/session.ts';
-import { getPinCoverageState, verifyProfilePin } from '../_lib/state.ts';
+} from '../_lib/session.js';
+import { getPinCoverageState, verifyProfilePin } from '../_lib/state.js';
 import {
   clearPinAttempts,
   getPinAttemptRecord,
   recordPinFailure,
-} from '../_lib/pinAttemptStore.ts';
-import { withWebHandler } from '../_lib/webHandler.ts';
-import { isUser } from '../_lib/common.ts';
-import { logger } from '../_lib/logger.ts';
+} from '../_lib/pinAttemptStore.js';
+import { withWebHandler } from '../_lib/webHandler.js';
+import { isUser } from '../_lib/common.js';
+import { logger } from '../_lib/logger.js';
 
 const SESSION_SECRET_CONFIG_ERROR = [
   'Profile login is unavailable because SESSION_SIGNING_SECRET is not configured.',

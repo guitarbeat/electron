@@ -14,7 +14,7 @@ import React, {
 import type { User } from '@/shared/types';
 import { applyTheme } from '@/theme/applyTheme';
 import { spacing } from '@/theme/tokens';
-import Toast from '@/components/ui/LegacyToast';
+import Toast from '@/components/ui/Toast';
 import { sessionInvalidationEvent } from '@/services/state';
 import type { SessionState } from '@/services/state/stateTypes';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
@@ -26,7 +26,11 @@ import {
 } from "./providerContexts";
 
 const debugSession = (...args: unknown[]) => {
-  if (import.meta.env.DEV) {
+  if (
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    window.localStorage.getItem("debugSession") === "true"
+  ) {
     console.debug(...args);
   }
 };

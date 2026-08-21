@@ -4,6 +4,18 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Keep data fresh for 5s before a background refetch is triggered
+      staleTime: 5000,
+      // Automatically refetch when the tab/window regains focus
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 import {
   APP_VIEW_STATE_KEY,
   readInitialAppViewState,
@@ -23,17 +35,24 @@ import { getRequestedLogoVariant, isLogoLabEnabled } from "@/app/logoLab";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
 import { ViewportProvider, useViewport } from "@/app/ViewportContext";
 import { ThemeProvider, ToastProvider, UserProvider } from "@/app/providers";
-import type { ThemeName } from "@/theme/themes";
 import { useUser } from "@/app/useProviders";
 import { usePwaRuntime } from "@/hooks/usePwaRuntime";
 import LoadingScreen from "@/app/LoadingScreen";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
 import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useTvSpatialNavigation } from "@/hooks/useTvSpatialNavigation";
 
 import { scheduleIdleWork } from "@/utils/scheduleIdleWork";
 import MinigameModal from "@/ui/MinigameModal";
+import SidebarRail from "@/components/ui/SidebarRail";
+import type { TogglePanel } from "@/app/AppWorkspaceShell";
+import {
+  isLibraryWorkspaceTab,
+  libraryWorkspaceStackClass,
+} from "@/utils/libraryWorkspace";
 import "./App.scss";
+import "./component-styles.css";
 
 const AppWorkspaceShell = React.lazy(
   () => import("@/app/AppWorkspaceShell"),
@@ -61,10 +80,13 @@ const App: React.FC = () => {
     handleRetryPendingSync,
     handleInstallApp,
   } = usePwaRuntime();
-  const { isMobile } = useViewport();
+  const { isMobile, isTv } = useViewport();
+  useTvSpatialNavigation(isTv);
+
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
+
   const [isBootReady, setIsBootReady] = useState(false);
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
@@ -79,6 +101,19 @@ const App: React.FC = () => {
   const [showQuizEditor, setShowQuizEditor] = useState(false);
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
+  const [openPanels, setOpenPanels] = useState<Set<TogglePanel>>(new Set());
+
+  const togglePanel = useCallback((panel: TogglePanel) => {
+    setOpenPanels((prev) => {
+      const next = new Set(prev);
+      if (next.has(panel)) {
+        next.delete(panel);
+      } else {
+        next.add(panel);
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
@@ -177,6 +212,29 @@ const App: React.FC = () => {
     handleTabChange("messages");
   }, [handleTabChange]);
 
+  const focusLibrarySearch = useCallback(() => {
+    if (!isLibraryWorkspaceTab(activeTab)) {
+      handleTabChange("movies");
+    }
+
+    let attempts = 0;
+    const focusWhenMounted = () => {
+      const input = document.querySelector<HTMLInputElement>(
+        ".workspace-search__search-field",
+      );
+      if (input) {
+        input.focus();
+        return;
+      }
+      attempts += 1;
+      if (attempts < 10) {
+        window.requestAnimationFrame(focusWhenMounted);
+      }
+    };
+
+    window.requestAnimationFrame(focusWhenMounted);
+  }, [activeTab, handleTabChange]);
+
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
@@ -226,14 +284,14 @@ const App: React.FC = () => {
 
   if (!isBootReady) {
     return (
-      <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
+      <ThemeProvider themeName="movies">
         <LoadingScreen />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider themeName={(activeTab === "places" ? "places" : "movies") as ThemeName}>
+    <ThemeProvider themeName="movies">
       <div
         className={`app-shell app-shell--viewport bg-main${isMobile ? " app-shell--mobile" : ""}`}
       >
@@ -241,32 +299,42 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <div className="app-shell__canvas app-shell__canvas--main">
+        <SidebarRail
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          pwaStatus={{
+            isOnline,
+            isStandalone,
+            canInstall: canInstallApp,
+            hasUpdateReady,
+            pendingSyncCount: outboxStatus.pendingCount,
+            blockedSyncCount: outboxStatus.blockedCount,
+          }}
+          onInstallApp={() => void handleInstallApp()}
+          onApplyUpdate={handleApplyUpdate}
+          onRetrySync={handleRetryPendingSync}
+          openPanels={openPanels}
+          onTogglePanel={togglePanel}
+          onSearchFocus={focusLibrarySearch}
+        />
+
+        <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
           <div
-            className={`app-workspace-stack app-workspace-stack--${activeTab}`}
+            className={`app-workspace-stack ${libraryWorkspaceStackClass(activeTab)}`}
           >
             <div
-              className={`app-tab-shell app-tab-shell--${activeTab} workspace-unified-shell`}
+              className={`app-tab-shell ${isLibraryWorkspaceTab(activeTab) ? "app-tab-shell--movies" : `app-tab-shell--${activeTab}`} workspace-unified-shell`}
             >
               <WorkspaceErrorBoundary>
                 <React.Suspense fallback={null}>
                   <AppWorkspaceShell
                     activeTab={activeTab}
                     onTabChange={handleTabChange}
-                    pwaStatus={{
-                      isOnline,
-                      isStandalone,
-                      canInstall: canInstallApp,
-                      hasUpdateReady,
-                      pendingSyncCount: outboxStatus.pendingCount,
-                      blockedSyncCount: outboxStatus.blockedCount,
-                    }}
-                    onInstallApp={() => void handleInstallApp()}
-                    onApplyUpdate={handleApplyUpdate}
-                    onRetrySync={handleRetryPendingSync}
                     onOpenMessages={openMessages}
                     onOpenQuiz={openQuizExperience}
                     onOpenSpin={openSpinMatch}
+                    openPanels={openPanels}
+                    onTogglePanel={togglePanel}
                   />
                 </React.Suspense>
               </WorkspaceErrorBoundary>
@@ -297,15 +365,17 @@ const App: React.FC = () => {
 };
 
 const AppWithProviders: React.FC = () => (
-  <UserProvider>
-    <ToastProvider>
-      <PwaInstallProvider>
-        <ViewportProvider>
-          <App />
-        </ViewportProvider>
-      </PwaInstallProvider>
-    </ToastProvider>
-  </UserProvider>
+  <QueryClientProvider client={queryClient}>
+    <UserProvider>
+      <ToastProvider>
+        <PwaInstallProvider>
+          <ViewportProvider>
+            <App />
+          </ViewportProvider>
+        </PwaInstallProvider>
+      </ToastProvider>
+    </UserProvider>
+  </QueryClientProvider>
 );
 
 export default AppWithProviders;

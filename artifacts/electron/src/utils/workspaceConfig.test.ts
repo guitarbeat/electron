@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   getWorkspaceMeta,
+  MOVIES_POSTER_GRID_GAP,
+  MOVIES_POSTER_GRID_MIN_COL,
   workspaceSectionLabel,
 } from "./workspaceConfig.ts";
 
@@ -9,7 +11,7 @@ test("getWorkspaceMeta returns movie workspace copy", () => {
   const meta = getWorkspaceMeta("movies");
 
   assert.equal(meta.title, "Movies");
-  assert.equal(meta.icon, "🎬");
+  assert.equal(meta.icon, "film");
   assert.equal("description" in meta, false);
 });
 
@@ -17,7 +19,7 @@ test("getWorkspaceMeta returns places workspace copy", () => {
   const meta = getWorkspaceMeta("places");
 
   assert.equal(meta.title, "Date Ideas");
-  assert.equal(meta.icon, "📍");
+  assert.equal(meta.icon, "map-pin");
   assert.equal("description" in meta, false);
 });
 
@@ -39,4 +41,9 @@ test("workspaceSectionLabel returns place-specific queue labels", () => {
 test("workspaceSectionLabel shares incoming labels across tabs", () => {
   assert.equal(workspaceSectionLabel("movies", "incoming", false), "Incoming");
   assert.equal(workspaceSectionLabel("places", "incoming", true), "New");
+});
+
+test("movie poster grid uses a dense min column width", () => {
+  assert.equal(MOVIES_POSTER_GRID_MIN_COL, "clamp(5rem, 21vw, 6.75rem)");
+  assert.equal(MOVIES_POSTER_GRID_GAP, "0.25rem");
 });

@@ -11,7 +11,6 @@ import {
   useTransform,
   type PanInfo,
 } from "motion/react";
-import "./Stack.css";
 
 export interface StackItem {
   id: string;

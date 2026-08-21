@@ -1,4 +1,4 @@
-/* AppNavStrip — unified brand + nav tabs + PWA status chip */
+/* AppNavStrip — streaming service top navigation bar */
 
 .ans-wrap {
   display: flex;
@@ -9,64 +9,52 @@
 }
 
 .ans-wrap--has-chip {
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .ans {
-  /* ── token scale (inherits active theme from applyTheme) ── */
   --ans-accent: var(--color-accent);
   --ans-fg: var(--color-text-secondary);
   --ans-fg-active: var(--color-text-primary);
-  --ans-bg: color-mix(in srgb, var(--ans-accent) 9%, rgba(255, 255, 255, 0.04));
-  --ans-bg-active: color-mix(in srgb, var(--ans-accent) 22%, rgba(255, 255, 255, 0.08));
-  --ans-border: color-mix(in srgb, var(--ans-accent) 22%, var(--color-border-subtle));
-  --ans-sep: color-mix(in srgb, var(--ans-accent) 15%, var(--color-border-subtle));
-  --ans-h:           3rem;
-  --ans-r:           999px;
-  --ans-pad:         0.28rem;
-  --ans-font:        var(--font-interface, var(--font-body, sans-serif));
-  --ans-font-size:   0.72rem;
+  --ans-bg: color-mix(in srgb, var(--color-surface-1) 80%, transparent);
+  --ans-border: color-mix(in srgb, var(--color-border-subtle) 60%, transparent);
+  --ans-h: 3.5rem;
+  --ans-r: 1rem;
+  --ans-pad: 0.35rem;
+  --ans-font: var(--font-body);
+  --ans-font-size: 0.9rem;
 
   display: inline-flex;
   align-items: center;
   height: var(--ans-h);
   padding: var(--ans-pad);
   gap: 0;
-  border: 1.5px solid color-mix(in srgb, var(--ans-accent) 35%, var(--color-border-subtle));
+  border: 1px solid var(--ans-border);
   border-radius: var(--ans-r);
-  background: color-mix(in srgb, var(--ans-accent) 12%, rgba(6, 8, 25, 0.85));
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 20px color-mix(in srgb, var(--ans-accent) 12%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: var(--ans-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Brand wordmark */
 .ans__brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0 0.85rem;
-  font-family: Papyrus, 'Marker Felt', cursive;
-  font-size: 1.15rem;
+  gap: 0.35rem;
+  padding: 0 1rem;
+  font-family: 'Papyrus', 'Marker Felt', cursive;
+  font-size: 1.25rem;
   font-weight: 400;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   line-height: 1;
   white-space: nowrap;
   user-select: none;
-  color: transparent;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: var(--color-accent);
 }
 
 .ans__brand-glyph {
   font-size: 0.85em;
   opacity: 0.9;
-  transition: opacity 0.15s ease;
 }
-
-.ans:hover .ans__brand-glyph { opacity: 1; }
 
 .ans__tabs {
   display: flex;
@@ -79,26 +67,39 @@
   min-width: 0;
 }
 
+.ans__tabs .magic-toggle__btn {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
+}
+
 .ans__tabs .magic-toggle__btn.is-active {
-  text-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.ans__tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 /* Separators */
 .ans__sep {
   display: block;
   width: 1px;
-  height: 1rem;
-  background: var(--ans-sep);
+  height: 1.25rem;
+  background: var(--color-border-subtle);
   flex-shrink: 0;
-  margin: 0 0.06rem;
+  margin: 0 0.25rem;
 }
 
-.ans__sep--wide { margin: 0 0.3rem; }
-
+.ans__sep--wide { margin: 0 0.5rem; }
 
 .ans__chip--inline {
   max-width: min(42vw, 16rem);
-  margin-left: 0.1rem;
+  margin-left: 0.25rem;
 }
 
 .ans__chip--inline .ans__chip-copy span {
@@ -111,18 +112,18 @@
   }
 }
 
-/* Status chip — inline PWA/sync indicator */
+/* Status chip */
 .ans__chip {
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
   max-width: min(48vw, 18rem);
-  min-height: calc(var(--ans-h) - var(--ans-pad) * 2);
-  padding: 0.18rem 0.24rem 0.18rem 0.62rem;
-  border-radius: calc(var(--ans-r) - var(--ans-pad));
+  min-height: calc(var(--ans-h) - var(--ans-pad) * 2 - 0.25rem);
+  padding: 0.25rem 0.35rem 0.25rem 0.75rem;
+  border-radius: 0.65rem;
   color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-surface-2) 42%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 65%, transparent);
+  background: color-mix(in srgb, var(--color-surface-2) 50%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-border) 50%, transparent);
 }
 
 .ans__chip--offline {
@@ -140,8 +141,8 @@
 .ans__chip-copy {
   display: grid;
   min-width: 0;
-  gap: 0.05rem;
-  line-height: 1.05;
+  gap: 0.1rem;
+  line-height: 1.1;
 }
 
 .ans__chip-copy strong {
@@ -149,8 +150,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--ans-font);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -159,32 +161,32 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--ans-font);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 
 .ans__chip-action {
   flex: 0 0 auto;
-  min-height: 1.62rem;
-  padding: 0 0.58rem;
+  min-height: 1.75rem;
+  padding: 0 0.65rem;
   border: 0;
-  border-radius: var(--ans-r);
-  background: color-mix(in srgb, var(--color-surface-3) 55%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-surface-3) 60%, transparent);
   color: var(--color-text-primary);
   font-family: var(--ans-font);
-  font-size: 0.64rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .ans__chip-dismiss {
   display: inline-grid;
   place-items: center;
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.65rem;
+  height: 1.65rem;
   padding: 0;
   border: 0;
-  border-radius: var(--ans-r);
+  border-radius: 0.5rem;
   background: color-mix(in srgb, var(--color-surface-3) 48%, transparent);
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -198,27 +200,27 @@
   }
 
   .ans__brand {
-    padding: 0 0.6rem;
-    font-size: 0.88rem;
+    padding: 0 0.7rem;
+    font-size: 1rem;
   }
 
   .ans__chip {
     max-width: min(47vw, 13rem);
-    padding-left: 0.58rem;
+    padding-left: 0.6rem;
   }
   .ans__chip-copy span { display: none; }
 }
 
 @media (max-width: 640px) {
   .ans {
-    --ans-h: 2.65rem;
+    --ans-h: 3rem;
     width: 100%;
     max-width: 100%;
     justify-content: flex-start;
-    border-radius: 0.85rem;
+    border-radius: 0.75rem;
     box-shadow: none;
-    background: color-mix(in srgb, var(--color-surface-1) 88%, transparent);
-    border-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+    background: color-mix(in srgb, var(--color-surface-1) 90%, transparent);
+    border-color: var(--color-border-subtle);
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -227,20 +229,26 @@
     display: none;
   }
 
+  .ans__tabs .magic-toggle__btn {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.75rem;
+    min-height: 2.2rem;
+  }
+
   .ans__chip--mobile-row {
     display: flex;
     align-items: center;
     gap: 0.42rem;
     width: 100%;
-    min-height: 2.25rem;
+    min-height: 2.5rem;
     padding: 0.35rem 0.5rem 0.35rem 0.65rem;
-    border-radius: 0.65rem;
+    border-radius: 0.6rem;
     max-width: none;
   }
 
   .ans__chip--mobile-row .ans__chip-copy span {
     display: inline;
-    font-size: 0.6875rem;
+    font-size: 0.72rem;
   }
 
   .ans__brand {
@@ -272,7 +280,7 @@
   .ans__brand-glyph { transition: none; }
 }
 
-/* MagicToggle Wrapper to fit in Nav Strip */
+/* MagicToggle Wrapper */
 .ans__magic-toggle-wrapper {
   display: flex;
   align-items: center;
@@ -281,7 +289,7 @@
 
 @media (max-width: 480px) {
   .ans__magic-toggle-wrapper .magic-toggle__btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.6rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.68rem;
   }
 }

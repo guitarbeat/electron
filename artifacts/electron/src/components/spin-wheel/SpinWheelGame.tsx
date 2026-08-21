@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Button from '@/ui/LegacyButton';
+import Button from '@/ui/Button';
 import { useMovies } from '@/hooks/movies/useMovies';
 import { useUser } from '@/app/useProviders';
+import { useViewport } from '@/app/ViewportContext';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
 const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
@@ -19,7 +20,9 @@ interface SpinWheelGameProps {
 
 const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
+  const { isTv } = useViewport();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
+
 
   useEffect(() => {
     void import("@/app/skins/spin-wheel-skin.scss");
@@ -329,7 +332,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
               </button>
             ) : null}
           </div>
+          {isTv && (
+            <div style={{ textAlign: "center", marginTop: "12px", fontSize: "0.9rem", color: "#ffb703", fontWeight: 600 }}>
+              Press SELECT / OK on remote to Spin
+            </div>
+          )}
         </div>
+
 
         <div className="spin-wheel-panel">
           {selectedMovie ? (

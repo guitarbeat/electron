@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { invalidateSharedStateCache } from "../../api/_lib/sharedStateStore.ts";
-import { hashPin } from "../../api/_lib/session.ts";
+import { invalidateSharedStateCache } from "../../../../api/_lib/sharedStateStore.ts";
+import { hashPin } from "../../../../api/_lib/session.ts";
 import profileHandler, {
   computeNextPinAttemptState,
   profilePinRateLimitConfig,
-} from "../../api/session/profile.ts";
-import sessionHandler from "../../api/session.ts";
+} from "../../../../api/session/profile.ts";
+import sessionHandler from "../../../../api/session.ts";
 import { createSharedStateMemoryMock } from "./test/sharedStateMock.ts";
 
 const withUnsetDatabase = async (run: () => Promise<void>) => {

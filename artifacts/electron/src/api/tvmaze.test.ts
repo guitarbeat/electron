@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import handler from "../../api/tvmaze.ts";
+import handler from "../../../../api/tvmaze.ts";
 
 const ENV_KEYS = ["TVMAZE_API_URL", "VITE_TVMAZE_API_URL"] as const;
 const originalFetch = globalThis.fetch;

@@ -2,32 +2,33 @@ import { useCallback, useMemo, useState } from "react";
 import { useUser } from "@/app/useProviders";
 import type { Message } from "@/shared/types";
 import { compareCreatedAtAsc, sanitizeInput } from "@/utils";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
 import {
   addMessage as addMessageService,
   deleteMessage as deleteMessageService,
 } from "@/services/content";
-import { usePolling } from "@/services/polling";
-import { readScope, retryScopeSync } from "@/services/state";
+import { useSyncedScope } from "./useSyncedScope";
 
 const POLLING_INTERVAL = 15000;
 
 export const useMessages = () => {
   const { currentUser } = useUser();
-  const readMessages = useCallback(() => readScope("messages"), []);
   const {
-    data: snapshot,
+    data: remoteMessages,
     error,
     isLoading,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
-  } = usePolling(readMessages, POLLING_INTERVAL, areScopeSnapshotsEqual, {
-    key: "messages",
+    retrySync,
+  } = useSyncedScope("messages", {
+    pollingInterval: POLLING_INTERVAL,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const messages = useMemo(
-    () => [...(snapshot?.data ?? [])].sort(compareCreatedAtAsc),
-    [snapshot],
+    () => [...(remoteMessages ?? [])].sort(compareCreatedAtAsc),
+    [remoteMessages],
   );
 
   const addMessage = useCallback(
@@ -75,20 +76,15 @@ export const useMessages = () => {
     [currentUser, refresh],
   );
 
-  const retrySync = useCallback(async () => {
-    await retryScopeSync("messages");
-    refresh();
-  }, [refresh]);
-
   return {
     currentUser,
     messages,
     error,
     isLoading,
     isSubmitting,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     addMessage,
     deleteMessage,
     refresh,

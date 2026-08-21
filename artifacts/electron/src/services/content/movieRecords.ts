@@ -1,31 +1,11 @@
 import type { Movie } from "../../shared/types.ts";
-import { isUser, isValidUrl, sanitizeInput } from "../../utils/shared.ts";
-
-const normalizeRequiredString = (value: unknown): string | null => {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const normalized = sanitizeInput(value);
-  return normalized || null;
-};
-
-const normalizeOptionalString = (value: unknown): string | undefined => {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
-  const normalized = sanitizeInput(value);
-  return normalized || undefined;
-};
-
-const normalizeCreatedAt = (value: unknown): string | null => {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  return Number.isNaN(Date.parse(value)) ? null : value;
-};
+import { isUser, isValidUrl, sanitizeInput } from "../../utils/shared.js";
+import {
+  normalizeOptionalString,
+  normalizeRecordList,
+  normalizeRequiredDate,
+  normalizeRequiredString,
+} from "../state/normalization.js";
 
 const normalizePosterUrl = (value: unknown): string | undefined => {
   if (typeof value !== "string") {
@@ -62,7 +42,7 @@ export const normalizeMovieRecord = (value: unknown): Movie | null => {
   const movie = value as Partial<Movie>;
   const id = normalizeRequiredString(movie.id);
   const title = normalizeRequiredString(movie.title);
-  const createdAt = normalizeCreatedAt(movie.createdAt);
+  const createdAt = normalizeRequiredDate(movie.createdAt);
 
   if (!id || !title || !isUser(movie.addedBy) || !createdAt) {
     return null;
@@ -93,12 +73,7 @@ export const isMovieRecord = (value: unknown): value is Movie =>
   normalizeMovieRecord(value) !== null;
 
 export const normalizeMovies = (value: unknown): Movie[] =>
-  Array.isArray(value)
-    ? value.flatMap((entry) => {
-        const normalizedMovie = normalizeMovieRecord(entry);
-        return normalizedMovie ? [normalizedMovie] : [];
-      })
-    : [];
+  normalizeRecordList(value, normalizeMovieRecord);
 
 const METADATA_FIELDS = [
   "posterUrl",

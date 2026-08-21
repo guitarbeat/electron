@@ -20,7 +20,6 @@ import {
   MultipleChoiceQuestionView,
   XYAxisQuestionView,
 } from "./QuestionViews";
-import "./retro-ad.css";
 
 interface QuestionPreviewProps {
   question: QuizQuestion;

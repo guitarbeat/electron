@@ -9,8 +9,8 @@ import type {
 } from './lib/types';
 import ScoreSlider from './ScoreSlider';
 import { getQuestionDetail, QUESTION_TYPE_LABELS } from './lib/QuestionEditorMeta';
-import Card from '@/ui/LegacyCard';
-import Button from '@/ui/LegacyButton';
+import Card from '@/ui/Card';
+import Button from '@/ui/Button';
 import { Input, Textarea } from '@/ui/FormFields';
 import { useToast } from '@/app/useProviders';
 import { spacing, colors, typography } from '@/theme/tokens';

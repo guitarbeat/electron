@@ -10,29 +10,25 @@ import React, {
 import { useUser } from "@/app/useProviders";
 import type {
   Movie,
-  MovieSuggestion,
   SharedMemory,
   MoviesViewProps,
 } from "@/shared/types";
 import ConfirmDialog from "@/ui/ConfirmDialog";
+import { CheckIcon, FilmIcon, MessageIcon } from "../common/Icons.tsx";
 import SyncBanner from "@/components/ui/SyncBanner";
 import MovieSectionBody from "@/ui/MovieSectionBody";
 import { useMoviesWorkspace } from "@/hooks/movies/useMoviesWorkspace";
-import { useCinematicEntrance } from "@/hooks/useCinematicEntrance";
 import MoviesTopControls, {
   type MoviesTopControlsHandle,
 } from "./MoviesTopControls";
 import { buildMovieSections, type MovieSortOrder } from "./lib/movieSections";
-import type { MovieAutocompleteResult } from "@/services/metadata";
-import { createPortal } from "react-dom";
+import { filterMoviesByMediaType, isTvSeries, type MediaTypeFilter } from "./lib/movieType";
 import {
   type BentoStatTileConfig,
   type BentoSortChipConfig,
   type SortOrder,
 } from "@/components/ui/BentoWorkspaceController";
 import { useBentoSlot } from "@/app/BentoSlotContext";
-import { useMoviesWorkspaceActions } from "@/hooks/movies/useMoviesWorkspaceActions";
-import "./MoviesPhotoMode.css";
 
 const MOVIE_SECTION_IDS = {
   incoming: "movies-section-incoming",
@@ -46,9 +42,12 @@ const MOVIE_SORTS: BentoSortChipConfig[] = [
   { value: "rating", label: "★ Rating" },
 ];
 
-const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
+const MoviesView: React.FC<MoviesViewProps> = ({
+  isPaused = false,
+  hideSearch = false,
+}) => {
   const { currentUser } = useUser();
-  const { registerTabConfig, searchPortalEl } = useBentoSlot();
+  const { registerTabConfig } = useBentoSlot();
   const { isMobile } = useViewport();
   const setConfig = React.useCallback(
     (config: Parameters<typeof registerTabConfig>[1]) =>
@@ -56,35 +55,40 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     [registerTabConfig],
   );
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
-  const [suggestionError, setSuggestionError] = useState<string | null>(null);
-  const [isRecommendationComposerOpen, setIsRecommendationComposerOpen] =
-    useState(false);
-  const [recommendationReason, setRecommendationReason] = useState("");
-  const [guestName, setGuestName] = useState("");
-  const [selectedAutocompleteResult, setSelectedAutocompleteResult] =
-    useState<MovieAutocompleteResult | null>(null);
   const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
+  const focusSearchInput = useCallback(() => {
+    moviesTopControlsRef.current?.focusSearchInput();
+  }, []);
   const {
     searchQuery,
     setSearchQuery,
     isAdding,
-    setIsAdding,
     movieToDelete,
     setMovieToDelete,
     setToast,
     successMovieId,
     setSuccessMovieId,
+    suggestionError,
+    isRecommendationComposerOpen,
+    recommendationReason,
+    guestName,
+    setGuestName,
+    selectedAutocompleteResult,
+    setSelectedAutocompleteResult,
+    resetRecommendationComposer,
+    handleRecommendationReasonChange,
+    openRecommendationComposer,
+    handleAddAction,
+    handleSubmitRecommendation,
+    handleAcceptSuggestion,
+    handleRejectSuggestion,
+    confirmDelete,
     processingSuggestionId,
     isSubmittingRecommendation,
     previousMoviesRef,
     movies,
     isLoading,
-    addMovie,
-    deleteMovie,
     pendingSuggestions,
-    submitRecommendation,
-    acceptSuggestionToWatchlist,
-    rejectPendingSuggestion,
     isSuggestionsLoading,
     memories,
     isMoviesWorkspaceDegraded,
@@ -97,7 +101,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     updateMemory,
     deleteMemoryRecord,
     toggleMemoryPin,
-  } = useMoviesWorkspace({ currentUser, isPaused });
+  } = useMoviesWorkspace({ currentUser, isPaused, focusSearchInput });
   const movieMemories = useMemo(() => {
     const memoriesByMovieId = new Map<string, SharedMemory[]>();
     const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
@@ -127,9 +131,34 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     });
     return memoriesByMovieId;
   }, [memories, movies]);
+  const [mediaTypeFilter, setMediaTypeFilterState] = useState<MediaTypeFilter>(() => {
+    const param = new URLSearchParams(window.location.search).get("format");
+    return (param === "movie" || param === "series" ? param : "all") as MediaTypeFilter;
+  });
+
+  const setMediaTypeFilter = useCallback((next: MediaTypeFilter) => {
+    setMediaTypeFilterState(next);
+    const params = new URLSearchParams(window.location.search);
+    if (next === "all") {
+      params.delete("format");
+    } else {
+      params.set("format", next);
+    }
+    const qs = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`,
+    );
+  }, []);
+
+  const filteredMovies = useMemo(
+    () => filterMoviesByMediaType(movies, mediaTypeFilter),
+    [movies, mediaTypeFilter],
+  );
   const sections = useMemo(
-    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
-    [movies, pendingSuggestions, sortOrder],
+    () => buildMovieSections(filteredMovies, pendingSuggestions, sortOrder),
+    [filteredMovies, pendingSuggestions, sortOrder],
   );
 
   const movieStats = useMemo(
@@ -138,7 +167,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         id: "incoming",
         label: "Incoming",
         count: sections.suggestions.length,
-        icon: "💌",
+        icon: <MessageIcon size={14} />,
         sectionId: MOVIE_SECTION_IDS.incoming,
         tone: "incoming",
       },
@@ -146,7 +175,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         id: "queue",
         label: "Up Next",
         count: sections.queue.length,
-        icon: "🎞",
+        icon: <FilmIcon size={14} />,
         sectionId: MOVIE_SECTION_IDS.queue,
         tone: "default",
       },
@@ -154,7 +183,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
         id: "watched",
         label: "Watched",
         count: sections.completed.length,
-        icon: "✓",
+        icon: <CheckIcon size={14} />,
         sectionId: MOVIE_SECTION_IDS.completed,
         tone: "completed",
       },
@@ -209,84 +238,54 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
     previousMoviesRef.current = movies;
   }, [movies, previousMoviesRef, setSuccessMovieId, setToast]);
 
-  const focusSearchInput = useCallback(() => {
-    moviesTopControlsRef.current?.focusSearchInput();
-  }, []);
-
-  const {
-    resetRecommendationComposer,
-    handleRecommendationReasonChange,
-    openRecommendationComposer,
-    handleAddAction,
-    handleSubmitRecommendation,
-    handleAcceptSuggestion,
-    handleRejectSuggestion,
-    confirmDelete,
-  } = useMoviesWorkspaceActions({
-    currentUser,
-    guestName,
-    isAdding,
-    setIsAdding,
-    isSubmittingRecommendation,
-    searchQuery,
-    setSearchQuery,
-    selectedAutocompleteResult,
-    setSelectedAutocompleteResult,
-    recommendationReason,
-    setRecommendationReason,
-    setIsRecommendationComposerOpen,
-    setSuggestionError,
-    setSuccessMovieId,
-    setToast,
-    addMovie,
-    submitRecommendation,
-    acceptSuggestionToWatchlist,
-    rejectPendingSuggestion,
-    deleteMovie,
-    movieToDelete,
-    setMovieToDelete,
-    focusSearchInput,
-  });
-
   useEffect(() => {
     if (!searchQuery.trim()) {
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
     }
-  }, [resetRecommendationComposer, searchQuery]);
+  }, [
+    resetRecommendationComposer,
+    searchQuery,
+    setSelectedAutocompleteResult,
+  ]);
 
   return (
-    <>
-      {searchPortalEl &&
-        createPortal(
-          <MoviesTopControls
-            ref={moviesTopControlsRef}
-            currentUser={currentUser}
-            upNextCount={upNextSummaryCount}
-            watchedCount={sections.completed.length}
-            noteCount={memories.length}
-            latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
-            latestNoteAuthor={latestMemory?.author ?? null}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedAutocompleteResult={selectedAutocompleteResult}
-            setSelectedAutocompleteResult={setSelectedAutocompleteResult}
-            guestName={guestName}
-            setGuestName={setGuestName}
-            onSubmit={handleAddAction}
-            onRecommend={openRecommendationComposer}
-            onSubmitRecommendation={handleSubmitRecommendation}
-            onCancelRecommendation={resetRecommendationComposer}
-            recommendationReason={recommendationReason}
-            setRecommendationReason={handleRecommendationReasonChange}
-            showRecommendationComposer={isRecommendationComposerOpen}
-            isAdding={isAdding}
-            isSubmittingRecommendation={isSubmittingRecommendation}
-            suggestionError={suggestionError}
-            canRecommend={true}
-          />,
-          searchPortalEl,
-        )}
+    <section className="library-movies" aria-label="Movies">
+      <h2 className="workspace-section-heading library-movies-heading">
+        <span className="workspace-section-heading__content">
+          <span className="workspace-section-heading__label">Movies</span>
+        </span>
+      </h2>
+      {hideSearch ? null : (
+      <div className="movies-search-container">
+        <MoviesTopControls
+          ref={moviesTopControlsRef}
+          currentUser={currentUser}
+          upNextCount={upNextSummaryCount}
+          watchedCount={sections.completed.length}
+          noteCount={memories.length}
+          latestNoteMovieTitle={latestMemory?.movieTitle ?? null}
+          latestNoteAuthor={latestMemory?.author ?? null}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedAutocompleteResult={selectedAutocompleteResult}
+          setSelectedAutocompleteResult={setSelectedAutocompleteResult}
+          guestName={guestName}
+          setGuestName={setGuestName}
+          onSubmit={handleAddAction}
+          onRecommend={openRecommendationComposer}
+          onSubmitRecommendation={handleSubmitRecommendation}
+          onCancelRecommendation={resetRecommendationComposer}
+          recommendationReason={recommendationReason}
+          setRecommendationReason={handleRecommendationReasonChange}
+          showRecommendationComposer={isRecommendationComposerOpen}
+          isAdding={isAdding}
+          isSubmittingRecommendation={isSubmittingRecommendation}
+          suggestionError={suggestionError}
+          canRecommend={true}
+        />
+      </div>
+      )}
       <div className="watchlist-container places-container">
         {isMoviesWorkspaceDegraded && (
           <SyncBanner
@@ -309,7 +308,6 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           processingSuggestionId={processingSuggestionId}
           successMovieId={successMovieId}
           movieMemories={movieMemories}
-          onAddMovieFocus={focusSearchInput}
           onAcceptSuggestion={handleAcceptSuggestion}
           onRejectSuggestion={handleRejectSuggestion}
           onDeleteRequest={setMovieToDelete}
@@ -322,7 +320,10 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
             deleteMemory: deleteMemoryRecord,
             togglePin: toggleMemoryPin,
           }}
-          sectionIds={MOVIE_SECTION_IDS}
+          mediaTypeFilter={mediaTypeFilter}
+          onMediaTypeFilterChange={setMediaTypeFilter}
+          totalMoviesCount={movies.filter((m) => !isTvSeries(m)).length}
+          totalSeriesCount={movies.filter((m) => isTvSeries(m)).length}
         />
         {movieToDelete && (
           <ConfirmDialog
@@ -336,7 +337,7 @@ const MoviesView: React.FC<MoviesViewProps> = ({ isPaused = false }) => {
           />
         )}
       </div>
-    </>
+    </section>
   );
 };
 export default memo(MoviesView);

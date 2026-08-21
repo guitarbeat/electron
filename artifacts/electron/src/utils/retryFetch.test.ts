@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fetchWithRetry } from "../../api/_lib/retryFetch.ts";
+import { fetchWithRetry } from "../../../../api/_lib/retryFetch.ts";
 
 const jsonResponse = (
   body: unknown,

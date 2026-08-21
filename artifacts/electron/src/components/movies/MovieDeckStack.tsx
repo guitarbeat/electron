@@ -175,6 +175,7 @@ const DeckCard: React.FC<DeckCardProps> = memo(({
     </motion.div>
   );
 });
+DeckCard.displayName = "DeckCard";
 
 const DotIndicator: React.FC<{
   index: number;
@@ -236,6 +237,7 @@ const DotIndicator: React.FC<{
     </motion.div>
   );
 });
+DotIndicator.displayName = "DotIndicator";
 
 const DeckProgress: React.FC<{
   total: number;

@@ -1,6 +1,6 @@
 import React from 'react';
-import Card from '@/ui/LegacyCard';
-import Button from '@/ui/LegacyButton';
+import Card from '@/ui/Card';
+import Button from '@/ui/Button';
 import { colors, spacing, typography } from '@/theme/tokens';
 import { CheckIcon, CrossIcon } from '@/common/Icons';
 import {

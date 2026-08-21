@@ -1,9 +1,0 @@
-/* SpinSwipeGame */
-
-.spin-game-wrapper {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-surface-0, #1a1310);
-  border-radius: 16px;
-  overflow: hidden;
-}

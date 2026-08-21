@@ -51,9 +51,9 @@ const WorkspaceSearchShell: FC<WorkspaceSearchShellProps> = ({
           </span>
         ) : null}
         <div className="workspace-search__search-input-wrap">{input}</div>
+        {actions}
       </div>
       {autocomplete}
-      {actions}
     </form>
 
     {error ? (

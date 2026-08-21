@@ -1,7 +1,6 @@
 import React from "react";
 import { CollectionGrid } from "@/ui/CollectionLayout";
 import { useChromaSpotlight } from "@/hooks/useChromaSpotlight";
-import "./ChromaGrid.css";
 
 interface ChromaCollectionGridProps
   extends React.ComponentProps<typeof CollectionGrid> {

@@ -1,11 +1,10 @@
 import React, { useCallback } from "react";
-import "./StatTile.css";
 
 export interface BentoStatTileConfig {
   id: string;
   label: string;
   count: number;
-  icon: string;
+  icon: React.ReactNode;
   sectionId: string;
   tone?: "default" | "incoming" | "completed";
 }

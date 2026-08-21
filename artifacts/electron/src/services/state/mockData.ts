@@ -8,7 +8,7 @@ import type {
   MatchmakerGame,
 } from "../../shared/types.ts";
 import type { QuizData, DailySpinRecord, PinsState } from "./stateTypes.ts";
-import { defaultQuizData, cloneQuizData } from "./stateSchemas.ts";
+import { defaultQuizData, cloneQuizData } from "./stateSchemas.js";
 
 // Mock movies data
 export const mockMovies: Movie[] = [

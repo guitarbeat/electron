@@ -7,30 +7,30 @@
 
 /* ── CSS Custom Properties (fallback: movies theme — src/theme/themes.ts) ── */
 :root {
-  --color-background: #07091a;
-  --color-surface-0: #060819;
-  --color-surface-1: rgba(16, 26, 58, 0.82);
-  --color-surface-elevated: rgba(20, 32, 68, 0.86);
-  --color-surface-2: rgba(22, 34, 70, 0.9);
-  --color-surface-3: rgba(30, 44, 86, 0.94);
-  --color-text-primary: #eef2ff;
-  --color-text-secondary: #94a3c8;
-  --color-text-tertiary: #5b6e9a;
-  --color-accent: #f472b6;
-  --color-accent-hover: #f9a8d4;
-  --color-secondary: #7dd3fc;
-  --color-tertiary: #c4b5fd;
-  --color-quaternary: #c4b5fd;
-  --color-quinary: #7dd3fc;
+  --color-background: #060810;
+  --color-surface-0: #05070e;
+  --color-surface-1: rgba(12, 18, 42, 0.85);
+  --color-surface-elevated: rgba(14, 20, 48, 0.88);
+  --color-surface-2: rgba(16, 24, 54, 0.92);
+  --color-surface-3: rgba(22, 32, 68, 0.96);
+  --color-text-primary: #f0f4ff;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #4a5a7a;
+  --color-accent: #38bdf8;
+  --color-accent-hover: #7dd3fc;
+  --color-secondary: #818cf8;
+  --color-tertiary: #34d399;
+  --color-quaternary: #818cf8;
+  --color-quinary: #38bdf8;
   --color-success: #86efac;
   --color-warning: #fde68a;
   --color-error: #fca5a5;
   --color-border: rgba(148, 163, 200, 0.28);
   --color-border-subtle: rgba(148, 163, 200, 0.12);
   --color-overlay: rgba(3, 5, 18, 0.88);
-  --gradient-shell: linear-gradient(182deg, #0d1535 0%, #080f2a 42%, #060c1e 72%, #040816 100%);
-  --gradient-card: linear-gradient(178deg, rgba(20, 32, 72, 0.94) 0%, rgba(12, 18, 50, 0.9) 52%, rgba(6, 8, 28, 0.92) 100%);
-  --gradient-primary: linear-gradient(128deg, #f472b6 0%, #fb7185 42%, #fce7f3 100%);
+  --gradient-shell: linear-gradient(182deg, #080c1a 0%, #060a16 42%, #050812 72%, #030610 100%);
+  --gradient-card: linear-gradient(178deg, rgba(12, 18, 42, 0.95) 0%, rgba(8, 12, 32, 0.92) 52%, rgba(5, 7, 14, 0.94) 100%);
+  --gradient-primary: linear-gradient(128deg, #38bdf8 0%, #818cf8 42%, #e0f2fe 100%);
   --radius-sm: 0.375rem;
   --radius-md: 0.625rem;
   --radius-lg: 0.875rem;
@@ -50,7 +50,7 @@
   --surface-padding-compact: clamp(0.8rem, 0.65rem + 0.4vw, 1rem);
   --shadow-card: 0 16px 26px rgba(2, 4, 18, 0.24), inset 0 1px 0 rgba(238, 242, 255, 0.06);
   --shadow-elevated: 0 22px 38px rgba(2, 4, 18, 0.38), inset 0 1px 0 rgba(238, 242, 255, 0.09);
-  --shadow-floating: 0 28px 48px rgba(2, 4, 18, 0.45), 0 0 36px rgba(244, 114, 182, 0.06);
+  --shadow-floating: 0 28px 48px rgba(2, 4, 18, 0.45), 0 0 36px color-mix(in srgb, var(--color-accent) 6%, transparent);
   --focus-ring: color-mix(in srgb, var(--color-accent) 70%, transparent);
   --font-display: 'Papyrus', 'Marker Felt', serif;
   --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -58,9 +58,7 @@
   --font-sans: var(--font-body);
   --font-interface: var(--font-body);
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', monospace;
-  /* Retro / lo-fi font — Comic Neue loads from Google Fonts on all platforms,
-     including iOS where Comic Sans MS is unavailable as a system font */
-  --font-retro: 'Comic Neue', 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-retro: 'Papyrus', 'Marker Felt', serif;
   --font-size-3xs: 0.5625rem;
   --font-size-2xs: 0.625rem;
   --font-size-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem);
@@ -95,11 +93,11 @@
   --letter-spacing-eyebrow: 0.08em;
   --letter-spacing-widest: 0.14em;
   --type-eyebrow-family: var(--font-body);
-  --type-eyebrow-size: 0.72rem;
-  --type-eyebrow-weight: var(--font-weight-semibold);
-  --type-eyebrow-line-height: var(--line-height-none);
-  --type-eyebrow-letter-spacing: var(--letter-spacing-eyebrow);
-  --type-eyebrow-transform: uppercase;
+  --type-eyebrow-size: 1.1rem;
+  --type-eyebrow-weight: var(--font-weight-bold);
+  --type-eyebrow-line-height: var(--line-height-heading);
+  --type-eyebrow-letter-spacing: var(--letter-spacing-none);
+  --type-eyebrow-transform: none;
   --type-title-sm-family: var(--font-heading);
   --type-title-sm-size: 1.25rem;
   --type-title-sm-weight: var(--font-weight-semibold);
@@ -164,14 +162,21 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--color-surface-0);
-  background-image:
-    radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--color-accent) 16%, transparent) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--color-secondary) 16%, transparent) 0%, transparent 50%),
-    radial-gradient(circle at 56% 52%, color-mix(in srgb, var(--color-tertiary) 10%, transparent) 0%, transparent 60%),
-    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--color-quaternary) 9%, transparent) 0%, transparent 38%),
-    radial-gradient(circle at 12% 82%, color-mix(in srgb, var(--color-quinary) 8%, transparent) 0%, transparent 42%);
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-attachment: fixed;
@@ -224,57 +229,6 @@ body {
 /* Global font styles */
 .bg-main {
   background-color: transparent;
-}
-
-/* Quirks are part of the vibe; keep effects available by default. */
-
-/* Retro divider -- modernized gradient line */
-.retro-divider {
-  height: 1px;
-  border: none;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 127, 198, 0.3) 20%,
-    rgba(149, 220, 255, 0.3) 50%,
-    rgba(167, 138, 242, 0.3) 80%,
-    transparent 100%
-  );
-  opacity: 0.6;
-  margin: 0.75rem 0;
-}
-
-/* Retro glow-text utility */
-.retro-glow {
-  text-shadow:
-    0 0 8px rgba(255, 127, 198, 0.5),
-    0 0 20px rgba(255, 127, 198, 0.2);
-}
-
-/* Card hover shine */
-.retro-card-shine {
-  position: relative;
-  overflow: hidden;
-}
-.retro-card-shine::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.02) 45%,
-    rgba(255, 255, 255, 0.04) 50%,
-    rgba(255, 255, 255, 0.02) 55%,
-    transparent 70%
-  );
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-  pointer-events: none;
-  z-index: 1;
-}
-.retro-card-shine:hover::before {
-  transform: translateX(100%);
 }
 
 

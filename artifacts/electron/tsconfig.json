@@ -11,8 +11,10 @@
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
-    "types": ["node", "vite/client", "dom-chromium-installation-events"],
+    "types": ["node", "vite/client"],
+    "baseUrl": ".",
     "paths": {
+
       "@/app/*": ["./src/app/*"],
       "@/branding/*": ["./src/branding/*"],
       "@/common/*": ["./src/components/common/*"],
@@ -30,9 +32,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "references": [
-    {
-      "path": "../../lib/api-client-react"
-    }
-  ]
+  "references": []
 }

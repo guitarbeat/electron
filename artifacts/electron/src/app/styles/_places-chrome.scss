@@ -100,3 +100,11 @@
     max-width: none;
   }
 }
+
+
+/* Stack cards before two fixed minimum tracks can exceed narrow viewports. */
+@media (max-width: 360px) {
+  .places-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

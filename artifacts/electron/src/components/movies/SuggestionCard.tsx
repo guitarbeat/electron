@@ -4,8 +4,10 @@ import { fetchOmdbMetadataCached } from "@/services/metadata/omdbMetadataCache";
 import MediaPoster from "@/ui/MediaPoster";
 import SuggestionCardBase from "@/ui/SuggestionCardBase";
 import MediaCardMetadata from "@/ui/MediaCardMetadata";
+import StremioButton from "@/components/ui/StremioButton";
 
 interface SuggestionCardProps {
+
   suggestion: MovieSuggestion;
   onAccept: () => void;
   onReject: () => void;
@@ -76,12 +78,21 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
         />
       }
       details={
-        year ? (
-          <MediaCardMetadata items={[year]} className="movie-metadata" />
-        ) : undefined
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}>
+          {year ? <MediaCardMetadata items={[year]} className="movie-metadata" /> : null}
+          <StremioButton
+            movie={{
+              title: suggestion.title,
+              imdbID: suggestion.imdbID,
+              mediaType: suggestion.type,
+            }}
+            variant="pill"
+          />
+        </div>
       }
     />
   );
 };
+
 
 export default React.memo(SuggestionCard);

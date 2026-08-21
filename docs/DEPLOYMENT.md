@@ -46,6 +46,7 @@ For **static-only** hosting, omit database env vars; the app falls back to `loca
 | `DATABASE_URL_UNPOOLED` | Optional direct Neon connection string for maintenance scripts |
 | `POSTGRES_URL` | Optional Vercel Postgres-compatible alias for `DATABASE_URL` |
 | `SESSION_SIGNING_SECRET` | Session cookies and PIN-related auth (`api/_lib/session.ts`) |
+| `AGENT_API_TOKEN` | Shared server-only bearer token for private Agent API reads and actions |
 | `OMDB_API_URL` | Base URL for OMDb proxy |
 | `OMDB_API_KEY` | Required OMDb API key for the default `/api/omdb` proxy |
 | `TVMAZE_API_URL` | Base URL for TVMaze proxy |
@@ -72,3 +73,13 @@ Filenames must match the server scopes (for example `movielist.json` for the wat
   Dashboard: `https://vercel.com/guitarbeats-projects/electra-and-aaron-movies`  
   If a local checkout is not linked, run `vercel link --project electra-and-aaron-movies` before `vercel env pull`
 - **Netlify**: `netlify.toml` builds the app; `/api/*` must target a real backend unless you add compatible functions — see `DEVELOPMENT.md`
+
+## Quick deploy checklist
+
+After a fresh clone or when setting up a new Vercel deployment:
+
+1. Set `DATABASE_URL`, `SESSION_SIGNING_SECRET`, `AGENT_API_TOKEN`, and `OMDB_API_KEY` in Vercel project settings (Settings > Environment Variables)
+2. Optionally set `TVMAZE_API_URL` and `ALLOWED_ORIGINS`
+3. Trigger a redeployment (`vercel deploy --prod` or push a commit)
+
+Aliases accepted by the code: `POSTGRES_URL` or `POSTGRES_PRISMA_URL` work in place of `DATABASE_URL`; `SESSION_SECRET` works in place of `SESSION_SIGNING_SECRET`.

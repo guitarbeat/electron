@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
+import { animate, stagger } from "motion/react";
 import { hasHoverCapability, prefersReducedMotion } from "@/utils/motionPreference";
 
 /**
- * Cinematic card drop-in entrance — mirrors the hero's Phase 1 technique.
- *
+ * Cinematic card drop-in entrance using motion's animate + stagger.
  * Skipped on mobile/coarse pointers and when reduced motion is requested.
- * GSAP loads on demand so the main bundle stays lean.
  */
 export function useCinematicEntrance(
   containerRef: React.RefObject<HTMLElement | null>,
@@ -28,67 +27,67 @@ export function useCinematicEntrance(
     let cancelled = false;
     let observer: MutationObserver | undefined;
 
-    void import("gsap").then(({ gsap }) => {
-      if (cancelled) return;
+    function run(): boolean {
+      const container = containerRef.current;
+      if (!container || hasAnimated.current) return false;
 
-      function run() {
-        const container = containerRef.current;
-        if (!container || hasAnimated.current) return false;
+      const targets = Array.from(
+        container.querySelectorAll<HTMLElement>(selector),
+      );
+      if (targets.length === 0) return false;
 
-        const targets = Array.from(
-          container.querySelectorAll<HTMLElement>(selector),
-        );
-        if (targets.length === 0) return false;
+      hasAnimated.current = true;
 
-        hasAnimated.current = true;
-
-        gsap.set(targets, {
-          y: 72,
-          autoAlpha: 0,
-          scale: 0.95,
-          rotationX: -10,
-          transformOrigin: "50% 100%",
-          filter: "blur(6px)",
-        });
-
-        gsap.to(targets, {
-          y: 0,
-          autoAlpha: 1,
-          scale: 1,
-          rotationX: 0,
-          filter: "blur(0px)",
-          ease: "power3.out",
-          duration: 0.55,
-          delay,
-          stagger: {
-            amount: Math.min(0.35, targets.length * 0.05),
-            ease: "power1.in",
-          },
-          clearProps: "filter,rotationX,scale",
-          overwrite: true,
-        });
-
-        return true;
+      // Set initial state
+      for (const el of targets) {
+        el.style.transform = "translateY(72px) scale(0.95) rotateX(-10deg)";
+        el.style.opacity = "0";
+        el.style.filter = "blur(6px)";
       }
 
-      if (run()) return;
+      const staggerAmount = Math.min(0.35, targets.length * 0.05);
 
+      animate(
+        targets,
+        {
+          y: [72, 0],
+          opacity: [0, 1],
+          scale: [0.95, 1],
+          filter: ["blur(6px)", "blur(0px)"],
+        },
+        {
+          duration: 0.55,
+          delay: stagger(staggerAmount / Math.max(targets.length - 1, 1), { startDelay: delay }),
+          ease: [0.16, 1, 0.3, 1],
+          onComplete: () => {
+            // Clean up inline styles after animation
+            for (const el of targets) {
+              el.style.removeProperty("transform");
+              el.style.removeProperty("filter");
+            }
+          },
+        },
+      );
+
+      return true;
+    }
+
+    if (!run()) {
       const container = containerRef.current;
-      if (!container) return;
+      if (container) {
+        observer = new MutationObserver(() => {
+          if (!cancelled && run()) observer?.disconnect();
+        });
+        observer.observe(container, { childList: true, subtree: true });
+      }
+    }
 
-      observer = new MutationObserver(() => {
-        if (run()) observer?.disconnect();
-      });
-      observer.observe(container, { childList: true, subtree: true });
-    });
-
+    const cleanupContainer = containerRef.current;
     return () => {
       cancelled = true;
       observer?.disconnect();
       if (!hasAnimated.current) {
-        const container = containerRef.current;
-        const stuck = container?.querySelectorAll<HTMLElement>(selector);
-        stuck?.forEach((el) => {
+        cleanupContainer?.querySelectorAll<HTMLElement>(selector).forEach((el) => {
           el.style.removeProperty("transform");
           el.style.removeProperty("opacity");
           el.style.removeProperty("filter");

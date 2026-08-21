@@ -2,47 +2,46 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
 import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import FloatingWorkspacePanel, {
-  type FloatingWorkspacePanelProps,
-} from "@/components/ui/FloatingWorkspacePanel";
-import type { WorkspaceChromeHeaderProps } from "@/components/ui/BentoWorkspaceController";
 import ProfilePinPanel from "@/components/ui/ProfilePinPanel";
 import { ProfilePinProvider } from "@/app/ProfilePinContext";
+import { useUser } from "@/app/useProviders";
 import {
   BentoSlotContext,
   type RegisteredBentoSlotConfig,
 } from "./BentoSlotContext";
+import {
+  isLibraryWorkspaceTab,
+} from "@/utils/libraryWorkspace";
 
-const MoviesView = React.lazy(() => import("@/components/movies/MoviesView"));
-const PlacesList = React.lazy(() => import("@/components/places/PlacesList"));
+const LibraryWorkspace = React.lazy(() => import("@/components/library/LibraryWorkspace"));
 const MemoriesView = React.lazy(() => import("@/components/memories/MemoriesView"));
 const MessageBoard = React.lazy(() => import("@/components/messages/MessageBoard"));
+const QuizExperience = React.lazy(() => import("@/components/quiz/QuizExperience"));
+const SpinSwipeGame = React.lazy(() => import("@/components/spin-match/SpinSwipeGame"));
 
-const EMPTY_BENTO_CONFIG: RegisteredBentoSlotConfig = {};
+export type TogglePanel = "messages" | "quiz" | "spin";
 
-type AppWorkspaceShellProps = WorkspaceChromeHeaderProps & {
+type AppWorkspaceShellProps = {
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
   onOpenMessages?: () => void;
   onOpenQuiz?: () => void;
   onOpenSpin?: () => void;
+  openPanels: Set<TogglePanel>;
+  onTogglePanel: (panel: TogglePanel) => void;
 };
 
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
   onTabChange,
-  pwaStatus,
-  onInstallApp,
-  onApplyUpdate,
-  onRetrySync,
-  onOpenMessages,
-  onOpenQuiz,
-  onOpenSpin,
+  openPanels,
+  onTogglePanel,
 }) => {
-  const [tabConfigs, setTabConfigs] = useState<
-    Partial<Record<MainTab, RegisteredBentoSlotConfig>>
-  >({});
+  const [, setTabConfigs] = useState<Partial<Record<MainTab, RegisteredBentoSlotConfig>>>({});
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );
+  const { currentUser } = useUser();
 
   const registerTabConfig = useCallback(
     (tab: MainTab, config: RegisteredBentoSlotConfig) => {
@@ -60,37 +59,110 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     [activeTab, registerTabConfig, searchPortalEl],
   );
 
-  const bento = tabConfigs[activeTab] ?? EMPTY_BENTO_CONFIG;
-  const workspaceContent =
-    activeTab === "movies" ? <MoviesView /> :
-    activeTab === "places" ? <PlacesList /> :
-    activeTab === "memories" ? <MemoriesView onJumpToMovies={() => onTabChange("movies")} /> :
-    <MessageBoard />;
+  const workspaceContent = isLibraryWorkspaceTab(activeTab) ? (
+    <LibraryWorkspace />
+  ) : activeTab === "memories" ? (
+    <MemoriesView onJumpToMovies={() => onTabChange("movies")} />
+  ) : (
+    <MessageBoard />
+  );
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <ProfilePinProvider>
+        <h1 className="sr-only">
+          {isLibraryWorkspaceTab(activeTab) ? "Movies & Places" :
+           activeTab === "memories" ? "Memory Board" :
+           "Message Board"}
+        </h1>
+
         <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {activeTab === "movies" ? "Movies workspace" :
-           activeTab === "places" ? "Places workspace" :
+          {isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
            activeTab === "memories" ? "Memories workspace" :
            "Messages workspace"}
         </p>
 
+        {/* Main content area */}
         <main
           id="main-content"
           className="workspace-stage workspace-stage--simplified workspace-stage--fullbleed"
           tabIndex={-1}
-          style={{ position: "relative" }}
         >
           <ProfilePinPanel />
 
+          {/* Toggle panels — inline, all can be open simultaneously */}
+          {openPanels.size > 0 && (
+            <div className="toggle-panels">
+              {openPanels.has("messages") && (
+                <section className="toggle-panel toggle-panel--messages" aria-label="Messages">
+                  <div className="toggle-panel__header">
+                    <h2 className="toggle-panel__title">Messages</h2>
+                    <button
+                      type="button"
+                      className="toggle-panel__close"
+                      onClick={() => onTogglePanel("messages")}
+                      aria-label="Close messages"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <React.Suspense fallback={null}>
+                    <MessageBoard />
+                  </React.Suspense>
+                </section>
+              )}
+
+              {openPanels.has("quiz") && (
+                <section className="toggle-panel toggle-panel--quiz" aria-label="Quiz">
+                  <div className="toggle-panel__header">
+                    <h2 className="toggle-panel__title">Quiz</h2>
+                    <button
+                      type="button"
+                      className="toggle-panel__close"
+                      onClick={() => onTogglePanel("quiz")}
+                      aria-label="Close quiz"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <React.Suspense fallback={null}>
+                    <QuizExperience
+                      currentUser={currentUser}
+                      quizCompleted={false}
+                      onComplete={() => {}}
+                      onRetake={() => {}}
+                    />
+                  </React.Suspense>
+                </section>
+              )}
+
+              {openPanels.has("spin") && (
+                <section className="toggle-panel toggle-panel--spin" aria-label="Spin">
+                  <div className="toggle-panel__header">
+                    <h2 className="toggle-panel__title">Spin</h2>
+                    <button
+                      type="button"
+                      className="toggle-panel__close"
+                      onClick={() => onTogglePanel("spin")}
+                      aria-label="Close spin"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <React.Suspense fallback={null}>
+                    <SpinSwipeGame />
+                  </React.Suspense>
+                </section>
+              )}
+            </div>
+          )}
+
+          {/* Primary workspace content */}
           <section
-            className={`workspace-surface workspace-surface--${activeTab}`}
+            className={`workspace-surface workspace-surface--${isLibraryWorkspaceTab(activeTab) ? "movies" : activeTab}`}
             style={{ position: "relative", zIndex: 1, minWidth: 0 }}
             aria-label={
-              activeTab === "movies" ? "Movies workspace" :
-              activeTab === "places" ? "Places workspace" :
+              isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
               activeTab === "memories" ? "Memories workspace" :
               "Messages workspace"
             }
@@ -99,27 +171,10 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
               {workspaceContent}
             </React.Suspense>
           </section>
-        </main>
 
-        {/* Floating command panel — replaces the sticky topbar */}
-        <FloatingWorkspacePanel
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          pwaStatus={pwaStatus}
-          onInstallApp={onInstallApp}
-          onApplyUpdate={onApplyUpdate}
-          onRetrySync={onRetrySync}
-          ariaLabel={bento.ariaLabel}
-          viewModes={bento.viewModes}
-          activeViewMode={bento.activeViewMode}
-          onViewModeChange={bento.onViewModeChange}
-          viewModeAriaLabel={bento.viewModeAriaLabel}
-          onOpenMessages={onOpenMessages}
-          onOpenQuiz={onOpenQuiz}
-          onOpenSpin={onOpenSpin}
-        >
-          <div ref={setSearchPortalEl} style={{ width: "100%" }} />
-        </FloatingWorkspacePanel>
+          {/* Search portal for workspace components */}
+          <div ref={setSearchPortalEl} style={{ display: "none" }} />
+        </main>
       </ProfilePinProvider>
     </BentoSlotContext.Provider>
   );

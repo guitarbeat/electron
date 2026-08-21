@@ -29,9 +29,11 @@
   }
 
   .workspace-search__search-actions {
+    display: grid;
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.35rem;
+    border-left: 0;
   }
 
   .workspace-search__search-button.ui-button,

@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { pollingManager, usePolling } from "@/services/polling";
-import { mutateScope, readScope, retryScopeSync } from "@/services/state";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSyncedScope } from "./useSyncedScope";
 import type {
   StateScope,
   StateScopeDataMap,
-} from "@/services/state/stateTypes";
-import { areScopeSnapshotsEqual } from "@/services/state/stateCompare";
-import { areDeeplyEqual } from "@/utils";
-import { User } from "@/shared/types";
+} from "../services/state/stateTypes";
+import { areDeeplyEqual } from "../utils";
+import { User } from "../shared/types";
 
 interface CollectionOptions {
   pollingInterval?: number;
@@ -51,26 +49,27 @@ export const useCollection = <T>(
   options: CollectionOptions = {},
 ) => {
   const { pollingInterval = 15000, isPaused = false } = options;
-
-  const readFunc = useCallback(() => readScope(scope), [scope]);
   const {
-    data: snapshot,
+    data: remoteData,
+    snapshot,
     error,
     isLoading,
+    isMutating,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
-  } = usePolling(readFunc, pollingInterval, areScopeSnapshotsEqual, {
-    key: scope,
+    retrySync,
+    mutate,
+  } = useSyncedScope(scope, {
+    pollingInterval,
     isPaused,
   });
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const polledData = useMemo(() => (snapshot?.data as T[]) ?? [], [snapshot]);
+  const polledData = useMemo(() => (remoteData as T[]) ?? [], [remoteData]);
   const [data, setData] = useState<T[]>(polledData);
-  const mutationsInFlightRef = useRef(0);
 
   useEffect(() => {
-    if (mutationsInFlightRef.current > 0) {
+    if (isMutating) {
       return;
     }
 
@@ -88,7 +87,7 @@ export const useCollection = <T>(
 
       return polledData;
     });
-  }, [polledData, snapshot?.blocked, snapshot?.degraded]);
+  }, [isMutating, polledData, snapshot?.blocked, snapshot?.degraded]);
 
   const performMutation = useCallback(
     async (op: string, payload: unknown, optimisticData: T[]) => {
@@ -96,45 +95,32 @@ export const useCollection = <T>(
         throw new Error("Profile required");
       }
 
-      setIsSubmitting(true);
-      mutationsInFlightRef.current += 1;
       setData(optimisticData);
-      try {
-        const nextSnapshot = await mutateScope(scope, {
-          op,
-          payload,
-          optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
-        });
+      const nextSnapshot = await mutate({
+        op,
+        payload,
+        optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
+      });
         setData(nextSnapshot.data as T[]);
-        await pollingManager.refresh(scope);
-        if (nextSnapshot.degraded) {
-          throw new Error(
-            nextSnapshot.warning ??
-              "Change was kept locally because shared sync is unavailable. Retry sync when you are back online.",
-          );
-        }
-        return true;
-      } finally {
-        mutationsInFlightRef.current -= 1;
-        setIsSubmitting(false);
+      if (nextSnapshot.degraded) {
+        throw new Error(
+          nextSnapshot.warning ??
+            "Change was kept locally because shared sync is unavailable. Retry sync when you are back online.",
+        );
       }
+      return true;
     },
-    [currentUser, scope],
+    [currentUser, mutate],
   );
-
-  const retrySync = useCallback(async () => {
-    await retryScopeSync(scope);
-    refresh();
-  }, [refresh, scope]);
 
   return {
     data,
     isLoading,
-    isSubmitting,
+    isSubmitting: isMutating,
     error,
-    isDegraded: snapshot?.degraded ?? false,
-    isSyncBlocked: snapshot?.blocked ?? false,
-    syncWarning: snapshot?.warning,
+    isDegraded,
+    isSyncBlocked,
+    syncWarning,
     refresh,
     retrySync,
     performMutation,

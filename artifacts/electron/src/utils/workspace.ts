@@ -8,6 +8,30 @@ export interface CollectionSections<T, S> {
   completed: T[];
 }
 
+export type WorkspaceCollectionState = "loading" | "empty" | "content";
+
+interface WorkspaceCollectionStateInput {
+  itemCount: number;
+  suggestionCount: number;
+  isLoadingItems: boolean;
+  isLoadingSuggestions: boolean;
+}
+
+export function getWorkspaceCollectionState({
+  itemCount,
+  suggestionCount,
+  isLoadingItems,
+  isLoadingSuggestions,
+}: WorkspaceCollectionStateInput): WorkspaceCollectionState {
+  if (itemCount > 0 || suggestionCount > 0) {
+    return "content";
+  }
+  if (isLoadingItems || isLoadingSuggestions) {
+    return "loading";
+  }
+  return "empty";
+}
+
 export const compareCreatedAtDesc = (
   left: { createdAt: string },
   right: { createdAt: string },

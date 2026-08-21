@@ -82,7 +82,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       ) : (
         <div className="movie-poster-fallback">
           <div className="movie-poster-fallback__inner">
-            <h3 className="movie-poster-fallback__title">{title}</h3>
+            <p className="movie-poster-fallback__title">{title}</p>
             {year ? (
               <span className="movie-poster-fallback__year">{year}</span>
             ) : null}

@@ -1,5 +1,5 @@
 const FEATURE_FONTS_URL =
-  "https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap";
 
 let featureFontsPromise: Promise<void> | null = null;
 

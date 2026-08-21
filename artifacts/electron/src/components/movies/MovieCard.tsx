@@ -1,28 +1,22 @@
 
 import React from 'react';
-import { useCardTilt } from '@/hooks/useCardTilt';
-import { mediaBreakpoints, useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Movie, SharedMemory, User } from '@/shared/types';
-import { executeAction, getErrorMessage, consoleError } from '@/utils';
-import Card from '@/ui/LegacyCard';
+import { getErrorMessage, consoleError } from '@/utils';
+import Card from '@/ui/Card';
 import CardTiltShell, { CardTiltSheen } from "@/ui/CardTiltShell";
 import {
   MediaCardPosterWrap,
   MediaCardTitle,
   MediaCardRatingBadge,
 } from "@/ui/MediaCard";
-import { CheckIcon, EditIcon, PlayIcon, BookmarkIcon } from "@/common/Icons";
-import {
-  getMovieActionState,
-  type MovieActionState,
-} from "./lib/movieActionState";
 import MovieTitleEditModal from "./MovieTitleEditModal";
 const MovieDetailsModal = React.lazy(() => import("./MovieDetailsModal"));
 import MediaPoster from "@/ui/MediaPoster";
-import { CardActionRail, CardActionButton } from "@/ui/CardActionRail";
 import MediaCardWatcherStack from "@/ui/MediaCardWatcherStack";
+import { nextPosterClickAction } from "./lib/posterTitleReveal";
 
 export interface MovieTransitionOrigin {
+
   top: number;
   left: number;
   width: number;
@@ -63,6 +57,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   priorityPoster = false,
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
+  const [isTitleVisible, setIsTitleVisible] = React.useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const [detailsOrigin, setDetailsOrigin] =
     React.useState<MovieTransitionOrigin | null>(null);
@@ -72,15 +67,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const isMobile = isCompact;
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
-  const actionState = React.useMemo(
-    () =>
-      getMovieActionState({
-        movie,
-        currentUser,
-        memoriesCount: memories.length,
-      }),
-    [currentUser, memories.length, movie],
-  );
   const handleOpenDetails = () => {
     const rect =
       posterRef.current?.getBoundingClientRect() ??
@@ -93,8 +79,32 @@ const MovieCard: React.FC<MovieCardProps> = ({
         height: rect.height,
       });
     }
+    setIsTitleVisible(true);
     setIsDetailsOpen(true);
   };
+
+  const handlePosterClick = () => {
+    if (nextPosterClickAction(isTitleVisible) === "reveal-title") {
+      setIsTitleVisible(true);
+      return;
+    }
+    handleOpenDetails();
+  };
+
+  React.useEffect(() => {
+    if (!isTitleVisible || isDetailsOpen) {
+      return;
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!cardRef.current?.contains(event.target as Node)) {
+        setIsTitleVisible(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [isDetailsOpen, isTitleVisible]);
 
   const handleToggle = async () => {
     if (isGuest) {
@@ -117,7 +127,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   return (
     <>
       <div
-        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""}`}
+        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""}`}
         data-movie-id={movie.id}
       >
         <CardTiltShell disabled={isCompact}>
@@ -159,34 +169,38 @@ const MovieCard: React.FC<MovieCardProps> = ({
                 />
               ) : null}
 
+              <div className="movie-item-title-overlay" aria-hidden="true">
+                <MediaCardTitle className="movie-item-title-overlay__title">
+                  {movie.title}
+                </MediaCardTitle>
+                {(movie.year || movie.imdbRating) && (
+                  <div className="movie-item-title-overlay__meta">
+                    {movie.year && (
+                      <span className="movie-item-meta__year">{movie.year}</span>
+                    )}
+                    {movie.imdbRating && /^\d/.test(movie.imdbRating) && (
+                      <span className="movie-item-meta__rating">
+                        ★ {movie.imdbRating}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 className="movie-item-details-hit-area"
-                onClick={handleOpenDetails}
-                aria-label={`View details for "${movie.title}"`}
-              >
-                <span className="sr-only">{`View details for "${movie.title}"`}</span>
-              </button>
+                onClick={handlePosterClick}
+                aria-expanded={isTitleVisible}
+                aria-label={
+                  isTitleVisible
+                    ? `View details for "${movie.title}"`
+                    : `Show title for "${movie.title}"`
+                }
+              />
             </MediaCardPosterWrap>
           </Card>
         </CardTiltShell>
-
-        <div className="movie-item-info-external">
-          <MediaCardTitle className="movie-item-title-external">
-            {movie.title}
-          </MediaCardTitle>
-
-          <div className="movie-item-actions-external">
-            <MovieActions
-              movie={movie}
-              actionState={actionState}
-              isUpdating={isUpdating}
-              onToggle={handleToggle}
-              onToggleNotes={handleOpenDetails}
-              onEdit={onRename ? () => setIsTitleEditorOpen(true) : undefined}
-            />
-          </div>
-        </div>
       </div>
 
       {onRename ? (
@@ -208,6 +222,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
           isOpen={isDetailsOpen}
           origin={detailsOrigin}
           currentUser={currentUser}
+          onToggleWatched={currentUser ? handleToggle : undefined}
+          isWatchedByCurrentUser={Boolean(
+            currentUser && movie.watchedBy.includes(currentUser),
+          )}
+          isUpdatingWatchStatus={isUpdating}
+          onEdit={
+            onRename
+              ? () => {
+                  setIsDetailsOpen(false);
+                  setIsTitleEditorOpen(true);
+                }
+              : undefined
+          }
           onAddMemory={onAddMemory}
           onUpdateMemory={onUpdateMemory}
           onDeleteMemory={onDeleteMemory}
@@ -220,95 +247,3 @@ const MovieCard: React.FC<MovieCardProps> = ({
 };
 
 export default React.memo(MovieCard);
-
-interface MovieActionsProps {
-  movie: Movie;
-  actionState: MovieActionState;
-  isUpdating: boolean;
-  onToggle: () => void;
-  onToggleNotes: () => void;
-  onEdit?: () => void;
-}
-
-const MovieActions: React.FC<MovieActionsProps> = ({
-  movie,
-  actionState,
-  isUpdating,
-  onToggle,
-  onToggleNotes,
-  onEdit,
-}) => {
-  const handlePrimaryAction = () => {
-    executeAction(onToggle);
-  };
-
-  const handleToggleNotes = () => {
-    executeAction(onToggleNotes);
-  };
-
-  const handleEditAction = () => {
-    if (actionState.isGuest || !onEdit) {
-      return;
-    }
-
-    executeAction(onEdit);
-  };
-
-  if (!actionState.showActionRail) {
-    return null;
-  }
-
-  return (
-    <CardActionRail
-      className="movie-actions-external"
-      variant="external"
-      primary={
-        actionState.showWatchedAction && (
-          <CardActionButton
-            variant="primary"
-            onClick={handlePrimaryAction}
-            aria-pressed={actionState.watchedByCurrentUser}
-            aria-label={
-              actionState.primaryActionAriaLabel ??
-              actionState.primaryActionLabel
-            }
-            leftIcon={
-              actionState.watchedByCurrentUser ? <CheckIcon /> : <PlayIcon />
-            }
-            className="movie-action-btn--watch"
-            disabled={isUpdating}
-          >
-            {actionState.primaryActionCompactLabel}
-          </CardActionButton>
-        )
-      }
-      secondary={
-        actionState.showNotesAction ? (
-          <CardActionButton
-            variant="outline"
-            onClick={handleToggleNotes}
-            leftIcon={<BookmarkIcon />}
-            className="movie-action-btn--bookmark"
-            disabled={isUpdating}
-            aria-label={
-              actionState.notesButtonAriaLabel ?? actionState.notesButtonLabel
-            }
-            title={actionState.notesButtonLabel}
-          />
-        ) : null
-      }
-      cluster={
-        onEdit && !actionState.isGuest ? (
-          <CardActionButton
-            variant="outline"
-            onClick={handleEditAction}
-            leftIcon={<EditIcon />}
-            className="movie-action-btn--star"
-            disabled={isUpdating}
-            aria-label={`Edit "${movie.title}"`}
-          />
-        ) : null
-      }
-    />
-  );
-};

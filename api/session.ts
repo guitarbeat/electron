@@ -1,9 +1,9 @@
-import { jsonResponse, methodNotAllowedResponse } from './_lib/http.ts';
-import { getSessionState } from './_lib/session.ts';
-import { getPinCoverageState } from './_lib/state.ts';
-import { withWebHandler } from './_lib/webHandler.ts';
-import type { User } from '../src/shared/types.ts';
-import { logger } from './_lib/logger.ts';
+import { jsonResponse, methodNotAllowedResponse } from './_lib/http.js';
+import { getSessionState } from './_lib/session.js';
+import { getPinCoverageState } from './_lib/state.js';
+import { withWebHandler } from './_lib/webHandler.js';
+import type { User } from '../artifacts/electron/src/shared/types.js';
+import { logger } from './_lib/logger.js';
 
 async function handler(req: Request): Promise<Response> {
   try {

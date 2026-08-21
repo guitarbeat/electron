@@ -1,2 +1,6 @@
 User-agent: *
 Allow: /
+# Public catalog and documentation are crawlable. Private agent routes require
+# bearer authentication and must not be indexed.
+Disallow: /api/agent/v1/private/
+Disallow: /api/agent/v1/actions

@@ -1,10 +1,6 @@
 {
-  "functions": {
-    "api/**/*.ts": {
-      "includeFiles": "{api/_lib,src}/**/*.ts"
-    }
-  },
   "headers": [
+
     {
       "source": "/(.*)",
       "headers": [
@@ -91,6 +87,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/agent/v1/:agentPath*",
+      "destination": "/api/agent?agentPath=:agentPath"
+    },
     {
       "source": "/api/state/:scope/mutate",
       "destination": "/api/state/[scope]/mutate?scope=:scope"

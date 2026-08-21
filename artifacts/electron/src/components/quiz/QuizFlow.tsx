@@ -20,7 +20,6 @@ import {
   readSavedQuizProgress,
   writeSavedQuizProgress,
 } from "./lib/quizProgressStorage";
-import "./retro-ad.css";
 
 interface QuizFlowProps {
   onComplete: () => void;
@@ -40,7 +39,7 @@ interface QuizFlowInitialState {
 }
 
 const QUIZ_EMPTY_STATE_TEXT_STYLE = {
-  fontFamily: '"Comic Neue", "Comic Sans MS", cursive',
+  fontFamily: 'var(--font-body)',
   color: "#000080",
   fontWeight: "bold",
 } satisfies React.CSSProperties;
@@ -344,7 +343,7 @@ const QuizFlow: React.FC<QuizFlowProps> = ({
 
       <div className="quiz-retro-main">
         <div className="quiz-retro-title-banner">
-          <h2>🌟 WHICH CHARACTER ARE YOU?! 🌟</h2>
+          <h3>🌟 WHICH CHARACTER ARE YOU?! 🌟</h3>
           <p>*** TAKE THE OFFICIAL QUIZ NOW - IT&apos;S TOTALLY FREE!!! ***</p>
         </div>
 

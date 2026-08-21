@@ -1,4 +1,4 @@
-import type { MainTab } from "@/shared/types";
+import type { MainTab } from "../shared/types.ts";
 
 export interface WorkspaceMeta {
   eyebrow: string;
@@ -87,7 +87,8 @@ const SECTION_IDS: Record<MainTab, WorkspaceSectionIds> = {
 export const workspaceSectionIds = (tab: MainTab): WorkspaceSectionIds =>
   SECTION_IDS[tab];
 
-export const MOVIES_POSTER_GRID_MIN_COL = "clamp(3.25rem, 18vw, 5.5rem)";
+export const MOVIES_POSTER_GRID_MIN_COL = "clamp(5rem, 21vw, 6.75rem)";
+export const MOVIES_POSTER_GRID_GAP = "0.25rem";
 export const PLACES_GRID_MIN_COL = "clamp(10.5rem, 24vw, 13rem)";
 export const PLACES_GRID_CLASS = "workspace-content places-grid";
 
@@ -100,24 +101,24 @@ export interface WorkspaceEmptyCopy {
 
 export const WORKSPACE_GLOBAL_EMPTY: Record<MainTab, WorkspaceEmptyCopy> = {
   movies: {
-    icon: "🎬",
+    icon: "film",
     title: "Your movie list is wide open",
     copy: "No movies lined up yet. Add something you both want to watch and kick off movie night.",
     actionLabel: "Add a movie",
   },
   places: {
-    icon: "🗺️",
+    icon: "map-pin",
     title: "No places yet",
     copy: "Add a restaurant, café, park, or anywhere else you'd like to visit together.",
     actionLabel: "Add a place",
   },
   memories: {
-    icon: "📸",
+    icon: "camera",
     title: "No memories yet",
     copy: "Your shared memories from movies will appear here.",
   },
   messages: {
-    icon: "💬",
+    icon: "message",
     title: "No messages yet",
     copy: "Send a message to start the conversation.",
     actionLabel: "Send a message",
@@ -148,12 +149,12 @@ export const WORKSPACE_SECTION_EMPTY: Record<
 
 export const WORKSPACE_LOADING_COPY: Record<
   MainTab,
-  { emoji: string; label: string }
+  { emoji?: string; label: string }
 > = {
-  movies: { emoji: "🍿", label: "Loading your movies…" },
-  places: { emoji: "🗺️", label: "Loading your places…" },
-  memories: { emoji: "📸", label: "Loading your memories…" },
-  messages: { emoji: "💬", label: "Loading your messages…" },
+  movies: { label: "Loading your movies…" },
+  places: { label: "Loading your places…" },
+  memories: { label: "Loading your memories…" },
+  messages: { label: "Loading your messages…" },
 };
 
 export const WORKSPACE_TAB_CONTAINER: Record<MainTab, string> = {
@@ -167,22 +168,22 @@ const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
   movies: {
     eyebrow: "Movies",
     title: "Movies",
-    icon: "🎬",
+    icon: "film",
   },
   places: {
     eyebrow: "Dates",
     title: "Date Ideas",
-    icon: "📍",
+    icon: "map-pin",
   },
   memories: {
     eyebrow: "Memories",
     title: "Memories",
-    icon: "📸",
+    icon: "camera",
   },
   messages: {
     eyebrow: "Messages",
     title: "Messages",
-    icon: "💬",
+    icon: "message",
   },
 };
 

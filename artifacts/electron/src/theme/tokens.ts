@@ -5,7 +5,7 @@
  * `themes.ts` and are applied at runtime via `applyTheme()`.
  */
 
-import { moviesThemeDefinition } from "./themes.ts";
+import { moviesThemeDefinition } from "./themes.js";
 
 export const shellTokens = moviesThemeDefinition.shell;
 
@@ -38,14 +38,14 @@ export const colors = {
   gradientCard: moviesThemeDefinition.tokens.gradientCard,
 } as const;
 
-export type { ThemeName, AppThemeDefinition } from "./themes.ts";
+export type { ThemeName, AppThemeDefinition } from "./themes.js";
 export {
   appThemes,
   getAppTheme,
   moviesThemeDefinition,
   placesThemeDefinition,
-} from "./themes.ts";
-export { applyTheme, clearAppliedTheme } from "./applyTheme.ts";
+} from "./themes.js";
+export { applyTheme, clearAppliedTheme } from "./applyTheme.js";
 
 // * Typography scale
 const fontFamily = {

@@ -1,6 +1,11 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { buildCollectionSections, compareCreatedAtDesc, compareStringsAlpha } from "./workspace.ts";
+import {
+  buildCollectionSections,
+  compareCreatedAtDesc,
+  compareStringsAlpha,
+  getWorkspaceCollectionState,
+} from "./workspace.ts";
 
 describe("buildCollectionSections", () => {
   it("returns empty sections for empty items", () => {
@@ -43,5 +48,37 @@ describe("workspace sort helpers", () => {
   it("compareStringsAlpha sorts case-insensitively", () => {
     assert.ok(compareStringsAlpha("alpha", "Beta") < 0);
     assert.equal(compareStringsAlpha("same", "same"), 0);
+  });
+});
+
+describe("getWorkspaceCollectionState", () => {
+  it("selects loading, empty, and content states", () => {
+    assert.equal(
+      getWorkspaceCollectionState({
+        itemCount: 0,
+        suggestionCount: 0,
+        isLoadingItems: true,
+        isLoadingSuggestions: true,
+      }),
+      "loading",
+    );
+    assert.equal(
+      getWorkspaceCollectionState({
+        itemCount: 0,
+        suggestionCount: 0,
+        isLoadingItems: false,
+        isLoadingSuggestions: false,
+      }),
+      "empty",
+    );
+    assert.equal(
+      getWorkspaceCollectionState({
+        itemCount: 1,
+        suggestionCount: 0,
+        isLoadingItems: true,
+        isLoadingSuggestions: false,
+      }),
+      "content",
+    );
   });
 });

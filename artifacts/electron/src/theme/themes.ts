@@ -84,29 +84,29 @@ const sharedStatus = {
   overlay: "rgba(3, 5, 18, 0.88)",
 } as const;
 
-/** Movies — deep cosmos: Moiré-native fuchsia-pink × sky-blue on near-black navy. */
+/** Movies — deep space: teal-blue accent on near-black navy. */
 const moviesSemantic = {
-  accent: "#f472b6",
-  accentHover: "#f9a8d4",
-  accentMuted: "#f472b640",
-  accentLight: "#fce7f3",
-  secondary: "#7dd3fc",
-  secondaryHover: "#bae6fd",
-  secondaryMuted: "#7dd3fc40",
-  tertiary: "#c4b5fd",
-  tertiaryHover: "#ddd6fe",
-  background: "#07091a",
-  surface: "rgba(14, 22, 50, 0.76)",
-  surfaceElevated: "rgba(20, 32, 68, 0.86)",
-  surface0: "#060819",
-  surface1: "rgba(16, 26, 58, 0.82)",
-  surface2: "rgba(22, 34, 70, 0.9)",
-  surface3: "rgba(30, 44, 86, 0.94)",
-  textPrimary: "#eef2ff",
-  textSecondary: "#94a3c8",
-  textTertiary: "#5b6e9a",
-  border: "rgba(148, 163, 200, 0.28)",
-  borderSubtle: "rgba(148, 163, 200, 0.12)",
+  accent: "#38bdf8",
+  accentHover: "#7dd3fc",
+  accentMuted: "#38bdf840",
+  accentLight: "#e0f2fe",
+  secondary: "#818cf8",
+  secondaryHover: "#a5b4fc",
+  secondaryMuted: "#818cf840",
+  tertiary: "#34d399",
+  tertiaryHover: "#6ee7b7",
+  background: "#060810",
+  surface: "rgba(10, 15, 38, 0.76)",
+  surfaceElevated: "rgba(14, 20, 48, 0.88)",
+  surface0: "#05070e",
+  surface1: "rgba(12, 18, 42, 0.85)",
+  surface2: "rgba(16, 24, 54, 0.92)",
+  surface3: "rgba(22, 32, 68, 0.96)",
+  textPrimary: "#f0f4ff",
+  textSecondary: "#94a3b8",
+  textTertiary: "#4a5a7a",
+  border: "rgba(148, 163, 200, 0.18)",
+  borderSubtle: "rgba(148, 163, 200, 0.08)",
   ...sharedStatus,
 } as const;
 
@@ -235,9 +235,9 @@ export const moviesThemeDefinition: AppThemeDefinition = {
   label: "Movies",
   semantic: moviesSemantic,
   moire: {
-    color1: "#ff6eb4",
-    color2: "#7dd3fc",
-    accent: "#f472b6",
+    color1: "#38bdf8",
+    color2: "#818cf8",
+    accent: "#38bdf8",
   },
   tokens: {
     accent: moviesSemantic.accent,
@@ -251,10 +251,10 @@ export const moviesThemeDefinition: AppThemeDefinition = {
     surface2: moviesSemantic.surface2,
     surface3: moviesSemantic.surface3,
     gradientCard:
-      "linear-gradient(178deg, rgba(20, 32, 72, 0.94) 0%, rgba(12, 18, 50, 0.9) 52%, rgba(6, 8, 28, 0.92) 100%)",
-    glow: "0 0 20px rgba(244, 114, 182, 0.18), 0 0 36px rgba(125, 211, 252, 0.1)",
+      "linear-gradient(178deg, rgba(12, 18, 42, 0.95) 0%, rgba(8, 12, 32, 0.92) 52%, rgba(5, 7, 14, 0.94) 100%)",
+    glow: "0 0 20px rgba(56, 189, 248, 0.12), 0 0 36px rgba(129, 140, 248, 0.08)",
     glowStrong:
-      "0 0 28px rgba(244, 114, 182, 0.28), 0 0 48px rgba(252, 231, 243, 0.14)",
+      "0 0 28px rgba(56, 189, 248, 0.2), 0 0 48px rgba(224, 242, 254, 0.1)",
   },
   shell: {
     canvasGap: "clamp(0.7rem, 0.38rem + 0.8vw, 1.15rem)",
@@ -274,41 +274,41 @@ export const moviesThemeDefinition: AppThemeDefinition = {
       "linear-gradient(165deg, rgba(18, 28, 66, 0.93) 0%, rgba(10, 16, 42, 0.95) 45%, rgba(6, 8, 26, 0.97) 100%)",
   },
   cssVars: buildCssVars(moviesSemantic, {
-    quaternary: "#c4b5fd",
-    quinary: "#7dd3fc",
+    quaternary: "#818cf8",
+    quinary: "#38bdf8",
     glowPrimary:
-      "0 0 20px rgba(244, 114, 182, 0.18), 0 0 36px rgba(125, 211, 252, 0.1)",
+      "0 0 20px rgba(56, 189, 248, 0.12), 0 0 36px rgba(129, 140, 248, 0.08)",
     glowStrong:
-      "0 0 28px rgba(244, 114, 182, 0.28), 0 0 48px rgba(252, 231, 243, 0.14)",
+      "0 0 28px rgba(56, 189, 248, 0.2), 0 0 48px rgba(224, 242, 254, 0.1)",
     gradientPrimary:
-      "linear-gradient(128deg, #f472b6 0%, #fb7185 42%, #fce7f3 100%)",
+      "linear-gradient(128deg, #38bdf8 0%, #818cf8 42%, #e0f2fe 100%)",
     gradientCard:
-      "linear-gradient(178deg, rgba(20, 32, 72, 0.94) 0%, rgba(12, 18, 50, 0.9) 52%, rgba(6, 8, 28, 0.92) 100%)",
+      "linear-gradient(178deg, rgba(12, 18, 42, 0.95) 0%, rgba(8, 12, 32, 0.92) 52%, rgba(5, 7, 14, 0.94) 100%)",
     gradientShell:
-      "linear-gradient(182deg, #0d1535 0%, #080f2a 42%, #060c1e 72%, #040816 100%)",
+      "linear-gradient(182deg, #080c1a 0%, #060a16 42%, #050812 72%, #030610 100%)",
     gradientMetalBg:
-      "linear-gradient(182deg, #0d1535 0%, #080f2a 42%, #060c1e 72%, #040816 100%)",
+      "linear-gradient(182deg, #080c1a 0%, #060a16 42%, #050812 72%, #030610 100%)",
     gradientMetalSurface:
-      "linear-gradient(180deg, #fce7f3 0%, #f9a8d4 38%, #f472b6 72%, #831843 100%)",
+      "linear-gradient(180deg, #e0f2fe 0%, #7dd3fc 38%, #38bdf8 72%, #0369a1 100%)",
     gradientMetalPill:
-      "linear-gradient(180deg, #fdf4ff 0%, #fce7f3 38%, #f472b6 100%)",
-    y2kGlintA: "rgba(252, 231, 243, 0.18)",
-    y2kGlintB: "rgba(186, 230, 253, 0.12)",
+      "linear-gradient(180deg, #f0f9ff 0%, #bae6fd 38%, #38bdf8 100%)",
+    y2kGlintA: "rgba(224, 242, 254, 0.12)",
+    y2kGlintB: "rgba(129, 140, 248, 0.08)",
     chromeHighlightTop:
-      "linear-gradient(180deg, rgba(238, 242, 255, 0.2) 0%, rgba(238, 242, 255, 0.08) 14%, transparent 58%)",
+      "linear-gradient(180deg, rgba(240, 244, 255, 0.12) 0%, rgba(240, 244, 255, 0.05) 14%, transparent 58%)",
     chromeShadowSoft:
-      "0 18px 36px rgba(2, 4, 18, 0.36), inset 0 1px 0 rgba(238, 242, 255, 0.05)",
+      "0 18px 36px rgba(2, 4, 12, 0.4), inset 0 1px 0 rgba(240, 244, 255, 0.04)",
     chromeShadow:
-      "0 28px 52px rgba(2, 4, 18, 0.44), inset 0 1px 0 rgba(238, 242, 255, 0.07)",
-    moire1: "#ff6eb4",
-    moire2: "#7dd3fc",
-    moireAccent: "#f472b6",
-    waxAccent: "#831843",
-    shellBorder: "rgba(148, 163, 210, 0.18)",
+      "0 28px 52px rgba(2, 4, 12, 0.5), inset 0 1px 0 rgba(240, 244, 255, 0.06)",
+    moire1: "#38bdf8",
+    moire2: "#818cf8",
+    moireAccent: "#38bdf8",
+    waxAccent: "#0c4a6e",
+    shellBorder: "rgba(148, 163, 200, 0.1)",
     headerSurface:
-      "linear-gradient(155deg, rgba(20, 32, 72, 0.96) 0%, rgba(10, 16, 42, 0.97) 58%, rgba(6, 8, 26, 0.98) 100%)",
+      "linear-gradient(155deg, rgba(12, 18, 48, 0.97) 0%, rgba(8, 12, 32, 0.98) 58%, rgba(5, 7, 18, 0.99) 100%)",
     panelSurface:
-      "linear-gradient(165deg, rgba(18, 28, 66, 0.93) 0%, rgba(10, 16, 42, 0.95) 45%, rgba(6, 8, 26, 0.97) 100%)",
+      "linear-gradient(165deg, rgba(10, 16, 40, 0.95) 0%, rgba(7, 11, 28, 0.97) 45%, rgba(5, 7, 18, 0.98) 100%)",
   }),
 };
 
