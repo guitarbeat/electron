@@ -10,7 +10,7 @@
       "path": "./lib/api-zod"
     },
     {
-      "path": "./artifacts/electron"
+      "path": "./apps/web"
     }
   ]
 }

@@ -1,0 +1,349 @@
+.pin-panel__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 7, 13, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: pin-overlay-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 1rem;
+}
+
+@keyframes pin-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pin-panel {
+  width: min(94vw, 22rem);
+  margin: 0;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-border, #334155) 60%, rgba(255, 255, 255, 0.12));
+  background: color-mix(in srgb, var(--color-surface-0, #0f172a) 95%, black);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 40px -10px color-mix(in srgb, var(--color-accent, #6366f1) 15%, transparent);
+  animation: pin-panel-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+@keyframes pin-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.pin-panel__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Header */
+.pin-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pin-panel__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.pin-panel__avatar {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--color-accent, #6366f1) 40%, rgba(255, 255, 255, 0.1));
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-2, #1e293b);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pin-panel__avatar .app-header__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pin-panel__avatar .app-header__avatar-initial {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #f8fafc);
+}
+
+.pin-panel__titles {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pin-panel__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #f8fafc);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pin-panel__subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary, #94a3b8);
+  line-height: 1.35;
+}
+
+.pin-panel__close-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--color-surface-2, #334155) 50%, transparent);
+  color: var(--color-text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pin-panel__close-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-surface-3, #475569) 80%, transparent);
+  color: var(--color-text-primary, #f8fafc);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.pin-panel__close-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.pin-panel__close-btn:focus-visible {
+  outline: 2px solid var(--color-accent, #6366f1);
+  outline-offset: 2px;
+}
+
+/* Dots / PIN boxes */
+.pin-panel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+}
+
+.pin-panel__dots--shake {
+  animation: pin-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.pin-panel__dot {
+  width: 2.75rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-border, #334155) 75%, transparent);
+  background: color-mix(in srgb, var(--color-surface-1, #1e293b) 60%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.pin-panel__dot--active {
+  border-color: var(--color-accent, #6366f1);
+  background: color-mix(in srgb, var(--color-accent, #6366f1) 8%, var(--color-surface-1, #1e293b));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #6366f1) 25%, transparent);
+  transform: translateY(-2px);
+}
+
+.pin-panel__dot--filled {
+  border-color: color-mix(in srgb, var(--color-accent, #6366f1) 65%, transparent);
+  background: color-mix(in srgb, var(--color-accent, #6366f1) 18%, var(--color-surface-1, #1e293b));
+}
+
+.pin-panel__dot--error {
+  border-color: var(--color-error, #ef4444);
+  background: color-mix(in srgb, var(--color-error, #ef4444) 15%, var(--color-surface-1, #1e293b));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-error, #ef4444) 20%, transparent);
+}
+
+.pin-panel__dot-indicator {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--color-accent, #6366f1);
+  box-shadow: 0 0 10px var(--color-accent, #6366f1);
+  animation: dot-pop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dot-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Error message */
+.pin-panel__error-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 1.25rem;
+}
+
+.pin-panel__error-icon {
+  color: var(--color-error, #ef4444);
+  flex-shrink: 0;
+}
+
+.pin-panel__error {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-error, #ef4444);
+  text-align: center;
+}
+
+.pin-panel__error-placeholder {
+  height: 1.25rem;
+}
+
+/* Keypad */
+.pin-panel__keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+}
+
+.pin-panel__key {
+  height: 3.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-border, #334155) 70%, rgba(255, 255, 255, 0.05));
+  background: color-mix(in srgb, var(--color-surface-1, #1e293b) 75%, transparent);
+  color: var(--color-text-primary, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.pin-panel__key:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent, #6366f1) 15%, var(--color-surface-2, #334155));
+  border-color: color-mix(in srgb, var(--color-accent, #6366f1) 40%, rgba(255, 255, 255, 0.15));
+  transform: translateY(-1px);
+}
+
+.pin-panel__key:active:not(:disabled) {
+  transform: scale(0.95);
+  background: color-mix(in srgb, var(--color-accent, #6366f1) 25%, var(--color-surface-2, #334155));
+}
+
+.pin-panel__key:focus-visible {
+  outline: 2px solid var(--color-accent, #6366f1);
+  outline-offset: 2px;
+}
+
+.pin-panel__key:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pin-panel__key-number {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.pin-panel__key-letters {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary, #64748b);
+  margin-top: 0.15rem;
+  line-height: 1;
+}
+
+.pin-panel__key--cancel {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #94a3b8);
+}
+
+.pin-panel__key--cancel:hover:not(:disabled) {
+  color: var(--color-text-primary, #f8fafc);
+  background: color-mix(in srgb, var(--color-surface-3, #475569) 50%, transparent);
+}
+
+.pin-panel__key--del {
+  color: var(--color-text-secondary, #94a3b8);
+}
+
+.pin-panel__key--del:hover:not(:disabled) {
+  color: var(--color-text-primary, #f8fafc);
+}
+
+.pin-panel__actions {
+  margin-top: 0.25rem;
+}
+
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+@media (max-width: 480px) {
+  .pin-panel {
+    padding: 1.2rem;
+    width: min(96vw, 21rem);
+  }
+
+  .pin-panel__key {
+    height: 2.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-panel__overlay,
+  .pin-panel,
+  .pin-panel__dots--shake,
+  .pin-panel__dot-indicator {
+    animation: none;
+  }
+
+  .pin-panel__key,
+  .pin-panel__dot,
+  .pin-panel__close-btn {
+    transition: none;
+  }
+}

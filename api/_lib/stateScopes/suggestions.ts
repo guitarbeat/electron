@@ -1,13 +1,13 @@
-import { mockSuggestions } from '../../../artifacts/electron/src/services/state/mockData.js';
+import { mockSuggestions } from '../../../apps/web/src/services/state/mockData.js';
 import {
   normalizePlaceSuggestionRecord,
   normalizeSuggestionRecord,
-} from '../../../artifacts/electron/src/services/state/stateSchemas.js';
-import type { StateScopeDataMap } from '../../../artifacts/electron/src/services/state/stateTypes.js';
+} from '../../../apps/web/src/services/state/stateSchemas.js';
+import type { StateScopeDataMap } from '../../../apps/web/src/services/state/stateTypes.js';
 import type {
   MovieSuggestion,
   PlaceSuggestion,
-} from '../../../artifacts/electron/src/shared/types.js';
+} from '../../../apps/web/src/shared/types.js';
 import { parseJsonContent, sanitizeInput } from '../common.js';
 import type { ScopeDefinition } from '../state.js';
 

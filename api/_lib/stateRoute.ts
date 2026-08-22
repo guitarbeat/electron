@@ -1,4 +1,4 @@
-import { isStateScope, type StateScope } from '../../artifacts/electron/src/services/state/stateTypes.js';
+import { isStateScope, type StateScope } from '../../apps/web/src/services/state/stateTypes.js';
 import { jsonResponse, methodNotAllowedResponse } from './http.js';
 
 type StateRequestHandler = (request: Request) => Promise<Response> | Response;

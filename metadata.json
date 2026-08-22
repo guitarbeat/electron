@@ -1,0 +1,8 @@
+{
+  "name": "Immersive Workspace Applet",
+  "description": "An immersive cinema, places, quiz, and multimedia workspace applet.",
+  "request": "Build an advanced interactive workspace applet",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

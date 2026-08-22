@@ -4,7 +4,7 @@
  * Validates frontend availability, health endpoints, and sync API routes.
  */
 
-const targetUrl = process.argv[2] || process.env.DEPLOYMENT_URL || 'http://localhost:5173';
+const targetUrl = process.argv[2] || process.env.DEPLOYMENT_URL || 'http://localhost:3000';
 const normalizedBase = targetUrl.replace(/\/+$/, '');
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
 

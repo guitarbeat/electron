@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Electron" />
+    <meta name="application-name" content="Electron" />
+    <meta name="theme-color" content="#07091a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="Electron — a shared movie queue, places tracker, and memory board for couples. Installable PWA with offline support." />
+    <meta property="og:title" content="Electron — Shared Movie Queue, Places Tracker & Memory Board" />
+    <meta property="og:description" content="A shared movie queue, places tracker, and memory board for couples. Spin the wheel to pick tonight's movie, track places you've been, and save memories together." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/opengraph.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Electron — Shared Movie Queue, Places Tracker & Memory Board" />
+    <meta name="twitter:description" content="Spin the wheel to pick tonight's movie, track places you've been, and save memories together." />
+    <meta name="twitter:image" content="/opengraph.jpg" />
+    <title>Electron — Shared Movie Queue, Places Tracker & Memory Board for Couples</title>
+    <style>
+      body{background:#07091a;margin:0;}
+      #root:empty{display:flex;align-items:center;justify-content:center;min-height:100dvh;}
+      #root:empty::after{content:'';width:36px;height:36px;border:3px solid rgba(244,114,182,0.25);border-top-color:#f472b6;border-radius:50%;animation:spin .7s linear infinite;}
+      @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
+    <link rel="dns-prefetch" href="https://www.omdbapi.com" />
+    <link rel="dns-prefetch" href="https://api.tvmaze.com" />
+    <link rel="dns-prefetch" href="https://m.media-amazon.com" />
+    <link rel="preconnect" href="https://m.media-amazon.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cataas.com" />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Syne:wght@600;700;800&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" data-managed-favicon="electron" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  </head>
+
+  <body class="font-body" data-theme="movies">
+    <!-- Liquid glass SVG filter — referenced by backdrop-filter: url(#glassFilter) -->
+    <svg id="glass-filter-svg" xmlns="http://www.w3.org/2000/svg"
+         style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;"
+         aria-hidden="true">
+      <defs>
+        <filter id="glassFilter" x="-5%" y="-5%" width="110%" height="110%"
+                color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.018 0.022"
+                        numOctaves="2" seed="4" stitchTiles="stitch" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise"
+                             scale="14" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+    </svg>
+    <div id="root"></div>
+
+    <script>
+      window.__electronDeferredInstallPrompt = null;
+      window.addEventListener(
+        'beforeinstallprompt',
+        function (event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          window.__electronDeferredInstallPrompt = event;
+        },
+        { capture: true }
+      );
+    </script>
+    <link rel="modulepreload" href="/src/main.tsx" />
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

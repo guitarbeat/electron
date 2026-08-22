@@ -1,4 +1,4 @@
-import type { MatchmakerGame, User } from '../../artifacts/electron/src/shared/types.js';
+import type { MatchmakerGame, User } from '../../apps/web/src/shared/types.js';
 
 export const SPIN_HISTORY_MAX = 10;
 

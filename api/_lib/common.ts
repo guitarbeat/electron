@@ -42,3 +42,15 @@ export const findMovieByNormalizedTitle = <T extends { title: string }>(
   const normalized = normalizeMovieTitle(title);
   return movies.find((movie) => normalizeMovieTitle(movie.title) === normalized);
 };
+
+export const ensureFourDigitPin = (value: unknown): string | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const normalized = value.replace(/\D/g, '');
+  return /^\d{4}$/.test(normalized) ? normalized : null;
+};
+
+export const ensureBoolean = (value: unknown): boolean | null =>
+  typeof value === 'boolean' ? value : null;

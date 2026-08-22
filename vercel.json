@@ -104,5 +104,5 @@
       "destination": "/index.html"
     }
   ],
-  "outputDirectory": "artifacts/electron/dist/public"
+  "outputDirectory": "apps/web/dist/public"
 }

@@ -18,12 +18,12 @@ export default tseslint.config(
       react.configs.flat['jsx-runtime'],
       jsxA11y.flatConfigs.recommended,
     ],
-    files: ['artifacts/electron/src/**/*.{ts,tsx}'],
+    files: ['apps/web/src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./artifacts/electron/tsconfig.eslint.json'],
+        project: ['./apps/web/tsconfig.eslint.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -50,7 +50,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['artifacts/electron/src/**/*.test.{ts,tsx}'],
+    files: ['apps/web/src/**/*.test.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',

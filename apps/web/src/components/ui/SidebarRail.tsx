@@ -1,0 +1,176 @@
+/**
+ * SidebarRail — persistent left navigation rail (Disney+/HBO Max style).
+ * Collapsed: 60px icon strip. Expanded: 200px with labels on hover.
+ */
+import React from "react";
+import type { MainTab } from "@/shared/types";
+import ProfileMenu from "@/ui/ProfileMenu";
+import { MessageIcon } from "@/common/Icons";
+import type { TogglePanel } from "@/app/AppWorkspaceShell";
+import { isLibraryWorkspaceTab } from "@/utils/libraryWorkspace";
+
+// ── Icons ─────────────────────────────────────────────────────────
+
+const SearchIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const MoviesIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+    <line x1="7" y1="2" x2="7" y2="22" />
+    <line x1="17" y1="2" x2="17" y2="22" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <line x1="2" y1="7" x2="7" y2="7" />
+    <line x1="2" y1="17" x2="7" y2="17" />
+    <line x1="17" y1="7" x2="22" y2="7" />
+    <line x1="17" y1="17" x2="22" y2="17" />
+  </svg>
+);
+
+const QuizIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <path d="M12 17h.01" />
+  </svg>
+);
+
+const MemoriesIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <polyline points="21 15 16 10 5 21" />
+  </svg>
+);
+
+const SpinIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="2" x2="12" y2="12" />
+    <line x1="12" y1="12" x2="20" y2="16" />
+  </svg>
+);
+
+// ── Types ─────────────────────────────────────────────────────────
+
+interface PwaStatus {
+  isOnline: boolean;
+  isStandalone: boolean;
+  canInstall: boolean;
+  hasUpdateReady: boolean;
+  pendingSyncCount: number;
+  blockedSyncCount: number;
+}
+
+export interface SidebarRailProps {
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
+  pwaStatus?: PwaStatus;
+  onInstallApp?: () => void;
+  onApplyUpdate?: () => void;
+  onRetrySync?: () => void;
+  openPanels: Set<TogglePanel>;
+  onTogglePanel: (panel: TogglePanel) => void;
+  onSearchFocus?: () => void;
+}
+
+// ── Component ─────────────────────────────────────────────────────
+
+const SidebarRail: React.FC<SidebarRailProps> = ({
+  activeTab,
+  onTabChange,
+  openPanels,
+  onTogglePanel,
+  onSearchFocus,
+}) => {
+  return (
+    <nav className="sidebar-rail" aria-label="Main navigation">
+      {/* Search and add */}
+      <div className="sidebar-rail__section sidebar-rail__section--search">
+        <button
+          type="button"
+          className="sidebar-rail__item sidebar-rail__item--accent"
+          onClick={onSearchFocus}
+          aria-label="Search and add"
+        >
+          <span className="sidebar-rail__icon"><SearchIcon /></span>
+          <span className="sidebar-rail__label">Search &amp; add</span>
+        </button>
+      </div>
+
+      {/* Primary tabs */}
+      <div className="sidebar-rail__section sidebar-rail__section--tabs">
+        <button
+          type="button"
+          className={`sidebar-rail__item ${isLibraryWorkspaceTab(activeTab) ? "sidebar-rail__item--active" : ""}`}
+          onClick={() => onTabChange("movies")}
+          aria-label="Movies and places"
+          aria-current={isLibraryWorkspaceTab(activeTab) ? "page" : undefined}
+        >
+          <span className="sidebar-rail__icon"><MoviesIcon /></span>
+          <span className="sidebar-rail__label">Movies & Places</span>
+        </button>
+
+        <button
+          type="button"
+          className={`sidebar-rail__item ${activeTab === "memories" ? "sidebar-rail__item--active" : ""}`}
+          onClick={() => onTabChange("memories")}
+          aria-label="Memories"
+          aria-current={activeTab === "memories" ? "page" : undefined}
+        >
+          <span className="sidebar-rail__icon"><MemoriesIcon /></span>
+          <span className="sidebar-rail__label">Memories</span>
+        </button>
+      </div>
+
+      {/* Toggle panels */}
+      <div className="sidebar-rail__section sidebar-rail__section--actions">
+        <button
+          type="button"
+          className={`sidebar-rail__item ${openPanels.has("messages") ? "sidebar-rail__item--toggled" : ""}`}
+          onClick={() => onTogglePanel("messages")}
+          aria-label="Messages"
+          aria-pressed={openPanels.has("messages")}
+        >
+          <span className="sidebar-rail__icon"><MessageIcon size={22} /></span>
+          <span className="sidebar-rail__label">Messages</span>
+        </button>
+
+        <button
+          type="button"
+          className={`sidebar-rail__item ${openPanels.has("quiz") ? "sidebar-rail__item--toggled" : ""}`}
+          onClick={() => onTogglePanel("quiz")}
+          aria-label="Quiz"
+          aria-pressed={openPanels.has("quiz")}
+        >
+          <span className="sidebar-rail__icon"><QuizIcon /></span>
+          <span className="sidebar-rail__label">Quiz</span>
+        </button>
+
+        <button
+          type="button"
+          className={`sidebar-rail__item ${openPanels.has("spin") ? "sidebar-rail__item--toggled" : ""}`}
+          onClick={() => onTogglePanel("spin")}
+          aria-label="Spin"
+          aria-pressed={openPanels.has("spin")}
+        >
+          <span className="sidebar-rail__icon"><SpinIcon /></span>
+          <span className="sidebar-rail__label">Spin</span>
+        </button>
+      </div>
+
+      {/* Profiles (pushed to bottom) */}
+      <div className="sidebar-rail__section sidebar-rail__section--bottom">
+        <div className="sidebar-rail__profiles">
+          <ProfileMenu />
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default SidebarRail;

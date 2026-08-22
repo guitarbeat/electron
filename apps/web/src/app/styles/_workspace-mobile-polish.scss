@@ -1,0 +1,131 @@
+/* ============================================================================
+   Mobile-first UX polish — touch targets, spacing, tap feedback
+   ============================================================================ */
+
+/* ── Smooth scroll for the whole document ───────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Places empty state: reduce padding on mobile ───────────────── */
+@media (max-width: 640px) {
+  .places-empty-state {
+    padding: clamp(1.5rem, 6vh, 3rem) 1rem;
+  }
+}
+
+/* ── Movie section spacing: tighter on mobile ───────────────────── */
+@media (max-width: 640px) {
+  .collection-section,
+  .movie-section {
+    gap: 0.5rem;
+  }
+
+  /* Section headings: smaller bottom margin so cards are closer */
+  .workspace-section-heading {
+    margin-bottom: 0.45rem;
+  }
+}
+
+/* ── Search field: min 44px on mobile ───────────────────────────── */
+@media (max-width: 640px) {
+  .workspace-search__search-field {
+    min-height: 2.75rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .ans {
+    --ans-h: 2.6rem;
+  }
+}
+
+/* ── Suggestion accept/reject: spring tap feedback ──────────────── */
+.suggestion-item-card__button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.suggestion-item-card__button:active {
+  transform: scale(0.93);
+  transition: transform 0.1s ease;
+}
+
+/* ── Nav strip buttons: no tap flash, instant feel ──────────────── */
+.ans__btn,
+.magic-toggle__btn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (max-width: 640px) {
+  .app-shell--mobile::before,
+  .app-shell--mobile::after {
+    display: none;
+  }
+
+  .app-shell--mobile .app-workspace-stack {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .app-shell--mobile .workspace-unified-shell {
+    gap: 0.45rem;
+  }
+
+  .app-shell--mobile .workspace-stage--mobile-shell {
+    padding-bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+  }
+
+  .suggestion-item-card {
+    padding: 0.85rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--color-surface-1) 94%, transparent);
+    box-shadow: none;
+  }
+
+  .suggestion-item-card__actions {
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .suggestion-item-card__button {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 2.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.65rem;
+  }
+
+  .workspace-section-heading {
+    margin-bottom: 0.35rem;
+  }
+
+  .workspace-section-heading::after {
+    opacity: 0.3;
+  }
+
+  .collection-grid.workspace-content {
+    --collection-grid-min-column-width: clamp(9rem, 44vw, 11.5rem);
+    gap: 0.65rem;
+  }
+
+  .movie-item-info-external {
+    padding: 0.35rem 0.05rem 0.1rem;
+  }
+
+  .workspace-card-rail-external {
+    --movie-action-side-size: 2.65rem;
+    gap: 0.35rem;
+  }
+
+  .movie-item-primary-action {
+    min-height: 2.65rem;
+    font-size: 0.8125rem;
+  }
+
+  .bento-ctrl--mobile .bento-ctrl__topbar .ans-wrap {
+    width: 100%;
+  }
+}

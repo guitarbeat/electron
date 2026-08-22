@@ -2,7 +2,7 @@ import type {
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../artifacts/electron/src/services/state/stateTypes.js';
+} from '../../apps/web/src/services/state/stateTypes.js';
 import {
   badRequestResponse,
   conflictResponse,
