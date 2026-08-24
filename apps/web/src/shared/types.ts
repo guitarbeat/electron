@@ -110,5 +110,26 @@ export interface MoviesViewProps {
   hideSearch?: boolean;
 }
 
-export type { QuizCharacter } from "../components/quiz/lib/types.ts";
-export { CHARACTERS } from "../components/quiz/lib/types.ts";
+export type {
+  QuizCharacter,
+  QuizQuestion,
+  QuizAnswer,
+  QuizResult,
+  CharacterScores,
+  MultipleChoiceQuestion,
+  AgreeDisagreeQuestion,
+  ImageChoiceQuestion,
+  XYAxisQuestion,
+  SavedQuizProgress,
+} from "./quizData.js";
+export {
+  CHARACTERS,
+  quizQuestions,
+  characterDescriptions,
+  neitherDescription,
+  calculateQuizResults,
+  buildQuizProgressStorageKey,
+  readSavedQuizProgress,
+  writeSavedQuizProgress,
+  clearSavedQuizProgress,
+} from "./quizData.js";

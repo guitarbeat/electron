@@ -1,12 +1,12 @@
 import { type CSSProperties, type ReactNode } from "react";
-import LazyBoundary from "@/app/LazyBoundary";
+import { LazyBoundary } from "@/app/WorkspaceErrorBoundary";
 import {
   MessageBoardPanel,
   QuizEditorPanel,
   QuizExperiencePanel,
   SpinSwipeGamePanel,
 } from "@/app/lazyFeaturePanels";
-import WorkspaceFeatureSection from "@/components/ui/WorkspaceFeatureSection";
+import { WorkspaceFeatureSection } from "@/components/ui";
 import type { User } from "@/shared/types";
 
 export interface AppModalConfig {

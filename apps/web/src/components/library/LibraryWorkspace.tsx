@@ -1,13 +1,15 @@
 import React, { memo } from "react";
-import MoviesView from "@/components/movies/MoviesView";
-import PlacesList from "@/components/places/PlacesList";
+const MoviesView = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MoviesView })));
+const PlacesList = React.lazy(() => import("@/components/places").then(m => ({ default: m.PlacesList })));
 import LibrarySearch from "./LibrarySearch";
 
 const LibraryWorkspace: React.FC = () => (
   <div className="library-workspace">
     <LibrarySearch />
-    <MoviesView hideSearch />
-    <PlacesList hideSearch />
+    <React.Suspense fallback={null}>
+      <MoviesView  />
+      <PlacesList  />
+    </React.Suspense>
   </div>
 );
 

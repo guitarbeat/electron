@@ -15,11 +15,11 @@ import {
   normalizeQuizData,
   normalizeSpinHistoryParsed,
   normalizeStoredPins,
-} from '../../../apps/web/src/services/state/stateSchemas.js';
+} from '../../../apps/web/src/services/state/index.ts';
 import type {
   DailySpinRecord,
   StateScopeDataMap,
-} from '../../../apps/web/src/services/state/stateTypes.js';
+} from '../../../apps/web/src/services/state/index.ts';
 import type {
   MatchmakerGame,
   User,

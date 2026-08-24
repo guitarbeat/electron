@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Place, PlaceSuggestion, User } from "@/shared/types";
 import { sanitizeInput, validateAndThrow, validatePlace } from "@/utils";
-import { useCollection } from "../useCollection";
+import { useCollection } from "../index.ts";
 import { useSuggestionCollection } from "../suggestions";
 
 const POLLING_INTERVAL = 15000;
@@ -62,7 +62,7 @@ export const usePlaces = (
       await performMutation(
         "remove_place",
         { placeId: id },
-        places.filter((p) => p.id !== id),
+        places.filter((p: Place) => p.id !== id),
       );
     },
     [performMutation, places],
@@ -94,14 +94,14 @@ export const usePlaces = (
     ) => {
       if (updates.name !== undefined || updates.notes !== undefined) {
         validateAndThrow(validatePlace, {
-          name: updates.name ?? places.find((p) => p.id === id)?.name ?? "",
+          name: updates.name ?? places.find((p: Place) => p.id === id)?.name ?? "",
           notes: updates.notes ?? "",
         });
       }
       await performMutation(
         "update_place",
         { placeId: id, updates },
-        places.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+        places.map((p: Place) => (p.id === id ? { ...p, ...updates } : p)),
       );
     },
     [performMutation, places],
@@ -113,7 +113,7 @@ export const usePlaces = (
       await performMutation(
         "mark_visited",
         { placeId: id },
-        places.map((p) => (p.id === id ? { ...p, visitedAt } : p)),
+        places.map((p: Place) => (p.id === id ? { ...p, visitedAt } : p)),
       );
     },
     [performMutation, places],
@@ -124,7 +124,7 @@ export const usePlaces = (
       await performMutation(
         "mark_unvisited",
         { placeId: id },
-        places.map((p) => (p.id === id ? { ...p, visitedAt: undefined } : p)),
+        places.map((p: Place) => (p.id === id ? { ...p, visitedAt: undefined } : p)),
       );
     },
     [performMutation, places],

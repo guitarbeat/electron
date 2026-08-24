@@ -12,11 +12,10 @@ import React, {
   ReactNode,
 } from 'react';
 import type { User } from '@/shared/types';
-import { applyTheme } from '@/theme/applyTheme';
-import { spacing } from '@/theme/tokens';
-import Toast from '@/components/ui/Toast';
+import { applyTheme, spacing } from '@/theme/tokens';
+import { Toast } from "@/components/ui";
 import { sessionInvalidationEvent } from '@/services/state';
-import type { SessionState } from '@/services/state/stateTypes';
+import type { SessionState } from '@/services/state';
 import { getErrorMessage, readApiErrorMessage } from '@/utils';
 import {
   ThemeContext,
@@ -39,7 +38,7 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-import { getAppTheme, type ThemeName } from '@/theme/themes';
+import { getAppTheme, type ThemeName } from '@/theme/tokens';
 
 export const ThemeProvider: React.FC<{
   children: ReactNode;

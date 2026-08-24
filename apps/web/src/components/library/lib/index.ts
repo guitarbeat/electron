@@ -1,6 +1,5 @@
 import type { MovieAutocompleteResult } from "../../../services/metadata/index.ts";
 import type { Movie, Place } from "../../../shared/types.ts";
-import { getPlaceMeta } from "../../places/lib/index.ts";
 
 export type LibraryIntent = "movie" | "place" | "ambiguous";
 
@@ -182,7 +181,7 @@ export const matchLibraryPlaces = (
     .sort((left, right) => right.score - left.score || left.place.name.localeCompare(right.place.name))
     .slice(0, MAX_SAVED)
     .map((entry) => {
-      const meta = getPlaceMeta(entry.place.name);
+      const meta = { title: entry.place.name, label: "Place", icon: "📍" };
       return {
         id: `saved-place-${entry.place.id}`,
         group: "saved" as const,
@@ -274,7 +273,7 @@ export const buildLibraryAutocompleteRows = ({
     })
   ) {
     const name = query.trim();
-    const meta = getPlaceMeta(name);
+    const meta = { title: name, label: "Place", icon: "📍" };
     rows.push({
       id: `place-draft-${normalizeLibraryQuery(name)}`,
       group: "places",

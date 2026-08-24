@@ -4,8 +4,8 @@ import { UserProvider, ThemeProvider } from "@/app/providers";
 import { ProfilePinProvider } from "@/app/ProfilePinContext";
 import { ToastProvider } from "@/app/providers";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
-import { ViewportProvider } from "@/app/ViewportContext";
-import type { ThemeName } from "@/theme/themes";
+import { ViewportProvider } from "@/app/providerContexts";
+import type { ThemeName } from "@/theme/tokens";
 
 const queryClient = new QueryClient({
   defaultOptions: {

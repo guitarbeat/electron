@@ -191,10 +191,16 @@ export const searchOmdbMovies = async (
       }),
     );
   } catch (error) {
-    throw new Error(
-      `OMDb search failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      { cause: error },
-    );
+    if (error instanceof Error) {
+      if (
+        error.message === "OMDb key was rejected" ||
+        error.message.startsWith("OMDb search failed with status")
+      ) {
+        throw error;
+      }
+      throw new Error(`OMDb search failed: ${error.message}`, { cause: error });
+    }
+    throw new Error(`OMDb search failed: ${String(error)}`, { cause: error });
   }
 };
 
@@ -204,22 +210,22 @@ export const fetchOmdbMetadata = async (
   imdbId?: string,
   signal?: AbortSignal,
 ): Promise<MovieMetadata> => {
-  const base =
-    typeof window !== "undefined" ? window.location.origin : "http://localhost";
-  const url = new URL(OMDB_BASE, base);
-  if (OMDB_API_KEY.trim().length > 0) {
-    url.searchParams.set("apikey", OMDB_API_KEY);
-  }
-  if (imdbId) {
-    url.searchParams.set("i", imdbId);
-  } else {
-    url.searchParams.set("t", title);
-  }
-  if (type) {
-    url.searchParams.set("type", type);
-  }
-
   try {
+    const base =
+      typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const url = new URL(OMDB_BASE, base);
+    if (OMDB_API_KEY.trim().length > 0) {
+      url.searchParams.set("apikey", OMDB_API_KEY);
+    }
+    if (imdbId) {
+      url.searchParams.set("i", imdbId);
+    } else {
+      url.searchParams.set("t", title);
+    }
+    if (type) {
+      url.searchParams.set("type", type);
+    }
+
     const response = await fetch(url.toString(), {
       signal,
       headers: { Accept: "application/json" },
@@ -269,10 +275,20 @@ export const fetchOmdbMetadata = async (
       released: data.Released,
     };
   } catch (error) {
-    throw new Error(
-      `OMDb metadata fetch failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      { cause: error },
-    );
+    if (error instanceof Error) {
+      if (
+        error.message === "OMDb key was rejected" ||
+        error.message.startsWith("OMDb metadata fetch failed with status")
+      ) {
+        throw error;
+      }
+      throw new Error(`OMDb metadata fetch failed: ${error.message}`, {
+        cause: error,
+      });
+    }
+    throw new Error(`OMDb metadata fetch failed: ${String(error)}`, {
+      cause: error,
+    });
   }
 };
 
@@ -518,3 +534,4 @@ export const searchMovieAutocomplete = async (
 
   return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
 };
+

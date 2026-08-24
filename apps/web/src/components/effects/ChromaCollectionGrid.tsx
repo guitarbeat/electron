@@ -1,6 +1,6 @@
 import React from "react";
-import { CollectionGrid } from "@/ui/CollectionLayout";
-import { useChromaSpotlight } from "@/hooks/useChromaSpotlight";
+import { CollectionGrid  } from "@/components/ui";
+import { useChromaSpotlight } from "@/hooks";
 
 interface ChromaCollectionGridProps
   extends React.ComponentProps<typeof CollectionGrid> {
@@ -27,11 +27,11 @@ const ChromaCollectionGrid: React.FC<ChromaCollectionGridProps> = ({
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
-      <CollectionGrid className="chroma-grid-root__grid" {...props}>
+      <CollectionGrid className={"chroma-grid-inner"} {...props}>
         {children}
       </CollectionGrid>
-      <div className="chroma-overlay" aria-hidden="true" />
-      <div ref={fadeRef} className="chroma-fade" aria-hidden="true" />
+      <div className={"chroma-grid-overlay"} aria-hidden="true" />
+      <div ref={fadeRef} className={"chroma-grid-fade"} aria-hidden="true" />
     </div>
   );
 };

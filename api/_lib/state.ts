@@ -4,8 +4,8 @@ import type {
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../apps/web/src/services/state/stateTypes.js';
-import { STATE_SCOPES } from '../../apps/web/src/services/state/stateTypes.js';
+} from '../../apps/web/src/services/state/index.ts';
+import { STATE_SCOPES } from '../../apps/web/src/services/state/index.ts';
 import type { User } from '../../apps/web/src/shared/types.js';
 import { USER_OPTIONS } from './common.js';
 import {
@@ -193,7 +193,7 @@ export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics>
 
   return {
     expectedScopes: [...STATE_SCOPES],
-    missingScopes: STATE_SCOPES.filter((scope) => !files.has(getScopeDefinition(scope).filename)),
+    missingScopes: STATE_SCOPES.filter((scope: StateScope) => !files.has(getScopeDefinition(scope).filename)),
   };
 };
 
@@ -204,7 +204,7 @@ export const bootstrapMissingScopeFiles = async (): Promise<StateScopeDiagnostic
   }
 
   await Promise.all(
-    STATE_SCOPES.map((scope) => readScopeStoredData(scope, { bypassCache: true }))
+    STATE_SCOPES.map((scope: StateScope) => readScopeStoredData(scope, { bypassCache: true }))
   );
 
   invalidateSharedStateCache();

@@ -20,27 +20,26 @@ import {
   writeQuizCompletionState,
 } from "@/app/quizCompletionStorage";
 
-import { useViewport } from "@/app/ViewportContext";
+import { useViewport, useUser } from "@/app/providerContexts";
 import { ThemeProvider } from "@/app/providers";
-import { useUser } from "@/app/useProviders";
-import { usePwaRuntime } from "@/hooks/usePwaRuntime";
+import { usePwaRuntime } from "@/hooks";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import { useAppTabNavigation } from "@/hooks/useAppTabNavigation";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { useTvSpatialNavigation } from "@/hooks/useTvSpatialNavigation";
+import { useAppTabNavigation } from "@/hooks";
+import { useMediaQuery } from "@/hooks";
+import { useTvSpatialNavigation } from "@/hooks";
 
 import { scheduleIdleWork } from "@/utils";
-import MinigameModal from "@/ui/MinigameModal";
-import SidebarRail from "@/components/ui/SidebarRail";
-import ProfilePinPanel from "@/components/ui/ProfilePinPanel";
-const AppWorkspaceShell = React.lazy(() => import("@/app/AppWorkspaceShell"));
+import { MinigameModal } from "@/components/ui";
+import { SidebarRail } from "@/components/ui";
+import { ProfilePinPanel } from "@/components/ui";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
+const AppWorkspaceShell = React.lazy(() => import("@/app/AppWorkspaceShell"));
 import {
   isLibraryWorkspaceTab,
   libraryWorkspaceStackClass,
-} from "@/utils/libraryWorkspace";
+} from "@/utils/workspaceConfig";
 import { AppProviders } from "@/app/AppProviders";
-import "./App.scss";
+import "./globals.css";
 import "./component-styles.css";
 
 const modalBodyStyle = {
@@ -102,10 +101,6 @@ const App: React.FC = () => {
     void preloadCriticalAppModules().catch((err) => {
       console.warn("Critical module preload error:", err);
     });
-  }, []);
-
-  useEffect(() => {
-    void import("./app-skin.scss");
   }, []);
 
   // Preload deferred modules on idle work

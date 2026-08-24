@@ -1,18 +1,104 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Button from '@/ui/Button';
+import { Button } from "@/components/ui";
 import { useMovies } from '@/hooks/movies';
-import { useUser } from '@/app/useProviders';
-import { useViewport } from '@/app/ViewportContext';
+import { useUser, useViewport } from '@/app/providerContexts';
 import { colors, spacing } from '@/theme/tokens';
 import type { Movie } from '@/shared/types';
-const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
+const MovieDetailsModal = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MovieDetailsModal })));
 import {
-  buildSpinWheelGradient,
-  computeSpinOutcome,
-  getSpinCandidates,
-  getSpinPool,
-  type SpinMode,
-} from "./lib";
+  getUnwatchedCandidatePool,
+  selectCandidateSubset,
+} from "../games/movieCandidatePool";
+
+const SEGMENT_COLORS = [
+  "#ff7ea8",
+  "#6ad6ff",
+  "#ffd166",
+  "#7ee08c",
+  "#c7a0ff",
+  "#ff9f68",
+];
+const SPIN_TURNS = 6;
+
+export type SpinMode = "queue" | "all";
+
+export interface SpinOutcome {
+  targetIndex: number;
+  nextRotation: number;
+  winner: Movie;
+}
+
+const getSpinCandidates = (movies: Movie[], mode: SpinMode): Movie[] => {
+  if (mode === "all") {
+    return movies;
+  }
+
+  return getUnwatchedCandidatePool(movies);
+};
+
+const getSpinPool = (
+  movies: Movie[],
+  mode: SpinMode,
+  selectedMovieIds: ReadonlySet<string> = new Set<string>(),
+): Movie[] => {
+  const candidates = getSpinCandidates(movies, mode);
+  return selectCandidateSubset(candidates, selectedMovieIds);
+};
+
+export const buildSpinWheelGradient = (
+  segmentCount: number,
+  segmentColors: readonly string[] = SEGMENT_COLORS,
+): string => {
+  if (segmentCount <= 0) {
+    return "conic-gradient(#444, #222)";
+  }
+
+  const step = 360 / segmentCount;
+  const parts = Array.from({ length: segmentCount }, (_, index) => {
+    const start = Math.round(index * step);
+    const end = Math.round((index + 1) * step);
+    return `${segmentColors[index % segmentColors.length]} ${start}deg ${end}deg`;
+  });
+
+  return `conic-gradient(${parts.join(", ")})`;
+};
+
+const secureRandom = () => {
+  const cryptoObj = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
+  if (cryptoObj?.getRandomValues) {
+    const array = new Uint32Array(1);
+    cryptoObj.getRandomValues(array);
+    return array[0] / 4294967296;
+  }
+  throw new Error(
+    "Secure random number generation is not supported in this environment.",
+  );
+};
+
+export const computeSpinOutcome = (
+  candidates: Movie[],
+  currentRotation: number,
+  randomSource: () => number = secureRandom,
+): SpinOutcome | null => {
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const targetIndex = Math.min(
+    candidates.length - 1,
+    Math.max(0, Math.floor(randomSource() * candidates.length)),
+  );
+  const step = 360 / candidates.length;
+  const targetCenterDeg = targetIndex * step + step / 2;
+  const normalizedTarget = (360 - targetCenterDeg + 360) % 360;
+
+  return {
+    targetIndex,
+    nextRotation: currentRotation + 360 * SPIN_TURNS + normalizedTarget,
+    winner: candidates[targetIndex],
+  };
+};
 
 interface SpinWheelGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
@@ -23,10 +109,6 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
   const { isTv } = useViewport();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
 
-
-  useEffect(() => {
-    void import("@/app/skins/spin-wheel-skin.scss");
-  }, []);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);

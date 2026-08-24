@@ -3,13 +3,13 @@ import {
   mockMemories,
   mockMessages,
   mockPlaces,
-} from '../../../apps/web/src/services/state/mockData.js';
+} from '../../../apps/web/src/services/state/index.ts';
 import {
   normalizeMessageRecord,
   normalizePlaceRecord,
   normalizeSharedMemoryRecord,
-} from '../../../apps/web/src/services/state/stateSchemas.js';
-import type { StateScopeDataMap } from '../../../apps/web/src/services/state/stateTypes.js';
+} from '../../../apps/web/src/services/state/index.ts';
+import type { StateScopeDataMap } from '../../../apps/web/src/services/state/index.ts';
 import type {
   Message,
   Place,

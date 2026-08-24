@@ -1,6 +1,49 @@
-import React from "react";
+import React, { Suspense, type ReactNode } from "react";
 import { AlertCircle, Lock, RefreshCw, WifiOff } from "lucide-react";
 import { getErrorMessage } from "@/utils";
+
+// ============================================================================
+// AppSuspenseFallback Component
+// ============================================================================
+
+interface AppSuspenseFallbackProps {
+  label?: string;
+}
+
+/**
+ * Visible placeholder for lazy-loaded UI boundaries (replaces null Suspense fallbacks).
+ */
+export const AppSuspenseFallback: React.FC<AppSuspenseFallbackProps> = ({
+  label = "Loading",
+}) => (
+  <div
+    className="app-suspense-fallback"
+    role="status"
+    aria-live="polite"
+    aria-label={label}
+  >
+    <span className="app-suspense-fallback-bar" aria-hidden="true" />
+  </div>
+);
+
+// ============================================================================
+// LazyBoundary Component
+// ============================================================================
+
+interface LazyBoundaryProps {
+  children: ReactNode;
+  label?: string;
+}
+
+export const LazyBoundary: React.FC<LazyBoundaryProps> = ({ children, label }) => (
+  <Suspense fallback={<AppSuspenseFallback label={label} />}>
+    {children}
+  </Suspense>
+);
+
+// ============================================================================
+// WorkspaceErrorBoundary Component
+// ============================================================================
 
 interface Props {
   children: React.ReactNode;
@@ -17,7 +60,7 @@ interface State {
  * Catches module-fetch failures and React render errors so the app
  * shows a recoverable fallback instead of a blank screen.
  */
-class WorkspaceErrorBoundary extends React.Component<Props, State> {
+export class WorkspaceErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, errorMessage: null, errorStack: null };

@@ -7,9 +7,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Button from "@/ui/Button";
+import { Button } from "@/components/ui";
 import { PlusIcon } from "@/common/Icons";
-import { useUser, useToast } from "@/app/useProviders";
+import { useUser, useToast } from "@/app/providerContexts";
 import { useMovies } from "@/hooks/movies";
 import { useSuggestions } from "@/hooks/suggestions";
 import { usePlaces, usePlaceSuggestions } from "@/hooks/places";
@@ -18,29 +18,29 @@ import type { MovieAutocompleteResult } from "@/services/metadata";
 import {
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
   MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
-} from "@/components/movies/lib/index";
+} from "@/components/movies";
 
-import MovieRecommendationComposer from "@/components/movies/MovieRecommendationComposer";
-import WorkspaceSearchShell, {
-  WorkspaceSearchActions,
-} from "@/components/ui/WorkspaceSearchShell";
-import WorkspaceSearchField from "@/components/ui/WorkspaceSearchField";
+import { MovieRecommendationComposer } from "@/components/movies";
 import {
-  WorkspaceAutocompleteCopy,
+  WorkspaceSearchShell,
+  WorkspaceSearchActions,
+} from "@/components/ui";
+import { WorkspaceSearchField } from "@/components/ui";
+import { WorkspaceAutocompleteCopy,
   WorkspaceAutocompleteGroup,
   WorkspaceAutocompleteLoading,
   WorkspaceAutocompleteOption,
   WorkspaceAutocompletePanel,
   WorkspaceAutocompletePoster,
   WorkspaceAutocompleteStatus,
-} from "@/components/ui/WorkspaceAutocomplete";
+ } from "@/components/ui";
 import {
   useAutocompleteFocusBoundary,
   useWorkspaceAutocompleteDismiss,
   useWorkspaceAutocompleteNavigation,
   useWorkspaceSearchInputHandle,
 } from "@/components/ui/lib/workspaceListAutocomplete";
-import { LIBRARY_PLACES_ANCHOR_ID } from "@/utils/libraryWorkspace";
+import { LIBRARY_PLACES_ANCHOR_ID } from "@/utils/workspaceConfig";
 import {
   buildLibraryAutocompleteRows,
   classifyLibraryIntent,
@@ -410,7 +410,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
     <>
       <WorkspaceSearchShell
         isAutocompleteActive={showPanel && isOpen}
-        onSubmit={(event) => {
+        onSubmit={(event: React.FormEvent) => {
           event.preventDefault();
           if (isBusy) return;
           clearFocusBoundaryCheck();
@@ -426,7 +426,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
           <WorkspaceSearchField
             inputRef={inputRef}
             value={query}
-            onChange={(nextValue) => {
+            onChange={(nextValue: string) => {
               setQuery(nextValue);
               setSelection(null);
               setActionError(null);
@@ -439,7 +439,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
                 setIsOpen(true);
               }
             }}
-            onKeyDown={(event) => {
+            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
               if (event.nativeEvent.isComposing) return;
               if (event.key === "ArrowDown") {
                 if (rows.length === 0) return;

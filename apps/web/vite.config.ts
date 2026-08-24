@@ -58,8 +58,6 @@ export default defineConfig(({ mode }) => {
     dedupe: ["react", "react-dom"],
     alias: {
       ...aliasEntries,
-      "react": path.resolve(import.meta.dirname, "../../node_modules/react"),
-      "react-dom": path.resolve(import.meta.dirname, "../../node_modules/react-dom"),
     },
     extensionAlias: {
       ".ts": [".ts", ".tsx"],

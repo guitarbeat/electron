@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import "@total-typescript/ts-reset";
 import "@/shared/pwaInstallWindow";
 import { preloadCriticalAppModules } from "@/app/preloadAppModules";
-import { applyTheme } from "@/theme/applyTheme";
+import { applyTheme } from "@/theme/tokens";
 import App from "./app/App";
 
 // Dev convenience: ?mock=1 in URL sets mock data mode

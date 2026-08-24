@@ -6,19 +6,46 @@ import React, {
   useState,
 } from "react";
 import { useMovies } from "@/hooks/movies";
-import { useUser } from "@/app/useProviders";
+import { useUser } from "@/app/providerContexts";
 import type { Movie } from "@/shared/types";
 import { FilmIcon, SparklesIcon } from "../common/Icons.tsx";
-const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
+const MovieDetailsModal = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MovieDetailsModal })));
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
-} from "@/components/spin-wheel/lib";
-import {
-  evaluateSwipe,
-  calculateVelocity,
-  filterCandidates,
-} from "./lib";
+} from "../spin-wheel/SpinWheelGame";
+import { getUnwatchedCandidatePool } from "../games/movieCandidatePool";
+
+const SWIPE_THRESHOLD = 75;
+const SWIPE_VELOCITY_THRESHOLD = 0.4;
+
+type SwipeResult = "keep" | "skip" | "none";
+
+function evaluateSwipe(finalX: number, velocity: number): SwipeResult {
+  if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD) {
+    return "keep";
+  }
+  if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD) {
+    return "skip";
+  }
+  return "none";
+}
+
+function calculateVelocity(
+  currentX: number,
+  lastX: number | null,
+  currentTime: number,
+  lastTime: number | null,
+): number {
+  if (lastX === null || lastTime === null) return 0;
+  const dt = currentTime - lastTime;
+  if (dt <= 0) return 0;
+  return (currentX - lastX) / dt;
+}
+
+function filterCandidates<T extends { watchedBy: unknown[] }>(movies: T[]): T[] {
+  return getUnwatchedCandidatePool(movies);
+}
 
 type Phase = "swipe" | "spin" | "result";
 
@@ -475,10 +502,6 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const { currentUser } = useUser();
   const { movies, isLoading } = useMovies(currentUser, false);
 
-  useEffect(() => {
-    void import("@/app/skins/spin-wheel-skin.scss");
-  }, []);
-
   const [phase, setPhase] = useState<Phase>("swipe");
   const [kept, setKept] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -595,7 +618,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === "result" && winner) {
     return (
-      <div className="spin-game-wrapper">
+      <div className={"spin-swipe-wrapper"}>
         <ResultScreen
           winner={winner}
           onReset={handleReset}
@@ -616,7 +639,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
 
   if (phase === "spin") {
     return (
-      <div className="spin-game-wrapper">
+      <div className={"spin-swipe-wrapper"}>
         <SpinWheel
           kept={kept}
           rotation={rotation}
@@ -628,7 +651,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   }
 
   return (
-    <div className="spin-game-wrapper">
+    <div className={"spin-swipe-wrapper"}>
       <div
         style={{
           display: "flex",

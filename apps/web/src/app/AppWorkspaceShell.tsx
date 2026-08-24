@@ -1,21 +1,20 @@
 import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
-import WorkspaceTabFallback from "@/components/ui/WorkspaceTabFallback";
-import { useUser } from "@/app/useProviders";
-import {
-  BentoSlotContext,
-  type RegisteredBentoSlotConfig,
-} from "./BentoSlotContext";
+import { WorkspaceTabFallback } from "@/components/ui";
+import { useUser, BentoSlotContext } from "@/app/providerContexts";
+import type { RegisteredBentoSlotConfig } from "@/app/providerContexts";
 import {
   isLibraryWorkspaceTab,
-} from "@/utils/libraryWorkspace";
+} from "@/utils/workspaceConfig";
 
-import LibraryWorkspace from "@/components/library/LibraryWorkspace";
-import MemoriesView from "@/components/memories/MemoriesView";
-import MessageBoard from "@/components/messages/MessageBoard";
-import QuizExperience from "@/components/quiz/QuizExperience";
-import SpinSwipeGame from "@/components/spin-match/SpinSwipeGame";
+const LibraryWorkspace = React.lazy(() => import("@/components/library/LibraryWorkspace"));
+const MemoriesView = React.lazy(() => import("@/components/memories/MemoriesView"));
+import {
+  MessageBoardPanel as MessageBoard,
+  QuizExperiencePanel as QuizExperience,
+  SpinSwipeGamePanel as SpinSwipeGame,
+} from "./lazyFeaturePanels";
 
 export type TogglePanel = "messages" | "quiz" | "spin";
 

@@ -32,8 +32,12 @@ const staggerPreloads = (
 /** Warm the active workspace tab chunk. */
 export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
   if (tab === "memories") return import("@/components/memories/MemoriesView");
-  if (tab === "messages") return import("@/components/messages/MessageBoard");
-  return import("@/components/library/LibraryWorkspace");
+  if (tab === "messages") return import("@/components/messages");
+  return Promise.all([
+    import("@/components/library/LibraryWorkspace"),
+    import("@/components/movies"),
+    import("@/components/places"),
+  ]);
 };
 
 /** Warm the workspace shell chunk (header + bento layout). */
@@ -42,10 +46,9 @@ export const preloadAppWorkspaceShell = (): Promise<unknown> =>
 
 // Only preload functional feature modules (no decorative effects)
 const DEFERRED_MODULES = [
-  () => import("@/components/messages/MessageBoard"),
+  () => import("@/components/messages"),
   () => import("@/components/spin-match/SpinSwipeGame"),
-  () => import("@/components/quiz/QuizExperience"),
-  () => import("@/components/quiz/QuizEditor"),
+  () => import("@/components/quiz"),
   () => import("@/components/spin-wheel/SpinWheelGame"),
 ] as const;
 

@@ -1,20 +1,20 @@
 import { z } from "zod";
 import type { Message, Movie, SharedMemory } from "../../shared/types.ts";
 import { consoleError, isUser, isValidUrl, sanitizeInput } from "../../utils/shared.js";
-import { compareCreatedAtAsc, compareCreatedAtDesc } from "../../utils/workspace.js";
-import { mutateScope, readScope } from "../state/index.js";
+import { compareCreatedAtAsc, compareCreatedAtDesc } from "../../utils/shared.js";
+import { mutateScope, readScope } from "../state";
 import {
   cloneMemories,
   cloneMessages,
   isMessageRecord,
   parseMessagesContent,
-} from "../state/stateSchemas.js";
+} from "../state";
 import {
   normalizeOptionalString,
   normalizeRecordList,
   normalizeRequiredDate,
   normalizeRequiredString,
-} from "../state/normalization.js";
+} from "../state";
 
 // Message Service
 

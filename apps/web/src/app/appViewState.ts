@@ -1,4 +1,5 @@
 import { MAIN_TABS, type MainTab } from "../shared/types.ts";
+export type { MainTab };
 
 export const APP_VIEW_STATE_KEY = "electron.appViewState.v1";
 

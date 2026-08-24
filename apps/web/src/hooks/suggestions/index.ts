@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from "react";
-import { useUser } from "../../app/useProviders.ts";
+import { useUser } from "../../app/providerContexts.tsx";
 import type { MovieSuggestion, User } from "../../shared/types";
 import { mutateScope } from "../../services/state";
-import type { StateScopeDataMap } from "../../services/state/stateTypes";
+import type { StateScopeDataMap } from "../../services/state";
 import { sanitizeInput } from "../../utils";
 import type { MovieAutocompleteResult } from "../../services/metadata";
-import { useCollection } from "../useCollection";
+import { useCollection } from "../index.ts";
 
 export interface SuggestionRecord {
   id: string;
@@ -195,3 +195,5 @@ export const useSuggestions = (isPaused: boolean = false) => {
     rejectSuggestion: reject,
   };
 };
+
+export { useSuggestionsScope } from "../index.ts";

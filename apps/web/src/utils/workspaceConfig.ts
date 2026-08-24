@@ -1,5 +1,17 @@
 import type { MainTab } from "../shared/types.ts";
 
+/** Movies and places share one library workspace. */
+export const isLibraryWorkspaceTab = (tab: MainTab): boolean =>
+  tab === "movies" || tab === "places";
+
+export const LIBRARY_TAB: MainTab = "movies";
+export const LIBRARY_PLACES_ANCHOR_ID = "library-places";
+
+export const libraryWorkspaceStackClass = (tab: MainTab): string =>
+  isLibraryWorkspaceTab(tab)
+    ? "app-workspace-stack--movies"
+    : `app-workspace-stack--${tab}`;
+
 export interface WorkspaceMeta {
   eyebrow: string;
   title: string;
@@ -89,7 +101,7 @@ export const workspaceSectionIds = (tab: MainTab): WorkspaceSectionIds =>
 
 export const MOVIES_POSTER_GRID_MIN_COL = "clamp(5rem, 21vw, 6.75rem)";
 export const MOVIES_POSTER_GRID_GAP = "0.25rem";
-export const PLACES_GRID_MIN_COL = "clamp(10.5rem, 24vw, 13rem)";
+export const PLACES_GRID_MIN_COL = MOVIES_POSTER_GRID_MIN_COL;
 export const PLACES_GRID_CLASS = "workspace-content places-grid";
 
 export interface WorkspaceEmptyCopy {

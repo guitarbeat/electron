@@ -1,6 +1,6 @@
 import { normalizeMovieRecord } from '../../../apps/web/src/services/content/index.js';
-import { mockMovies } from '../../../apps/web/src/services/state/mockData.js';
-import type { StateScopeDataMap } from '../../../apps/web/src/services/state/stateTypes.js';
+import { mockMovies } from '../../../apps/web/src/services/state/index.ts';
+import type { StateScopeDataMap } from '../../../apps/web/src/services/state/index.ts';
 import type { Movie, User } from '../../../apps/web/src/shared/types.js';
 import {
   findMovieByNormalizedTitle,

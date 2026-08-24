@@ -22,9 +22,10 @@ import {
   MAX_MOVIE_TITLE_LENGTH,
   sanitizeInput,
 } from "@/utils";
-import { useCollection } from "../useCollection";
+import { useCollection } from "../index.ts";
 import { useSuggestions } from "../suggestions";
-import { useToast } from "@/app/useProviders";
+import { useToast } from "@/app/providerContexts";
+import { isMockMode } from "../../services/state";
 
 const POLLING_INTERVAL = 15000;
 
@@ -107,7 +108,7 @@ export const useMovies = (
       buildOptimistic: (current: Movie[]) => Movie[],
     ): Promise<boolean> => {
       const current = moviesRef.current;
-      if (!current.some((m) => m.id === movieId)) {
+      if (!current.some((m: Movie) => m.id === movieId)) {
         return false;
       }
       await performMutation(op, payload, buildOptimistic(current));
@@ -216,14 +217,14 @@ export const useMovies = (
         throw new Error("Profile required");
       }
 
-      const currentMovie = movies.find((entry) => entry.id === movieId);
+      const currentMovie = movies.find((entry: Movie) => entry.id === movieId);
       if (!currentMovie) {
         throw new Error("Movie not found");
       }
 
       const cleanTitle = validateMovieTitle(title);
 
-      const optimisticMovies = movies.map((movie) =>
+      const optimisticMovies = movies.map((movie: Movie) =>
         movie.id === movieId ? { ...movie, title: cleanTitle } : movie,
       );
 
@@ -278,7 +279,7 @@ export const useMovies = (
       await performMutation(
         "toggle_watched",
         { movieId },
-        movies.map((movie) => {
+        movies.map((movie: Movie) => {
           if (movie.id !== movieId) {
             return movie;
           }
@@ -286,7 +287,7 @@ export const useMovies = (
           return {
             ...movie,
             watchedBy: movie.watchedBy.includes(currentUser)
-              ? movie.watchedBy.filter((user) => user !== currentUser)
+              ? movie.watchedBy.filter((user: User) => user !== currentUser)
               : [...movie.watchedBy, currentUser],
           };
         }),
@@ -300,7 +301,7 @@ export const useMovies = (
       await performMutation(
         "delete_movie",
         { movieId },
-        movies.filter((movie) => movie.id !== movieId),
+        movies.filter((movie: Movie) => movie.id !== movieId),
       );
     },
     [movies, performMutation],
@@ -315,7 +316,7 @@ export const useMovies = (
 
   const manualMetadataUpdate = useCallback(
     async (movieId: string, searchTerm?: string) => {
-      const movie = movies.find((entry) => entry.id === movieId);
+      const movie = movies.find((entry: Movie) => entry.id === movieId);
       if (!movie) {
         return false;
       }
@@ -345,13 +346,13 @@ export const useMovies = (
       const validUpdates = refreshed.filter(
         (update) =>
           Object.keys(update.metadata).length > 0 &&
-          moviesRef.current.some((m) => m.id === update.movieId),
+          moviesRef.current.some((m: Movie) => m.id === update.movieId),
       );
 
       const updatesMap = new Map<string, Partial<Movie>>(
         validUpdates.map((update) => [update.movieId, update.metadata]),
       );
-      const optimisticMovies = latestMovies.map((movie) => {
+      const optimisticMovies = latestMovies.map((movie: Movie) => {
         const metadataUpdate = updatesMap.get(movie.id);
         return metadataUpdate ? { ...movie, ...metadataUpdate } : movie;
       });
@@ -391,7 +392,7 @@ export const useMovies = (
     }
 
     const moviesMissingMetadata = movies.filter(
-      (m) => !m.posterUrl || !m.plot || !m.year,
+      (m: Movie) => !m.posterUrl || !m.plot || !m.year,
     );
     if (moviesMissingMetadata.length === 0) {
       hasAutoSyncedRef.current = true;
@@ -404,7 +405,7 @@ export const useMovies = (
       window.setTimeout(resolve, 2000);
     });
 
-    await concurrentMap(moviesMissingMetadata, 5, async (movie) => {
+    await concurrentMap(moviesMissingMetadata, 5, async (movie: Movie) => {
       if (!currentUser) return;
       try {
         await updateMovieMetadata(movie);
@@ -600,20 +601,28 @@ export const useMoviesWorkspace = (
 
   const handleAcceptSuggestion = useCallback(
     async (suggestionOrId: MovieSuggestion | string) => {
+      if (!currentUser) {
+        showToast({
+          message: "Please select a profile to accept suggestions",
+          type: "error",
+        });
+        return;
+      }
+
       const suggestion =
         typeof suggestionOrId === "string"
-          ? suggestionsState.suggestions.find((s) => s.id === suggestionOrId)
+          ? suggestionsState.suggestions.find((s: MovieSuggestion) => s.id === suggestionOrId)
           : suggestionOrId;
 
       if (!suggestion) return;
       setProcessingSuggestionId(suggestion.id);
       try {
-        if (currentUser) {
-          await suggestionsState.acceptSuggestion(
-            suggestion.id,
-            currentUser,
-          );
+        // Add a deliberate delay in mock mode so the user sees the spinner and transition
+        if (isMockMode()) {
+          await new Promise((resolve) => window.setTimeout(resolve, 800));
         }
+
+        await suggestionsState.acceptSuggestion(suggestion.id, currentUser);
 
         await moviesState.addMovie(
           suggestion.title,
@@ -626,6 +635,11 @@ export const useMoviesWorkspace = (
           message: `Accepted "${suggestion.title}" suggestion`,
           type: "info",
         });
+      } catch (err) {
+        showToast({
+          message: err instanceof Error ? err.message : "Failed to accept suggestion",
+          type: "error",
+        });
       } finally {
         setProcessingSuggestionId(null);
       }
@@ -635,22 +649,39 @@ export const useMoviesWorkspace = (
 
   const handleRejectSuggestion = useCallback(
     async (suggestionOrId: MovieSuggestion | string) => {
+      if (!currentUser) {
+        showToast({
+          message: "Please select a profile to reject suggestions",
+          type: "error",
+        });
+        return;
+      }
+
       const id =
         typeof suggestionOrId === "string"
           ? suggestionOrId
           : suggestionOrId.id;
-      const target = suggestionsState.suggestions.find((s) => s.id === id);
+      const target = suggestionsState.suggestions.find((s: MovieSuggestion) => s.id === id);
+      if (!target) return;
+
       setProcessingSuggestionId(id);
       try {
-        if (currentUser) {
-          await suggestionsState.rejectSuggestion(id, currentUser);
+        // Add a deliberate delay in mock mode
+        if (isMockMode()) {
+          await new Promise((resolve) => window.setTimeout(resolve, 800));
         }
-        if (target) {
-          showToast({
-            message: `Rejected "${target.title}" suggestion`,
-            type: "info",
-          });
-        }
+
+        await suggestionsState.rejectSuggestion(id, currentUser);
+        
+        showToast({
+          message: `Rejected "${target.title}" suggestion`,
+          type: "info",
+        });
+      } catch (err) {
+        showToast({
+          message: err instanceof Error ? err.message : "Failed to reject suggestion",
+          type: "error",
+        });
       } finally {
         setProcessingSuggestionId(null);
       }
@@ -803,4 +834,5 @@ export const useMoviesWorkspace = (
 };
 
 export { trackMetric };
+export { useMoviesScope } from "../index.ts";
 

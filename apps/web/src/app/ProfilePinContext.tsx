@@ -8,9 +8,9 @@ import {
   type FC,
   type ReactNode,
 } from "react";
-import { useUser } from "@/app/useProviders";
+import { useUser } from "@/app/providerContexts";
 import type { User } from "@/shared/types";
-import { usePins } from "@/hooks/usePins";
+import { usePins } from "@/hooks";
 import { consoleError, getErrorMessage } from "@/utils";
 
 interface ProfileSelectionContextValue {
