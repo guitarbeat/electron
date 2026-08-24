@@ -5,7 +5,6 @@ import {
   SPIN_HISTORY_MAX,
   undoMatchmakerSwipe,
 } from '../gameHelpers.js';
-import type { PinRecord } from '../../../apps/web/src/services/content/index.js';
 import {
   appendDailySpinEntry,
   cloneQuizData,
@@ -15,11 +14,12 @@ import {
   normalizeQuizData,
   normalizeSpinHistoryParsed,
   normalizeStoredPins,
-} from '../../../apps/web/src/services/state/index.ts';
+  type PinRecord,
+} from '../../../apps/web/src/services/state/stateSchemas.js';
 import type {
   DailySpinRecord,
   StateScopeDataMap,
-} from '../../../apps/web/src/services/state/index.ts';
+} from '../../../apps/web/src/services/state/stateTypes.js';
 import type {
   MatchmakerGame,
   User,

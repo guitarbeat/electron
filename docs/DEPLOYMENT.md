@@ -56,16 +56,6 @@ For **static-only** hosting, omit database env vars; the app falls back to `loca
 
 Watchlist autocomplete uses OMDb movie search first and falls back to TVMaze show search when OMDb has no usable result.
 
-### Migrating from GitHub Gist or Redis
-
-Older deployments stored each scope as either one GitHub Gist file or one Redis string. This app stores each scope as a row in `shared_state_files` with `filename` and `content` columns. To move data over:
-
-1. Set `DATABASE_URL` on the server.
-2. Keep `GIST_ID` and `GITHUB_TOKEN` configured temporarily — the API auto-imports each scope from Gist when Neon is empty or only has an empty bootstrap row (for example `movielist.json` with `[]`).
-3. Or run `node scripts/migrate-gist-to-neon.mjs` once to copy every Gist file in bulk.
-
-Filenames must match the server scopes (for example `movielist.json` for the watchlist).
-
 ## Host notes
 
 - **Vercel**: `vercel.json` — `/api/*` → handlers, other routes → `index.html` SPA fallback  

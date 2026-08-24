@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
-import type { StateScope } from '../apps/web/src/services/state/index.ts';
+import type { StateScope } from '../apps/web/src/services/state/stateTypes.js';
 import type { User } from '../apps/web/src/shared/types.js';
 import {
   AGENT_ACTIONS,

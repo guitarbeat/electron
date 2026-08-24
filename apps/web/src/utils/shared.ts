@@ -1,4 +1,4 @@
-import type { Movie, User } from "../shared/types";
+import type { Movie, User } from "../shared/types.js";
 import { spacing } from "../theme/tokens.js";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -1022,4 +1022,3 @@ export const validateAndThrow = (
   }
   return result;
 };
-

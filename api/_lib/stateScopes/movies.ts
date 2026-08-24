@@ -1,9 +1,9 @@
-import { normalizeMovieRecord } from '../../../apps/web/src/services/content/index.js';
-import { mockMovies } from '../../../apps/web/src/services/state/index.ts';
-import type { StateScopeDataMap } from '../../../apps/web/src/services/state/index.ts';
+import { mockMovies } from '../../../apps/web/src/services/state/mockData.js';
+import type { StateScopeDataMap } from '../../../apps/web/src/services/state/stateTypes.js';
 import type { Movie, User } from '../../../apps/web/src/shared/types.js';
 import {
   findMovieByNormalizedTitle,
+  isUser,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
   parseJsonContent,
@@ -14,6 +14,61 @@ import { randomUUID } from 'node:crypto';
 
 const extractString = (value: unknown): string =>
   typeof value === 'string' ? sanitizeInput(value) : '';
+
+const normalizeOptionalString = (value: unknown): string | undefined => {
+  const normalized = typeof value === 'string' ? sanitizeInput(value) : '';
+  return normalized || undefined;
+};
+
+const normalizeRequiredDate = (value: unknown): string | null =>
+  typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? value : null;
+
+const normalizePosterUrl = (value: unknown): string | undefined => {
+  const normalized = normalizeOptionalString(value);
+  if (!normalized || !isValidUrl(normalized)) {
+    return undefined;
+  }
+
+  const parsed = new URL(normalized);
+  if (parsed.protocol === 'http:') {
+    parsed.protocol = 'https:';
+  }
+  return parsed.toString();
+};
+
+const normalizeMovieRecord = (value: unknown): Movie | null => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const movie = value as Partial<Movie>;
+  const id = extractString(movie.id);
+  const title = extractString(movie.title);
+  const createdAt = normalizeRequiredDate(movie.createdAt);
+  if (!id || !title || !isUser(movie.addedBy) || !createdAt) {
+    return null;
+  }
+
+  const watchedBy = Array.isArray(movie.watchedBy)
+    ? [...new Set(movie.watchedBy.filter(isUser))]
+    : [];
+
+  return {
+    id,
+    title,
+    addedBy: movie.addedBy,
+    watchedBy,
+    createdAt,
+    posterUrl: normalizePosterUrl(movie.posterUrl),
+    year: normalizeOptionalString(movie.year),
+    plot: normalizeOptionalString(movie.plot),
+    imdbRating: normalizeOptionalString(movie.imdbRating),
+    runtime: normalizeOptionalString(movie.runtime),
+    genre: normalizeOptionalString(movie.genre),
+    director: normalizeOptionalString(movie.director),
+    category: normalizeOptionalString(movie.category),
+  };
+};
 
 export const parseMovies = (content: string | null): Movie[] => {
   if (!content) {

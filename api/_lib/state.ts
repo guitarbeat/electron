@@ -4,8 +4,8 @@ import type {
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../apps/web/src/services/state/index.ts';
-import { STATE_SCOPES } from '../../apps/web/src/services/state/index.ts';
+} from '../../apps/web/src/services/state/stateTypes.js';
+import { STATE_SCOPES } from '../../apps/web/src/services/state/stateTypes.js';
 import type { User } from '../../apps/web/src/shared/types.js';
 import { USER_OPTIONS } from './common.js';
 import {

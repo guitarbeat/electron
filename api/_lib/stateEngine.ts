@@ -2,7 +2,7 @@ import type {
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../apps/web/src/services/state/index.ts';
+} from '../../apps/web/src/services/state/stateTypes.js';
 import {
   badRequestResponse,
   conflictResponse,
