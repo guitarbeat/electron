@@ -221,8 +221,9 @@ export function buildGalleryPhotos(memories: SharedMemory[], movie: Movie): Gall
     .filter((memory) => Boolean(memory.imageUrl))
     .slice(0, 5)
     .map((memory) => ({ id: `memory-${memory.id}`, image: memory.imageUrl! }));
-  if (movie.posterUrl && movie.posterUrl !== "N/A" && photos.length < 3) {
-    photos.push({ id: `poster-${movie.id}`, image: movie.posterUrl });
+  const poster = movie.customPosterUrl || movie.posterUrl;
+  if (poster && poster !== "N/A" && photos.length < 3) {
+    photos.push({ id: `poster-${movie.id}`, image: poster });
   }
   for (let index = 0; photos.length < 5 && index < CINEMATIC_FALLBACKS.length; index += 1) {
     photos.push({ id: `fb-${index}`, image: CINEMATIC_FALLBACKS[index] });
@@ -461,9 +462,8 @@ import { useFeatureFonts, mediaBreakpoints, useMediaQuery } from "@/hooks";
 import { colors, radius, spacing, typography } from "@/theme/tokens";
 import { formatMemoryTimestamp, MAX_MOVIE_TITLE_LENGTH, sanitizeInput, getErrorMessage, consoleError } from "@/utils";
 import { searchMovieAutocomplete, getCachedMovieAutocomplete, type MovieAutocompleteResult, fetchOmdbMetadataCached } from "@/services/metadata";
-import { MemoryComposer, MemoryList, INITIAL_VISIBLE_COUNT } from "@/components/memories/MemoriesView";
+import { MemoryComposer, MemoryList, INITIAL_VISIBLE_COUNT } from "@/components/memories/shared";
 import { useMoviesWorkspace } from "@/hooks/movies";
-import { useCachedPoster } from "@/services/posterImageCache";
 
 
 
@@ -1081,7 +1081,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
     moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
     toggleWatched,
-    renameMovie,
+    editMovie,
     addMemory,
     updateMemory,
     deleteMemoryRecord,
@@ -1250,7 +1250,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           onToggleError={(message) => setToast({ message, type: "error" })}
           actions={{
             toggleWatched,
-            renameMovie,
+            editMovie,
             addMemory,
             updateMemory,
             deleteMemory: deleteMemoryRecord,
@@ -1296,10 +1296,12 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   hasPosterError,
   onPosterError,
 }) => {
-  const { src: cachedSrc, hasError: isCachedError } = useCachedPoster(movie.posterUrl);
+  const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
+  
+
   const shouldShowPoster =
-    Boolean(movie.posterUrl) && !hasPosterError && !isCachedError;
-  const activePosterUrl = cachedSrc || movie.posterUrl;
+    Boolean(resolvedPosterUrl) && !hasPosterError;
+  const activePosterUrl = resolvedPosterUrl;
 
   return (
     <figure className="movie-details-modal__poster-shell" aria-label={`Poster for ${movie.title}`}>
@@ -1310,11 +1312,16 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             alt=""
             aria-hidden="true"
             className="movie-details-modal__poster-bg"
+            loading="lazy"
+            decoding="async"
           />
           <img
             src={activePosterUrl}
             alt={`${movie.title} poster`}
             className="movie-details-modal__poster"
+            loading="lazy"
+            decoding="async"
+            fetchPriority="high"
             onError={onPosterError}
           />
         </>
@@ -1696,8 +1703,694 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
 };
 
 /* -------------------------------------------------------------------------- */
-/* Main Component_MovieDetailsModal: MovieDetailsModal                                           */
-/* -------------------------------------------------------------------------- */
+
+
+
+
+
+
+interface MovieRecommendationComposerProps {
+  currentUser: User | null;
+  movieTitle: string;
+  guestName: string;
+  reason: string;
+  error: string | null;
+  isSubmitting: boolean;
+  onGuestNameChange: (value: string) => void;
+  onReasonChange: (value: string) => void;
+  onSubmit: () => Promise<void> | void;
+  onCancel: () => void;
+}
+
+export const MovieRecommendationComposer: React.FC<
+  MovieRecommendationComposerProps
+> = ({
+  currentUser,
+  movieTitle,
+  guestName,
+  reason,
+  error,
+  isSubmitting,
+  onGuestNameChange,
+  onReasonChange,
+  onSubmit,
+  onCancel,
+}) => {
+  const remainingChars = MAX_RECOMMENDATION_REASON_LENGTH - reason.length;
+
+  return (
+    <Card
+      variant="default"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: spacing.md,
+        padding: spacing.lg,
+        border: `1px solid ${colors.borderSubtle}`,
+        background: `radial-gradient(circle at top right, ${colors.accentMuted} 0%, transparent 54%), linear-gradient(180deg, ${colors.surface2}, ${colors.surface1})`,
+      }}
+    >
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: spacing.xs }}
+      >
+        <p
+          style={{
+            margin: 0,
+            ...typography.presets.eyebrow,
+            color: colors.accentLight,
+          }}
+        >
+          Recommendation
+        </p>
+        <h3
+          style={{
+            margin: 0,
+            color: colors.textPrimary,
+            fontFamily: typography.fontFamily.heading.join(", "),
+            fontSize: typography.fontSize.lg,
+            lineHeight: typography.lineHeight.snug,
+          }}
+        >
+          {movieTitle}
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+            lineHeight: typography.lineHeight.normal,
+          }}
+        >
+          {currentUser
+            ? `Send this to Suggestions as ${currentUser}.`
+            : "Guests can send titles to Suggestions too. Add your name if you want credit."}
+        </p>
+      </div>
+
+      {!currentUser ? (
+        <Input
+          label="Your Name (Optional)"
+          value={guestName}
+          onChange={(event) =>
+            onGuestNameChange(
+              event.target.value.slice(0, MAX_GUEST_SUGGESTER_NAME_LENGTH),
+            )
+          }
+          placeholder="Guest"
+          maxLength={MAX_GUEST_SUGGESTER_NAME_LENGTH}
+        />
+      ) : null}
+
+      <Textarea
+        label="Why This One? (Optional)"
+        value={reason}
+        onChange={(event) =>
+          onReasonChange(
+            event.target.value.slice(0, MAX_RECOMMENDATION_REASON_LENGTH),
+          )
+        }
+        placeholder="A quick reason, vibe, or inside joke."
+        maxLength={MAX_RECOMMENDATION_REASON_LENGTH}
+        rows={3}
+        style={{ minHeight: "88px" }}
+      />
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: spacing.sm,
+          flexWrap: "wrap",
+        }}
+      >
+        <span
+          style={{
+            color: colors.textSecondary,
+            fontSize: typography.fontSize.xs,
+          }}
+        >
+          {remainingChars} characters left
+        </span>
+
+        <div style={{ display: "flex", gap: spacing.xs, flexWrap: "wrap" }}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={() => void onSubmit()}
+            isLoading={isSubmitting}
+          >
+            Send recommendation
+          </Button>
+        </div>
+      </div>
+
+      {error && (
+        <div
+          role="alert"
+          style={{
+            color: colors.error,
+            fontSize: typography.fontSize.xs,
+            background: `${colors.error}10`,
+            border: `1px solid ${colors.error}30`,
+            borderRadius: radius.md,
+            padding: `${spacing.xs} ${spacing.sm}`,
+          }}
+        >
+          {error}
+        </div>
+      )}
+    </Card>
+  );
+};
+
+
+
+
+interface MovieEditModalProps {
+  movie: Movie;
+  isOpen: boolean;
+  isMobile: boolean;
+  onClose: () => void;
+  onSubmit: (updates: { title: string; customPosterUrl?: string }) => Promise<void>;
+  onDelete?: () => void;
+}
+
+export const MovieEditModal: React.FC<MovieEditModalProps> = ({
+  movie,
+  isOpen,
+  isMobile,
+  onClose,
+  onSubmit,
+  onDelete,
+}) => {
+  const [draftTitle, setDraftTitle] = React.useState(movie.title);
+  const [draftPosterUrl, setDraftPosterUrl] = React.useState(movie.customPosterUrl || "");
+  const [error, setError] = React.useState<string | null>(null);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setDraftTitle(movie.title);
+    setDraftPosterUrl(movie.customPosterUrl || "");
+    setError(null);
+
+    const focusTimer = window.setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 40);
+
+    return () => window.clearTimeout(focusTimer);
+  }, [isOpen, movie.title, movie.customPosterUrl]);
+
+  const cleanTitle = sanitizeInput(draftTitle);
+  const cleanPosterUrl = draftPosterUrl.trim();
+  const isUnchanged = cleanTitle === movie.title && cleanPosterUrl === (movie.customPosterUrl || "");
+  
+  const canSubmit =
+    !isSaving &&
+    Boolean(cleanTitle) &&
+    cleanTitle.length <= MAX_MOVIE_TITLE_LENGTH &&
+    !isUnchanged;
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canSubmit) {
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      await onSubmit({ 
+        title: cleanTitle, 
+        customPosterUrl: cleanPosterUrl || undefined 
+      });
+      onClose();
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Failed to update movie",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Edit Movie"
+      ariaLabel={`Edit details for ${movie.title}`}
+      closeDisabled={isSaving}
+      closeDisabledLabel="Saving changes"
+      variant={isMobile ? "bottom-sheet" : "centered"}
+    >
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: spacing.lg,
+          padding: spacing.lg,
+        }}
+      >
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: spacing.sm }}
+        >
+          <p
+            style={{
+              margin: 0,
+              color: colors.textSecondary,
+              ...typography.presets.bodySm,
+            }}
+          >
+            Update the shared movie title or provide a custom poster image URL.
+          </p>
+
+          <Input
+            ref={inputRef}
+            label="Movie title"
+            value={draftTitle}
+            onChange={(event) => {
+              setDraftTitle(event.target.value);
+              if (error) {
+                setError(null);
+              }
+            }}
+            maxLength={MAX_MOVIE_TITLE_LENGTH}
+            placeholder="Enter movie title"
+            error={error ?? undefined}
+          />
+
+          <Input
+            label="Custom poster URL (optional)"
+            value={draftPosterUrl}
+            onChange={(event) => {
+              setDraftPosterUrl(event.target.value);
+              if (error) {
+                setError(null);
+              }
+            }}
+            placeholder="https://example.com/poster.jpg"
+          />
+
+          <div
+            aria-live="polite"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: spacing.sm,
+              color: colors.textTertiary,
+              ...typography.presets.caption,
+            }}
+          >
+            <span>
+              {isUnchanged
+                ? "Make a change to save."
+                : "Changes are shared immediately."}
+            </span>
+            <span>
+              {draftTitle.length}/{MAX_MOVIE_TITLE_LENGTH}
+            </span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: spacing.sm,
+          }}
+        >
+          {onDelete ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                onDelete();
+                onClose();
+              }}
+              disabled={isSaving}
+              style={{ color: colors.error ?? "#c0392b" }}
+            >
+              Remove
+            </Button>
+          ) : (
+            <span />
+          )}
+
+          <div style={{ display: "flex", gap: spacing.sm }}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              isLoading={isSaving}
+              loadingText="Saving..."
+              disabled={!canSubmit}
+            >
+              Save changes
+            </Button>
+          </div>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+
+
+
+
+export interface MovieTransitionOrigin {
+
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+interface MovieCardProps {
+  movie: Movie;
+  currentUser: User | null;
+  onToggle: () => void | Promise<void>;
+  onToggleError?: (message: string) => void;
+  onDelete: () => void;
+  onEditMetadata?: (updates: { title: string; customPosterUrl?: string }) => Promise<void>;
+  memories?: SharedMemory[];
+  onAddMemory?: (note: string) => Promise<void>;
+  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
+  onDeleteMemory?: (memoryId: string) => Promise<void>;
+  onTogglePin?: (memoryId: string) => Promise<void>;
+  isHighlighted?: boolean;
+  isCompact?: boolean;
+  priorityPoster?: boolean;
+}
+
+export const MovieCard: React.FC<MovieCardProps> = ({
+  movie,
+  currentUser,
+  onToggle,
+  onToggleError,
+  onDelete,
+  onEditMetadata,
+  memories = [],
+  onAddMemory,
+  onUpdateMemory,
+  onDeleteMemory,
+  onTogglePin,
+  isHighlighted = false,
+  isCompact = false,
+  priorityPoster = false,
+}) => {
+  const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
+  const [isTitleVisible, setIsTitleVisible] = React.useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
+  const [detailsOrigin, setDetailsOrigin] =
+    React.useState<MovieTransitionOrigin | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement | null>(null);
+  const posterRef = React.useRef<HTMLDivElement | null>(null);
+  const isMobile = isCompact;
+  const isGuest = !currentUser;
+  const watchedByBoth = movie.watchedBy.length === 2;
+  const handleOpenDetails = () => {
+    const rect =
+      posterRef.current?.getBoundingClientRect() ??
+      cardRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDetailsOrigin({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      });
+    }
+    setIsTitleVisible(true);
+    setIsDetailsOpen(true);
+  };
+
+  const handlePosterClick = () => {
+    handleOpenDetails();
+  };
+
+  React.useEffect(() => {
+    if (!isTitleVisible || isDetailsOpen) {
+      return;
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!cardRef.current?.contains(event.target as Node)) {
+        setIsTitleVisible(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [isDetailsOpen, isTitleVisible]);
+
+  const handleToggle = async () => {
+    if (isGuest) {
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await onToggle();
+    } catch (error) {
+      consoleError("Failed to toggle watched status", error);
+      onToggleError?.(
+        getErrorMessage(error, "Failed to update watched status."),
+      );
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <>
+      <div
+        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
+        data-movie-id={movie.id}
+      >
+        <CardTiltShell disabled={isCompact}>
+          <Card
+            ref={cardRef}
+            variant="default"
+            className="movie-item-card chroma-card"
+            data-added-by={movie.addedBy}
+            style={{
+              padding: 0,
+              overflow: "hidden",
+            }}
+          >
+            <CardTiltSheen />
+            <MediaCardPosterWrap
+              ref={posterRef}
+              className="movie-item-poster-wrap"
+            >
+              <MediaPoster
+                title={movie.title}
+                posterUrl={movie.customPosterUrl || movie.posterUrl}
+                year={movie.year}
+                id={movie.id}
+                priority={priorityPoster}
+              />
+
+              <MediaCardWatcherStack
+                watchers={movie.watchedBy}
+                className="movie-item-watchers"
+              />
+
+              <div className="movie-item-title-overlay" aria-hidden="true">
+                <MediaCardTitle className="movie-item-title-overlay__title">
+                  {movie.title}
+                </MediaCardTitle>
+                {movie.year && (
+                  <div className="movie-item-title-overlay__meta">
+                    <span className="movie-item-meta__year">{movie.year}</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="movie-item-details-hit-area"
+                onClick={handlePosterClick}
+                aria-expanded={isDetailsOpen}
+                aria-label={`View details for "${movie.title}"`}
+              />
+            </MediaCardPosterWrap>
+          </Card>
+        </CardTiltShell>
+      </div>
+
+      {onEditMetadata ? (
+        <MovieEditModal
+          movie={movie}
+          isOpen={isTitleEditorOpen}
+          isMobile={isMobile}
+          onClose={() => setIsTitleEditorOpen(false)}
+          onSubmit={onEditMetadata}
+          onDelete={onDelete}
+        />
+      ) : null}
+
+      <React.Suspense fallback={null}>
+        <MovieDetailsModal
+          movie={movie}
+          memories={memories}
+          isOpen={isDetailsOpen}
+          origin={detailsOrigin}
+          currentUser={currentUser}
+          onToggleWatched={currentUser ? handleToggle : undefined}
+          isWatchedByCurrentUser={Boolean(
+            currentUser && movie.watchedBy.includes(currentUser),
+          )}
+          isUpdatingWatchStatus={isUpdating}
+          onEdit={
+            onEditMetadata
+              ? () => {
+                  setIsDetailsOpen(false);
+                  setIsTitleEditorOpen(true);
+                }
+              : undefined
+          }
+          onAddMemory={onAddMemory}
+          onUpdateMemory={onUpdateMemory}
+          onDeleteMemory={onDeleteMemory}
+          onTogglePin={onTogglePin}
+          onClose={() => setIsDetailsOpen(false)}
+        />
+      </React.Suspense>
+    </>
+  );
+};
+
+
+
+
+interface SuggestionCardProps {
+
+  suggestion: MovieSuggestion;
+  onAccept: () => void;
+  onReject: () => void;
+  canRespond?: boolean;
+  disableActions?: boolean;
+  isProcessing?: boolean;
+  className?: string;
+}
+
+export const SuggestionCard: React.FC<SuggestionCardProps> = ({
+  suggestion,
+  onAccept,
+  onReject,
+  canRespond = true,
+  disableActions = false,
+  isProcessing = false,
+  className,
+}) => {
+  const [posterUrl, setPosterUrl] = React.useState<string | undefined>(
+    undefined,
+  );
+  const [year, setYear] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetchOmdbMetadataCached(
+      suggestion.title,
+      suggestion.type,
+      suggestion.imdbID,
+      controller.signal,
+    )
+      .then((meta) => {
+        if (cancelled) return;
+        setPosterUrl(meta.poster);
+        setYear(meta.year);
+      })
+      .catch(() => {
+        // Silent fail — fallback chain handles missing posters
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [suggestion.title, suggestion.type, suggestion.imdbID]);
+
+  return (
+    <SuggestionCardBase
+      suggestedBy={suggestion.suggestedBy}
+      title={suggestion.title}
+      subtitle={suggestion.reason}
+      year={year}
+      imdbRating={undefined} // We don't fetch imdbRating yet in SuggestionMovieCard, but we can if we extend the fetcher.
+      onAccept={onAccept}
+      onReject={onReject}
+      canRespond={canRespond}
+      disableActions={disableActions}
+      isProcessing={isProcessing}
+      className={[`movie-item-card suggestion-item-card`, className]
+        .filter(Boolean)
+        .join(" ")}
+      media={
+        <MediaPoster
+          title={suggestion.title}
+          posterUrl={posterUrl}
+          year={year}
+          id={suggestion.id}
+        />
+      }
+      details={
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}>
+          {/* We remove year from here since it's now in the overlay */}
+          <StremioButton
+            movie={{
+              title: suggestion.title,
+              imdbID: suggestion.imdbID,
+              mediaType: suggestion.type,
+            }}
+            variant="pill"
+          />
+        </div>
+      }
+    />
+  );
+};
+
+export interface MovieTransitionOrigin {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
 
 interface MovieDetailsModalProps {
   movie: Movie;
@@ -1762,7 +2455,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
   React.useEffect(() => {
     setHasPosterError(false);
-  }, [movie.posterUrl]);
+  }, [movie.posterUrl, movie.customPosterUrl]);
 
   React.useEffect(() => {
     setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
@@ -2049,667 +2742,5 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       </div>
     </div>,
     document.body,
-  );
-};
-
-
-
-
-
-interface MovieRecommendationComposerProps {
-  currentUser: User | null;
-  movieTitle: string;
-  guestName: string;
-  reason: string;
-  error: string | null;
-  isSubmitting: boolean;
-  onGuestNameChange: (value: string) => void;
-  onReasonChange: (value: string) => void;
-  onSubmit: () => Promise<void> | void;
-  onCancel: () => void;
-}
-
-export const MovieRecommendationComposer: React.FC<
-  MovieRecommendationComposerProps
-> = ({
-  currentUser,
-  movieTitle,
-  guestName,
-  reason,
-  error,
-  isSubmitting,
-  onGuestNameChange,
-  onReasonChange,
-  onSubmit,
-  onCancel,
-}) => {
-  const remainingChars = MAX_RECOMMENDATION_REASON_LENGTH - reason.length;
-
-  return (
-    <Card
-      variant="default"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: spacing.md,
-        padding: spacing.lg,
-        border: `1px solid ${colors.borderSubtle}`,
-        background: `radial-gradient(circle at top right, ${colors.accentMuted} 0%, transparent 54%), linear-gradient(180deg, ${colors.surface2}, ${colors.surface1})`,
-      }}
-    >
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: spacing.xs }}
-      >
-        <p
-          style={{
-            margin: 0,
-            ...typography.presets.eyebrow,
-            color: colors.accentLight,
-          }}
-        >
-          Recommendation
-        </p>
-        <h3
-          style={{
-            margin: 0,
-            color: colors.textPrimary,
-            fontFamily: typography.fontFamily.heading.join(", "),
-            fontSize: typography.fontSize.lg,
-            lineHeight: typography.lineHeight.snug,
-          }}
-        >
-          {movieTitle}
-        </h3>
-        <p
-          style={{
-            margin: 0,
-            color: colors.textSecondary,
-            fontSize: typography.fontSize.sm,
-            lineHeight: typography.lineHeight.normal,
-          }}
-        >
-          {currentUser
-            ? `Send this to Suggestions as ${currentUser}.`
-            : "Guests can send titles to Suggestions too. Add your name if you want credit."}
-        </p>
-      </div>
-
-      {!currentUser ? (
-        <Input
-          label="Your Name (Optional)"
-          value={guestName}
-          onChange={(event) =>
-            onGuestNameChange(
-              event.target.value.slice(0, MAX_GUEST_SUGGESTER_NAME_LENGTH),
-            )
-          }
-          placeholder="Guest"
-          maxLength={MAX_GUEST_SUGGESTER_NAME_LENGTH}
-        />
-      ) : null}
-
-      <Textarea
-        label="Why This One? (Optional)"
-        value={reason}
-        onChange={(event) =>
-          onReasonChange(
-            event.target.value.slice(0, MAX_RECOMMENDATION_REASON_LENGTH),
-          )
-        }
-        placeholder="A quick reason, vibe, or inside joke."
-        maxLength={MAX_RECOMMENDATION_REASON_LENGTH}
-        rows={3}
-        style={{ minHeight: "88px" }}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: spacing.sm,
-          flexWrap: "wrap",
-        }}
-      >
-        <span
-          style={{
-            color: colors.textSecondary,
-            fontSize: typography.fontSize.xs,
-          }}
-        >
-          {remainingChars} characters left
-        </span>
-
-        <div style={{ display: "flex", gap: spacing.xs, flexWrap: "wrap" }}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => void onSubmit()}
-            isLoading={isSubmitting}
-          >
-            Send recommendation
-          </Button>
-        </div>
-      </div>
-
-      {error && (
-        <div
-          role="alert"
-          style={{
-            color: colors.error,
-            fontSize: typography.fontSize.xs,
-            background: `${colors.error}10`,
-            border: `1px solid ${colors.error}30`,
-            borderRadius: radius.md,
-            padding: `${spacing.xs} ${spacing.sm}`,
-          }}
-        >
-          {error}
-        </div>
-      )}
-    </Card>
-  );
-};
-
-
-
-
-interface MovieTitleEditModalProps {
-  movie: Movie;
-  isOpen: boolean;
-  isMobile: boolean;
-  onClose: () => void;
-  onSubmit: (title: string) => Promise<void>;
-  onDelete?: () => void;
-}
-
-export const MovieTitleEditModal: React.FC<MovieTitleEditModalProps> = ({
-  movie,
-  isOpen,
-  isMobile,
-  onClose,
-  onSubmit,
-  onDelete,
-}) => {
-  const [draftTitle, setDraftTitle] = React.useState(movie.title);
-  const [error, setError] = React.useState<string | null>(null);
-  const [isSaving, setIsSaving] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    setDraftTitle(movie.title);
-    setError(null);
-
-    const focusTimer = window.setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }, 40);
-
-    return () => window.clearTimeout(focusTimer);
-  }, [isOpen, movie.title]);
-
-  const cleanTitle = sanitizeInput(draftTitle);
-  const isUnchanged = cleanTitle === movie.title;
-  const canSubmit =
-    !isSaving &&
-    Boolean(cleanTitle) &&
-    cleanTitle.length <= MAX_MOVIE_TITLE_LENGTH &&
-    !isUnchanged;
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!canSubmit) {
-      return;
-    }
-
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      await onSubmit(cleanTitle);
-      onClose();
-    } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Failed to update title",
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Edit Movie Title"
-      ariaLabel={`Edit title for ${movie.title}`}
-      closeDisabled={isSaving}
-      closeDisabledLabel="Saving title"
-      variant={isMobile ? "bottom-sheet" : "centered"}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: spacing.lg,
-          padding: spacing.lg,
-        }}
-      >
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: spacing.sm }}
-        >
-          <p
-            style={{
-              margin: 0,
-              color: colors.textSecondary,
-              ...typography.presets.bodySm,
-            }}
-          >
-            Update the shared movie title. Poster details will refresh
-            automatically in the background.
-          </p>
-
-          <Input
-            ref={inputRef}
-            label="Movie title"
-            value={draftTitle}
-            onChange={(event) => {
-              setDraftTitle(event.target.value);
-              if (error) {
-                setError(null);
-              }
-            }}
-            maxLength={MAX_MOVIE_TITLE_LENGTH}
-            placeholder="Enter movie title"
-            error={error ?? undefined}
-          />
-
-          <div
-            aria-live="polite"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: spacing.sm,
-              color: colors.textTertiary,
-              ...typography.presets.caption,
-            }}
-          >
-            <span>
-              {isUnchanged
-                ? "Make a change to save the new title."
-                : "Title changes are shared immediately."}
-            </span>
-            <span>
-              {draftTitle.length}/{MAX_MOVIE_TITLE_LENGTH}
-            </span>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: spacing.sm,
-          }}
-        >
-          {onDelete ? (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                onDelete();
-                onClose();
-              }}
-              disabled={isSaving}
-              style={{ color: colors.error ?? "#c0392b" }}
-            >
-              Remove
-            </Button>
-          ) : (
-            <span />
-          )}
-
-          <div style={{ display: "flex", gap: spacing.sm }}>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              disabled={isSaving}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              isLoading={isSaving}
-              loadingText="Saving..."
-              disabled={!canSubmit}
-            >
-              Save title
-            </Button>
-          </div>
-        </div>
-      </form>
-    </Modal>
-  );
-};
-
-
-
-
-
-export interface MovieTransitionOrigin {
-
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
-interface MovieCardProps {
-  movie: Movie;
-  currentUser: User | null;
-  onToggle: () => void | Promise<void>;
-  onToggleError?: (message: string) => void;
-  onDelete: () => void;
-  onRename?: (title: string) => Promise<void>;
-  memories?: SharedMemory[];
-  onAddMemory?: (note: string) => Promise<void>;
-  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
-  onDeleteMemory?: (memoryId: string) => Promise<void>;
-  onTogglePin?: (memoryId: string) => Promise<void>;
-  isHighlighted?: boolean;
-  isCompact?: boolean;
-  priorityPoster?: boolean;
-}
-
-export const MovieCard: React.FC<MovieCardProps> = ({
-  movie,
-  currentUser,
-  onToggle,
-  onToggleError,
-  onDelete,
-  onRename,
-  memories = [],
-  onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
-  onTogglePin,
-  isHighlighted = false,
-  isCompact = false,
-  priorityPoster = false,
-}) => {
-  const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
-  const [isTitleVisible, setIsTitleVisible] = React.useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
-  const [detailsOrigin, setDetailsOrigin] =
-    React.useState<MovieTransitionOrigin | null>(null);
-  const [isUpdating, setIsUpdating] = React.useState(false);
-  const cardRef = React.useRef<HTMLDivElement | null>(null);
-  const posterRef = React.useRef<HTMLDivElement | null>(null);
-  const isMobile = isCompact;
-  const isGuest = !currentUser;
-  const watchedByBoth = movie.watchedBy.length === 2;
-  const handleOpenDetails = () => {
-    const rect =
-      posterRef.current?.getBoundingClientRect() ??
-      cardRef.current?.getBoundingClientRect();
-    if (rect) {
-      setDetailsOrigin({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-      });
-    }
-    setIsTitleVisible(true);
-    setIsDetailsOpen(true);
-  };
-
-  const handlePosterClick = () => {
-    handleOpenDetails();
-  };
-
-  React.useEffect(() => {
-    if (!isTitleVisible || isDetailsOpen) {
-      return;
-    }
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (!cardRef.current?.contains(event.target as Node)) {
-        setIsTitleVisible(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [isDetailsOpen, isTitleVisible]);
-
-  const handleToggle = async () => {
-    if (isGuest) {
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      await onToggle();
-    } catch (error) {
-      consoleError("Failed to toggle watched status", error);
-      onToggleError?.(
-        getErrorMessage(error, "Failed to update watched status."),
-      );
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  return (
-    <>
-      <div
-        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
-        data-movie-id={movie.id}
-      >
-        <CardTiltShell disabled={isCompact}>
-          <Card
-            ref={cardRef}
-            variant="default"
-            className="movie-item-card chroma-card"
-            data-added-by={movie.addedBy}
-            style={{
-              padding: 0,
-              overflow: "hidden",
-            }}
-          >
-            <CardTiltSheen />
-            <MediaCardPosterWrap
-              ref={posterRef}
-              className="movie-item-poster-wrap"
-            >
-              <MediaPoster
-                title={movie.title}
-                posterUrl={movie.posterUrl}
-                year={movie.year}
-                id={movie.id}
-                priority={priorityPoster}
-              />
-
-              <MediaCardWatcherStack
-                watchers={movie.watchedBy}
-                className="movie-item-watchers"
-              />
-
-              <div className="movie-item-title-overlay" aria-hidden="true">
-                <MediaCardTitle className="movie-item-title-overlay__title">
-                  {movie.title}
-                </MediaCardTitle>
-                {movie.year && (
-                  <div className="movie-item-title-overlay__meta">
-                    <span className="movie-item-meta__year">{movie.year}</span>
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                className="movie-item-details-hit-area"
-                onClick={handlePosterClick}
-                aria-expanded={isDetailsOpen}
-                aria-label={`View details for "${movie.title}"`}
-              />
-            </MediaCardPosterWrap>
-          </Card>
-        </CardTiltShell>
-      </div>
-
-      {onRename ? (
-        <MovieTitleEditModal
-          movie={movie}
-          isOpen={isTitleEditorOpen}
-          isMobile={isMobile}
-          onClose={() => setIsTitleEditorOpen(false)}
-          onSubmit={onRename}
-          onDelete={onDelete}
-        />
-      ) : null}
-
-      <React.Suspense fallback={null}>
-        <MovieDetailsModal
-          movie={movie}
-          memories={memories}
-          isOpen={isDetailsOpen}
-          origin={detailsOrigin}
-          currentUser={currentUser}
-          onToggleWatched={currentUser ? handleToggle : undefined}
-          isWatchedByCurrentUser={Boolean(
-            currentUser && movie.watchedBy.includes(currentUser),
-          )}
-          isUpdatingWatchStatus={isUpdating}
-          onEdit={
-            onRename
-              ? () => {
-                  setIsDetailsOpen(false);
-                  setIsTitleEditorOpen(true);
-                }
-              : undefined
-          }
-          onAddMemory={onAddMemory}
-          onUpdateMemory={onUpdateMemory}
-          onDeleteMemory={onDeleteMemory}
-          onTogglePin={onTogglePin}
-          onClose={() => setIsDetailsOpen(false)}
-        />
-      </React.Suspense>
-    </>
-  );
-};
-
-
-
-
-interface SuggestionCardProps {
-
-  suggestion: MovieSuggestion;
-  onAccept: () => void;
-  onReject: () => void;
-  canRespond?: boolean;
-  disableActions?: boolean;
-  isProcessing?: boolean;
-  className?: string;
-}
-
-export const SuggestionCard: React.FC<SuggestionCardProps> = ({
-  suggestion,
-  onAccept,
-  onReject,
-  canRespond = true,
-  disableActions = false,
-  isProcessing = false,
-  className,
-}) => {
-  const [posterUrl, setPosterUrl] = React.useState<string | undefined>(
-    undefined,
-  );
-  const [year, setYear] = React.useState<string | undefined>(undefined);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    const controller = new AbortController();
-
-    fetchOmdbMetadataCached(
-      suggestion.title,
-      suggestion.type,
-      suggestion.imdbID,
-      controller.signal,
-    )
-      .then((meta) => {
-        if (cancelled) return;
-        setPosterUrl(meta.poster);
-        setYear(meta.year);
-      })
-      .catch(() => {
-        // Silent fail — fallback chain handles missing posters
-      });
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [suggestion.title, suggestion.type, suggestion.imdbID]);
-
-  return (
-    <SuggestionCardBase
-      suggestedBy={suggestion.suggestedBy}
-      title={suggestion.title}
-      subtitle={suggestion.reason}
-      year={year}
-      imdbRating={undefined} // We don't fetch imdbRating yet in SuggestionMovieCard, but we can if we extend the fetcher.
-      onAccept={onAccept}
-      onReject={onReject}
-      canRespond={canRespond}
-      disableActions={disableActions}
-      isProcessing={isProcessing}
-      className={[`movie-item-card suggestion-item-card`, className]
-        .filter(Boolean)
-        .join(" ")}
-      media={
-        <MediaPoster
-          title={suggestion.title}
-          posterUrl={posterUrl}
-          year={year}
-          id={suggestion.id}
-        />
-      }
-      details={
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}>
-          {/* We remove year from here since it's now in the overlay */}
-          <StremioButton
-            movie={{
-              title: suggestion.title,
-              imdbID: suggestion.imdbID,
-              mediaType: suggestion.type,
-            }}
-            variant="pill"
-          />
-        </div>
-      }
-    />
   );
 };

@@ -500,7 +500,7 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
     const el = ref.current;
     if (!el) return;
     el.style.willChange = "transform";
-    el.style.transition = "transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)";
+    el.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)";
   }, []);
 
   const onMouseMove = useCallback((e: React.MouseEvent) => {
@@ -521,7 +521,7 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
       const rotY = dx * TILT_MAX_DEG;
       const rotX = -dy * TILT_MAX_DEG;
 
-      el.style.transition = "transform 0.08s ease-out";
+      el.style.transition = "transform 0.15s ease-out";
       el.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(${SCALE_ON_HOVER}, ${SCALE_ON_HOVER}, ${SCALE_ON_HOVER})`;
       el.style.setProperty(
         "--sheen-x",
@@ -540,7 +540,7 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
     cancelAnimationFrame(raf.current);
     const el = ref.current;
     if (!el) return;
-    el.style.transition = "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)";
+    el.style.transition = "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)";
     el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
     el.style.willChange = "auto";
     el.style.removeProperty("--sheen-x");

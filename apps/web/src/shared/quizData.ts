@@ -517,6 +517,7 @@ export const clearSavedQuizProgress = (storageKey: string) => {
 
   try {
     window.localStorage.removeItem(storageKey);
+
   } catch {
     // Ignore localStorage cleanup errors
   }

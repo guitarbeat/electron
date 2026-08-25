@@ -26,7 +26,6 @@ import { useCollection } from "../index.ts";
 import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/providerContexts";
 import { isMockMode } from "../../services/state";
-import { preloadPosterImages } from "@/services/posterImageCache";
 
 const POLLING_INTERVAL = 15000;
 
@@ -212,8 +211,8 @@ export const useMovies = (
     [currentUser, movies, performMutation, performMutationIfMoviePresent],
   );
 
-  const renameMovie = useCallback(
-    async (movieId: string, title: string) => {
+  const editMovie = useCallback(
+    async (movieId: string, updates: { title: string; customPosterUrl?: string }) => {
       if (!currentUser) {
         throw new Error("Profile required");
       }
@@ -223,17 +222,22 @@ export const useMovies = (
         throw new Error("Movie not found");
       }
 
-      const cleanTitle = validateMovieTitle(title);
-
+      const cleanTitle = validateMovieTitle(updates.title);
+      
       const optimisticMovies = movies.map((movie: Movie) =>
-        movie.id === movieId ? { ...movie, title: cleanTitle } : movie,
+        movie.id === movieId ? { 
+          ...movie, 
+          title: cleanTitle, 
+          ...(updates.customPosterUrl !== undefined ? { customPosterUrl: updates.customPosterUrl || undefined } : {})
+        } : movie,
       );
 
       await performMutation(
-        "rename_movie",
+        "edit_movie",
         {
           movieId,
           title: cleanTitle,
+          customPosterUrl: updates.customPosterUrl,
         },
         optimisticMovies,
       );
@@ -427,11 +431,6 @@ export const useMovies = (
     }
   }, [autoSyncMetadata, currentUser, isLoading, movies]);
 
-  useEffect(() => {
-    if (movies.length > 0) {
-      preloadPosterImages(movies.map((m) => m.posterUrl));
-    }
-  }, [movies]);
 
   const sortedMovies = useMemo(() => sortMovies(movies), [movies]);
 
@@ -444,7 +443,7 @@ export const useMovies = (
     isSyncBlocked,
     syncWarning,
     addMovie,
-    renameMovie,
+    editMovie,
     toggleWatched,
     deleteMovie,
     restoreMovie,

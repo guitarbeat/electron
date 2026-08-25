@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { isValidUrl, sanitizeInput } from "../../utils/shared.ts";
-import { preloadPosterImages } from "../posterImageCache.ts";
 
 // Types
 
@@ -639,12 +638,6 @@ export const searchMovieAutocomplete = async (
   evictMapOldest(autocompleteMergedCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
 
   // Pre-decode poster images in the background so posters render instantly with zero lag
-  if (typeof window !== "undefined") {
-    const postersToPreload = merged.map((item) => item.poster).filter(Boolean);
-    if (postersToPreload.length > 0) {
-      preloadPosterImages(postersToPreload);
-    }
-  }
 
   return merged;
 };

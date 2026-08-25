@@ -48,6 +48,7 @@ export interface Movie {
 
   // Metadata
   posterUrl?: string;
+  customPosterUrl?: string;
   year?: string;
   plot?: string;
   imdbRating?: string;

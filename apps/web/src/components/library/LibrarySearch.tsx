@@ -72,12 +72,16 @@ const revealLibraryItem = (selection: LibrarySelection) => {
 };
 
 const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) => {
+  const [query, setQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const isSearchActive = isFocused || query.length > 0;
+
   const { currentUser } = useUser();
   const { showToast } = useToast();
   const { movies, addMovie } = useMovies(currentUser);
   const { addSuggestion } = useSuggestions();
-  const { places, addPlace } = usePlaces(currentUser);
-  const { addPlaceSuggestion } = usePlaceSuggestions();
+  const { places, addPlace } = usePlaces(currentUser, !isSearchActive);
+  const { addPlaceSuggestion } = usePlaceSuggestions(!isSearchActive);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRegionRef = useRef<HTMLDivElement>(null);
@@ -85,13 +89,11 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
   const dropdownInteractionPendingRef = useRef(false);
   const listId = useId();
 
-  const [query, setQuery] = useState("");
   const [selection, setSelection] = useState<LibrarySelection>(null);
   const [movieResults, setMovieResults] = useState<MovieAutocompleteResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -444,10 +446,14 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
                 }}
                 buttonText={primaryLabel}
                 secondaryButtonText="Quiz"
+                onSecondaryPointerEnter={() => void import("@/components/quiz")}
+                onSecondaryFocus={() => void import("@/components/quiz")}
                 onSecondarySubmit={() => {
                   window.dispatchEvent(new CustomEvent("open-quiz-experience"));
                 }}
                 spinButtonText="Spin"
+                onSpinPointerEnter={() => void import("@/components/spin-match/SpinSwipeGame")}
+                onSpinFocus={() => void import("@/components/spin-match/SpinSwipeGame")}
                 onSpinSubmit={() => {
                   window.dispatchEvent(new CustomEvent("open-spin-experience"));
                 }}

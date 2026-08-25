@@ -1,15 +1,15 @@
 import React, { useState, useCallback } from "react";
 import type { Place } from "@/shared/types";
 import { usePlaces, usePlaceSuggestions } from "@/hooks/places";
-import { useUser } from "@/app/providerContexts";
+import { useUser, useViewport } from "@/app/providerContexts";
 import { PLACES_GRID_MIN_COL } from "@/utils/workspaceConfig";
-import { 
-  CollectionEmptyState, 
-  SyncBanner, 
-  ConfirmDialog, 
-  CollectionGrid, 
-  CardTiltShell, 
-  Card, 
+import {
+  CollectionEmptyState,
+  SyncBanner,
+  ConfirmDialog,
+  CollectionGrid,
+  CardTiltShell,
+  Card,
   CardTiltSheen,
   Button,
   MediaCardPosterWrap,
@@ -17,6 +17,14 @@ import {
   MediaCardTitle,
 } from "@/components/ui";
 import { PlacesEmptyIllustration } from "@/components/ui/EmptyStateIllustrations";
+import { PlaceEditModal } from "./PlaceEditModal";
+import DriftWall from "@/components/ui/DriftWall";
+
+const driftWallItems = [
+  { image: 'https://picsum.photos/id/1015/600/400', title: 'Peaks', href: 'https://example.com/one' },
+  { image: 'https://picsum.photos/id/1025/600/400', title: 'Pup', href: 'https://example.com/two' },
+  { image: 'https://picsum.photos/id/1039/600/400', title: 'Falls', href: 'https://example.com/three' },
+];
 
 export const PlaceCard: React.FC<{
   place: Place;
@@ -24,69 +32,86 @@ export const PlaceCard: React.FC<{
   onMarkVisited: (id: string) => void;
   onMarkUnvisited: (id: string) => void;
   onDelete: (place: Place) => void;
-}> = ({ place, canEdit, onDelete, onMarkVisited, onMarkUnvisited }) => (
-  <div className={`movie-item-container ${place.visitedAt ? "movie-item-container--watched" : ""}`}>
-    <CardTiltShell>
-      <Card variant="default" className="movie-item-card chroma-card" style={{ padding: 0, overflow: "hidden" }}>
-        <CardTiltSheen />
-        <MediaCardPosterWrap className="movie-item-poster-wrap">
-          <MediaPoster
-            title={place.name}
-            posterUrl={place.imageUrl}
-            id={place.id}
-          />
-          <div className="movie-item-title-overlay" aria-hidden="true">
-            <MediaCardTitle className="movie-item-title-overlay__title">
-              {place.name}
-            </MediaCardTitle>
-            <div className="movie-item-title-overlay__meta">
-              <span className="movie-item-meta__year" style={{ color: "#38bdf8", fontWeight: 600 }}>
-                📍 {place.category || "Place"}
-              </span>
-              {place.visitedAt ? (
-                <span className="movie-item-meta__rating" style={{ color: "var(--color-accent)" }}>Visited</span>
-              ) : (
-                <span className="movie-item-meta__rating">To Visit</span>
-              )}
-            </div>
-          </div>
+  onEdit: (id: string, updates: { name: string; imageUrl?: string }) => Promise<void>;
+  isMobile: boolean;
+}> = ({ place, canEdit, onDelete, onMarkVisited, onMarkUnvisited, onEdit, isMobile }) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-          <button
-            type="button"
-            className="movie-item-details-hit-area"
-            onClick={() => {
-              if (canEdit) {
-                if (place.visitedAt) {
-                  onMarkUnvisited(place.id);
-                } else {
-                  onMarkVisited(place.id);
-                }
-              }
-            }}
-            aria-label={`Toggle visited status for "${place.name}"`}
-          />
-
-          {canEdit && (
-            <div className="place-item-actions-overlay" style={{ position: 'absolute', left: 0, right: 0, zIndex: 10, pointerEvents: 'auto', bottom: 'auto', top: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'flex-end', padding: '0.75rem', opacity: 1 }}>
-              {place.visitedAt ? (
-                <Button size="sm" onClick={(e) => { e.stopPropagation(); onMarkUnvisited(place.id); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Unmark</Button>
-              ) : (
-                <Button size="sm" onClick={(e) => { e.stopPropagation(); onMarkVisited(place.id); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Mark Visited</Button>
+  return (
+    <>
+      <div className={`movie-item-container ${place.visitedAt ? "movie-item-container--watched" : ""}`}>
+        <CardTiltShell>
+          <Card variant="default" className="movie-item-card chroma-card" style={{ padding: 0, overflow: "hidden" }}>
+            <CardTiltSheen />
+            <MediaCardPosterWrap className="movie-item-poster-wrap">
+              <MediaPoster
+                title={place.name}
+                posterUrl={place.imageUrl}
+                id={place.id}
+              />
+              <div className="movie-item-title-overlay" aria-hidden="true">
+                <MediaCardTitle className="movie-item-title-overlay__title">
+                  {place.name}
+                </MediaCardTitle>
+                <div className="movie-item-title-overlay__meta">
+                  <span className="movie-item-meta__year" style={{ color: "#38bdf8", fontWeight: 600 }}>
+                    📍 {place.category || "Place"}
+                  </span>
+                  {place.visitedAt ? (
+                    <span className="movie-item-meta__rating" style={{ color: "var(--color-accent)" }}>Visited</span>
+                  ) : (
+                    <span className="movie-item-meta__rating">To Visit</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="movie-item-details-hit-area"
+                onClick={() => {
+                  if (canEdit) {
+                    if (place.visitedAt) {
+                      onMarkUnvisited(place.id);
+                    } else {
+                      onMarkVisited(place.id);
+                    }
+                  }
+                }}
+                aria-label={`Toggle visited status for "${place.name}"`}
+              />
+              {canEdit && (
+                <div className="place-item-actions-overlay" style={{ position: 'absolute', left: 0, right: 0, zIndex: 10, pointerEvents: 'auto', bottom: 'auto', top: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'flex-end', padding: '0.75rem', opacity: 1 }}>
+                  <Button size="sm" onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Edit</Button>
+                  {place.visitedAt ? (
+                    <Button size="sm" onClick={(e) => { e.stopPropagation(); onMarkUnvisited(place.id); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Unmark</Button>
+                  ) : (
+                    <Button size="sm" onClick={(e) => { e.stopPropagation(); onMarkVisited(place.id); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Mark Visited</Button>
+                  )}
+                  <Button size="sm" variant="danger" onClick={(e) => { e.stopPropagation(); onDelete(place); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Delete</Button>
+                </div>
               )}
-              <Button size="sm" variant="danger" onClick={(e) => { e.stopPropagation(); onDelete(place); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Delete</Button>
-            </div>
-          )}
-        </MediaCardPosterWrap>
-      </Card>
-    </CardTiltShell>
-  </div>
-);
+            </MediaCardPosterWrap>
+          </Card>
+        </CardTiltShell>
+      </div>
+      {canEdit && isEditModalOpen && (
+        <PlaceEditModal
+          place={place}
+          isOpen={isEditModalOpen}
+          isMobile={isMobile}
+          onClose={() => setIsEditModalOpen(false)}
+          onSubmit={async (updates) => {
+            await onEdit(place.id, updates);
+          }}
+        />
+      )}
+    </>
+  );
+};
 
 export const PlacesList: React.FC<{ isPaused?: boolean }> = ({ isPaused = false }) => {
   const { currentUser } = useUser();
-    
+  const { isMobile } = useViewport();
   
-
   const {
     places: allPlaces,
     isLoading,
@@ -96,7 +121,8 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({ isPaused = false 
     retrySync,
     removePlace,
     markVisited,
-    markUnvisited
+    markUnvisited,
+    updatePlace
   } = usePlaces(currentUser, isPaused);
 
   const {
@@ -133,6 +159,29 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({ isPaused = false 
           <span className="workspace-section-heading__label">Places</span>
         </span>
       </h2>
+      <div style={{ height: 600, width: "100%", overflow: "hidden", position: "relative", marginBottom: "2rem" }}>
+        <DriftWall
+          items={driftWallItems}
+          columns={8}
+          tileWidth={128}
+          tileHeight={132}
+          gap={18}
+          tilt={0}
+          turn={0}
+          perspective={1200}
+          depth={120}
+          speed={42}
+          direction="up"
+          variance={0.45}
+          parallax={1}
+          lift={64}
+          fade={0.5}
+          dim={0.85}
+          overlayColor="#060010"
+          radius={7}
+          pauseOnHover
+        />
+      </div>
       <div className="watchlist-container places-container">
         {isDegraded && (
           <SyncBanner
@@ -169,6 +218,8 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({ isPaused = false 
                   onMarkVisited={handleMarkVisited}
                   onMarkUnvisited={handleMarkUnvisited}
                   onDelete={setPlaceToDelete}
+                  onEdit={updatePlace}
+                  isMobile={isMobile}
                 />
               </div>
             ))}

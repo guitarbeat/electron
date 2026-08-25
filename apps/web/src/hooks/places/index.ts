@@ -1,9 +1,8 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { Place, PlaceSuggestion, User } from "@/shared/types";
 import { sanitizeInput, validateAndThrow, validatePlace } from "@/utils";
 import { useCollection } from "../index.ts";
 import { useSuggestionCollection } from "../suggestions";
-import { preloadPosterImages } from "@/services/posterImageCache";
 
 const POLLING_INTERVAL = 15000;
 
@@ -28,7 +27,7 @@ export const usePlaces = (
   });
 
   const addPlace = useCallback(
-    async (name: string, notes?: string, lat?: number, lng?: number) => {
+    async (name: string, notes?: string, lat?: number, lng?: number, imageUrl?: string) => {
       validateAndThrow(validatePlace, { name, notes: notes || "" });
 
       const trimmed = sanitizeInput(name.trim());
@@ -41,6 +40,7 @@ export const usePlaces = (
         notes: notes?.trim() || undefined,
         createdAt: new Date().toISOString(),
         ...(typeof lat === "number" && typeof lng === "number" && { lat, lng }),
+        imageUrl,
       };
 
       await performMutation(
@@ -51,6 +51,7 @@ export const usePlaces = (
           notes: place.notes,
           lat: place.lat,
           lng: place.lng,
+          imageUrl: place.imageUrl,
         },
         [...places, place],
       );
@@ -90,7 +91,7 @@ export const usePlaces = (
     async (
       id: string,
       updates: Partial<
-        Pick<Place, "name" | "notes" | "lat" | "lng" | "category">
+        Pick<Place, "name" | "notes" | "lat" | "lng" | "category" | "imageUrl">
       >,
     ) => {
       if (updates.name !== undefined || updates.notes !== undefined) {
@@ -131,11 +132,6 @@ export const usePlaces = (
     [performMutation, places],
   );
 
-  useEffect(() => {
-    if (places.length > 0) {
-      preloadPosterImages(places.map((p) => p.imageUrl));
-    }
-  }, [places]);
 
   return {
     places,

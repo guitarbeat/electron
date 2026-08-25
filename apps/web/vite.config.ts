@@ -66,48 +66,12 @@ export default defineConfig(({ mode }) => {
   },
   root: path.resolve(import.meta.dirname),
   build: {
-    chunkSizeWarningLimit: 1100,
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     target: "es2022",
     cssCodeSplit: true,
     modulePreload: { polyfill: true },
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (
-            id.includes("/node_modules/react/") ||
-            id.includes("/node_modules/react-dom/") ||
-            id.includes("/node_modules/scheduler/") ||
-            id.includes("/node_modules/use-sync-external-store/") ||
-            id.includes("/node_modules/object-assign/") ||
-            id.includes("/node_modules/react-is/")
-          ) {
-            return "react-vendor";
-          }
-          if (id.includes("/node_modules/motion/")) {
-            return "motion-vendor";
-          }
-          if (id.includes("/node_modules/maplibre-gl/")) {
-            return "map-vendor";
-          }
-          if (id.includes("/node_modules/lucide-react/")) {
-            return "icons-vendor";
-          }
-          if (
-            id.includes("/node_modules/dompurify/") ||
-            id.includes("/node_modules/html-react-parser/")
-          ) {
-            return "sanitize-vendor";
-          }
-          if (id.includes("/node_modules/")) {
-            return "vendor";
-          }
-          return undefined;
-        },
-      },
-    },
   },
   server: {
     port,

@@ -10,8 +10,10 @@ import type { ThemeName } from "@/theme/tokens";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5000,
-      refetchOnWindowFocus: true,
+      staleTime: 5 * 60_000,
+      gcTime: 30 * 60_000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
     },
   },
 });

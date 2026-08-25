@@ -291,10 +291,10 @@ export const placesScopeDefinition: ScopeDefinition<'places', unknown> = {
           notes?: unknown;
           lat?: unknown;
           lng?: unknown;
+          imageUrl?: unknown;
         };
         const id = extractString(nextPayload.id);
         const name = extractString(nextPayload.name);
-
         if (!id || !name) {
           return { ok: false, conflict: 'Invalid place payload.' };
         }
@@ -317,6 +317,7 @@ export const placesScopeDefinition: ScopeDefinition<'places', unknown> = {
               createdAt: context.now,
               lat: typeof nextPayload.lat === 'number' ? nextPayload.lat : undefined,
               lng: typeof nextPayload.lng === 'number' ? nextPayload.lng : undefined,
+              imageUrl: typeof nextPayload.imageUrl === 'string' ? extractString(nextPayload.imageUrl) || undefined : undefined,
             },
           ],
         };
@@ -324,7 +325,7 @@ export const placesScopeDefinition: ScopeDefinition<'places', unknown> = {
       case 'update_place': {
         const nextPayload = payload as {
           placeId?: unknown;
-          updates?: { name?: unknown; notes?: unknown; category?: unknown; lat?: unknown; lng?: unknown };
+          updates?: { name?: unknown; notes?: unknown; category?: unknown; lat?: unknown; lng?: unknown; imageUrl?: unknown };
         };
         const placeId = extractString(nextPayload.placeId);
 
@@ -345,6 +346,7 @@ export const placesScopeDefinition: ScopeDefinition<'places', unknown> = {
                   category: typeof upd.category === 'string' ? extractString(upd.category) || undefined : place.category,
                   lat: typeof upd.lat === 'number' ? upd.lat : place.lat,
                   lng: typeof upd.lng === 'number' ? upd.lng : place.lng,
+                  imageUrl: typeof upd.imageUrl === 'string' ? extractString(upd.imageUrl) || undefined : place.imageUrl,
                 }
               : place
           ),

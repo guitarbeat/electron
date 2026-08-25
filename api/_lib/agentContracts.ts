@@ -21,7 +21,7 @@ export const placeSuggestionSchema = z.object({
 export const AGENT_ACTIONS = {
   addMovie: { scope: 'movies', op: 'add_movie', description: 'Add one movie or series to the watchlist.', inputExample: { id: 'movie-123', title: 'Arrival', mediaType: 'movie' } },
   addMovies: { scope: 'movies', op: 'add_movies', description: 'Add a batch of movies or series.', inputExample: { items: [{ id: 'movie-123', title: 'Arrival' }] } },
-  renameMovie: { scope: 'movies', op: 'rename_movie', description: 'Rename an existing watchlist item.', inputExample: { movieId: 'movie-123', title: 'Arrival (2016)' } },
+  editMovie: { scope: 'movies', op: 'edit_movie', description: 'Edit an existing watchlist item (title or custom poster).', inputExample: { movieId: 'movie-123', title: 'Arrival (2016)', customPosterUrl: 'https://example.com/poster.jpg' } },
   toggleWatched: { scope: 'movies', op: 'toggle_watched', description: 'Toggle the declared actor in a movie watched list.', inputExample: { movieId: 'movie-123' } },
   deleteMovie: { scope: 'movies', op: 'delete_movie', requiresConfirmation: true, description: 'Delete a movie. Requires confirmation.', inputExample: { movieId: 'movie-123' } },
   restoreMovie: { scope: 'movies', op: 'restore_movie', description: 'Restore a complete previously deleted movie record.', inputExample: { movie: { id: 'movie-123', title: 'Arrival', addedBy: 'Aaron', watchedBy: [], createdAt: '2026-01-01T00:00:00.000Z' } } },

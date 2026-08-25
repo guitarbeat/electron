@@ -240,13 +240,16 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
 
         return { ok: true, data: next };
       }
+      case 'edit_movie':
       case 'rename_movie': {
         const nextPayload = payload as {
           movieId?: unknown;
           title?: unknown;
+          customPosterUrl?: unknown;
         };
         const movieId = extractString(nextPayload.movieId);
         const title = extractString(nextPayload.title);
+        const customPosterUrl = extractString(nextPayload.customPosterUrl);
 
         if (!movieId || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
           return { ok: false, conflict: 'Invalid movie title.' };
@@ -263,6 +266,7 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
               ? {
                   ...movie,
                   title,
+                  ...(customPosterUrl !== undefined ? { customPosterUrl: customPosterUrl || undefined } : {})
                 }
               : movie
           ),

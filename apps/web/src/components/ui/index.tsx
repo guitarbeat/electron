@@ -45,12 +45,7 @@ import type { MovieSections } from "@/components/movies";
 
 
 
-import {
-  useCachedPoster,
-  markPosterLoaded,
-  markPosterFailed,
-  isPosterInMemory,
-} from "@/services/posterImageCache";
+
 
 interface MediaPosterProps {
   title: string;
@@ -68,15 +63,8 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   className = "",
   priority = false,
 }) => {
-  const { src: cachedSrc, isLoaded: isCachedLoaded, hasError: isCachedError } =
-    useCachedPoster(posterUrl);
-
-  const [hasImageError, setHasImageError] = React.useState(() =>
-    Boolean(posterUrl && isCachedError),
-  );
-  const [isLoaded, setIsLoaded] = React.useState(() =>
-    Boolean(posterUrl && isPosterInMemory(posterUrl)),
-  );
+  const [hasImageError, setHasImageError] = React.useState(false);
+  const [isLoaded, setIsLoaded] = React.useState(false);
 
   React.useEffect(() => {
     if (!posterUrl) {
@@ -84,29 +72,19 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       setIsLoaded(false);
       return;
     }
-    setHasImageError(isCachedError);
-    if (isPosterInMemory(posterUrl) || isCachedLoaded) {
-      setIsLoaded(true);
-    }
-  }, [posterUrl, isCachedError, isCachedLoaded]);
+  }, [posterUrl]);
 
   const handleImageError = () => {
-    if (posterUrl) {
-      markPosterFailed(posterUrl);
-    }
     setHasImageError(true);
     setIsLoaded(true);
   };
 
   const handleImageLoad = () => {
-    if (posterUrl) {
-      markPosterLoaded(posterUrl);
-    }
     setIsLoaded(true);
   };
 
-  const shouldShowPoster = Boolean(posterUrl) && !hasImageError && !isCachedError;
-  const activeSrc = cachedSrc || posterUrl;
+  const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
+  const activeSrc = posterUrl;
 
   return (
     <div
@@ -1287,7 +1265,7 @@ export interface BentoSortChipConfig {
 
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
-  renameMovie: (id: string, title: string) => void | unknown;
+  editMovie: (id: string, updates: { title: string; customPosterUrl?: string }) => void | unknown;
   addMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<unknown>;
   updateMemory: (memoryId: string, updates: { note?: string; movieId?: string; movieTitle?: string }) => Promise<unknown>;
   deleteMemory: (memoryId: string) => Promise<void>;
@@ -1363,7 +1341,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       currentUser={currentUser}
       onToggle={() => { actions.toggleWatched(movie.id); }}
       onToggleError={onToggleError}
-      onRename={async (title) => { await actions.renameMovie(movie.id, title); }}
+      onEditMetadata={async (updates) => { await actions.editMovie(movie.id, updates); }}
       onDelete={() => onDeleteRequest(movie)}
       isHighlighted={successMovieId === movie.id}
       memories={movieMemories.get(movie.id) ?? []}

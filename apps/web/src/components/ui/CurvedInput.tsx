@@ -125,9 +125,13 @@ export interface CurvedInputProps
   buttonText: string;
   secondaryButtonText?: string;
   onSecondarySubmit?: () => void;
+  onSecondaryPointerEnter?: () => void;
+  onSecondaryFocus?: () => void;
   secondaryButtonDisabled?: boolean;
   spinButtonText?: string;
   onSpinSubmit?: () => void;
+  onSpinPointerEnter?: () => void;
+  onSpinFocus?: () => void;
   spinButtonDisabled?: boolean;
   bend?: number;
   height?: number;
@@ -145,9 +149,13 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       buttonText,
       secondaryButtonText,
       onSecondarySubmit,
+      onSecondaryPointerEnter,
+      onSecondaryFocus,
       secondaryButtonDisabled = false,
       spinButtonText,
       onSpinSubmit,
+      onSpinPointerEnter,
+      onSpinFocus,
       spinButtonDisabled = false,
       placeholder = "Add a movie, show, or place",
       bend = 24,
@@ -444,10 +452,22 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
               className={`curved-input__button curved-input__button--secondary${
                 disabled || secondaryButtonDisabled ? " is-disabled" : ""
               }`}
+              onPointerEnter={onSecondaryPointerEnter}
+              onFocus={onSecondaryFocus}
+              tabIndex={0}
               onClick={(event) => {
                 event.stopPropagation();
                 if (!disabled && !secondaryButtonDisabled && onSecondarySubmit) {
                   onSecondarySubmit();
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (!disabled && !secondaryButtonDisabled && onSecondarySubmit) {
+                    onSecondarySubmit();
+                  }
                 }
               }}
             >
@@ -465,10 +485,22 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
               className={`curved-input__button curved-input__button--spin${
                 disabled || spinButtonDisabled ? " is-disabled" : ""
               }`}
+              onPointerEnter={onSpinPointerEnter}
+              onFocus={onSpinFocus}
+              tabIndex={0}
               onClick={(event) => {
                 event.stopPropagation();
                 if (!disabled && !spinButtonDisabled && onSpinSubmit) {
                   onSpinSubmit();
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (!disabled && !spinButtonDisabled && onSpinSubmit) {
+                    onSpinSubmit();
+                  }
                 }
               }}
             >

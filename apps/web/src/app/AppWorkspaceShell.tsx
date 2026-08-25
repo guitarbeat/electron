@@ -48,7 +48,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   );
 
   const workspaceContent = isLibraryWorkspaceTab(activeTab) ? (
-    <LibraryWorkspace />
+    <LibraryWorkspace activeTab={activeTab} />
   ) : (
     <MessageBoard />
   );
@@ -149,6 +149,8 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           <button
             type="button"
             className={`chat-fab${isChatOpen ? " is-open" : ""}`}
+            onPointerEnter={() => void import("@/components/messages")}
+            onFocus={() => void import("@/components/messages")}
             onClick={() => onTogglePanel("messages")}
             aria-label={isChatOpen ? "Close chat" : "Open chat"}
             aria-expanded={isChatOpen}

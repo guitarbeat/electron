@@ -12,10 +12,6 @@ import {
 } from "@/app/appViewState";
 import { buildFeatureModals } from "@/app/buildMinigameModals";
 import {
-  preloadCriticalAppModules,
-  preloadDeferredAppModules,
-} from "@/app/preloadAppModules";
-import {
   readQuizCompletionState,
   writeQuizCompletionState,
 } from "@/app/quizCompletionStorage";
@@ -28,7 +24,6 @@ import { useAppTabNavigation } from "@/hooks";
 import { useMediaQuery } from "@/hooks";
 import { useTvSpatialNavigation } from "@/hooks";
 
-import { scheduleIdleWork } from "@/utils";
 import { MinigameModal } from "@/components/ui";
 import { ProfilePinPanel } from "@/components/ui";
 import { WorkspaceTabFallback } from "@/components/ui";
@@ -87,19 +82,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
-  }, []);
-
-  useEffect(() => {
-    void preloadCriticalAppModules().catch((err) => {
-      console.warn("Critical module preload error:", err);
-    });
-  }, []);
-
-  // Preload deferred modules on idle work
-  useEffect(() => {
-    return scheduleIdleWork(() => {
-      void preloadDeferredAppModules();
-    }, 50);
   }, []);
 
   useEffect(() => {
