@@ -1,6 +1,6 @@
 import React from "react";
 
-const lazyWithRetry = <T extends React.ComponentType<unknown>>(
+export const lazyWithRetry = <T extends React.ComponentType<unknown>>(
   importFn: () => Promise<{ default: T }>,
 ) =>
   React.lazy(async () => {
@@ -12,6 +12,10 @@ const lazyWithRetry = <T extends React.ComponentType<unknown>>(
       return await importFn();
     }
   });
+
+export const LibraryWorkspacePanel = lazyWithRetry(
+  () => import("@/components/library/LibraryWorkspace"),
+);
 
 export const MessageBoardPanel = lazyWithRetry(
   () => import("@/components/messages").then(m => ({ default: m.MessageBoard })),

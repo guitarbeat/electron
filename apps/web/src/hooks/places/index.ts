@@ -1,8 +1,9 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Place, PlaceSuggestion, User } from "@/shared/types";
 import { sanitizeInput, validateAndThrow, validatePlace } from "@/utils";
 import { useCollection } from "../index.ts";
 import { useSuggestionCollection } from "../suggestions";
+import { preloadPosterImages } from "@/services/posterImageCache";
 
 const POLLING_INTERVAL = 15000;
 
@@ -129,6 +130,12 @@ export const usePlaces = (
     },
     [performMutation, places],
   );
+
+  useEffect(() => {
+    if (places.length > 0) {
+      preloadPosterImages(places.map((p) => p.imageUrl));
+    }
+  }, [places]);
 
   return {
     places,

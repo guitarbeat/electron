@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidUrl, sanitizeInput } from "../../utils/shared.ts";
+import { preloadPosterImages } from "../posterImageCache.ts";
 
 // Types
 
@@ -73,6 +74,28 @@ export const MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT = 5;
 export const OMDB_AUTH_FAILURE_CODE = "omdb_auth";
 export const OMDB_CONFIG_FAILURE_CODE = "omdb_config";
 
+// Caches
+
+const MAX_AUTOCOMPLETE_CACHE_SIZE = 300;
+const AUTOCOMPLETE_CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes
+
+interface SearchCacheEntry<T> {
+  results: T;
+  timestamp: number;
+}
+
+const omdbSearchCache = new Map<string, SearchCacheEntry<MovieAutocompleteResult[]>>();
+const tvmazeSearchCache = new Map<string, SearchCacheEntry<MovieAutocompleteResult[]>>();
+const autocompleteMergedCache = new Map<string, SearchCacheEntry<MovieAutocompleteResult[]>>();
+
+const evictMapOldest = <T>(cache: Map<string, SearchCacheEntry<T>>, maxSize: number) => {
+  while (cache.size > maxSize) {
+    const oldestKey = cache.keys().next().value;
+    if (!oldestKey) break;
+    cache.delete(oldestKey);
+  }
+};
+
 // OMDb Service
 
 const omdbTitleField = z
@@ -141,6 +164,13 @@ export const searchOmdbMovies = async (
   query: string,
   signal?: AbortSignal,
 ): Promise<MovieAutocompleteResult[]> => {
+  const normKey = query.trim().toLowerCase();
+  const cached = omdbSearchCache.get(normKey);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS) {
+    return cached.results;
+  }
+
   const base =
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
   const url = new URL(OMDB_BASE, base);
@@ -151,10 +181,18 @@ export const searchOmdbMovies = async (
   }
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AUTOCOMPLETE_REQUEST_TIMEOUT_MS);
+    const mergedSignal =
+      signal && typeof AbortSignal.any === "function"
+        ? AbortSignal.any([signal, controller.signal])
+        : (signal ?? controller.signal);
+
     const response = await fetch(url.toString(), {
-      signal,
+      signal: mergedSignal,
       headers: { Accept: "application/json" },
     });
+    clearTimeout(timeoutId);
 
     const json = await response.json();
 
@@ -174,6 +212,7 @@ export const searchOmdbMovies = async (
     const data = OmdbSearchResultSchema.parse(json);
 
     if (!data.Search) {
+      omdbSearchCache.set(normKey, { results: [], timestamp: now });
       return [];
     }
 
@@ -181,7 +220,7 @@ export const searchOmdbMovies = async (
       (movie) => sanitizeInput(movie.Title).length > 0,
     );
 
-    return withTitles.slice(0, 6).map(
+    const results = withTitles.slice(0, 6).map(
       (movie): MovieAutocompleteResult => ({
         title: sanitizeInput(movie.Title),
         year: movie.Year,
@@ -190,6 +229,10 @@ export const searchOmdbMovies = async (
         poster: normalizePosterUrl(movie.Poster),
       }),
     );
+
+    omdbSearchCache.set(normKey, { results, timestamp: now });
+    evictMapOldest(omdbSearchCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
+    return results;
   } catch (error) {
     if (error instanceof Error) {
       if (
@@ -312,6 +355,13 @@ export const searchTvMazeShows = async (
   query: string,
   signal?: AbortSignal,
 ): Promise<MovieAutocompleteResult[]> => {
+  const normKey = query.trim().toLowerCase();
+  const cached = tvmazeSearchCache.get(normKey);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS) {
+    return cached.results;
+  }
+
   const base =
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
   const url = new URL(TVMAZE_BASE, base);
@@ -322,7 +372,7 @@ export const searchTvMazeShows = async (
     const controller = new AbortController();
     const timeoutId = setTimeout(
       () => controller.abort(),
-      METADATA_REQUEST_TIMEOUT_MS,
+      AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
     );
     const mergedSignal =
       signal && typeof AbortSignal.any === "function"
@@ -343,10 +393,11 @@ export const searchTvMazeShows = async (
     const data = (await response.json()) as TvMazeSearchEntry[];
 
     if (!Array.isArray(data)) {
+      tvmazeSearchCache.set(normKey, { results: [], timestamp: now });
       return [];
     }
 
-    return data.map((entry) => ({
+    const results = data.map((entry) => ({
       title: entry.show.name || "",
       year: entry.show.premiered?.split("-")[0],
       imdbID: `tv-${entry.show.id}`,
@@ -355,6 +406,10 @@ export const searchTvMazeShows = async (
         entry.show.image?.medium || entry.show.image?.original,
       ),
     }));
+
+    tvmazeSearchCache.set(normKey, { results, timestamp: now });
+    evictMapOldest(tvmazeSearchCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
+    return results;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       throw error;
@@ -497,6 +552,45 @@ export const mergeMovieAutocompleteResults = (
     .slice(0, MOVIE_AUTOCOMPLETE_RESULT_LIMIT);
 };
 
+/**
+ * Synchronous cache lookup for instantaneous autocomplete rendering (0ms delay).
+ */
+export const getCachedMovieAutocomplete = (
+  query: string,
+): MovieAutocompleteResult[] | null => {
+  const normKey = query.trim().toLowerCase();
+  if (normKey.length < 2) return null;
+
+  const now = Date.now();
+  const cached = autocompleteMergedCache.get(normKey);
+  if (cached && now - cached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS) {
+    return cached.results;
+  }
+
+  // Fallback: check if we have results in individual caches and can merge them instantly
+  const omdbCached = omdbSearchCache.get(normKey);
+  const tvmazeCached = tvmazeSearchCache.get(normKey);
+  if (omdbCached || tvmazeCached) {
+    const omdbList = omdbCached && now - omdbCached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS
+      ? omdbCached.results
+      : [];
+    const tvList = tvmazeCached && now - tvmazeCached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS
+      ? tvmazeCached.results
+      : [];
+    if (omdbList.length > 0 || tvList.length > 0) {
+      const merged = mergeMovieAutocompleteResults(
+        omdbList.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT),
+        tvList.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT),
+        query,
+      );
+      autocompleteMergedCache.set(normKey, { results: merged, timestamp: now });
+      return merged;
+    }
+  }
+
+  return null;
+};
+
 export const searchMovieAutocomplete = async (
   query: string,
   options: { signal?: AbortSignal } = {},
@@ -504,6 +598,13 @@ export const searchMovieAutocomplete = async (
   const trimmedQuery = query.trim();
   if (!trimmedQuery) {
     return [];
+  }
+
+  const normKey = trimmedQuery.toLowerCase();
+  const now = Date.now();
+  const cached = autocompleteMergedCache.get(normKey);
+  if (cached && now - cached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS) {
+    return cached.results;
   }
 
   const [omdbResults, tvMazeResults] = await Promise.allSettled([
@@ -532,6 +633,19 @@ export const searchMovieAutocomplete = async (
     MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   );
 
-  return mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
+  const merged = mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
+
+  autocompleteMergedCache.set(normKey, { results: merged, timestamp: now });
+  evictMapOldest(autocompleteMergedCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
+
+  // Pre-decode poster images in the background so posters render instantly with zero lag
+  if (typeof window !== "undefined") {
+    const postersToPreload = merged.map((item) => item.poster).filter(Boolean);
+    if (postersToPreload.length > 0) {
+      preloadPosterImages(postersToPreload);
+    }
+  }
+
+  return merged;
 };
 

@@ -448,19 +448,33 @@ export const readSavedQuizProgress = (
     return null;
   }
 
+  let raw: string | null = null;
   try {
-    const raw = window.sessionStorage.getItem(storageKey);
-    if (!raw) {
-      return null;
-    }
+    raw = window.localStorage.getItem(storageKey);
+  } catch {
+    // Ignore localStorage read errors
+  }
 
+  if (!raw) {
+    try {
+      raw = window.sessionStorage.getItem(storageKey);
+    } catch {
+      // Ignore sessionStorage read errors
+    }
+  }
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
     const parsed = JSON.parse(raw) as Partial<SavedQuizProgress>;
     if (
       parsed.questionSignature !== questionSignature ||
       typeof parsed.currentQuestionIndex !== "number" ||
       !Array.isArray(parsed.answers)
     ) {
-      window.sessionStorage.removeItem(storageKey);
+      clearSavedQuizProgress(storageKey);
       return null;
     }
 
@@ -470,7 +484,7 @@ export const readSavedQuizProgress = (
       answers: parsed.answers,
     };
   } catch {
-    window.sessionStorage.removeItem(storageKey);
+    clearSavedQuizProgress(storageKey);
     return null;
   }
 };
@@ -483,7 +497,17 @@ export const writeSavedQuizProgress = (
     return;
   }
 
-  window.sessionStorage.setItem(storageKey, JSON.stringify(progress));
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(progress));
+  } catch (err) {
+    console.warn("Failed to save quiz progress to localStorage:", err);
+  }
+
+  try {
+    window.sessionStorage.removeItem(storageKey);
+  } catch {
+    // Ignore sessionStorage cleanup errors
+  }
 };
 
 export const clearSavedQuizProgress = (storageKey: string) => {
@@ -491,5 +515,15 @@ export const clearSavedQuizProgress = (storageKey: string) => {
     return;
   }
 
-  window.sessionStorage.removeItem(storageKey);
+  try {
+    window.localStorage.removeItem(storageKey);
+  } catch {
+    // Ignore localStorage cleanup errors
+  }
+
+  try {
+    window.sessionStorage.removeItem(storageKey);
+  } catch {
+    // Ignore sessionStorage cleanup errors
+  }
 };

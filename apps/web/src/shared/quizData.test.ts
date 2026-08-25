@@ -6,6 +6,10 @@ import {
   calculateQuizResults,
   normalizeQuizPercentages,
   quizQuestions,
+  buildQuizProgressStorageKey,
+  readSavedQuizProgress,
+  writeSavedQuizProgress,
+  clearSavedQuizProgress,
   type QuizAnswer,
   type QuizCharacter,
   type QuizQuestion,
@@ -114,4 +118,47 @@ test("percentage rounding always totals exactly 100", () => {
     Object.values(percentages).reduce((sum, value) => sum + value, 0),
     100,
   );
+});
+
+test("saves, reads, and clears in-progress quiz progress using local storage mock", () => {
+  const store = new Map<string, string>();
+  const mockStorage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => store.set(key, value),
+    removeItem: (key: string) => store.delete(key),
+    clear: () => store.clear(),
+  };
+
+  const originalWindow = globalThis.window;
+  // @ts-expecting-error mocking window in node test
+  globalThis.window = {
+    localStorage: mockStorage,
+    sessionStorage: mockStorage,
+  };
+
+  try {
+    const storageKey = buildQuizProgressStorageKey("test-user");
+    const signature = "q1|q2|q3";
+    const sampleProgress = {
+      questionSignature: signature,
+      currentQuestionIndex: 2,
+      answers: [{ questionId: "q1", answerIndex: 0 }],
+    };
+
+    writeSavedQuizProgress(storageKey, sampleProgress);
+    assert.equal(store.has(storageKey), true);
+
+    const restored = readSavedQuizProgress(storageKey, signature);
+    assert.deepEqual(restored, sampleProgress);
+
+    const invalidSig = readSavedQuizProgress(storageKey, "wrong-signature");
+    assert.equal(invalidSig, null);
+    assert.equal(store.has(storageKey), false);
+
+    writeSavedQuizProgress(storageKey, sampleProgress);
+    clearSavedQuizProgress(storageKey);
+    assert.equal(store.has(storageKey), false);
+  } finally {
+    globalThis.window = originalWindow;
+  }
 });

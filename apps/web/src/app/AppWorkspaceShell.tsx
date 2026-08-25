@@ -1,15 +1,15 @@
 import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
-import { MessageIcon, WorkspaceTabFallback } from "@/components/ui";
+import { MessageIcon, WorkspaceTabFallback, ProfileMenu } from "@/components/ui";
 import { BentoSlotContext } from "@/app/providerContexts";
 import type { RegisteredBentoSlotConfig } from "@/app/providerContexts";
 import {
   isLibraryWorkspaceTab,
 } from "@/utils/workspaceConfig";
 
-const LibraryWorkspace = React.lazy(() => import("@/components/library/LibraryWorkspace"));
 import {
+  LibraryWorkspacePanel as LibraryWorkspace,
   MessageBoardPanel as MessageBoard,
   SpinSwipeGamePanel as SpinSwipeGame,
 } from "./lazyFeaturePanels";
@@ -114,6 +114,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         {/* Search portal for workspace components */}
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
 
+        {/* Floating Chat Panel Dock */}
         {isChatOpen ? (
           <section
             id="floating-chat-panel"
@@ -135,17 +136,27 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           </section>
         ) : null}
 
-        <button
-          type="button"
-          className={`chat-fab${isChatOpen ? " is-open" : ""}`}
-          onClick={() => onTogglePanel("messages")}
-          aria-label={isChatOpen ? "Close chat" : "Open chat"}
-          aria-expanded={isChatOpen}
-          aria-controls="floating-chat-panel"
+        {/* Floating Quick Controls Cluster (Profile Logins + Chat Bubble) */}
+        <div
+          className="floating-dock-cluster"
+          role="region"
+          aria-label="Quick profile and messaging controls"
         >
-          <MessageIcon size={27} />
-          <span className="chat-fab__status" aria-hidden="true" />
-        </button>
+          <div className="floating-dock-cluster__profiles">
+            <ProfileMenu />
+          </div>
+          <div className="floating-dock-cluster__divider" aria-hidden="true" />
+          <button
+            type="button"
+            className={`chat-fab${isChatOpen ? " is-open" : ""}`}
+            onClick={() => onTogglePanel("messages")}
+            aria-label={isChatOpen ? "Close chat" : "Open chat"}
+            aria-expanded={isChatOpen}
+            aria-controls="floating-chat-panel"
+          >
+            <MessageIcon size={24} />
+          </button>
+        </div>
       </main>
     </BentoSlotContext.Provider>
   );

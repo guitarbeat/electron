@@ -105,7 +105,7 @@ body {
 .app-shell--viewport {
   min-height: 100dvh;
   background-color: var(--color-surface-0);
-  padding: 0.75rem 1.25rem;
+  padding: 0;
 }
 
 .app-shell__canvas {
@@ -117,22 +117,22 @@ body {
 .app-shell__canvas--main {
   display: flex;
   flex-direction: column;
-  gap: var(--shell-canvas-gap);
+  gap: 0;
   flex: 1;
   width: 100%;
 }
 
 .app-shell__canvas--with-rail {
   width: 100%;
-  padding-top: 64px;
+  padding-top: 0;
   margin-left: 0;
-  max-width: 1400px;
+  max-width: 100%;
   margin-right: auto;
 }
 
 @media (max-width: 768px) {
   .app-shell--viewport {
-    padding: 0.5rem 0.75rem 80px;
+    padding: 0;
   }
 
   .app-shell__canvas--with-rail {
@@ -146,9 +146,9 @@ body {
   z-index: 10;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--shell-stack-gap);
+  gap: 0;
   width: 100%;
-  padding: 0.5rem 0 1.5rem;
+  padding: 0;
 }
 
 .app-tab-shell {

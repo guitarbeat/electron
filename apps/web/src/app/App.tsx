@@ -30,11 +30,11 @@ import { useTvSpatialNavigation } from "@/hooks";
 
 import { scheduleIdleWork } from "@/utils";
 import { MinigameModal } from "@/components/ui";
-import { SidebarRail } from "@/components/ui";
 import { ProfilePinPanel } from "@/components/ui";
 import { WorkspaceTabFallback } from "@/components/ui";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
-const AppWorkspaceShell = React.lazy(() => import("@/app/AppWorkspaceShell"));
+import { lazyWithRetry } from "@/app/lazyFeaturePanels";
+const AppWorkspaceShell = lazyWithRetry(() => import("@/app/AppWorkspaceShell"));
 import {
   isLibraryWorkspaceTab,
   libraryWorkspaceStackClass,
@@ -50,16 +50,7 @@ const modalBodyStyle = {
 
 const App: React.FC = () => {
   const { currentUser } = useUser();
-  const {
-    isOnline,
-    isStandalone,
-    canInstallApp,
-    hasUpdateReady,
-    outboxStatus,
-    handleApplyUpdate,
-    handleRetryPendingSync,
-    handleInstallApp,
-  } = usePwaRuntime();
+  usePwaRuntime();
   const { isMobile, isTv } = useViewport();
   useTvSpatialNavigation(isTv);
 
@@ -140,6 +131,34 @@ const App: React.FC = () => {
     setShowQuizExperience(true);
   }, []);
 
+  const openSpinExperience = useCallback(() => {
+    setShowSpinMatch(true);
+  }, []);
+
+  useEffect(() => {
+    const handleOpenQuiz = () => {
+      openQuizExperience();
+    };
+    window.addEventListener("open-quiz-experience", handleOpenQuiz);
+    return () => {
+      window.removeEventListener("open-quiz-experience", handleOpenQuiz);
+    };
+  }, [openQuizExperience]);
+
+  useEffect(() => {
+    const handleOpenSpin = () => {
+      openSpinExperience();
+    };
+    window.addEventListener("open-spin-experience", handleOpenSpin);
+    window.addEventListener("open-spin-match", handleOpenSpin);
+    window.addEventListener("open-spin-game", handleOpenSpin);
+    return () => {
+      window.removeEventListener("open-spin-experience", handleOpenSpin);
+      window.removeEventListener("open-spin-match", handleOpenSpin);
+      window.removeEventListener("open-spin-game", handleOpenSpin);
+    };
+  }, [openSpinExperience]);
+
   const handleQuizComplete = useCallback(() => {
     updateQuizCompletion(true);
   }, [updateQuizCompletion]);
@@ -190,23 +209,6 @@ const App: React.FC = () => {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-
-        <SidebarRail
-          pwaStatus={{
-            isOnline,
-            isStandalone,
-            canInstall: canInstallApp,
-            hasUpdateReady,
-            pendingSyncCount: outboxStatus.pendingCount,
-            blockedSyncCount: outboxStatus.blockedCount,
-          }}
-          onInstallApp={() => void handleInstallApp()}
-          onApplyUpdate={handleApplyUpdate}
-          onRetrySync={handleRetryPendingSync}
-          openPanels={openPanels}
-          onTogglePanel={togglePanel}
-          onOpenQuiz={openQuizExperience}
-        />
 
         <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
           <div

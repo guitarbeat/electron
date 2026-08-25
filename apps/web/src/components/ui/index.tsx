@@ -45,6 +45,13 @@ import type { MovieSections } from "@/components/movies";
 
 
 
+import {
+  useCachedPoster,
+  markPosterLoaded,
+  markPosterFailed,
+  isPosterInMemory,
+} from "@/services/posterImageCache";
+
 interface MediaPosterProps {
   title: string;
   posterUrl?: string;
@@ -54,8 +61,6 @@ interface MediaPosterProps {
   priority?: boolean;
 }
 
-const brokenUrls = new Set<string>();
-
 export const MediaPoster: React.FC<MediaPosterProps> = ({
   title,
   posterUrl,
@@ -63,25 +68,45 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   className = "",
   priority = false,
 }) => {
+  const { src: cachedSrc, isLoaded: isCachedLoaded, hasError: isCachedError } =
+    useCachedPoster(posterUrl);
+
   const [hasImageError, setHasImageError] = React.useState(() =>
-    posterUrl ? brokenUrls.has(posterUrl) : false,
+    Boolean(posterUrl && isCachedError),
   );
-  const [isLoaded, setIsLoaded] = React.useState(false);
+  const [isLoaded, setIsLoaded] = React.useState(() =>
+    Boolean(posterUrl && isPosterInMemory(posterUrl)),
+  );
 
   React.useEffect(() => {
-    setHasImageError(posterUrl ? brokenUrls.has(posterUrl) : false);
-    setIsLoaded(false);
-  }, [posterUrl]);
+    if (!posterUrl) {
+      setHasImageError(false);
+      setIsLoaded(false);
+      return;
+    }
+    setHasImageError(isCachedError);
+    if (isPosterInMemory(posterUrl) || isCachedLoaded) {
+      setIsLoaded(true);
+    }
+  }, [posterUrl, isCachedError, isCachedLoaded]);
 
   const handleImageError = () => {
     if (posterUrl) {
-      brokenUrls.add(posterUrl);
+      markPosterFailed(posterUrl);
     }
     setHasImageError(true);
     setIsLoaded(true);
   };
 
-  const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
+  const handleImageLoad = () => {
+    if (posterUrl) {
+      markPosterLoaded(posterUrl);
+    }
+    setIsLoaded(true);
+  };
+
+  const shouldShowPoster = Boolean(posterUrl) && !hasImageError && !isCachedError;
+  const activeSrc = cachedSrc || posterUrl;
 
   return (
     <div
@@ -92,13 +117,13 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       )}
       {shouldShowPoster ? (
         <img
-          src={posterUrl}
+          src={activeSrc}
           alt={`${title} poster`}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
           fetchPriority={priority ? "high" : "auto"}
           className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
-          onLoad={() => setIsLoaded(true)}
+          onLoad={handleImageLoad}
           onError={handleImageError}
         />
       ) : (
@@ -1293,16 +1318,89 @@ interface Props_MovieSectionBody {
   isInteractionStatic?: boolean;
 }
 
+function interleaveCollectionItems(...lists: (React.ReactNode[] | undefined)[]): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  const validLists = lists.filter((l): l is React.ReactNode[] => Boolean(l && l.length > 0));
+  if (validLists.length === 0) return [];
+  if (validLists.length === 1) return [...validLists[0]];
+
+  const totalLength = validLists.reduce((sum, l) => sum + l.length, 0);
+  const pointers = validLists.map(() => 0);
+
+  for (let i = 0; i < totalLength; i++) {
+    let bestListIdx = -1;
+    let maxLag = -Infinity;
+
+    for (let listIdx = 0; listIdx < validLists.length; listIdx++) {
+      const list = validLists[listIdx];
+      const ptr = pointers[listIdx];
+      if (ptr < list.length) {
+        const targetFraction = (i + 1) / totalLength;
+        const currentFraction = ptr / list.length;
+        const lag = targetFraction - currentFraction;
+        if (lag > maxLag) {
+          maxLag = lag;
+          bestListIdx = listIdx;
+        }
+      }
+    }
+
+    if (bestListIdx !== -1) {
+      result.push(validLists[bestListIdx][pointers[bestListIdx]]);
+      pointers[bestListIdx]++;
+    }
+  }
+
+  return result;
+}
+
 interface TiltedPosterWallProps {
   items: React.ReactNode[];
   isMobile: boolean;
   isStatic: boolean;
+  isLoading?: boolean;
+  skeletonCount?: number;
 }
+
+export const TiltedPosterWallSkeletonItem: React.FC<{
+  columnIndex?: number;
+  rowIndex?: number;
+}> = ({ columnIndex = 0, rowIndex = 0 }) => (
+  <div
+    className="movie-item-container tilted-poster-wall-skeleton-item"
+    aria-hidden="true"
+  >
+    <div
+      className="movie-item-card chroma-card"
+      style={{ padding: 0, overflow: "hidden" }}
+    >
+      <div className="movie-item-poster-wrap">
+        <div
+          className="media-poster-wrap"
+          style={{
+            background: "var(--color-surface-2, rgba(255, 255, 255, 0.04))",
+          }}
+        >
+          <div
+            className="media-poster-skeleton tilted-poster-shimmer"
+            style={
+              {
+                "--poster-col-delay": `${(columnIndex * 45 + rowIndex * 65) % 800}ms`,
+              } as React.CSSProperties
+            }
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
   items,
   isMobile,
   isStatic,
+  isLoading = false,
+  skeletonCount,
 }) => {
   const wallRef = useRef<HTMLElement | null>(null);
   const trackRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -1310,19 +1408,167 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
   const copyHeightsRef = useRef<number[]>([]);
   const offsetsRef = useRef<number[]>([]);
   const lastFrameRef = useRef<number | null>(null);
-  const posterCards = React.Children.toArray(items);
-  const columnCount = Math.min(
-    isMobile ? 4 : 10,
-    Math.max(1, Math.ceil(Math.sqrt(posterCards.length))),
-  );
+  const [isMouseOnScreen, setIsMouseOnScreen] = useState(false);
+
+  // High density: 5 columns on mobile, 11 columns on desktop
+  const columnCount = isMobile ? 5 : 11;
+
+  const skeletonItems = useMemo(() => {
+    const total = skeletonCount ?? (isMobile ? 12 : 24);
+    return Array.from({ length: total }, (_, i) => (
+      <TiltedPosterWallSkeletonItem
+        key={`wall-skeleton-item-${i}`}
+        columnIndex={i % columnCount}
+        rowIndex={Math.floor(i / columnCount)}
+      />
+    ));
+  }, [skeletonCount, isMobile, columnCount]);
+
+  const rawCards = isLoading || items.length === 0 ? skeletonItems : items;
+  const posterCards = React.Children.toArray(rawCards);
+
+  // Track whether mouse/pointer is actively inside the screen/window
+  useEffect(() => {
+    let leaveTimeout: number | undefined;
+
+    const handlePointerActive = () => {
+      if (leaveTimeout) {
+        window.clearTimeout(leaveTimeout);
+        leaveTimeout = undefined;
+      }
+      setIsMouseOnScreen(true);
+    };
+
+    const handlePointerLeave = (e: MouseEvent) => {
+      // Check if the pointer actually left the window viewport
+      if (
+        !e.relatedTarget &&
+        (e.clientY <= 0 ||
+          e.clientX <= 0 ||
+          e.clientX >= window.innerWidth ||
+          e.clientY >= window.innerHeight)
+      ) {
+        // Debounce slightly to prevent flickering at screen borders
+        window.clearTimeout(leaveTimeout);
+        leaveTimeout = window.setTimeout(() => {
+          setIsMouseOnScreen(false);
+        }, 80);
+      }
+    };
+
+    const handleWindowBlur = () => {
+      setIsMouseOnScreen(false);
+    };
+
+    window.addEventListener("pointermove", handlePointerActive, { passive: true });
+    window.addEventListener("mousemove", handlePointerActive, { passive: true });
+    window.addEventListener("pointerdown", handlePointerActive, { passive: true });
+    window.addEventListener("mouseenter", handlePointerActive);
+    document.addEventListener("mouseenter", handlePointerActive);
+    document.addEventListener("mouseleave", handlePointerLeave);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      if (leaveTimeout) window.clearTimeout(leaveTimeout);
+      window.removeEventListener("pointermove", handlePointerActive);
+      window.removeEventListener("mousemove", handlePointerActive);
+      window.removeEventListener("pointerdown", handlePointerActive);
+      window.removeEventListener("mouseenter", handlePointerActive);
+      document.removeEventListener("mouseenter", handlePointerActive);
+      document.removeEventListener("mouseleave", handlePointerLeave);
+      window.removeEventListener("blur", handleWindowBlur);
+    };
+  }, []);
+
   const columns = useMemo(() => {
-    const next = Array.from(
-      { length: columnCount },
-      () => [] as React.ReactNode[],
+    if (posterCards.length === 0) return [];
+    const minCardsPerBand = isMobile ? 4 : 5;
+    const cardsPerBand = Math.max(
+      minCardsPerBand,
+      Math.ceil(posterCards.length / 2),
+      4,
     );
-    posterCards.forEach((card, index) => next[index % columnCount].push(card));
-    return next;
-  }, [columnCount, posterCards]);
+
+    const N = posterCards.length;
+    if (N === 1) {
+      return Array.from({ length: columnCount }, (_, colIdx) =>
+        Array.from({ length: cardsPerBand }, (_, rowIdx) =>
+          React.isValidElement(posterCards[0])
+            ? React.cloneElement(posterCards[0], {
+                key: `col-${colIdx}-card-${rowIdx}-0`,
+              })
+            : posterCards[0],
+        ),
+      );
+    }
+
+    const matrix: number[][] = Array.from({ length: columnCount }, () =>
+      Array(cardsPerBand).fill(-1),
+    );
+    const frequencies = Array(N).fill(0);
+
+    for (let col = 0; col < columnCount; col++) {
+      for (let row = 0; row < cardsPerBand; row++) {
+        let bestItem = 0;
+        let minPenalty = Infinity;
+
+        for (let v = 0; v < N; v++) {
+          let penalty = frequencies[v] * 12;
+
+          // 1. Immediate vertical neighbors in same column
+          for (let dr = 1; dr <= Math.min(cardsPerBand - 1, 3); dr++) {
+            const pr = (row - dr + cardsPerBand) % cardsPerBand;
+            if (matrix[col][pr] === v) {
+              penalty += dr === 1 ? 5000 : dr === 2 ? 1500 : 500;
+            }
+          }
+
+          // 2. Direct horizontal & diagonal neighbors in immediate left column
+          if (col > 0) {
+            for (let dr = -2; dr <= 2; dr++) {
+              const nr = (row + dr + cardsPerBand) % cardsPerBand;
+              if (matrix[col - 1][nr] === v) {
+                penalty += dr === 0 ? 6000 : Math.abs(dr) === 1 ? 2500 : 800;
+              }
+            }
+          }
+
+          // 3. Two columns to the left
+          if (col > 1) {
+            for (let dr = -1; dr <= 1; dr++) {
+              const nr = (row + dr + cardsPerBand) % cardsPerBand;
+              if (matrix[col - 2][nr] === v) {
+                penalty += dr === 0 ? 1200 : 400;
+              }
+            }
+          }
+
+          // Add deterministic jitter
+          const jitter = (((col * 37 + row * 19 + v * 13) % 23) / 23) * 0.1;
+          const totalPenalty = penalty + jitter;
+
+          if (totalPenalty < minPenalty) {
+            minPenalty = totalPenalty;
+            bestItem = v;
+          }
+        }
+
+        matrix[col][row] = bestItem;
+        frequencies[bestItem]++;
+      }
+    }
+
+    return matrix.map((colIndices, colIdx) =>
+      colIndices.map((itemIdx, rowIdx) => {
+        const cardNode = posterCards[itemIdx];
+        return React.isValidElement(cardNode)
+          ? React.cloneElement(cardNode, {
+              key: `col-${colIdx}-row-${rowIdx}-item-${itemIdx}`,
+            })
+          : cardNode;
+      }),
+    );
+  }, [columnCount, posterCards, isMobile]);
 
   useEffect(() => {
     const updateMeasurements = () => {
@@ -1330,14 +1576,16 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
         if (!band) return;
         const track = trackRefs.current[columnIndex];
         const gap = track ? Number.parseFloat(getComputedStyle(track).rowGap) || 0 : 0;
-        const copyHeight = band.getBoundingClientRect().height + gap;
+        const rect = band.getBoundingClientRect();
+        const copyHeight = rect.height + gap;
         if (copyHeight <= 0) return;
 
         copyHeightsRef.current[columnIndex] = copyHeight;
         if (offsetsRef.current[columnIndex] === undefined) {
-          offsetsRef.current[columnIndex] = copyHeight * ((columnIndex * 0.37) % 1);
+          offsetsRef.current[columnIndex] = copyHeight * ((columnIndex * 0.382) % 1);
         } else {
-          offsetsRef.current[columnIndex] %= copyHeight;
+          offsetsRef.current[columnIndex] =
+            ((offsetsRef.current[columnIndex] % copyHeight) + copyHeight) % copyHeight;
         }
       });
     };
@@ -1352,28 +1600,48 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
   }, [columnCount, items]);
 
   useEffect(() => {
+    // If static mode or the mouse/pointer is on screen, pause animation immediately
+    if (isStatic || isMouseOnScreen) {
+      lastFrameRef.current = null;
+      return;
+    }
+
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotion.matches) return;
+
     let animationFrame = 0;
 
     const animate = (timestamp: number) => {
-      if (lastFrameRef.current === null) lastFrameRef.current = timestamp;
-      const elapsed = Math.min(50, timestamp - lastFrameRef.current) / 1000;
+      if (lastFrameRef.current === null) {
+        lastFrameRef.current = timestamp;
+      }
+      const rawDelta = (timestamp - lastFrameRef.current) / 1000;
+      // Clamp elapsed time between 1ms and 36ms to prevent jumpy spikes
+      const elapsed = Math.min(0.036, Math.max(0.001, rawDelta));
       lastFrameRef.current = timestamp;
 
-      trackRefs.current.forEach((track, columnIndex) => {
-        const copyHeight = copyHeightsRef.current[columnIndex];
-        if (!track || !copyHeight) return;
+      const tracks = trackRefs.current;
+      const copyHeights = copyHeightsRef.current;
+      const offsets = offsetsRef.current;
+      const baseSpeed = isMobile ? 22 : 32;
 
-        if (!isStatic && !reduceMotion.matches) {
-          const variance = 0.82 + ((columnIndex * 0.618 + 0.35) % 1) * 0.36;
-          const direction = columnIndex % 2 === 0 ? 1 : -1;
-          const speed = (isMobile ? 7 : 10) * variance * direction;
-          const next = (offsetsRef.current[columnIndex] ?? 0) + speed * elapsed;
-          offsetsRef.current[columnIndex] = ((next % copyHeight) + copyHeight) % copyHeight;
-        }
+      for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+        const track = tracks[columnIndex];
+        const copyHeight = copyHeights[columnIndex];
+        if (!track || !copyHeight || copyHeight <= 0) continue;
 
-        track.style.transform = `translate3d(0, ${-(offsetsRef.current[columnIndex] ?? 0)}px, 0)`;
-      });
+        const variance = 0.88 + ((columnIndex * 0.618 + 0.35) % 1) * 0.26;
+        const direction = columnIndex % 2 === 0 ? 1 : -1;
+        const speed = baseSpeed * variance * direction;
+        const next = (offsets[columnIndex] ?? 0) + speed * elapsed;
+        const currentOffset = ((next % copyHeight) + copyHeight) % copyHeight;
+        offsets[columnIndex] = currentOffset;
+
+        // Buffer by 1 full band above viewport to ensure effortless continuous looping in both directions
+        const baseShift = copyHeight;
+        // Subpixel anti-aliased 3D transform for maximum compositor performance
+        track.style.transform = `translate3d(0, ${-(baseShift + currentOffset)}px, 0)`;
+      }
 
       animationFrame = window.requestAnimationFrame(animate);
     };
@@ -1383,13 +1651,14 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
       window.cancelAnimationFrame(animationFrame);
       lastFrameRef.current = null;
     };
-  }, [columnCount, isMobile, isStatic]);
+  }, [columnCount, isMobile, isStatic, isMouseOnScreen]);
 
   return (
     <section
       ref={wallRef}
       className={`tilted-poster-wall${isStatic ? " is-static" : " is-ambient"}`}
       aria-label="Movies, suggestions, and places"
+      onMouseEnter={() => setIsMouseOnScreen(true)}
     >
       <div className="tilted-poster-wall__fade tilted-poster-wall__fade--top" aria-hidden="true" />
       <div className="tilted-poster-wall__plane">
@@ -1430,7 +1699,7 @@ function DriftWallLoading({
   isMobile: boolean;
   fullViewport?: boolean;
 }) {
-  const columnCount = isMobile ? 4 : 10;
+  const columnCount = isMobile ? 5 : 11;
   const rowCount = isMobile ? 6 : 5;
 
   return (
@@ -1532,11 +1801,12 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       isProcessing={processingSuggestionId === suggestion.id}
     />
   ));
-  const unifiedCards = [
-    ...suggestionCards,
-    ...allPosters.map(renderMovie),
-    ...posterPlaceCards,
-  ];
+  const movieCards = allPosters.map(renderMovie);
+  const unifiedCards = interleaveCollectionItems(
+    suggestionCards,
+    movieCards,
+    posterPlaceCards,
+  );
   // ── Full section body ─────────────────────────────────────────────────────
   return (
     <div
@@ -4710,6 +4980,9 @@ export const useModalBase = (
     playPop,
   };
 };
+
+export { DriftWall } from "./DriftWall";
+export type { DriftWallProps, DriftWallItem } from "./DriftWall";
 
 export const MediaCardPosterWrap = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   (props, ref) => <div ref={ref} {...props} />

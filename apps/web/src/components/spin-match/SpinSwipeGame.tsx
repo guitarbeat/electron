@@ -279,7 +279,9 @@ function SpinWheel({
             height: 270,
             borderRadius: "50%",
             background: gradient,
-            transform: `rotate(${rotation}deg)`,
+            transform: `translate3d(0, 0, 0) rotate(${rotation}deg)`,
+            willChange: isSpinning ? "transform" : "auto",
+            backfaceVisibility: "hidden",
             transition: isSpinning
               ? `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.17,0.67,0.12,1)`
               : "none",

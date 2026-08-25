@@ -13,7 +13,7 @@ import { useUser, useToast } from "@/app/providerContexts";
 import { useMovies } from "@/hooks/movies";
 import { useSuggestions } from "@/hooks/suggestions";
 import { usePlaces, usePlaceSuggestions } from "@/hooks/places";
-import { searchMovieAutocomplete } from "@/services/metadata";
+import { searchMovieAutocomplete, getCachedMovieAutocomplete } from "@/services/metadata";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import {
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
@@ -193,8 +193,16 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
     requestIdRef.current = requestId;
     setIsMounted(true);
     setIsOpen(true);
-    setIsLoading(true);
-    setFetchError(null);
+
+    const cachedResults = getCachedMovieAutocomplete(trimmed);
+    if (cachedResults) {
+      setMovieResults(cachedResults);
+      setIsLoading(false);
+      setFetchError(null);
+    } else {
+      setIsLoading(true);
+      setFetchError(null);
+    }
 
     const timeoutId = window.setTimeout(async () => {
       try {
@@ -210,12 +218,14 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
         if (requestIdRef.current !== requestId || abortController.signal.aborted) {
           return;
         }
-        setMovieResults([]);
-        setFetchError(
-          error instanceof Error && error.message
-            ? error.message
-            : "Suggestions are unavailable right now.",
-        );
+        if (!cachedResults) {
+          setMovieResults([]);
+          setFetchError(
+            error instanceof Error && error.message
+              ? error.message
+              : "Suggestions are unavailable right now.",
+          );
+        }
       } finally {
         if (requestIdRef.current === requestId && !abortController.signal.aborted) {
           setIsLoading(false);
@@ -414,72 +424,84 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
           onFocusCapture={onFocusCapture}
           onBlurCapture={onBlurCapture}
         >
-          <CurvedInput
-            ref={inputRef}
-            value={query}
-            onChange={(nextValue) => {
-              setQuery(nextValue);
-              setSelection(null);
-              setActionError(null);
-              setShowRecommend(false);
-            }}
-            onSubmit={() => {
-              if (isBusy || !hasQuery) return;
-              clearFocusBoundaryCheck();
-              hideAutocomplete();
-              inputRef.current?.blur();
-              handlePrimary();
-            }}
-            buttonText={primaryLabel}
-            isBusy={isBusy}
-            buttonDisabled={!hasQuery}
-            placeholder="Add a movie, show, or place"
-            aria-label="Search movies, shows, and places to add"
-            combobox={{
-              expanded: isOpen,
-              controlsId: listId,
-              activeDescendantId:
-                isOpen && activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined,
-            }}
-            onFocus={() => {
-              setIsFocused(true);
-              if (trimmed.length >= 2) {
-                setIsMounted(true);
-                setIsOpen(true);
-              }
-            }}
-            onKeyDown={(event) => {
-              if (event.nativeEvent.isComposing) return;
-              if (event.key === "ArrowDown") {
-                if (rows.length === 0) return;
-                event.preventDefault();
-                setIsOpen(true);
-                moveActiveIndex("next", rows.length);
-                return;
-              }
-              if (event.key === "ArrowUp") {
-                if (rows.length === 0) return;
-                event.preventDefault();
-                setIsOpen(true);
-                moveActiveIndex("previous", rows.length);
-                return;
-              }
-              if (event.key === "Escape") {
-                if (isOpen) {
-                  event.preventDefault();
+          <div className="curved-library-search__row">
+            <div className="curved-library-search__input-wrap">
+              <CurvedInput
+                ref={inputRef}
+                value={query}
+                onChange={(nextValue) => {
+                  setQuery(nextValue);
+                  setSelection(null);
+                  setActionError(null);
+                  setShowRecommend(false);
+                }}
+                onSubmit={() => {
+                  if (isBusy || !hasQuery) return;
+                  clearFocusBoundaryCheck();
                   hideAutocomplete();
-                }
-                return;
-              }
-              if (event.key === "Enter" && isOpen) {
-                const selectedIndex = getEnterSelectionIndex(rows.length);
-                if (selectedIndex >= 0 && rows[selectedIndex]) {
-                  event.preventDefault();
-                  selectRow(rows[selectedIndex]);
-                }
-              }
-            }}
-          />
+                  inputRef.current?.blur();
+                  handlePrimary();
+                }}
+                buttonText={primaryLabel}
+                secondaryButtonText="Quiz"
+                onSecondarySubmit={() => {
+                  window.dispatchEvent(new CustomEvent("open-quiz-experience"));
+                }}
+                spinButtonText="Spin"
+                onSpinSubmit={() => {
+                  window.dispatchEvent(new CustomEvent("open-spin-experience"));
+                }}
+                isBusy={isBusy}
+                buttonDisabled={!hasQuery}
+                placeholder="Add a movie, show, or place"
+                aria-label="Search movies, shows, and places to add"
+                combobox={{
+                  expanded: isOpen,
+                  controlsId: listId,
+                  activeDescendantId:
+                    isOpen && activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined,
+                }}
+                onFocus={() => {
+                  setIsFocused(true);
+                  if (trimmed.length >= 2) {
+                    setIsMounted(true);
+                    setIsOpen(true);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.nativeEvent.isComposing) return;
+                  if (event.key === "ArrowDown") {
+                    if (rows.length === 0) return;
+                    event.preventDefault();
+                    setIsOpen(true);
+                    moveActiveIndex("next", rows.length);
+                    return;
+                  }
+                  if (event.key === "ArrowUp") {
+                    if (rows.length === 0) return;
+                    event.preventDefault();
+                    setIsOpen(true);
+                    moveActiveIndex("previous", rows.length);
+                    return;
+                  }
+                  if (event.key === "Escape") {
+                    if (isOpen) {
+                      event.preventDefault();
+                      hideAutocomplete();
+                    }
+                    return;
+                  }
+                  if (event.key === "Enter" && isOpen) {
+                    const selectedIndex = getEnterSelectionIndex(rows.length);
+                    if (selectedIndex >= 0 && rows[selectedIndex]) {
+                      event.preventDefault();
+                      selectRow(rows[selectedIndex]);
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
           {showPanel ? (
             <WorkspaceAutocompletePanel
               id={listId}

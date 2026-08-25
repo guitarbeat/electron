@@ -1,6 +1,5 @@
 import React from "react";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
-import { ProfileMenu } from "./index";
 
 // ── Icons ───────────────────────────────────────────────────────────────────
 
@@ -146,93 +145,6 @@ export interface SidebarRailProps {
 
 // ── Component_SidebarRail ───────────────────────────────────────────────────
 
-export const SidebarRail: React.FC<SidebarRailProps> = ({
-  pwaStatus,
-  onInstallApp,
-  onApplyUpdate,
-  onRetrySync,
-  openPanels,
-  onTogglePanel,
-  onOpenQuiz,
-}) => {
-  
-  
-
-  
-
-  const isSpinActive = openPanels.has("spin");
-
-  const hasSyncIssue = Boolean(
-    pwaStatus && (pwaStatus.pendingSyncCount > 0 || pwaStatus.blockedSyncCount > 0)
-  );
-  const isOffline = pwaStatus && !pwaStatus.isOnline;
-  const hasUpdate = Boolean(pwaStatus && pwaStatus.hasUpdateReady);
-  const canInstall = Boolean(pwaStatus && pwaStatus.canInstall && !pwaStatus.isStandalone);
-
-  
-  
-  
-  
-
-  return (
-    <nav
-      className="top-nav"
-      aria-label="Main application navigation"
-    >
-      <div className="top-nav__right">
-        <button
-          type="button"
-          className="top-nav__item"
-          onClick={onOpenQuiz}
-          aria-label="Quiz"
-        >
-          <span className="top-nav__item-icon">
-            <QuizIcon size={18} />
-          </span>
-        </button>
-        <button
-          type="button"
-          className={`top-nav__item ${isSpinActive ? "is-toggled" : ""}`}
-          onClick={() => onTogglePanel("spin")}
-          aria-label="Spin"
-        >
-          <span className="top-nav__item-icon">
-            <SpinIcon size={18} />
-          </span>
-        </button>
-
-        {(isOffline || hasSyncIssue || hasUpdate || canInstall) && (
-          <div className="top-nav__status-group">
-            {isOffline && (
-              <div className="top-nav__status-button is-offline" title="Offline">
-                <CloudOfflineIcon size={15} />
-              </div>
-            )}
-            {hasSyncIssue && (
-              <button className="top-nav__status-button is-sync" onClick={onRetrySync}>
-                <SyncRefreshIcon size={14} />
-                <span>{pwaStatus?.pendingSyncCount ?? 0}</span>
-              </button>
-            )}
-            {hasUpdate && (
-              <button className="top-nav__status-button is-update" onClick={onApplyUpdate}>
-                <SparklesIcon size={14} />
-                Update
-              </button>
-            )}
-            {canInstall && (
-              <button className="top-nav__status-button is-install" onClick={onInstallApp}>
-                <DownloadAppIcon size={14} />
-                Install
-              </button>
-            )}
-          </div>
-        )}
-
-        <div className="top-nav__profile">
-          <ProfileMenu />
-        </div>
-      </div>
-    </nav>
-  );
+export const SidebarRail: React.FC<SidebarRailProps> = () => {
+  return null;
 };

@@ -4,7 +4,8 @@ import { useUser } from "@/app/providerContexts";
 import { usePlaces } from "@/hooks/places";
 import { ConfirmDialog, SyncBanner } from "@/components/ui";
 import { PlaceCard } from "@/components/places";
-const MoviesView = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MoviesView })));
+import { lazyWithRetry } from "@/app/lazyFeaturePanels";
+const MoviesView = lazyWithRetry(() => import("@/components/movies").then(m => ({ default: m.MoviesView })));
 import LibrarySearch from "./LibrarySearch";
 
 interface UnifiedLibraryProps {
@@ -72,21 +73,69 @@ const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({
   );
 };
 
+const IDLE_TIMEOUT_MS = 2500;
+
 const LibraryWorkspace: React.FC = () => {
   const [isInteractionStatic, setIsInteractionStatic] = useState(false);
 
   useEffect(() => {
-    const freezeWall = () => setIsInteractionStatic(true);
-    window.addEventListener("pointermove", freezeWall, { passive: true });
-    window.addEventListener("pointerdown", freezeWall, { passive: true });
-    window.addEventListener("touchstart", freezeWall, { passive: true });
-    window.addEventListener("keydown", freezeWall);
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastActivityTime = 0;
+
+    const scheduleResume = () => {
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+      }
+
+      idleTimer = setTimeout(() => {
+        const isInputFocused =
+          document.activeElement?.tagName === "INPUT" ||
+          document.activeElement?.tagName === "TEXTAREA" ||
+          document.activeElement?.getAttribute("contenteditable") === "true";
+
+        const isModalOpen = Boolean(
+          document.querySelector(
+            '[role="dialog"], .modal-backdrop, .movie-details-modal, .game-overlay',
+          ),
+        );
+
+        if (!isInputFocused && !isModalOpen) {
+          setIsInteractionStatic(false);
+        } else {
+          // If modal/input was focused, check again shortly
+          scheduleResume();
+        }
+      }, IDLE_TIMEOUT_MS);
+    };
+
+    const handleUserActivity = () => {
+      const now = Date.now();
+      // Throttle event handling to max once per 150ms to prevent RAF loop stutters
+      if (now - lastActivityTime < 150) return;
+      lastActivityTime = now;
+
+      setIsInteractionStatic((prev) => (prev ? prev : true));
+      scheduleResume();
+    };
+
+    // Begin in ambient moving mode; if user touches or moves, freeze and schedule resume
+    scheduleResume();
+
+    window.addEventListener("pointermove", handleUserActivity, { passive: true });
+    window.addEventListener("pointerdown", handleUserActivity, { passive: true });
+    window.addEventListener("touchstart", handleUserActivity, { passive: true });
+    window.addEventListener("wheel", handleUserActivity, { passive: true });
+    window.addEventListener("keydown", handleUserActivity, { passive: true });
 
     return () => {
-      window.removeEventListener("pointermove", freezeWall);
-      window.removeEventListener("pointerdown", freezeWall);
-      window.removeEventListener("touchstart", freezeWall);
-      window.removeEventListener("keydown", freezeWall);
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+      }
+      window.removeEventListener("pointermove", handleUserActivity);
+      window.removeEventListener("pointerdown", handleUserActivity);
+      window.removeEventListener("touchstart", handleUserActivity);
+      window.removeEventListener("wheel", handleUserActivity);
+      window.removeEventListener("keydown", handleUserActivity);
     };
   }, []);
 
@@ -94,7 +143,7 @@ const LibraryWorkspace: React.FC = () => {
     <div
       className={`library-workspace ${isInteractionStatic ? "library-workspace--static" : "library-workspace--ambient"}`}
     >
-      {isInteractionStatic ? <LibrarySearch /> : null}
+      <LibrarySearch />
       <React.Suspense fallback={null}>
         <UnifiedLibrary
           isInteractionStatic={isInteractionStatic}

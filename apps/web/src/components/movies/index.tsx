@@ -98,7 +98,7 @@ export const getMovieActionState = ({
 
 
 export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
-export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 160;
+export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 75;
 
 export const normalizeMovieAutocompleteQuery = (value: string): string =>
   value.trim().toLowerCase();
@@ -440,7 +440,6 @@ import {
   WorkspaceAutocompletePoster,
   WorkspaceAutocompleteStatus,
   Button,
-  InteractiveFolderGallery,
   MediaPoster,
   MediaCardPosterWrap,
   MediaCardTitle,
@@ -452,19 +451,19 @@ import {
   MagicToggle,
   CardActionButton,
   Card,
-  HandWritingText,
   type BentoStatTileConfig,
   type BentoSortChipConfig,
   type SortOrder,
 } from "@/components/ui";
-import { CheckIcon, FilmIcon, MessageIcon, PlusIcon, BookmarkIcon, EditIcon, PlayIcon } from "@/common/Icons";
+import { CheckIcon, FilmIcon, MessageIcon, PlusIcon, BookmarkIcon, EditIcon, PlayIcon, StarIcon, TvIcon } from "@/common/Icons";
 import { useViewport, useUser, useBentoSlot } from "@/app/providerContexts";
 import { useFeatureFonts, mediaBreakpoints, useMediaQuery } from "@/hooks";
 import { colors, radius, spacing, typography } from "@/theme/tokens";
 import { formatMemoryTimestamp, MAX_MOVIE_TITLE_LENGTH, sanitizeInput, getErrorMessage, consoleError } from "@/utils";
-import { searchMovieAutocomplete, type MovieAutocompleteResult, fetchOmdbMetadataCached } from "@/services/metadata";
+import { searchMovieAutocomplete, getCachedMovieAutocomplete, type MovieAutocompleteResult, fetchOmdbMetadataCached } from "@/services/metadata";
 import { MemoryComposer, MemoryList, INITIAL_VISIBLE_COUNT } from "@/components/memories/MemoriesView";
 import { useMoviesWorkspace } from "@/hooks/movies";
+import { useCachedPoster } from "@/services/posterImageCache";
 
 
 
@@ -697,8 +696,16 @@ export const MoviesTopControls = React.forwardRef<
     }
     setIsAutocompleteMounted(true);
     setIsAutocompleteOpen(true);
-    setIsAutocompleteLoading(true);
-    setAutocompleteError(null);
+
+    const cachedResults = getCachedMovieAutocomplete(trimmedSearchQuery);
+    if (cachedResults) {
+      setAutocompleteResults(cachedResults);
+      setIsAutocompleteLoading(false);
+      setAutocompleteError(null);
+    } else {
+      setIsAutocompleteLoading(true);
+      setAutocompleteError(null);
+    }
 
     const timeoutId = window.setTimeout(async () => {
       try {
@@ -1289,20 +1296,23 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   hasPosterError,
   onPosterError,
 }) => {
-  const shouldShowPoster = Boolean(movie.posterUrl) && !hasPosterError;
+  const { src: cachedSrc, hasError: isCachedError } = useCachedPoster(movie.posterUrl);
+  const shouldShowPoster =
+    Boolean(movie.posterUrl) && !hasPosterError && !isCachedError;
+  const activePosterUrl = cachedSrc || movie.posterUrl;
 
   return (
     <figure className="movie-details-modal__poster-shell" aria-label={`Poster for ${movie.title}`}>
       {shouldShowPoster ? (
         <>
           <img
-            src={movie.posterUrl}
+            src={activePosterUrl}
             alt=""
             aria-hidden="true"
             className="movie-details-modal__poster-bg"
           />
           <img
-            src={movie.posterUrl}
+            src={activePosterUrl}
             alt={`${movie.title} poster`}
             className="movie-details-modal__poster"
             onError={onPosterError}
@@ -1310,19 +1320,28 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         </>
       ) : (
         <div className="movie-details-modal__poster movie-details-modal__poster--fallback">
-          No Poster Available
+          <FilmIcon size={32} style={{ opacity: 0.4, marginBottom: "0.5rem" }} />
+          <span>No Poster Available</span>
         </div>
       )}
       <div className="movie-details-modal__poster-gradient" aria-hidden="true" />
 
       {/* Badges Overlay */}
       <div className="movie-details-modal__poster-badges" role="status">
-        <span className="movie-details-modal__poster-pill movie-details-modal__poster-pill--status">
+        <span className={`movie-details-modal__poster-pill ${movie.watchedBy.length > 0 ? "movie-details-modal__poster-pill--status" : ""}`}>
+          {movie.watchedBy.length > 0 && <CheckIcon size={12} style={{ marginRight: "0.25rem" }} />}
           {watchStatusLabel}
         </span>
+        {movie.imdbRating && movie.imdbRating !== "N/A" && (
+          <span className="movie-details-modal__poster-pill movie-details-modal__poster-pill--rating">
+            <StarIcon size={11} fill style={{ color: "#fbbf24", marginRight: "0.2rem" }} />
+            {movie.imdbRating}
+          </span>
+        )}
         {memoriesCount > 0 && (
           <span className="movie-details-modal__poster-pill">
-            {memoriesCount} {memoriesCount === 1 ? "comment" : "comments"}
+            <MessageIcon size={11} style={{ marginRight: "0.25rem" }} />
+            {memoriesCount} {memoriesCount === 1 ? "note" : "notes"}
           </span>
         )}
       </div>
@@ -1330,11 +1349,11 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       {/* Footer Details */}
       <figcaption className="movie-details-modal__poster-footer">
         <span className="movie-details-modal__poster-caption">
-          Queued by {movie.addedBy}
+          Queued by <strong>{movie.addedBy}</strong>
         </span>
         {movie.watchedBy.length > 0 && (
           <span className="movie-details-modal__poster-caption">
-            Watched by {movie.watchedBy.join(" & ")}
+            Watched by <strong>{movie.watchedBy.join(" & ")}</strong>
           </span>
         )}
       </figcaption>
@@ -1362,113 +1381,126 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
   movie,
   memoriesCount,
   metadataItems,
-  watchStatus,
   isWatchedByCurrentUser,
   isUpdatingWatchStatus,
   onToggleWatched,
   onEdit,
   onShowNotes,
-}) => (
-  <header className="movie-details-modal__header">
-    <p className="movie-details-modal__eyebrow" aria-hidden="true">
-      <HandWritingText
-        text="movie night"
-        accentColor="var(--color-accent)"
-        strokeWidth={2}
-        strokeDuration={0.55}
-        staggerDelay={0.1}
-        className="movie-details-modal__eyebrow-handwriting"
-      />
-    </p>
-    <span className="sr-only">Movie night file</span>
+}) => {
+  const isSeries = isTvSeries(movie);
 
-    <div className="movie-details-modal__title-row">
-      <h2 id="movie-details-title" className="movie-details-modal__title">
-        {movie.title}
-      </h2>
-    </div>
+  return (
+    <header className="movie-details-modal__header">
+      {/* Clean Eyebrow Category */}
+      <div className="movie-details-modal__eyebrow">
+        <span className="movie-details-modal__type-badge">
+          {isSeries ? <TvIcon size={12} style={{ marginRight: "0.3rem" }} /> : <FilmIcon size={12} style={{ marginRight: "0.3rem" }} />}
+          {isSeries ? "TV SERIES" : "FEATURE FILM"}
+        </span>
+        {movie.category && movie.category !== "TV Series" && (
+          <span className="movie-details-modal__category-tag">
+            {movie.category}
+          </span>
+        )}
+      </div>
 
-    {/* Primary Action Buttons */}
-    <div className="movie-details-modal__actions" role="toolbar" aria-label="Movie actions">
-      {onToggleWatched && (
-        <CardActionButton
-          variant="primary"
-          onClick={() => void onToggleWatched()}
-          aria-pressed={isWatchedByCurrentUser}
-          disabled={isUpdatingWatchStatus}
-          leftIcon={isWatchedByCurrentUser ? <CheckIcon /> : <PlayIcon />}
-        >
-          {isWatchedByCurrentUser ? "Watched" : "Mark watched"}
-        </CardActionButton>
+      <div className="movie-details-modal__title-row">
+        <h2 id="movie-details-title" className="movie-details-modal__title">
+          {movie.title}
+        </h2>
+      </div>
+
+      {/* Clean Specs Fact Pills */}
+      {metadataItems.length > 0 && (
+        <div className="movie-details-modal__fact-row" role="list" aria-label="Movie specs">
+          {metadataItems.map((item) => (
+            <span key={item} className="movie-details-modal__fact-pill" role="listitem">
+              {item}
+            </span>
+          ))}
+          {movie.imdbRating && movie.imdbRating !== "N/A" && (
+            <span className="movie-details-modal__fact-pill movie-details-modal__fact-pill--imdb" role="listitem">
+              <StarIcon size={12} fill style={{ color: "#fbbf24", marginRight: "0.25rem" }} />
+              {movie.imdbRating} IMDb
+            </span>
+          )}
+        </div>
       )}
-      <StremioButton movie={movie} variant="full" />
-      <CardActionButton
-        variant="outline"
-        onClick={onShowNotes}
-        leftIcon={<BookmarkIcon />}
-      >
-        {memoriesCount > 0 ? `Comments (${memoriesCount})` : "Add comment"}
-      </CardActionButton>
-      {onEdit && (
+
+      {/* Primary Action Buttons */}
+      <div className="movie-details-modal__actions" role="toolbar" aria-label="Movie actions">
+        <StremioButton movie={movie} variant="full" />
+        {onToggleWatched && (
+          <CardActionButton
+            variant={isWatchedByCurrentUser ? "primary" : "outline"}
+            onClick={() => void onToggleWatched()}
+            aria-pressed={isWatchedByCurrentUser}
+            disabled={isUpdatingWatchStatus}
+            leftIcon={isWatchedByCurrentUser ? <CheckIcon /> : <PlayIcon />}
+          >
+            {isWatchedByCurrentUser ? "Watched" : "Mark as Watched"}
+          </CardActionButton>
+        )}
         <CardActionButton
           variant="outline"
-          onClick={onEdit}
-          leftIcon={<EditIcon />}
+          onClick={onShowNotes}
+          leftIcon={<BookmarkIcon />}
         >
-          Edit
+          {memoriesCount > 0 ? `Notes (${memoriesCount})` : "Add Note"}
         </CardActionButton>
-      )}
-    </div>
-
-    {/* Narrative Relationship Copy */}
-    <p className="movie-details-modal__relationship">
-      {watchStatus.title}
-    </p>
-    <p className="movie-details-modal__supporting-copy">
-      {watchStatus.detail}
-    </p>
-
-    {/* Metadata Fact Pills */}
-    {metadataItems.length > 0 && (
-      <div className="movie-details-modal__fact-row" role="list" aria-label="Movie facts">
-        {metadataItems.map((item) => (
-          <span key={item} className="movie-details-modal__fact-pill" role="listitem">
-            {item}
-          </span>
-        ))}
+        {onEdit && (
+          <CardActionButton
+            variant="outline"
+            onClick={onEdit}
+            leftIcon={<EditIcon />}
+          >
+            Edit
+          </CardActionButton>
+        )}
       </div>
-    )}
-  </header>
-);
+    </header>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Sub-component: SummaryBand                                                  */
 /* -------------------------------------------------------------------------- */
 
 interface SummaryBandProps {
+  movie: Movie;
   addedBy: string;
   watchStatusLabel: string;
   memoriesCount: number;
 }
 
 export const SummaryBand: React.FC<SummaryBandProps> = ({
+  movie,
   addedBy,
   watchStatusLabel,
   memoriesCount,
 }) => (
-  <div className="movie-details-modal__summary-band" role="region" aria-label="Movie summary facts">
+  <div className="movie-details-modal__summary-band" role="region" aria-label="Movie details summary">
     <div className="movie-details-modal__summary-item">
-      <span className="movie-details-modal__meta-label">Queued by</span>
+      <span className="movie-details-modal__meta-label">Queued By</span>
       <span className="movie-details-modal__summary-value">{addedBy}</span>
+      <span className="movie-details-modal__summary-sub">{formatMemoryTimestamp(movie.createdAt)}</span>
     </div>
     <div className="movie-details-modal__summary-item">
-      <span className="movie-details-modal__meta-label">Watch status</span>
-      <span className="movie-details-modal__summary-value">{watchStatusLabel}</span>
+      <span className="movie-details-modal__meta-label">Watch Status</span>
+      <span className="movie-details-modal__summary-value movie-details-modal__summary-value--accent">
+        {watchStatusLabel}
+      </span>
+      <span className="movie-details-modal__summary-sub">
+        {movie.watchedBy.length > 0 ? movie.watchedBy.join(" & ") : "In queue"}
+      </span>
     </div>
     <div className="movie-details-modal__summary-item">
-      <span className="movie-details-modal__meta-label">Comments</span>
+      <span className="movie-details-modal__meta-label">Shared Notes</span>
       <span className="movie-details-modal__summary-value">
-        {memoriesCount > 0 ? `${memoriesCount} saved` : "None yet"}
+        {memoriesCount > 0 ? `${memoriesCount} saved` : "No notes yet"}
+      </span>
+      <span className="movie-details-modal__summary-sub">
+        {memoriesCount > 0 ? "Attached to poster" : "Add thoughts below"}
       </span>
     </div>
   </div>
@@ -1539,20 +1571,17 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
     <section ref={notesSectionRef} className="movie-details-modal__section" aria-labelledby="poster-comments-heading">
       <div className="movie-details-modal__section-head">
         <h3 id="poster-comments-heading" className="movie-details-modal__section-label">
-          Comments
+          Shared Notes & Memories
         </h3>
-        {memories.length > 1 && (
+        {memories.length > 0 && (
           <span className="movie-details-modal__section-caption">
-            {memories.length} moments saved
+            {memories.length} {memories.length === 1 ? "entry" : "entries"}
           </span>
         )}
       </div>
 
       {currentUser && onAddMemory && (
         <div className="movie-details-modal__composer-shell">
-          <p className="movie-details-modal__composer-copy">
-            Leave the note here so it stays attached to this poster.
-          </p>
           <MemoryComposer
             watchedMovieOptions={[movie]}
             selectedMovieId={movie.id}
@@ -1568,20 +1597,11 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
             onComposerToggle={() => {}}
             remainingChars={remainingChars}
             error={submitError}
-            successMessage={submitSuccess ? "Saved!" : null}
+            successMessage={submitSuccess ? "Saved to poster!" : null}
             noteInputRef={noteInputRef}
           />
         </div>
       )}
-
-      {/* Interactive Folder Gallery */}
-      <InteractiveFolderGallery
-        photos={buildGalleryPhotos(memories, movie)}
-        folderName={`${movie.title}.gallery`}
-        dragHintText="Drag any photo down to close"
-        className="movie-details-modal__gallery"
-        accentColor="var(--color-accent)"
-      />
 
       {canManageMemories ? (
         memories.length > 0 ? (
@@ -1617,7 +1637,7 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
           </div>
         ) : (
           <div className="movie-details-modal__memory-empty">
-            No comments on this title yet. Start the conversation here.
+            No notes on this title yet. Share what you thought or why you added it.
           </div>
         )
       ) : featuredMemory ? (
@@ -1668,7 +1688,7 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
         </>
       ) : (
         <div className="movie-details-modal__memory-empty">
-          No comments on this title yet. Start the conversation here.
+          No notes on this title yet. Share what you thought or why you added it.
         </div>
       )}
     </section>
@@ -1961,23 +1981,25 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
               onShowNotes={handleShowNotes}
             />
 
-            <SummaryBand
-              addedBy={movie.addedBy}
-              watchStatusLabel={watchStatus.label}
-              memoriesCount={memories.length}
-            />
-
-            {/* Story Setup Section */}
+            {/* Overview / Plot Section */}
             {movie.plot && (
-              <section className="movie-details-modal__section" aria-labelledby="story-setup-heading">
-                <h3 id="story-setup-heading" className="movie-details-modal__section-label">
-                  Story setup
+              <section className="movie-details-modal__section" aria-labelledby="movie-overview-heading">
+                <h3 id="movie-overview-heading" className="movie-details-modal__section-label">
+                  Overview
                 </h3>
                 <p className="movie-details-modal__plot">{movie.plot}</p>
               </section>
             )}
 
-            {/* Poster Notes & Memories Section */}
+            {/* Clean Details Summary Band */}
+            <SummaryBand
+              movie={movie}
+              addedBy={movie.addedBy}
+              watchStatusLabel={watchStatus.label}
+              memoriesCount={memories.length}
+            />
+
+            {/* Notes & Memories Section */}
             <NotesAndMemoriesSection
               movie={movie}
               memories={memories}
@@ -2013,12 +2035,13 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
             {/* Footer Status Metadata */}
             <footer className="movie-details-modal__footer">
-              <span>Added {formatMemoryTimestamp(movie.createdAt)}</span>
+              <span>Catalog item added {formatMemoryTimestamp(movie.createdAt)}</span>
               <span>
-                Shared progress:{" "}
-                {movie.watchedBy.length > 0
-                  ? movie.watchedBy.join(" & ")
-                  : "no watches logged yet"}
+                {movie.watchedBy.length === 2
+                  ? "Watched by Aaron & Electra"
+                  : movie.watchedBy.length === 1
+                  ? `Watched by ${movie.watchedBy[0]}`
+                  : "Not watched yet"}
               </span>
             </footer>
           </div>

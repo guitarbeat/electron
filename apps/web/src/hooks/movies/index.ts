@@ -26,6 +26,7 @@ import { useCollection } from "../index.ts";
 import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/providerContexts";
 import { isMockMode } from "../../services/state";
+import { preloadPosterImages } from "@/services/posterImageCache";
 
 const POLLING_INTERVAL = 15000;
 
@@ -425,6 +426,12 @@ export const useMovies = (
       void autoSyncMetadata();
     }
   }, [autoSyncMetadata, currentUser, isLoading, movies]);
+
+  useEffect(() => {
+    if (movies.length > 0) {
+      preloadPosterImages(movies.map((m) => m.posterUrl));
+    }
+  }, [movies]);
 
   const sortedMovies = useMemo(() => sortMovies(movies), [movies]);
 

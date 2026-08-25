@@ -93,9 +93,14 @@ export const computeSpinOutcome = (
   const targetCenterDeg = targetIndex * step + step / 2;
   const normalizedTarget = (360 - targetCenterDeg + 360) % 360;
 
+  // Calculate forward rotation delta required from current position to reach normalizedTarget
+  const currentMod = ((currentRotation % 360) + 360) % 360;
+  let forwardDelta = (normalizedTarget - currentMod) % 360;
+  if (forwardDelta <= 0) forwardDelta += 360;
+
   return {
     targetIndex,
-    nextRotation: currentRotation + 360 * SPIN_TURNS + normalizedTarget,
+    nextRotation: currentRotation + 360 * SPIN_TURNS + forwardDelta,
     winner: candidates[targetIndex],
   };
 };
@@ -349,7 +354,10 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             <div
               className="spin-wheel-rotor"
               style={{
-                transform: `rotate(${rotation}deg)`,
+                transform: `translate3d(0, 0, 0) rotate(${rotation}deg)`,
+                willChange: isSpinning ? "transform" : "auto",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
                 transition: isSpinning
                   ? "transform 4.2s cubic-bezier(0.12, 0.85, 0.18, 1)"
                   : "transform 0.4s ease",

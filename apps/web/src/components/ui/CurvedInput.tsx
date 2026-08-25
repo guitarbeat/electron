@@ -123,6 +123,12 @@ export interface CurvedInputProps
   onChange: (value: string) => void;
   onSubmit: () => void;
   buttonText: string;
+  secondaryButtonText?: string;
+  onSecondarySubmit?: () => void;
+  secondaryButtonDisabled?: boolean;
+  spinButtonText?: string;
+  onSpinSubmit?: () => void;
+  spinButtonDisabled?: boolean;
   bend?: number;
   height?: number;
   isBusy?: boolean;
@@ -137,6 +143,12 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       onChange,
       onSubmit,
       buttonText,
+      secondaryButtonText,
+      onSecondarySubmit,
+      secondaryButtonDisabled = false,
+      spinButtonText,
+      onSpinSubmit,
+      spinButtonDisabled = false,
       placeholder = "Add a movie, show, or place",
       bend = 24,
       height = 62,
@@ -163,6 +175,8 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     const uid = useId().replace(/:/g, "");
     const textPathId = `curved-input-text-${uid}`;
     const buttonPathId = `curved-input-button-${uid}`;
+    const secondaryPathId = `curved-input-sec-button-${uid}`;
+    const spinPathId = `curved-input-spin-button-${uid}`;
     const clipId = `curved-input-clip-${uid}`;
 
     useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement, []);
@@ -237,18 +251,47 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       const inset = 6;
       const iconCenter = 35;
       const textStart = 66;
-      const buttonWidth = Math.min(178, Math.max(116, buttonText.length * 7.4 + 34));
-      const buttonEnd = geometry.width - inset;
+
+      const hasSpin = Boolean(spinButtonText);
+      const hasSecondary = Boolean(secondaryButtonText);
+      const gap = 5;
+
+      const spinWidth = hasSpin
+        ? Math.min(90, Math.max(62, (spinButtonText?.length ?? 4) * 7.2 + 24))
+        : 0;
+      const secondaryWidth = hasSecondary
+        ? Math.min(90, Math.max(62, (secondaryButtonText?.length ?? 4) * 7.2 + 24))
+        : 0;
+      const buttonWidth = Math.min(130, Math.max(76, buttonText.length * 7.2 + 26));
+
+      const spinEnd = geometry.width - inset;
+      const spinStart = hasSpin ? spinEnd - spinWidth : spinEnd;
+
+      const secondaryEnd = hasSpin ? spinStart - gap : geometry.width - inset;
+      const secondaryStart = hasSecondary ? secondaryEnd - secondaryWidth : secondaryEnd;
+
+      const buttonEnd = hasSecondary
+        ? secondaryStart - gap
+        : hasSpin
+          ? spinStart - gap
+          : geometry.width - inset;
       const buttonStart = buttonEnd - buttonWidth;
+
       return {
         inset,
         iconCenter,
         textStart,
-        textEnd: Math.max(textStart + 24, buttonStart - 16),
+        textEnd: Math.max(textStart + 24, buttonStart - 12),
         buttonStart,
         buttonEnd,
+        secondaryStart,
+        secondaryEnd,
+        hasSecondary,
+        spinStart,
+        spinEnd,
+        hasSpin,
       };
-    }, [buttonText.length, geometry]);
+    }, [buttonText.length, secondaryButtonText, spinButtonText, geometry]);
 
     if (!geometry || !layout) {
       return <form ref={rootRef} className="curved-input" />;
@@ -271,6 +314,45 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       layout.buttonEnd,
       textBaseline,
     );
+
+    const secondaryPath = layout.hasSecondary
+      ? curvedRect(
+          geometry,
+          layout.secondaryStart,
+          layout.secondaryEnd,
+          -height / 2 + layout.inset,
+          height / 2 - layout.inset,
+          13,
+        )
+      : "";
+    const secondaryTextPath = layout.hasSecondary
+      ? curvedLine(
+          geometry,
+          layout.secondaryStart,
+          layout.secondaryEnd,
+          textBaseline,
+        )
+      : "";
+
+    const spinPath = layout.hasSpin
+      ? curvedRect(
+          geometry,
+          layout.spinStart,
+          layout.spinEnd,
+          -height / 2 + layout.inset,
+          height / 2 - layout.inset,
+          13,
+        )
+      : "";
+    const spinTextPath = layout.hasSpin
+      ? curvedLine(
+          geometry,
+          layout.spinStart,
+          layout.spinEnd,
+          textBaseline,
+        )
+      : "";
+
     const clipPath = curvedRect(
       geometry,
       layout.textStart - 5,
@@ -281,6 +363,7 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     );
     const [iconX, iconY] = geometry.point(layout.iconCenter, 0);
     const iconAngle = geometry.angleAt(layout.iconCenter);
+
     const caretU = Math.min(layout.textEnd, layout.textStart + caretLength);
     const [caretX, caretY] = geometry.point(caretU, 0);
     const caretAngle = geometry.angleAt(caretU);
@@ -356,6 +439,48 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
               </textPath>
             </text>
           </g>
+          {layout.hasSecondary && secondaryButtonText ? (
+            <g
+              className={`curved-input__button curved-input__button--secondary${
+                disabled || secondaryButtonDisabled ? " is-disabled" : ""
+              }`}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!disabled && !secondaryButtonDisabled && onSecondarySubmit) {
+                  onSecondarySubmit();
+                }
+              }}
+            >
+              <path className="curved-input__button-bg" d={secondaryPath} />
+              <path id={secondaryPathId} d={secondaryTextPath} fill="none" />
+              <text className="curved-input__button-label" textAnchor="middle">
+                <textPath href={`#${secondaryPathId}`} startOffset="50%">
+                  {secondaryButtonText}
+                </textPath>
+              </text>
+            </g>
+          ) : null}
+          {layout.hasSpin && spinButtonText ? (
+            <g
+              className={`curved-input__button curved-input__button--spin${
+                disabled || spinButtonDisabled ? " is-disabled" : ""
+              }`}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!disabled && !spinButtonDisabled && onSpinSubmit) {
+                  onSpinSubmit();
+                }
+              }}
+            >
+              <path className="curved-input__button-bg" d={spinPath} />
+              <path id={spinPathId} d={spinTextPath} fill="none" />
+              <text className="curved-input__button-label" textAnchor="middle">
+                <textPath href={`#${spinPathId}`} startOffset="50%">
+                  {spinButtonText}
+                </textPath>
+              </text>
+            </g>
+          ) : null}
         </svg>
         <input
           {...inputProps}
