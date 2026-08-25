@@ -22,10 +22,9 @@ import {
 
 import { MovieRecommendationComposer } from "@/components/movies";
 import {
-  WorkspaceSearchShell,
   WorkspaceSearchActions,
+  CurvedInput,
 } from "@/components/ui";
-import { WorkspaceSearchField } from "@/components/ui";
 import { WorkspaceAutocompleteCopy,
   WorkspaceAutocompleteGroup,
   WorkspaceAutocompleteLoading,
@@ -408,29 +407,39 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
 
   return (
     <>
-      <WorkspaceSearchShell
-        isAutocompleteActive={showPanel && isOpen}
-        onSubmit={(event: React.FormEvent) => {
-          event.preventDefault();
-          if (isBusy) return;
-          clearFocusBoundaryCheck();
-          hideAutocomplete();
-          inputRef.current?.blur();
-          handlePrimary();
-        }}
-        shellRef={autocompleteRegionRef}
-        onShellFocusCapture={onFocusCapture}
-        onShellBlurCapture={onBlurCapture}
-        error={actionError}
-        input={
-          <WorkspaceSearchField
-            inputRef={inputRef}
+      <div className="workspace-search__stage curved-library-search">
+        <div
+          ref={autocompleteRegionRef}
+          className={`curved-library-search__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}`}
+          onFocusCapture={onFocusCapture}
+          onBlurCapture={onBlurCapture}
+        >
+          <CurvedInput
+            ref={inputRef}
             value={query}
-            onChange={(nextValue: string) => {
+            onChange={(nextValue) => {
               setQuery(nextValue);
               setSelection(null);
               setActionError(null);
               setShowRecommend(false);
+            }}
+            onSubmit={() => {
+              if (isBusy || !hasQuery) return;
+              clearFocusBoundaryCheck();
+              hideAutocomplete();
+              inputRef.current?.blur();
+              handlePrimary();
+            }}
+            buttonText={primaryLabel}
+            isBusy={isBusy}
+            buttonDisabled={!hasQuery}
+            placeholder="Add a movie, show, or place"
+            aria-label="Search movies, shows, and places to add"
+            combobox={{
+              expanded: isOpen,
+              controlsId: listId,
+              activeDescendantId:
+                isOpen && activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined,
             }}
             onFocus={() => {
               setIsFocused(true);
@@ -439,7 +448,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
                 setIsOpen(true);
               }
             }}
-            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+            onKeyDown={(event) => {
               if (event.nativeEvent.isComposing) return;
               if (event.key === "ArrowDown") {
                 if (rows.length === 0) return;
@@ -470,22 +479,8 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
                 }
               }
             }}
-            placeholder="Add a movie, show, or place"
-            ariaLabel="Search movies, shows, and places to add"
-            combobox={{
-              expanded: isOpen,
-              controlsId: listId,
-              activeDescendantId:
-                isOpen && activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined,
-            }}
-            onClear={() => {
-              clearQuery();
-              inputRef.current?.focus();
-            }}
           />
-        }
-        autocomplete={
-          showPanel ? (
+          {showPanel ? (
             <WorkspaceAutocompletePanel
               id={listId}
               isOpen={isOpen}
@@ -540,22 +535,9 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
                   ))
                 : null}
             </WorkspaceAutocompletePanel>
-          ) : null
-        }
-        actions={
-          hasQuery ? (
-            <WorkspaceSearchActions>
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                isLoading={isBusy}
-                loadingText="Saving"
-                disabled={isBusy}
-                className="workspace-search__search-button"
-              >
-                {primaryLabel}
-              </Button>
+          ) : null}
+          {hasQuery && (alternateKind || submitKind === "movie") ? (
+            <WorkspaceSearchActions className="curved-library-search__secondary-actions">
               {alternateKind ? (
                 <Button
                   type="button"
@@ -583,9 +565,15 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
                 </Button>
               ) : null}
             </WorkspaceSearchActions>
-          ) : null
-        }
-      />
+          ) : null}
+        </div>
+        {actionError ? (
+          <div className="workspace-search__error" role="alert">
+            <span className="workspace-search__error-dot" aria-hidden="true" />
+            <span>{actionError}</span>
+          </div>
+        ) : null}
+      </div>
       {showRecommend && hasQuery ? (
         <MovieRecommendationComposer
           currentUser={currentUser}

@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
-import { WorkspaceTabFallback } from "@/components/ui";
-import { useUser, BentoSlotContext } from "@/app/providerContexts";
+import { MessageIcon, WorkspaceTabFallback } from "@/components/ui";
+import { BentoSlotContext } from "@/app/providerContexts";
 import type { RegisteredBentoSlotConfig } from "@/app/providerContexts";
 import {
   isLibraryWorkspaceTab,
@@ -11,17 +11,13 @@ import {
 const LibraryWorkspace = React.lazy(() => import("@/components/library/LibraryWorkspace"));
 import {
   MessageBoardPanel as MessageBoard,
-  QuizExperiencePanel as QuizExperience,
   SpinSwipeGamePanel as SpinSwipeGame,
 } from "./lazyFeaturePanels";
 
-export type TogglePanel = "messages" | "quiz" | "spin";
+export type TogglePanel = "messages" | "spin";
 
 type AppWorkspaceShellProps = {
   activeTab: MainTab;
-  onOpenMessages?: () => void;
-  onOpenQuiz?: () => void;
-  onOpenSpin?: () => void;
   openPanels: Set<TogglePanel>;
   onTogglePanel: (panel: TogglePanel) => void;
 };
@@ -35,8 +31,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );
-  const { currentUser } = useUser();
-
   const registerTabConfig = useCallback(
     (tab: MainTab, config: RegisteredBentoSlotConfig) => {
       setTabConfigs((previous) => ({ ...previous, [tab]: config }));
@@ -58,6 +52,8 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   ) : (
     <MessageBoard />
   );
+  const isChatOpen = openPanels.has("messages");
+  const hasInlinePanels = openPanels.has("spin");
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
@@ -78,51 +74,8 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         tabIndex={-1}
       >
         {/* Toggle panels — inline, all can be open simultaneously */}
-        {openPanels.size > 0 && (
+        {hasInlinePanels && (
           <div className="toggle-panels">
-            {openPanels.has("messages") && (
-              <section className="toggle-panel toggle-panel--messages" aria-label="Messages">
-                <div className="toggle-panel__header">
-                  <h2 className="toggle-panel__title">Messages</h2>
-                  <button
-                    type="button"
-                    className="toggle-panel__close"
-                    onClick={() => onTogglePanel("messages")}
-                    aria-label="Close messages"
-                  >
-                    ×
-                  </button>
-                </div>
-                <React.Suspense fallback={null}>
-                  <MessageBoard />
-                </React.Suspense>
-              </section>
-            )}
-
-            {openPanels.has("quiz") && (
-              <section className="toggle-panel toggle-panel--quiz" aria-label="Quiz">
-                <div className="toggle-panel__header">
-                  <h2 className="toggle-panel__title">Quiz</h2>
-                  <button
-                    type="button"
-                    className="toggle-panel__close"
-                    onClick={() => onTogglePanel("quiz")}
-                    aria-label="Close quiz"
-                  >
-                    ×
-                  </button>
-                </div>
-                <React.Suspense fallback={null}>
-                  <QuizExperience
-                    currentUser={currentUser}
-                    quizCompleted={false}
-                    onComplete={() => {}}
-                    onRetake={() => {}}
-                  />
-                </React.Suspense>
-              </section>
-            )}
-
             {openPanels.has("spin") && (
               <section className="toggle-panel toggle-panel--spin" aria-label="Spin">
                 <div className="toggle-panel__header">
@@ -160,6 +113,39 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 
         {/* Search portal for workspace components */}
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
+
+        {isChatOpen ? (
+          <section
+            id="floating-chat-panel"
+            className="chat-dock"
+            aria-label="Messages"
+            aria-live="polite"
+          >
+            <button
+              type="button"
+              className="chat-dock__close"
+              onClick={() => onTogglePanel("messages")}
+              aria-label="Close chat"
+            >
+              ×
+            </button>
+            <React.Suspense fallback={null}>
+              <MessageBoard />
+            </React.Suspense>
+          </section>
+        ) : null}
+
+        <button
+          type="button"
+          className={`chat-fab${isChatOpen ? " is-open" : ""}`}
+          onClick={() => onTogglePanel("messages")}
+          aria-label={isChatOpen ? "Close chat" : "Open chat"}
+          aria-expanded={isChatOpen}
+          aria-controls="floating-chat-panel"
+        >
+          <MessageIcon size={27} />
+          <span className="chat-fab__status" aria-hidden="true" />
+        </button>
       </main>
     </BentoSlotContext.Provider>
   );

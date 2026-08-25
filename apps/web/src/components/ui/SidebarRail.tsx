@@ -1,50 +1,8 @@
 import React from "react";
-import type { MainTab } from "@/shared/types";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
-import { isLibraryWorkspaceTab } from "@/utils/workspaceConfig";
 import { ProfileMenu } from "./index";
 
 // ── Icons ───────────────────────────────────────────────────────────────────
-
-export const SearchIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <circle cx="11" cy="11" r="7.5" />
-    <line x1="21" y1="21" x2="16.5" y2="16.5" />
-  </svg>
-);
-
-export const MoviesIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.9"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <rect x="2" y="3" width="20" height="18" rx="2.5" />
-    <line x1="7" y1="3" x2="7" y2="21" />
-    <line x1="17" y1="3" x2="17" y2="21" />
-    <line x1="2" y1="12" x2="22" y2="12" />
-    <line x1="2" y1="7.5" x2="7" y2="7.5" />
-    <line x1="2" y1="16.5" x2="7" y2="16.5" />
-    <line x1="17" y1="7.5" x2="22" y2="7.5" />
-    <line x1="17" y1="16.5" x2="22" y2="16.5" />
-  </svg>
-);
 
 export const MessageIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
   <svg
@@ -177,38 +135,31 @@ export interface PwaStatus {
 }
 
 export interface SidebarRailProps {
-  activeTab: MainTab;
-  onTabChange: (tab: MainTab) => void;
   pwaStatus?: PwaStatus;
   onInstallApp?: () => void;
   onApplyUpdate?: () => void;
   onRetrySync?: () => void;
   openPanels: Set<TogglePanel>;
   onTogglePanel: (panel: TogglePanel) => void;
-  onSearchFocus?: () => void;
+  onOpenQuiz: () => void;
 }
 
 // ── Component_SidebarRail ───────────────────────────────────────────────────
 
 export const SidebarRail: React.FC<SidebarRailProps> = ({
-  activeTab,
-  onTabChange,
   pwaStatus,
   onInstallApp,
   onApplyUpdate,
   onRetrySync,
   openPanels,
   onTogglePanel,
-  onSearchFocus,
+  onOpenQuiz,
 }) => {
   
   
 
   
 
-  const isLibraryActive = isLibraryWorkspaceTab(activeTab);
-  const isMessagesActive = openPanels.has("messages");
-  const isQuizActive = openPanels.has("quiz");
   const isSpinActive = openPanels.has("spin");
 
   const hasSyncIssue = Boolean(
@@ -228,50 +179,11 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
       className="top-nav"
       aria-label="Main application navigation"
     >
-      <div className="top-nav__left">
-        <button
-          type="button"
-          className={`top-nav__item ${isLibraryActive ? "is-active" : ""}`}
-          onClick={() => onTabChange("movies")}
-          aria-label="Movies and Places workspace"
-          aria-current={isLibraryActive ? "page" : undefined}
-        >
-          <span className="top-nav__item-icon">
-            <MoviesIcon size={18} />
-          </span>
-          <span className="top-nav__item-label">Movies</span>
-        </button>
-      </div>
-
-      <div className="top-nav__center">
-        <button
-          type="button"
-          className="top-nav__item top-nav__item--search"
-          onClick={onSearchFocus}
-          aria-label="Search"
-        >
-          <span className="top-nav__item-icon">
-            <SearchIcon size={18} />
-          </span>
-          <span className="top-nav__item-label">Search</span>
-        </button>
-      </div>
-
       <div className="top-nav__right">
         <button
           type="button"
-          className={`top-nav__item ${isMessagesActive ? "is-toggled" : ""}`}
-          onClick={() => onTogglePanel("messages")}
-          aria-label="Messages"
-        >
-          <span className="top-nav__item-icon">
-            <MessageIcon size={18} />
-          </span>
-        </button>
-        <button
-          type="button"
-          className={`top-nav__item ${isQuizActive ? "is-toggled" : ""}`}
-          onClick={() => onTogglePanel("quiz")}
+          className="top-nav__item"
+          onClick={onOpenQuiz}
           aria-label="Quiz"
         >
           <span className="top-nav__item-icon">

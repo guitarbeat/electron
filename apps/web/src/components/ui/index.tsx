@@ -1292,9 +1292,6 @@ interface Props_MovieSectionBody {
   isInteractionStatic?: boolean;
 }
 
-export const SK_MOBILE = ['m1', 'm2', 'm3', 'm4'];
-export const SK_DESKTOP = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'];
-
 interface TiltedPosterWallProps {
   items: React.ReactNode[];
   isMobile: boolean;
@@ -1306,9 +1303,15 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
   isMobile,
   isStatic,
 }) => {
+  const wallRef = useRef<HTMLElement | null>(null);
+  const trackRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const bandRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const copyHeightsRef = useRef<number[]>([]);
+  const offsetsRef = useRef<number[]>([]);
+  const lastFrameRef = useRef<number | null>(null);
   const posterCards = React.Children.toArray(items);
   const columnCount = Math.min(
-    isMobile ? 3 : 7,
+    isMobile ? 4 : 10,
     Math.max(1, Math.ceil(Math.sqrt(posterCards.length))),
   );
   const columns = useMemo(() => {
@@ -1319,17 +1322,73 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
     posterCards.forEach((card, index) => next[index % columnCount].push(card));
     return next;
   }, [columnCount, posterCards]);
-  const ambientDuplicateCount = isStatic ? 0 : 4;
-  const maxRows = Math.max(
-    1,
-    ...columns.map((column) => column.length + ambientDuplicateCount),
-  );
+
+  useEffect(() => {
+    const updateMeasurements = () => {
+      bandRefs.current.forEach((band, columnIndex) => {
+        if (!band) return;
+        const track = trackRefs.current[columnIndex];
+        const gap = track ? Number.parseFloat(getComputedStyle(track).rowGap) || 0 : 0;
+        const copyHeight = band.getBoundingClientRect().height + gap;
+        if (copyHeight <= 0) return;
+
+        copyHeightsRef.current[columnIndex] = copyHeight;
+        if (offsetsRef.current[columnIndex] === undefined) {
+          offsetsRef.current[columnIndex] = copyHeight * ((columnIndex * 0.37) % 1);
+        } else {
+          offsetsRef.current[columnIndex] %= copyHeight;
+        }
+      });
+    };
+
+    updateMeasurements();
+    const observer = new ResizeObserver(updateMeasurements);
+    if (wallRef.current) observer.observe(wallRef.current);
+    bandRefs.current.forEach((band) => {
+      if (band) observer.observe(band);
+    });
+    return () => observer.disconnect();
+  }, [columnCount, items]);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let animationFrame = 0;
+
+    const animate = (timestamp: number) => {
+      if (lastFrameRef.current === null) lastFrameRef.current = timestamp;
+      const elapsed = Math.min(50, timestamp - lastFrameRef.current) / 1000;
+      lastFrameRef.current = timestamp;
+
+      trackRefs.current.forEach((track, columnIndex) => {
+        const copyHeight = copyHeightsRef.current[columnIndex];
+        if (!track || !copyHeight) return;
+
+        if (!isStatic && !reduceMotion.matches) {
+          const variance = 0.82 + ((columnIndex * 0.618 + 0.35) % 1) * 0.36;
+          const direction = columnIndex % 2 === 0 ? 1 : -1;
+          const speed = (isMobile ? 7 : 10) * variance * direction;
+          const next = (offsetsRef.current[columnIndex] ?? 0) + speed * elapsed;
+          offsetsRef.current[columnIndex] = ((next % copyHeight) + copyHeight) % copyHeight;
+        }
+
+        track.style.transform = `translate3d(0, ${-(offsetsRef.current[columnIndex] ?? 0)}px, 0)`;
+      });
+
+      animationFrame = window.requestAnimationFrame(animate);
+    };
+
+    animationFrame = window.requestAnimationFrame(animate);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      lastFrameRef.current = null;
+    };
+  }, [columnCount, isMobile, isStatic]);
 
   return (
     <section
+      ref={wallRef}
       className={`tilted-poster-wall${isStatic ? " is-static" : " is-ambient"}`}
       aria-label="Movies, suggestions, and places"
-      style={{ "--poster-wall-rows": maxRows } as React.CSSProperties}
     >
       <div className="tilted-poster-wall__fade tilted-poster-wall__fade--top" aria-hidden="true" />
       <div className="tilted-poster-wall__plane">
@@ -1339,31 +1398,22 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
             key={`poster-column-${columnIndex}`}
             style={{ "--poster-column-index": columnIndex } as React.CSSProperties}
           >
-            {!isStatic
-              ? column.slice(-2).map((card, duplicateIndex) => (
-                  <div
-                    className="tilted-poster-wall__duplicate"
-                    aria-hidden="true"
-                    inert
-                    key={`leading-duplicate-${columnIndex}-${duplicateIndex}`}
-                  >
-                    {card}
-                  </div>
-                ))
-              : null}
-            {column}
-            {!isStatic
-              ? column.slice(0, 2).map((card, duplicateIndex) => (
-                  <div
-                    className="tilted-poster-wall__duplicate"
-                    aria-hidden="true"
-                    inert
-                    key={`trailing-duplicate-${columnIndex}-${duplicateIndex}`}
-                  >
-                    {card}
-                  </div>
-                ))
-              : null}
+            <div
+              className="tilted-poster-wall__track"
+              ref={(element) => { trackRefs.current[columnIndex] = element; }}
+            >
+              {Array.from({ length: 4 }, (_, copyIndex) => (
+                <div
+                  className="tilted-poster-wall__band"
+                  key={`poster-band-${columnIndex}-${copyIndex}`}
+                  ref={copyIndex === 0
+                    ? (element) => { bandRefs.current[columnIndex] = element; }
+                    : undefined}
+                >
+                  {column}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -1371,6 +1421,53 @@ const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
     </section>
   );
 };
+
+function DriftWallLoading({
+  isMobile,
+  fullViewport = false,
+}: {
+  isMobile: boolean;
+  fullViewport?: boolean;
+}) {
+  const columnCount = isMobile ? 4 : 10;
+  const rowCount = isMobile ? 6 : 5;
+
+  return (
+    <div
+      className={`drift-wall-loading${fullViewport ? " drift-wall-loading--viewport" : ""}`}
+      role="status"
+      aria-live="polite"
+    >
+      <span className="sr-only">Loading movies, suggestions, and places</span>
+      <div className="drift-wall-loading__plane" aria-hidden="true">
+        {Array.from({ length: columnCount }, (_, columnIndex) => (
+          <div
+            className="drift-wall-loading__column"
+            key={`loading-column-${columnIndex}`}
+            style={{ "--loading-column": columnIndex } as React.CSSProperties}
+          >
+            {Array.from({ length: rowCount }, (_, rowIndex) => (
+              <div
+                className="drift-wall-loading__tile"
+                key={`loading-tile-${columnIndex}-${rowIndex}`}
+                style={{
+                  "--loading-tile": rowIndex,
+                  "--loading-tone": (columnIndex * 3 + rowIndex) % 6,
+                } as React.CSSProperties}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="drift-wall-loading__status" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <small>Loading collection</small>
+      </div>
+    </div>
+  );
+}
 
 export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   sections,
@@ -1389,9 +1486,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   posterPlaceCards = [],
   isInteractionStatic = false,
 }) => {
-  const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
-  const GRID = MOVIES_POSTER_GRID_MIN_COL;
-
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
     suggestionCount: sections.suggestions.length,
@@ -1422,7 +1516,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   );
 
   if (collectionState === 'loading') {
-    return <WorkspaceCollectionLoading tab="movies" minColumnWidth={GRID} />;
+    return <DriftWallLoading isMobile={isMobile} />;
   }
 
   const allPosters = [...sections.queue, ...sections.completed];
@@ -1438,16 +1532,16 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     />
   ));
   const unifiedCards = [
-    ...(isSuggestionsLoading && sections.suggestions.length === 0
-      ? sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
-      : []),
     ...suggestionCards,
     ...allPosters.map(renderMovie),
     ...posterPlaceCards,
   ];
   // ── Full section body ─────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
+    <div
+      className="unified-wall-content"
+      style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}
+    >
       {unifiedCards.length > 0 ? (
           <TiltedPosterWall
             items={unifiedCards}
@@ -1541,6 +1635,8 @@ export {
   ClearInputIcon,
   SparkleFilterIcon,
 } from "./WorkspaceSearch";
+export { CurvedInput } from "./CurvedInput";
+export type { CurvedInputProps } from "./CurvedInput";
 export type {
   WorkspaceSearchShellProps,
   WorkspaceSearchFieldProps,
@@ -2607,6 +2703,11 @@ export interface WorkspaceTabFallbackProps {
 }
 
 export const WorkspaceTabFallback: FC<WorkspaceTabFallbackProps> = ({ tab }) => {
+  const { isMobile } = useViewport();
+  if (tab === "movies" || tab === "places") {
+    return <DriftWallLoading isMobile={isMobile} fullViewport />;
+  }
+
   const { emoji, label } = WORKSPACE_LOADING_COPY[tab];
   return (
     <div className={WORKSPACE_TAB_CONTAINER[tab]} aria-label={`Loading ${tab}`}>
@@ -2735,8 +2836,7 @@ export const CardActionButton: React.FC<CardActionButtonProps> = ({
 // ── SidebarRail Export ──────────────────────────────────────────────
 export {
   SidebarRail,
-  SearchIcon,
-  MoviesIcon,
+  MessageIcon,
   QuizIcon,
   SpinIcon,
   CloudOfflineIcon,

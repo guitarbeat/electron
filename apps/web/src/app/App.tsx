@@ -32,6 +32,7 @@ import { scheduleIdleWork } from "@/utils";
 import { MinigameModal } from "@/components/ui";
 import { SidebarRail } from "@/components/ui";
 import { ProfilePinPanel } from "@/components/ui";
+import { WorkspaceTabFallback } from "@/components/ui";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 const AppWorkspaceShell = React.lazy(() => import("@/app/AppWorkspaceShell"));
 import {
@@ -152,37 +153,6 @@ const App: React.FC = () => {
     updateQuizCompletion(false);
   }, [updateQuizCompletion]);
 
-  const openSpinMatch = useCallback(() => {
-    setShowSpinMatch(true);
-  }, []);
-
-  const openMessages = useCallback(() => {
-    handleTabChange("messages");
-  }, [handleTabChange]);
-
-  const focusLibrarySearch = useCallback(() => {
-    if (!isLibraryWorkspaceTab(activeTab)) {
-      handleTabChange("movies");
-    }
-
-    let attempts = 0;
-    const focusWhenMounted = () => {
-      const input = document.querySelector<HTMLInputElement>(
-        ".workspace-search__search-field",
-      );
-      if (input) {
-        input.focus();
-        return;
-      }
-      attempts += 1;
-      if (attempts < 10) {
-        window.requestAnimationFrame(focusWhenMounted);
-      }
-    };
-
-    window.requestAnimationFrame(focusWhenMounted);
-  }, [activeTab, handleTabChange]);
-
   const featureModals = useMemo(
     () =>
       buildFeatureModals({
@@ -222,8 +192,6 @@ const App: React.FC = () => {
         </a>
 
         <SidebarRail
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
           pwaStatus={{
             isOnline,
             isStandalone,
@@ -237,7 +205,7 @@ const App: React.FC = () => {
           onRetrySync={handleRetryPendingSync}
           openPanels={openPanels}
           onTogglePanel={togglePanel}
-          onSearchFocus={focusLibrarySearch}
+          onOpenQuiz={openQuizExperience}
         />
 
         <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
@@ -248,12 +216,9 @@ const App: React.FC = () => {
               className={`app-tab-shell ${isLibraryWorkspaceTab(activeTab) ? "app-tab-shell--movies" : `app-tab-shell--${activeTab}`} workspace-unified-shell`}
             >
               <WorkspaceErrorBoundary>
-                <React.Suspense fallback={null}>
+                <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>
                   <AppWorkspaceShell
                     activeTab={activeTab}
-                    onOpenMessages={openMessages}
-                    onOpenQuiz={openQuizExperience}
-                    onOpenSpin={openSpinMatch}
                     openPanels={openPanels}
                     onTogglePanel={togglePanel}
                   />

@@ -370,12 +370,6 @@ export const filterMoviesByMediaType = (
     filter === "series" ? isTvSeries(m) : !isTvSeries(m),
   );
 };
-export type PosterClickAction = "reveal-title" | "open-details";
-
-/** First click shows the title; a second click on the same poster opens details. */
-export const nextPosterClickAction = (
-  isTitleVisible: boolean,
-): PosterClickAction => (isTitleVisible ? "open-details" : "reveal-title");
 export const submitMemory = async (
   note: string,
   onAddMemory: (note: string) => Promise<void>,
@@ -2417,10 +2411,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   };
 
   const handlePosterClick = () => {
-    if (nextPosterClickAction(isTitleVisible) === "reveal-title") {
-      setIsTitleVisible(true);
-      return;
-    }
     handleOpenDetails();
   };
 
@@ -2507,12 +2497,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 type="button"
                 className="movie-item-details-hit-area"
                 onClick={handlePosterClick}
-                aria-expanded={isTitleVisible}
-                aria-label={
-                  isTitleVisible
-                    ? `View details for "${movie.title}"`
-                    : `Show title for "${movie.title}"`
-                }
+                aria-expanded={isDetailsOpen}
+                aria-label={`View details for "${movie.title}"`}
               />
             </MediaCardPosterWrap>
           </Card>
