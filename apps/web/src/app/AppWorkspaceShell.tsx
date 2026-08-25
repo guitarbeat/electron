@@ -9,7 +9,6 @@ import {
 } from "@/utils/workspaceConfig";
 
 const LibraryWorkspace = React.lazy(() => import("@/components/library/LibraryWorkspace"));
-const MemoriesView = React.lazy(() => import("@/components/memories/MemoriesView"));
 import {
   MessageBoardPanel as MessageBoard,
   QuizExperiencePanel as QuizExperience,
@@ -20,7 +19,6 @@ export type TogglePanel = "messages" | "quiz" | "spin";
 
 type AppWorkspaceShellProps = {
   activeTab: MainTab;
-  onTabChange: (tab: MainTab) => void;
   onOpenMessages?: () => void;
   onOpenQuiz?: () => void;
   onOpenSpin?: () => void;
@@ -30,7 +28,6 @@ type AppWorkspaceShellProps = {
 
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
-  onTabChange,
   openPanels,
   onTogglePanel,
 }) => {
@@ -58,8 +55,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 
   const workspaceContent = isLibraryWorkspaceTab(activeTab) ? (
     <LibraryWorkspace />
-  ) : activeTab === "memories" ? (
-    <MemoriesView onJumpToMovies={() => onTabChange("movies")} />
   ) : (
     <MessageBoard />
   );
@@ -68,13 +63,11 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     <BentoSlotContext.Provider value={contextValue}>
       <h1 className="sr-only">
         {isLibraryWorkspaceTab(activeTab) ? "Movies & Places" :
-         activeTab === "memories" ? "Memory Board" :
          "Message Board"}
       </h1>
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
-         activeTab === "memories" ? "Memories workspace" :
          "Messages workspace"}
       </p>
 
@@ -157,7 +150,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           style={{ position: "relative", zIndex: 1, minWidth: 0 }}
           aria-label={
             isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
-            activeTab === "memories" ? "Memories workspace" :
             "Messages workspace"
           }
         >
@@ -174,4 +166,3 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 };
 
 export default AppWorkspaceShell;
-

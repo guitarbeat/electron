@@ -18,7 +18,7 @@ import {
 } from "@/components/ui";
 import { PlacesEmptyIllustration } from "@/components/ui/EmptyStateIllustrations";
 
-const PlaceCard: React.FC<{
+export const PlaceCard: React.FC<{
   place: Place;
   canEdit: boolean;
   onMarkVisited: (id: string) => void;

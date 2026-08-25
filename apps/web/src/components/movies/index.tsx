@@ -60,12 +60,12 @@ export const getMovieActionState = ({
   const showWatchedAction = Boolean(currentUser);
   const showNotesAction = hasMemories || Boolean(currentUser);
   const showActionRail = showWatchedAction || showNotesAction;
-  const memoryCountText = `${memoriesCount} note${memoriesCount === 1 ? "" : "s"}`;
+  const memoryCountText = `${memoriesCount} comment${memoriesCount === 1 ? "" : "s"}`;
 
   let notesButtonAriaLabel: string | null = null;
   if (showNotesAction) {
     notesButtonAriaLabel = hasMemories
-      ? `View notes for "${movie.title}"`
+      ? `View comments for "${movie.title}"`
       : `Add note to "${movie.title}"`;
   }
 
@@ -84,8 +84,8 @@ export const getMovieActionState = ({
     showWatchedAction,
     showNotesAction,
     memoryCountText,
-    notesButtonLabel: hasMemories ? memoryCountText : "Add note",
-    notesButtonCompactLabel: hasMemories ? "Notes" : "Note",
+    notesButtonLabel: hasMemories ? memoryCountText : "Add comment",
+    notesButtonCompactLabel: hasMemories ? "Comments" : "Comment",
     notesButtonAriaLabel,
     notesBadgeText: hasMemories ? String(memoriesCount) : null,
     primaryActionLabel: watchedByCurrentUser ? "Watched" : "Mark watched",
@@ -255,7 +255,7 @@ export const getMovieWatchStatus = (movie: Movie, memoryCount: number) => {
       label: "Seen together",
       title: "Already a shared watch",
       detail: memoryCount > 0
-        ? "You both finished this one, and the poster is already carrying your notes."
+        ? "You both finished this one, and its comments are part of the story."
         : "You both marked this watched already.",
     };
   }
@@ -1032,9 +1032,16 @@ export const MOVIE_SORTS: BentoSortChipConfig[] = [
   { value: "rating", label: "★ Rating" },
 ];
 
-export const MoviesView: React.FC<MoviesViewProps> = ({
+type MoviesWorkspaceViewProps = MoviesViewProps & {
+  posterPlaceCards?: React.ReactNode[];
+  isInteractionStatic?: boolean;
+};
+
+export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   isPaused = false,
   hideSearch: _hideSearch = false,
+  posterPlaceCards = [],
+  isInteractionStatic = false,
 }) => {
   const { currentUser } = useUser();
   const { registerTabConfig } = useBentoSlot();
@@ -1114,34 +1121,9 @@ export const MoviesView: React.FC<MoviesViewProps> = ({
     });
     return memoriesByMovieId;
   }, [memories, movies]);
-  const [mediaTypeFilter, setMediaTypeFilterState] = useState<MediaTypeFilter>(() => {
-    const param = new URLSearchParams(window.location.search).get("format");
-    return (param === "movie" || param === "series" ? param : "all") as MediaTypeFilter;
-  });
-
-  const setMediaTypeFilter = useCallback((next: MediaTypeFilter) => {
-    setMediaTypeFilterState(next);
-    const params = new URLSearchParams(window.location.search);
-    if (next === "all") {
-      params.delete("format");
-    } else {
-      params.set("format", next);
-    }
-    const qs = params.toString();
-    window.history.replaceState(
-      null,
-      "",
-      `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`,
-    );
-  }, []);
-
-  const filteredMovies = useMemo(
-    () => filterMoviesByMediaType(movies, mediaTypeFilter),
-    [movies, mediaTypeFilter],
-  );
   const sections = useMemo(
-    () => buildMovieSections(filteredMovies, pendingSuggestions, sortOrder),
-    [filteredMovies, pendingSuggestions, sortOrder],
+    () => buildMovieSections(movies, pendingSuggestions, sortOrder),
+    [movies, pendingSuggestions, sortOrder],
   );
 
   const movieStats = useMemo(
@@ -1230,10 +1212,12 @@ export const MoviesView: React.FC<MoviesViewProps> = ({
   ]);
 
   return (
-    <section className="library-movies" aria-label="Movies">
+    <section className="library-movies" aria-label="Movies and places">
       <h2 className="workspace-section-heading library-movies-heading">
         <span className="workspace-section-heading__content">
-          <span className="workspace-section-heading__label">Movies</span>
+          <span className="workspace-section-heading__label">
+            Movies & Places
+          </span>
         </span>
       </h2>
       
@@ -1271,10 +1255,8 @@ export const MoviesView: React.FC<MoviesViewProps> = ({
             deleteMemory: deleteMemoryRecord,
             togglePin: toggleMemoryPin,
           }}
-          mediaTypeFilter={mediaTypeFilter}
-          onMediaTypeFilterChange={setMediaTypeFilter}
-          totalMoviesCount={movies.filter((m) => !isTvSeries(m)).length}
-          totalSeriesCount={movies.filter((m) => isTvSeries(m)).length}
+          posterPlaceCards={posterPlaceCards}
+          isInteractionStatic={isInteractionStatic}
         />
         {movieToDelete && (
           <ConfirmDialog
@@ -1346,7 +1328,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         </span>
         {memoriesCount > 0 && (
           <span className="movie-details-modal__poster-pill">
-            {memoriesCount} {memoriesCount === 1 ? "note" : "notes"}
+            {memoriesCount} {memoriesCount === 1 ? "comment" : "comments"}
           </span>
         )}
       </div>
@@ -1431,7 +1413,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         onClick={onShowNotes}
         leftIcon={<BookmarkIcon />}
       >
-        {memoriesCount > 0 ? `Notes (${memoriesCount})` : "Add note"}
+        {memoriesCount > 0 ? `Comments (${memoriesCount})` : "Add comment"}
       </CardActionButton>
       {onEdit && (
         <CardActionButton
@@ -1490,7 +1472,7 @@ export const SummaryBand: React.FC<SummaryBandProps> = ({
       <span className="movie-details-modal__summary-value">{watchStatusLabel}</span>
     </div>
     <div className="movie-details-modal__summary-item">
-      <span className="movie-details-modal__meta-label">Poster notes</span>
+      <span className="movie-details-modal__meta-label">Comments</span>
       <span className="movie-details-modal__summary-value">
         {memoriesCount > 0 ? `${memoriesCount} saved` : "None yet"}
       </span>
@@ -1560,10 +1542,10 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
   );
 
   return (
-    <section ref={notesSectionRef} className="movie-details-modal__section" aria-labelledby="poster-notes-heading">
+    <section ref={notesSectionRef} className="movie-details-modal__section" aria-labelledby="poster-comments-heading">
       <div className="movie-details-modal__section-head">
-        <h3 id="poster-notes-heading" className="movie-details-modal__section-label">
-          Poster notes
+        <h3 id="poster-comments-heading" className="movie-details-modal__section-label">
+          Comments
         </h3>
         {memories.length > 1 && (
           <span className="movie-details-modal__section-caption">
@@ -1641,7 +1623,7 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
           </div>
         ) : (
           <div className="movie-details-modal__memory-empty">
-            No notes on this poster yet. The first one will show up right here.
+            No comments on this title yet. Start the conversation here.
           </div>
         )
       ) : featuredMemory ? (
@@ -1692,7 +1674,7 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
         </>
       ) : (
         <div className="movie-details-modal__memory-empty">
-          No notes on this poster yet. The first one will show up right here.
+          No comments on this title yet. Start the conversation here.
         </div>
       )}
     </section>
@@ -2671,6 +2653,3 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
     />
   );
 };
-
-
-

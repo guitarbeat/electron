@@ -15,6 +15,12 @@ export const parseMainTab = (
     return null;
   }
 
+  // Memories now live on each movie. Preserve old links without exposing a
+  // stranded top-level workspace.
+  if (value === "memories") {
+    return "movies";
+  }
+
   return (MAIN_TABS as readonly string[]).includes(value)
     ? (value as MainTab)
     : null;

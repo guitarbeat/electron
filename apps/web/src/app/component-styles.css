@@ -3405,3 +3405,305 @@
   pointer-events: none;
   z-index: 2;
 }
+
+/* ── Product-wide restraint pass ────────────────────────────────────────────
+   Shared chrome stays quiet so posters, memories, messages, and games carry
+   the personality. Bespoke experiences such as the retro quiz remain intact. */
+
+.app-shell {
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-elevated: 0 12px 28px rgba(0, 0, 0, 0.28);
+  --shadow-floating: 0 20px 48px rgba(0, 0, 0, 0.38);
+  --chrome-radius-sm: 0.625rem;
+}
+
+.top-nav {
+  background: color-mix(in srgb, var(--color-surface-0) 96%, black);
+  border-bottom-color: var(--color-border-subtle);
+  box-shadow: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.top-nav__left,
+.top-nav__center,
+.top-nav__right {
+  gap: 0.5rem;
+}
+
+.top-nav__item {
+  min-height: 2.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.top-nav__item.is-active,
+.top-nav__item.is-toggled {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+.toggle-panel,
+.msg-board-surface,
+.ui-card,
+.movie-item-card,
+.places-item-card {
+  border-color: var(--color-border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+.toggle-panel,
+.msg-board-surface {
+  border-radius: 0.75rem;
+}
+
+.toggle-panel__header {
+  background: transparent;
+}
+
+.workspace-search__search-form {
+  border-radius: 0.75rem;
+  background: var(--color-surface-1);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.workspace-search__search-form:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 32%, var(--color-border));
+  box-shadow: var(--shadow-card);
+}
+
+.workspace-search__search-form:focus-within,
+.workspace-search__search-form.is-autocomplete-active {
+  background: var(--color-surface-1);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.workspace-search__search-icon,
+.workspace-search__search-form:focus-within .workspace-search__search-icon {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.workspace-search__search-button,
+.workspace-search__search-button:hover:not(:disabled) {
+  border-radius: 0.5rem !important;
+  box-shadow: none;
+}
+
+.workspace-search__autocomplete {
+  border-radius: 0.75rem;
+  background: var(--color-surface-1);
+  box-shadow: var(--shadow-elevated);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.magic-toggle {
+  padding: 0.2rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.625rem;
+  background: var(--color-surface-1);
+  box-shadow: none;
+}
+
+.magic-toggle-indicator,
+.magic-toggle-indicator.is-logout {
+  top: 0.2rem;
+  bottom: 0.2rem;
+  border-radius: 0.45rem;
+  background: var(--color-surface-3);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+.magic-toggle-btn {
+  min-height: 2.15rem;
+  border-radius: 0.45rem;
+  font-weight: 500;
+}
+
+.magic-toggle-btn.is-active {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.pin-dialog-panel,
+.confirm-dialog-content {
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-floating);
+}
+
+.movie-view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+/* ── Tilted poster view ──────────────────────────────────────────────────── */
+
+.tilted-poster-wall {
+  --poster-wall-rows: 1;
+  position: relative;
+  min-height: calc(
+    var(--poster-wall-rows) * clamp(10rem, 19vw, 17rem) + 10rem
+  );
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.75rem;
+  background: var(--color-surface-0);
+  isolation: isolate;
+  perspective: 1600px;
+}
+
+.tilted-poster-wall__plane {
+  position: absolute;
+  inset: 3rem -8%;
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(0.65rem, 1.2vw, 1rem);
+  transform: rotateX(14deg) rotateY(-8deg) rotateZ(2deg);
+  transform-style: preserve-3d;
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tilted-poster-wall__column {
+  --poster-column-index: 0;
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: clamp(0.65rem, 1.2vw, 1rem);
+  animation: posterColumnDrift 11s ease-in-out infinite alternate;
+  animation-delay: calc(var(--poster-column-index) * -1.15s);
+}
+
+.tilted-poster-wall__column:nth-child(even) {
+  animation-direction: alternate-reverse;
+}
+
+.tilted-poster-wall__duplicate {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tilted-poster-wall__duplicate :where(button, a, input, textarea, select) {
+  pointer-events: none;
+}
+
+.tilted-poster-wall.is-static .tilted-poster-wall__column {
+  animation-play-state: paused;
+}
+
+.tilted-poster-wall.is-static .tilted-poster-wall__plane {
+  transition: none;
+}
+
+.tilted-poster-wall .movie-item-container {
+  width: 100%;
+}
+
+.tilted-poster-wall .movie-item-card {
+  border-radius: 0.45rem;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.34);
+}
+
+.tilted-poster-wall .card-tilt-wrap {
+  transform: none !important;
+}
+
+.tilted-poster-wall .card-tilt-sheen {
+  display: none;
+}
+
+.tilted-poster-wall__fade {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  height: min(12rem, 20%);
+  pointer-events: none;
+}
+
+.tilted-poster-wall__fade--top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--color-surface-0), transparent);
+}
+
+.tilted-poster-wall__fade--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--color-surface-0), transparent);
+}
+
+.poster-wall-empty {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes posterColumnDrift {
+  from { transform: translateY(-3rem); }
+  to { transform: translateY(3rem); }
+}
+
+.library-workspace--ambient .library-movies-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.library-workspace--ambient .watchlist-container {
+  padding-top: 0;
+}
+
+@media (max-width: 640px) {
+  .movie-view-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tilted-poster-wall {
+    min-height: calc(
+      var(--poster-wall-rows) * clamp(9rem, 58vw, 15rem) + 7rem
+    );
+    border-radius: 0.625rem;
+  }
+
+  .tilted-poster-wall__plane {
+    inset: 2rem -22%;
+    gap: 0.65rem;
+    transform: rotateX(9deg) rotateY(-5deg) rotateZ(1.5deg);
+  }
+
+  .tilted-poster-wall__column {
+    gap: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilted-poster-wall__plane {
+    transform: rotateX(8deg) rotateY(-4deg) rotateZ(1deg);
+    transition: none;
+  }
+
+  .tilted-poster-wall__column {
+    animation: none;
+  }
+}

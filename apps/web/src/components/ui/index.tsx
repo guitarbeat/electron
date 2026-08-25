@@ -30,7 +30,6 @@ import {
 import {
   WORKSPACE_LOADING_COPY,
   WORKSPACE_TAB_CONTAINER,
-  MOVIES_POSTER_GRID_GAP,
   MOVIES_POSTER_GRID_MIN_COL,
   PLACES_GRID_CLASS,
   PLACES_GRID_MIN_COL,
@@ -41,7 +40,7 @@ import { useViewport } from "@/app/providerContexts";
 import { MoviesEmptyIllustration } from "./EmptyStateIllustrations";
 import { MovieCard, SuggestionCard } from "@/components/movies";
 import { getStremioUrls, type StremioMediaObject, cn, USER_OPTIONS } from "@/utils";
-import type { MediaTypeFilter, MovieSections } from "@/components/movies";
+import type { MovieSections } from "@/components/movies";
 
 
 
@@ -1289,14 +1288,89 @@ interface Props_MovieSectionBody {
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
-  mediaTypeFilter?: MediaTypeFilter;
-  onMediaTypeFilterChange?: (filter: MediaTypeFilter) => void;
-  totalMoviesCount?: number;
-  totalSeriesCount?: number;
+  posterPlaceCards?: React.ReactNode[];
+  isInteractionStatic?: boolean;
 }
 
 export const SK_MOBILE = ['m1', 'm2', 'm3', 'm4'];
 export const SK_DESKTOP = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'];
+
+interface TiltedPosterWallProps {
+  items: React.ReactNode[];
+  isMobile: boolean;
+  isStatic: boolean;
+}
+
+const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
+  items,
+  isMobile,
+  isStatic,
+}) => {
+  const posterCards = React.Children.toArray(items);
+  const columnCount = Math.min(
+    isMobile ? 3 : 7,
+    Math.max(1, Math.ceil(Math.sqrt(posterCards.length))),
+  );
+  const columns = useMemo(() => {
+    const next = Array.from(
+      { length: columnCount },
+      () => [] as React.ReactNode[],
+    );
+    posterCards.forEach((card, index) => next[index % columnCount].push(card));
+    return next;
+  }, [columnCount, posterCards]);
+  const ambientDuplicateCount = isStatic ? 0 : 4;
+  const maxRows = Math.max(
+    1,
+    ...columns.map((column) => column.length + ambientDuplicateCount),
+  );
+
+  return (
+    <section
+      className={`tilted-poster-wall${isStatic ? " is-static" : " is-ambient"}`}
+      aria-label="Movies, suggestions, and places"
+      style={{ "--poster-wall-rows": maxRows } as React.CSSProperties}
+    >
+      <div className="tilted-poster-wall__fade tilted-poster-wall__fade--top" aria-hidden="true" />
+      <div className="tilted-poster-wall__plane">
+        {columns.map((column, columnIndex) => (
+          <div
+            className="tilted-poster-wall__column"
+            key={`poster-column-${columnIndex}`}
+            style={{ "--poster-column-index": columnIndex } as React.CSSProperties}
+          >
+            {!isStatic
+              ? column.slice(-2).map((card, duplicateIndex) => (
+                  <div
+                    className="tilted-poster-wall__duplicate"
+                    aria-hidden="true"
+                    inert
+                    key={`leading-duplicate-${columnIndex}-${duplicateIndex}`}
+                  >
+                    {card}
+                  </div>
+                ))
+              : null}
+            {column}
+            {!isStatic
+              ? column.slice(0, 2).map((card, duplicateIndex) => (
+                  <div
+                    className="tilted-poster-wall__duplicate"
+                    aria-hidden="true"
+                    inert
+                    key={`trailing-duplicate-${columnIndex}-${duplicateIndex}`}
+                  >
+                    {card}
+                  </div>
+                ))
+              : null}
+          </div>
+        ))}
+      </div>
+      <div className="tilted-poster-wall__fade tilted-poster-wall__fade--bottom" aria-hidden="true" />
+    </section>
+  );
+};
 
 export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   sections,
@@ -1312,16 +1386,11 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onDeleteRequest,
   onToggleError,
   actions,
-  mediaTypeFilter = 'all',
-  onMediaTypeFilterChange,
-  totalMoviesCount = 0,
-  totalSeriesCount = 0,
+  posterPlaceCards = [],
+  isInteractionStatic = false,
 }) => {
   const sk = isMobile ? SK_MOBILE : SK_DESKTOP;
-  const isEmpty = (arr: unknown[]) => arr.length === 0;
-
   const GRID = MOVIES_POSTER_GRID_MIN_COL;
-  const GRID_GAP = MOVIES_POSTER_GRID_GAP;
 
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
@@ -1330,102 +1399,70 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     isLoadingSuggestions: false,
   });
 
-  const movieGrid = (movies: Movie[], emptyLabel: string) => (
-    <div
-      className="watchlist-content watchlist-content--posters"
-      style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${GRID}, 1fr))`, gap: GRID_GAP }}
-    >
-      {movies.length > 0 ? (
-        movies.map((movie) => (
-          <MovieCard
-            key={movie.id}
-            movie={movie}
-            currentUser={currentUser}
-            onToggle={() => { actions.toggleWatched(movie.id); }}
-            onToggleError={onToggleError}
-            onRename={async (title) => { await actions.renameMovie(movie.id, title); }}
-            onDelete={() => onDeleteRequest(movie)}
-            isHighlighted={successMovieId === movie.id}
-            memories={movieMemories.get(movie.id) ?? []}
-            onAddMemory={
-              currentUser
-                ? async (note) => { await actions.addMemory(movie.id, movie.title, currentUser, note); }
-                : undefined
-            }
-            onUpdateMemory={async (memoryId, note) => { await actions.updateMemory(memoryId, { note }); }}
-            onDeleteMemory={async (memoryId) => { await actions.deleteMemory(memoryId); }}
-            onTogglePin={async (memoryId) => { await actions.togglePin(memoryId); }}
-          />
-        ))
-      ) : (
-        <CollectionEmptyState
-          padding={isMobile ? spacing.md : spacing['2xl']}
-          className={`watchlist-empty-watched-state${isMobile ? ' collection-empty-state--tight' : ''}`}
-        >
-          <span className="watchlist-empty-watched-state__icon" aria-hidden="true">✓</span>
-          <span className="watchlist-empty-watched-state__text">{emptyLabel}</span>
-        </CollectionEmptyState>
-      )}
-    </div>
+  const renderMovie = (movie: Movie) => (
+    <MovieCard
+      key={movie.id}
+      movie={movie}
+      currentUser={currentUser}
+      onToggle={() => { actions.toggleWatched(movie.id); }}
+      onToggleError={onToggleError}
+      onRename={async (title) => { await actions.renameMovie(movie.id, title); }}
+      onDelete={() => onDeleteRequest(movie)}
+      isHighlighted={successMovieId === movie.id}
+      memories={movieMemories.get(movie.id) ?? []}
+      onAddMemory={
+        currentUser
+          ? async (note) => { await actions.addMemory(movie.id, movie.title, currentUser, note); }
+          : undefined
+      }
+      onUpdateMemory={async (memoryId, note) => { await actions.updateMemory(memoryId, { note }); }}
+      onDeleteMemory={async (memoryId) => { await actions.deleteMemory(memoryId); }}
+      onTogglePin={async (memoryId) => { await actions.togglePin(memoryId); }}
+    />
   );
 
   if (collectionState === 'loading') {
     return <WorkspaceCollectionLoading tab="movies" minColumnWidth={GRID} />;
   }
 
+  const allPosters = [...sections.queue, ...sections.completed];
+  const suggestionCards = sections.suggestions.map((suggestion) => (
+    <SuggestionCard
+      key={`suggestion-${suggestion.id}`}
+      suggestion={suggestion}
+      onAccept={() => void onAcceptSuggestion(suggestion)}
+      onReject={() => void onRejectSuggestion(suggestion)}
+      canRespond={Boolean(currentUser)}
+      disableActions={!currentUser}
+      isProcessing={processingSuggestionId === suggestion.id}
+    />
+  ));
+  const unifiedCards = [
+    ...(isSuggestionsLoading && sections.suggestions.length === 0
+      ? sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)
+      : []),
+    ...suggestionCards,
+    ...allPosters.map(renderMovie),
+    ...posterPlaceCards,
+  ];
   // ── Full section body ─────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}>
-      {onMediaTypeFilterChange && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.xs }}>
-          <MagicToggle
-            options={[
-              { value: 'all', label: 'All Formats' },
-              { value: 'movie', label: `Movies (${totalMoviesCount})` },
-              { value: 'series', label: `TV Series (${totalSeriesCount})` },
-            ]}
-            activeValue={mediaTypeFilter}
-            onChange={(v) => onMediaTypeFilterChange(v as MediaTypeFilter)}
-            ariaLabel="Filter by media type"
+      {unifiedCards.length > 0 ? (
+          <TiltedPosterWall
+            items={unifiedCards}
+            isMobile={isMobile}
+            isStatic={isInteractionStatic}
           />
-        </div>
-      )}
-      {(isSuggestionsLoading || sections.suggestions.length > 0) && (
-        isSuggestionsLoading && isEmpty(sections.suggestions) ? (
-          <CollectionGrid className="watchlist-content watchlist-content--posters" minColumnWidth={GRID} gap={GRID_GAP}>
-            {sk.slice(0, 4).map((key) => <MovieCardSkeleton key={key} />)}
-          </CollectionGrid>
         ) : (
-          <CollectionGrid className="watchlist-content watchlist-content--posters" minColumnWidth={GRID} gap={GRID_GAP}>
-            {sections.suggestions.map((suggestion: MovieSuggestion) => (
-              <SuggestionCard
-                key={suggestion.id}
-                suggestion={suggestion}
-                onAccept={() => void onAcceptSuggestion(suggestion)}
-                onReject={() => void onRejectSuggestion(suggestion)}
-                canRespond={Boolean(currentUser)}
-                disableActions={!currentUser}
-                isProcessing={processingSuggestionId === suggestion.id}
-              />
-            ))}
-          </CollectionGrid>
-        )
-      )}
-
-
-      {sections.queue.length > 0 && movieGrid(sections.queue, 'Your movie list is wide open')}
-
-      {sections.completed.length > 0 && movieGrid(sections.completed, 'No watched movies yet')}
-
-      {sections.queue.length === 0 && sections.completed.length === 0 && !isSuggestionsLoading && (
-        <CollectionEmptyState
-          padding={isMobile ? spacing.md : spacing['3xl']}
-          style={{ gridColumn: "1 / -1", minHeight: "50vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
-        >
-          <MoviesEmptyIllustration />
-          <strong style={{ fontSize: "1.25rem", color: "var(--color-text-primary)", marginBottom: "0.5rem" }}>No movies queued</strong>
-          <span>Your collection is empty. Search above to add some films.</span>
-        </CollectionEmptyState>
+          <CollectionEmptyState
+            padding={isMobile ? spacing.md : spacing['3xl']}
+            className="poster-wall-empty"
+          >
+            <MoviesEmptyIllustration />
+            <strong>No cards yet</strong>
+            <span>Add a movie, suggestion, or place to fill this wall.</span>
+          </CollectionEmptyState>
       )}
     </div>
   );
@@ -2701,7 +2738,6 @@ export {
   SearchIcon,
   MoviesIcon,
   QuizIcon,
-  MemoriesIcon,
   SpinIcon,
   CloudOfflineIcon,
   SyncRefreshIcon,
@@ -4620,6 +4656,3 @@ export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({ label, ico
     {children ?? label}
   </span>
 );
-
-
-

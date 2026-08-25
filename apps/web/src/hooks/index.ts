@@ -328,21 +328,24 @@ export function useAppTabNavigation({
   isMobile,
   onTabSwitch,
 }: UseAppTabNavigationOptions): UseAppTabNavigationResult {
-  const [activeTab, setActiveTab] = useState<MainTab>(() => initialTab);
+  const [activeTab, setActiveTab] = useState<MainTab>(() =>
+    initialTab === "memories" ? "movies" : initialTab,
+  );
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
-      if (tab === activeTab) {
+      const nextTab = tab === "memories" ? "movies" : tab;
+      if (nextTab === activeTab) {
         return;
       }
 
       onTabSwitch?.();
-      void preloadWorkspaceTab(tab);
+      void preloadWorkspaceTab(nextTab);
 
       runWithViewTransition(
         () => {
           startTransition(() => {
-            setActiveTab(tab);
+            setActiveTab(nextTab);
             window.requestAnimationFrame(() => {
               document
                 .getElementById("main-content")

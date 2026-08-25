@@ -251,7 +251,6 @@ const App: React.FC = () => {
                 <React.Suspense fallback={null}>
                   <AppWorkspaceShell
                     activeTab={activeTab}
-                    onTabChange={handleTabChange}
                     onOpenMessages={openMessages}
                     onOpenQuiz={openQuizExperience}
                     onOpenSpin={openSpinMatch}
@@ -295,4 +294,3 @@ const AppWithProviders: React.FC = () => (
 );
 
 export default AppWithProviders;
-

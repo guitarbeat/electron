@@ -46,25 +46,6 @@ export const MoviesIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
   </svg>
 );
 
-export const MemoriesIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.9"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="3" />
-    <circle cx="8.5" cy="8.5" r="1.75" />
-    <path d="M21 15.5l-5-5-10 10" />
-    <path d="M14 14l2.5-2.5 4.5 4.5" />
-  </svg>
-);
-
 export const MessageIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
   <svg
     width={size}
@@ -226,7 +207,6 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
   
 
   const isLibraryActive = isLibraryWorkspaceTab(activeTab);
-  const isMemoriesActive = activeTab === "memories";
   const isMessagesActive = openPanels.has("messages");
   const isQuizActive = openPanels.has("quiz");
   const isSpinActive = openPanels.has("spin");
@@ -260,18 +240,6 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
             <MoviesIcon size={18} />
           </span>
           <span className="top-nav__item-label">Movies</span>
-        </button>
-        <button
-          type="button"
-          className={`top-nav__item ${isMemoriesActive ? "is-active" : ""}`}
-          onClick={() => onTabChange("memories")}
-          aria-label="Memories workspace"
-          aria-current={isMemoriesActive ? "page" : undefined}
-        >
-          <span className="top-nav__item-icon">
-            <MemoriesIcon size={18} />
-          </span>
-          <span className="top-nav__item-label">Memories</span>
         </button>
       </div>
 
@@ -356,4 +324,3 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({
     </nav>
   );
 };
-
