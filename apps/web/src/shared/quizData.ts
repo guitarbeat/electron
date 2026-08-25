@@ -104,242 +104,238 @@ export interface QuizResult {
 }
 
 export const quizQuestions: QuizQuestion[] = [
-  // Multiple Choice Questions (3)
   {
-    id: "mc1",
+    id: "movie-night-indecision",
     type: "multiple-choice",
-    question: "What's your ideal Friday night?",
+    question: "The group has been scrolling for twenty minutes. What do you do?",
     options: [
       {
-        text: "Watching movies at home",
-        scores: { Aaron: 2, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+        text: "Shortlist three great options and make the case for each",
+        scores: { Aaron: 2, Electra: 0, Madeleine: 1, "Nosferatu/Smeemo": 0 },
       },
       {
-        text: "Going out to a party",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 1 },
+        text: "Ask what everyone is in the mood for and find the overlap",
+        scores: { Aaron: 0, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 1 },
       },
       {
-        text: "Reading a book alone",
+        text: "Take the remote and confidently pick the winner",
+        scores: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
+      },
+      {
+        text: "Choose the strangest title on screen and embrace the risk",
         scores: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
       },
-      {
-        text: "Hanging with close friends",
-        scores: { Aaron: 0, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
-      },
     ],
   },
   {
-    id: "mc2",
+    id: "movie-night-vibe",
     type: "multiple-choice",
-    question: "Pick your favorite color palette:",
+    question: "Pick the energy you want from tonight's movie.",
     options: [
       {
-        text: "Warm and vibrant",
-        scores: { Aaron: 0, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        text: "Cool and calming",
-        scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        text: "Bold and dramatic",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        text: "Dark and mysterious",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
-      },
-    ],
-  },
-  {
-    id: "mc3",
-    type: "multiple-choice",
-    question: "How do you handle stress?",
-    options: [
-      {
-        text: "Talk it out with friends",
-        scores: { Aaron: 0, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        text: "Process it internally",
+        text: "Quiet, beautifully made, and worth thinking about",
         scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 1 },
       },
       {
-        text: "Distract myself with activities",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        text: "Embrace the chaos",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
-      },
-    ],
-  },
-
-  // Agree/Disagree Questions (3)
-  {
-    id: "ad1",
-    type: "agree-disagree",
-    question: "I prefer spontaneity over planning.",
-    scores: {
-      stronglyDisagree: {
-        Aaron: 2,
-        Electra: 0,
-        Madeleine: 0,
-        "Nosferatu/Smeemo": 0,
-      },
-      disagree: { Aaron: 1, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      neutral: { Aaron: 0, Electra: 0, Madeleine: 1, "Nosferatu/Smeemo": 0 },
-      agree: { Aaron: 0, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 1 },
-      stronglyAgree: {
-        Aaron: 0,
-        Electra: 0,
-        Madeleine: 0,
-        "Nosferatu/Smeemo": 2,
-      },
-    },
-  },
-  {
-    id: "ad2",
-    type: "agree-disagree",
-    question: "I'm more of a night owl than an early bird.",
-    scores: {
-      stronglyDisagree: {
-        Aaron: 2,
-        Electra: 0,
-        Madeleine: 0,
-        "Nosferatu/Smeemo": 0,
-      },
-      disagree: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      neutral: { Aaron: 0, Electra: 1, Madeleine: 1, "Nosferatu/Smeemo": 0 },
-      agree: { Aaron: 0, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 1 },
-      stronglyAgree: {
-        Aaron: 0,
-        Electra: 0,
-        Madeleine: 0,
-        "Nosferatu/Smeemo": 2,
-      },
-    },
-  },
-  {
-    id: "ad3",
-    type: "agree-disagree",
-    question: "I enjoy being the center of attention.",
-    scores: {
-      stronglyDisagree: {
-        Aaron: 2,
-        Electra: 0,
-        Madeleine: 0,
-        "Nosferatu/Smeemo": 0,
-      },
-      disagree: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      neutral: { Aaron: 0, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      agree: { Aaron: 0, Electra: 0, Madeleine: 1, "Nosferatu/Smeemo": 0 },
-      stronglyAgree: {
-        Aaron: 0,
-        Electra: 0,
-        Madeleine: 2,
-        "Nosferatu/Smeemo": 0,
-      },
-    },
-  },
-
-  // Image Choice Questions (3)
-  {
-    id: "img1",
-    type: "image-choice",
-    question: "Pick your aesthetic:",
-    options: [
-      {
-        imageUrl: "/quiz-photos/quiz-img-1.png",
-        alt: "Cozy cabin in the woods",
-        scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        imageUrl: "/quiz-photos/quiz-img-2.png",
-        alt: "Neon cyber city",
-        scores: { Aaron: 0, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        imageUrl: "/quiz-photos/quiz-img-3.png",
-        alt: "Opulent golden palace",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        imageUrl: "/quiz-photos/quiz-img-4.png",
-        alt: "Gothic shadow realm",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
-      },
-    ],
-  },
-  {
-    id: "img2",
-    type: "image-choice",
-    question: "Choose your ideal getaway:",
-    options: [
-      {
-        imageUrl: "/quiz-photos/quiz-img-5.png",
-        alt: "Beach paradise",
+        text: "Warm, funny, and easy to enjoy together",
         scores: { Aaron: 0, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
       },
       {
-        imageUrl: "/quiz-photos/quiz-img-6.png",
-        alt: "Mountain retreat",
-        scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+        text: "Big emotions, sharp outfits, and unforgettable drama",
+        scores: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
       },
       {
-        imageUrl: "/quiz-photos/quiz-img-7.png",
-        alt: "City adventure",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 0 },
-      },
-      {
-        imageUrl: "/quiz-photos/quiz-img-8.png",
-        alt: "Remote cabin",
+        text: "Something uncanny that might permanently alter the group chat",
         scores: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
       },
     ],
   },
   {
-    id: "img3",
-    type: "image-choice",
-    question: "Choose your spirit animal:",
+    id: "movie-night-host",
+    type: "multiple-choice",
+    question: "When you host movie night, what are you secretly responsible for?",
     options: [
       {
-        imageUrl: "/quiz-photos/quiz-img-9.png",
-        alt: "Butterfly",
-        scores: { Aaron: 0, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+        text: "The thoughtful lineup and the room being exactly right",
+        scores: { Aaron: 2, Electra: 0, Madeleine: 1, "Nosferatu/Smeemo": 0 },
       },
       {
-        imageUrl: "/quiz-photos/quiz-img-10.png",
-        alt: "Owl",
-        scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+        text: "Making sure everyone has snacks and feels included",
+        scores: { Aaron: 0, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 1 },
       },
       {
-        imageUrl: "/quiz-photos/quiz-img-11.png",
-        alt: "Lion",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 0 },
+        text: "Turning an ordinary watch into a full event",
+        scores: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
       },
       {
-        imageUrl: "/quiz-photos/quiz-img-12.png",
-        alt: "Raven",
-        scores: { Aaron: 0, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
+        text: "Producing one deeply questionable surprise snack",
+        scores: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
+      },
+    ],
+  },
+  {
+    id: "movie-night-wildcard",
+    type: "multiple-choice",
+    question: "The movie is objectively strange. What's your reaction?",
+    options: [
+      {
+        text: "Start quietly assembling a theory that explains everything",
+        scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 1 },
+      },
+      {
+        text: "Check whether everyone else is having as much fun as you are",
+        scores: { Aaron: 0, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
+      },
+      {
+        text: "Commit fully and declare it an instant classic",
+        scores: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
+      },
+      {
+        text: "Feel vindicated—this is exactly why you chose it",
+        scores: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
+      },
+    ],
+  },
+  {
+    id: "movie-night-rewatch",
+    type: "agree-disagree",
+    question: "A perfect comfort rewatch can beat a promising new release.",
+    scores: {
+      stronglyDisagree: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 1 },
+      disagree: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
+      neutral: { Aaron: 1, Electra: 1, Madeleine: 1, "Nosferatu/Smeemo": 1 },
+      agree: { Aaron: 2, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+      stronglyAgree: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 1 },
+    },
+  },
+  {
+    id: "movie-night-debrief",
+    type: "agree-disagree",
+    question: "The conversation after the credits is part of the movie night.",
+    scores: {
+      stronglyDisagree: { Aaron: 0, Electra: 0, Madeleine: 1, "Nosferatu/Smeemo": 2 },
+      disagree: { Aaron: 0, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 2 },
+      neutral: { Aaron: 1, Electra: 1, Madeleine: 1, "Nosferatu/Smeemo": 1 },
+      agree: { Aaron: 1, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
+      stronglyAgree: { Aaron: 2, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+    },
+  },
+  {
+    id: "movie-night-outing",
+    type: "image-choice",
+    question: "Choose the place that should come before or after the movie.",
+    options: [
+      {
+        imageUrl: "/quiz-photos/quiz-img-6.png",
+        alt: "A quiet mountain retreat for a thoughtful escape",
+        scores: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 1 },
+      },
+      {
+        imageUrl: "/quiz-photos/quiz-img-5.png",
+        alt: "A lively beach gathering with friends",
+        scores: { Aaron: 0, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
+      },
+      {
+        imageUrl: "/quiz-photos/quiz-img-7.png",
+        alt: "A bright city night with somewhere glamorous to go",
+        scores: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
+      },
+      {
+        imageUrl: "/quiz-photos/quiz-img-8.png",
+        alt: "A remote cabin that feels a little mysterious",
+        scores: { Aaron: 1, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 2 },
       },
     ],
   },
 ];
 
+const LEGACY_DEFAULT_QUIZ_IDS = [
+  "mc1",
+  "mc2",
+  "mc3",
+  "ad1",
+  "ad2",
+  "ad3",
+  "img1",
+  "img2",
+  "img3",
+] as const;
+
+export const isLegacyDefaultQuizQuestions = (
+  questions: readonly unknown[],
+): boolean =>
+  questions.length === LEGACY_DEFAULT_QUIZ_IDS.length &&
+  LEGACY_DEFAULT_QUIZ_IDS.every((id, index) => {
+    const question = questions[index];
+    return (
+      question !== null &&
+      typeof question === "object" &&
+      "id" in question &&
+      question.id === id
+    );
+  });
+
 export const characterDescriptions: Record<QuizCharacter, string> = {
   Electra:
-    "You're vibrant, social, and full of energy! You light up every room you enter.",
+    "You are the connective tissue of movie night. You notice the room, keep everyone included, and know that the best pick is the one people will still be talking about together tomorrow.",
   Aaron:
-    "You're thoughtful, introspective, and value deep connections. You prefer quality over quantity.",
+    "You are the thoughtful curator. You remember the overlooked recommendation, care about the details, and would rather choose one genuinely good film than scroll through fifty almost-right ones.",
   Madeleine:
-    "You're bold, confident, and love to stand out. You're not afraid to take the spotlight.",
+    "You turn watching a movie into an occasion. Your picks have confidence, your reactions have range, and nobody leaves without feeling like the night had a proper main event.",
   "Nosferatu/Smeemo":
-    "You're mysterious, unique, and march to the beat of your own drum. You embrace the unconventional.",
+    "You are the fearless wildcard. You follow the odd title, defend the misunderstood masterpiece, and make sure movie night never becomes predictable—even when the group has questions afterward.",
 };
 
 export const neitherDescription =
-  "You're a unique enigma! Your personality doesn't fit neatly into any of our boxes. You're truly one of a kind.";
+  "You are the perfect blend: part curator, part host, part scene-stealer, and part wildcard. Your ideal movie night changes with the people, the place, and whatever story the evening needs.";
+
+export const normalizeQuizPercentages = (
+  scores: CharacterScores,
+): Record<QuizCharacter, number> => {
+  const totalScore = Object.values(scores).reduce(
+    (sum, score) => sum + score,
+    0,
+  );
+
+  if (totalScore <= 0) {
+    return CHARACTERS.reduce(
+      (percentages, character) => {
+        percentages[character] = 0;
+        return percentages;
+      },
+      {} as Record<QuizCharacter, number>,
+    );
+  }
+
+  const rankedRemainders = CHARACTERS.map((character, index) => {
+    const exact = (scores[character] / totalScore) * 100;
+    return { character, index, floor: Math.floor(exact), remainder: exact % 1 };
+  });
+  const pointsToDistribute =
+    100 - rankedRemainders.reduce((sum, item) => sum + item.floor, 0);
+
+  rankedRemainders.sort(
+    (a, b) => b.remainder - a.remainder || a.index - b.index,
+  );
+
+  const bonusCharacters = new Set(
+    rankedRemainders
+      .slice(0, pointsToDistribute)
+      .map((item) => item.character),
+  );
+
+  return CHARACTERS.reduce(
+    (percentages, character) => {
+      const item = rankedRemainders.find(
+        (candidate) => candidate.character === character,
+      );
+      percentages[character] =
+        (item?.floor ?? 0) + (bonusCharacters.has(character) ? 1 : 0);
+      return percentages;
+    },
+    {} as Record<QuizCharacter, number>,
+  );
+};
 
 export const calculateQuizResults = (
   answers: QuizAnswer[],
@@ -420,13 +416,7 @@ export const calculateQuizResults = (
     0,
   );
 
-  const percentages: Record<QuizCharacter, number> = CHARACTERS.reduce(
-    (acc, char) => {
-      acc[char] = totalScore > 0 ? Math.round((scores[char] / totalScore) * 100) : 0;
-      return acc;
-    },
-    {} as Record<QuizCharacter, number>,
-  );
+  const percentages = normalizeQuizPercentages(scores);
 
   const topScore = scores[topCharacter] || 0;
   const isNeither =

@@ -1725,6 +1725,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   );
   const closeTimeoutRef = React.useRef<number | null>(null);
   const successTimeoutRef = React.useRef<number | null>(null);
+  const previouslyFocusedRef = React.useRef<HTMLElement | null>(null);
+  const onCloseRef = React.useRef(onClose);
   const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
   const notesSectionRef = React.useRef<HTMLDivElement>(null);
   const { dialogRef, closeButtonRef, playPop } = useModalBase(
@@ -1733,6 +1735,10 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   );
 
   useFeatureFonts();
+
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   React.useEffect(() => {
     setHasPosterError(false);
@@ -1753,6 +1759,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
   React.useEffect(() => {
     if (isOpen) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
       setIsVisible(true);
       setIsEntering(false);
       const frame = window.requestAnimationFrame(() => {
@@ -1774,6 +1781,50 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       }
     };
   }, [isOpen, isVisible]);
+
+  React.useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [closeButtonRef, dialogRef, isOpen]);
 
   React.useEffect(
     () => () => {
@@ -2450,7 +2501,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   return (
     <>
       <div
-        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""}`}
+        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
         data-movie-id={movie.id}
       >
         <CardTiltShell disabled={isCompact}>

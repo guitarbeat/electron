@@ -2,6 +2,7 @@ import {
   characterDescriptions as defaultDescriptions,
   neitherDescription as defaultNeither,
   quizQuestions as defaultQuestions,
+  isLegacyDefaultQuizQuestions,
   CHARACTERS,
   type QuizCharacter,
   type QuizQuestion,
@@ -586,11 +587,17 @@ export const normalizeQuizData = (value: unknown): QuizData | null => {
     return null;
   }
 
+  const shouldUpgradeLegacyDefaults = isLegacyDefaultQuizQuestions(
+    candidate.questions,
+  );
+
   const characterDescriptions = CHARACTERS.reduce<
     Record<QuizCharacter, string>
   >(
     (acc: Record<QuizCharacter, string>, character: QuizCharacter) => {
-      const nextValue = candidate.characterDescriptions?.[character];
+      const nextValue = shouldUpgradeLegacyDefaults
+        ? undefined
+        : candidate.characterDescriptions?.[character];
       acc[character] =
         typeof nextValue === "string"
           ? nextValue
@@ -602,12 +609,12 @@ export const normalizeQuizData = (value: unknown): QuizData | null => {
 
   return {
     questions:
-      candidate.questions.length > 0
+      candidate.questions.length > 0 && !shouldUpgradeLegacyDefaults
         ? (candidate.questions as QuizQuestion[])
         : defaultQuestions,
     characterDescriptions,
     neitherDescription:
-      typeof candidate.neitherDescription === "string"
+      !shouldUpgradeLegacyDefaults && typeof candidate.neitherDescription === "string"
         ? candidate.neitherDescription
         : defaultNeither,
   };

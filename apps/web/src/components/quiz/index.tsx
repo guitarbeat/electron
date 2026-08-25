@@ -446,13 +446,7 @@ export const calculateQuizResults = (
     0,
   );
 
-  const percentages: Record<QuizCharacter, number> = CHARACTERS.reduce(
-    (acc, char) => {
-      acc[char] = Math.round((scores[char] / totalScore) * 100) || 0;
-      return acc;
-    },
-    {} as Record<QuizCharacter, number>,
-  );
+  const percentages = normalizeQuizPercentages(scores);
 
   // Determine if result is "Neither"
   // If the top character has less than 35% of the total score, it's a weak match
@@ -540,6 +534,7 @@ export const clearSavedQuizProgress = (storageKey: string) => {
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import type { FC } from "react";
 import type { User } from "@/shared/types";
+import { normalizeQuizPercentages } from "@/shared/quizData";
 import { WorkspaceFeatureSectionLoading } from "@/components/ui";
 import { useQuiz, type QuizData, useFeatureFonts } from "@/hooks";
 
@@ -559,21 +554,8 @@ interface BlinkTextProps {
 }
 
 export const BlinkText: React.FC<BlinkTextProps> = ({ children, style = {} }) => {
-  const [colorIdx, setColorIdx] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(
-      () => setColorIdx((index) => (index + 1) % BLINK_COLORS.length),
-      260,
-    );
-    return () => clearInterval(id);
-  }, []);
-
   return (
-    <span
-      className="quiz-retro-blink"
-      style={{ color: BLINK_COLORS[colorIdx], ...style }}
-    >
+    <span className="quiz-retro-blink" style={style}>
       {children}
     </span>
   );
@@ -602,8 +584,10 @@ export const MultipleChoiceQuestionView: React.FC<
             onClick={() => onSelect(index)}
             aria-pressed={selectedIndex === index}
           >
-            {selectedIndex === index ? "✅ " : "◻ "}
-            {option.text}
+            <span className="quiz-retro-option__indicator" aria-hidden="true">
+              {selectedIndex === index ? "✓" : String(index + 1)}
+            </span>
+            <span>{option.text}</span>
           </button>
         ))}
       </div>
@@ -633,71 +617,34 @@ interface AgreeDisagreeQuestionViewProps {
 export const AgreeDisagreeQuestionView: React.FC<
   AgreeDisagreeQuestionViewProps
 > = ({ question, selectedValue, onSelect }) => {
-  const getNumericValue = (val: string | null) => {
-    switch (val) {
-      case "stronglyDisagree":
-        return 0;
-      case "disagree":
-        return 25;
-      case "neutral":
-        return 50;
-      case "agree":
-        return 75;
-      case "stronglyAgree":
-        return 100;
-      default:
-        return 50;
-    }
-  };
-
-  const getSymbolicValue = (val: number) => {
-    if (val <= 20) return "stronglyDisagree";
-    if (val <= 40) return "disagree";
-    if (val <= 60) return "neutral";
-    if (val <= 80) return "agree";
-    return "stronglyAgree";
-  };
-
-  const sliderValue = getNumericValue(selectedValue);
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    onSelect(
-      getSymbolicValue(val) as
-        | "stronglyDisagree"
-        | "disagree"
-        | "neutral"
-        | "agree"
-        | "stronglyAgree",
-    );
-  };
+  const scaleOptions = [
+    { value: "stronglyDisagree", label: "Not me" },
+    { value: "disagree", label: "Mostly not" },
+    { value: "neutral", label: "In between" },
+    { value: "agree", label: "Mostly me" },
+    { value: "stronglyAgree", label: "Exactly me" },
+  ] as const;
 
   return (
     <div>
       <div className="quiz-retro-question-text">{question.question}</div>
       <div className="quiz-retro-slider-wrap">
-        <div className="quiz-retro-slider-labels">
-          <span>😤 STRONGLY DISAGREE</span>
-          <span>🤩 STRONGLY AGREE</span>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={sliderValue}
-          onChange={handleSliderChange}
-          className="quiz-retro-slider"
-          aria-label="Agree/Disagree scale"
-        />
-        <div className="quiz-retro-slider-value">
-          {sliderValue <= 20 && "😤 STRONGLY DISAGREE!!!"}
-          {sliderValue > 20 && sliderValue <= 40 && "🙁 DISAGREE!"}
-          {sliderValue > 40 && sliderValue <= 60 && "😐 NEUTRAL..."}
-          {sliderValue > 60 && sliderValue <= 80 && "😊 AGREE!"}
-          {sliderValue > 80 && "🤩 STRONGLY AGREE!!!"}
-        </div>
-        <div className="quiz-retro-slider-hint">
-          DRAG THE SLIDER TO ANSWER!!!
+        <div className="quiz-retro-scale-options" role="group" aria-label="How much does this sound like you?">
+          {scaleOptions.map((option, index) => {
+            const isSelected = selectedValue === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                className={`quiz-retro-scale-option${isSelected ? " is-selected" : ""}`}
+                onClick={() => onSelect(option.value)}
+                aria-pressed={isSelected}
+              >
+                <span aria-hidden="true">{index + 1}</span>
+                {option.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -1044,7 +991,6 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
   quizData,
   sessionKey = "guest",
   onRetake,
-  onEdit,
   isCompleted,
 }) => {
   const questions = useMemo(
@@ -1079,7 +1025,7 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
   const totalQuestions = questions.length;
   const progress =
     totalQuestions > 0
-      ? Math.round((currentQuestionIndex / totalQuestions) * 100)
+      ? Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100)
       : 0;
 
   const clearProgressAndContinue = () => {
@@ -1126,15 +1072,6 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
             >
               Continue
             </button>
-            {onEdit && (
-              <button
-                className="quiz-retro-btn quiz-retro-btn--secondary"
-                onClick={onEdit}
-                aria-label="Edit Quiz"
-              >
-                Edit Quiz
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -1214,14 +1151,14 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
             className="quiz-retro-question-card"
             style={{ textAlign: "center" }}
           >
-            <p style={QUIZ_EMPTY_STATE_TEXT_STYLE}>🎉 Quiz Completed!</p>
+            <p style={QUIZ_EMPTY_STATE_TEXT_STYLE}>Quiz complete</p>
             <button
               className="quiz-retro-btn"
               onClick={handleRetake}
               style={QUIZ_RETAKE_BUTTON_STYLE}
               aria-label="Retake Quiz"
             >
-              🔄 RETAKE QUIZ!!!
+              Retake quiz
             </button>
           </div>
         </div>
@@ -1234,7 +1171,6 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
           result={quizResult}
           onContinue={onComplete}
           onRetake={handleRetake}
-          onEdit={onEdit}
           characterDescriptions={quizData.characterDescriptions}
           neitherDescription={quizData.neitherDescription}
         />
@@ -1293,44 +1229,12 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
 
   return (
     <div className="quiz-retro-wrapper">
-      <div className="quiz-retro-marquee-bar">
-        <span className="quiz-retro-marquee-inner">
-          ★★★ CLICK HERE TO DISCOVER YOUR TRUE PERSONALITY!!! ★★★ LIMITED
-          TIME!!! ★★★ 100% FREE!!! ★★★ AMAZING RESULTS AWAIT!!! ★★★
-        </span>
-      </div>
-
-      <div className="quiz-retro-rainbow-border">
-        <div className="quiz-retro-header-bar">
-          <span>★ PERSONALITY QUIZ - FIND OUT WHO YOU REALLY ARE!!! ★</span>
-        </div>
-      </div>
-
       <div className="quiz-retro-main">
         <div className="quiz-retro-title-banner">
-          <h3>🌟 WHICH CHARACTER ARE YOU?! 🌟</h3>
-          <p>*** TAKE THE OFFICIAL QUIZ NOW - IT&apos;S TOTALLY FREE!!! ***</p>
+          <span className="quiz-retro-kicker">Movie-night personality</span>
+          <h2>Which character are you?</h2>
+          <p>Seven quick questions. Go with your first instinct.</p>
         </div>
-
-        {onEdit && (
-          <div className="quiz-retro-utility-row">
-            <div className="quiz-retro-utility-copy">
-              <span className="quiz-retro-utility-label">EDITOR ACCESS</span>
-              <span className="quiz-retro-utility-text">
-                Adjust the questions anytime. Your current progress stays saved
-                while you edit.
-              </span>
-            </div>
-            <button
-              type="button"
-              className="quiz-retro-btn quiz-retro-btn--secondary quiz-retro-btn--compact"
-              onClick={onEdit}
-              aria-label="Edit quiz questions"
-            >
-              ✏️ EDIT QUIZ
-            </button>
-          </div>
-        )}
 
         <div
           className="quiz-retro-progress-wrap"
@@ -1341,8 +1245,8 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
           aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
         >
           <div className="quiz-retro-progress-label">
-            ⚡ LOADING YOUR DESTINY... QUESTION {currentQuestionIndex + 1} OF{" "}
-            {totalQuestions}!!! ⚡
+            <span>Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+            <span>{progress}%</span>
           </div>
           <div className="quiz-retro-progress-track">
             <div
@@ -1352,16 +1256,16 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
             <div className="quiz-retro-progress-text">{progress}% COMPLETE</div>
           </div>
           <div className="quiz-retro-progress-sub">
-            ⚡ ONLY {totalQuestions - currentQuestionIndex} QUESTIONS
-            REMAINING!!! ACT NOW!!! ⚡
+            {currentQuestionIndex === totalQuestions - 1
+              ? "Last one"
+              : `${totalQuestions - currentQuestionIndex - 1} left after this`}
           </div>
         </div>
 
-        <div className="quiz-retro-question-card">
-          <div className="quiz-retro-question-title-bar">
-            ▶ QUESTION {currentQuestionIndex + 1}:{" "}
-            <BlinkText>ANSWER CAREFULLY!!!</BlinkText>
-          </div>
+        <div
+          key={currentQuestion.id}
+          className="quiz-retro-question-card quiz-retro-question-stage"
+        >
           {renderCurrentQuestion()}
         </div>
 
@@ -1372,7 +1276,7 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
             disabled={currentQuestionIndex === 0}
             aria-label="Previous question"
           >
-            {"<< BACK"}
+            Back
           </button>
           <button
             className="quiz-retro-btn"
@@ -1385,33 +1289,10 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
             }
           >
             {currentQuestionIndex === totalQuestions - 1
-              ? "🌟 SEE MY RESULTS!!!"
-              : "NEXT QUESTION >>>"}
+              ? "See my result"
+              : "Next"}
           </button>
         </div>
-
-        <div className="quiz-retro-ad-strip">
-          <span>⭐ YOU COULD BE A WINNER!!! ⭐</span>
-          <p>Complete the quiz to discover your TRUE personality type!!!</p>
-          <p
-            style={{ color: "#888888", fontSize: "9px", fontWeight: "normal" }}
-          >
-            * Results are 100% scientific and totally official *
-          </p>
-        </div>
-      </div>
-
-      <div
-        className="quiz-retro-marquee-bar"
-        style={{ marginTop: 4, marginBottom: 0 }}
-      >
-        <span
-          className="quiz-retro-marquee-inner"
-          style={{ animationDelay: "-7s" }}
-        >
-          🌟 AMAZING!!! INCREDIBLE!!! UNBELIEVABLE QUIZ RESULTS AWAIT!!! 🌟 TAKE
-          THE QUIZ NOW FOR FREE!!! 🌟 DON&apos;T MISS OUT!!! 🌟
-        </span>
       </div>
     </div>
   );
@@ -1424,7 +1305,6 @@ interface ResultsScreenProps {
   result: QuizResult;
   onContinue: () => void;
   onRetake: () => void;
-  onEdit?: () => void;
   characterDescriptions: Record<QuizCharacter, string>;
   neitherDescription: string;
 }
@@ -1434,37 +1314,24 @@ const characterEmojis: Record<string, string> = {
   Aaron: "🦉",
   Madeleine: "👑",
   "Nosferatu/Smeemo": "🦇",
-  Neither: "🤷",
+  Neither: "🎞️",
 };
 
 const characterColors: Record<string, string> = {
-  Electra: "#ff69b4",
-  Aaron: "#00bfff",
-  Madeleine: "#ffd700",
-  "Nosferatu/Smeemo": "#9400d3",
-  Neither: "#888888",
+  Electra: "#ff7ab8",
+  Aaron: "#59c3ff",
+  Madeleine: "#f7c95c",
+  "Nosferatu/Smeemo": "#b58cff",
+  Neither: "#8ed6c5",
 };
 
-export const RESULT_NAME_STYLE = { fontSize: "26px" } as const;
-export const RESULT_DESCRIPTION_STYLE = (characterColor: string) =>
-  ({
-    background: `${characterColor}22`,
-    border: `3px solid ${characterColor}`,
-    padding: "8px",
-    marginBottom: "12px",
-  }) satisfies React.CSSProperties;
-export const ACTION_BUTTON_STACK_STYLE = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-} as const;
-export const PRIMARY_ACTION_STYLE = { width: "100%", fontSize: "14px" } as const;
-export const SECONDARY_ACTION_STYLE = { width: "100%" } as const;
-export const EDIT_ACTION_STYLE = {
-  width: "100%",
-  fontSize: "12px",
-  opacity: 0.85,
-} as const;
+const characterArchetypes: Record<string, string> = {
+  Electra: "The Social Spark",
+  Aaron: "The Thoughtful Curator",
+  Madeleine: "The Main Event",
+  "Nosferatu/Smeemo": "The Fearless Wildcard",
+  Neither: "The Perfect Blend",
+};
 
 const getResultDescription = (
   result: QuizResult,
@@ -1480,88 +1347,56 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
   onContinue,
   onRetake,
-  onEdit,
   characterDescriptions,
   neitherDescription,
 }) => {
-  const [starAngle, setStarAngle] = useState(0);
+  const resultRootRef = useRef<HTMLDivElement>(null);
   const characterColor = characterColors[result.character] || "#888888";
-  const characterEmoji = characterEmojis[result.character] || "🤷";
+  const characterEmoji = characterEmojis[result.character] || "🎞️";
+  const resultName =
+    result.character === "Neither" ? "A little bit of everyone" : result.character;
+  const archetype = characterArchetypes[result.character] ?? "Your movie-night match";
   const description = getResultDescription(
     result,
     characterDescriptions,
     neitherDescription,
   );
 
-  useEffect(() => {
-    const id = setInterval(() => setStarAngle((a) => (a + 8) % 360), 40);
-    return () => clearInterval(id);
-  }, []);
-
   const sortedChars = (Object.keys(result.percentages) as QuizCharacter[]).sort(
     (a, b) => result.percentages[b] - result.percentages[a],
   );
 
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      resultRootRef.current?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   return (
-    <div className="quiz-retro-wrapper">
-      {/* Top marquee */}
-      <div className="quiz-retro-marquee-bar">
-        <span className="quiz-retro-marquee-inner">
-          🎉 CONGRATULATIONS!!! YOUR RESULTS ARE IN!!! 🎉 SHARE WITH YOUR
-          FRIENDS!!! 🎉 YOU ARE AMAZING!!! 🎉
-        </span>
-      </div>
-
-      <div className="quiz-retro-rainbow-border">
-        <div className="quiz-retro-header-bar">
-          <span>
-            ★ YOUR OFFICIAL PERSONALITY RESULTS - CERTIFIED 100% ACCURATE!!! ★
-          </span>
-        </div>
-      </div>
-
+    <div
+      ref={resultRootRef}
+      className="quiz-retro-wrapper quiz-retro-wrapper--results"
+      style={{ "--quiz-result-color": characterColor } as React.CSSProperties}
+    >
       <div className="quiz-retro-main">
-        {/* Win banner */}
         <div className="quiz-retro-results-win">
-          <span
-            className="quiz-retro-results-star"
-            style={{
-              transform: `rotate(${starAngle}deg)`,
-              display: "inline-block",
-              fontSize: 36,
-            }}
-          >
-            ⭐
+          <span className="quiz-retro-results-star" aria-hidden="true">
+            {characterEmoji}
           </span>
-          <div>
-            <BlinkText style={{ fontSize: "18px" }}>
-              CONGRATULATIONS!!!
-            </BlinkText>
-          </div>
-          <div className="quiz-retro-results-sub">YOUR RESULTS ARE IN!!!</div>
+          <span className="quiz-retro-results-sub">Your movie-night match</span>
+          <h2 className="quiz-retro-results-name">{resultName}</h2>
+          <p className="quiz-retro-results-archetype">{archetype}</p>
         </div>
 
-        {/* Results body */}
         <div className="quiz-retro-results-body">
-          <div className="quiz-retro-results-sci">
-            🔬 SCIENTIFIC ANALYSIS COMPLETE!!! 🔬
-          </div>
-          <div className="quiz-retro-results-you-are">YOU ARE...</div>
-          <div
-            className="quiz-retro-results-name"
-            style={{ ...RESULT_NAME_STYLE, color: characterColor }}
-          >
-            {characterEmoji} {result.character.toUpperCase()}!!!
-          </div>
-
-          <div style={RESULT_DESCRIPTION_STYLE(characterColor)}>
+          <div className="quiz-retro-results-description">
             <p className="quiz-retro-results-desc">{description}</p>
           </div>
 
-          {/* Score breakdown */}
-          <div style={{ marginBottom: "12px" }}>
+          <div className="quiz-retro-results-breakdown">
             <div className="quiz-retro-results-breakdown-title">
-              📊 YOUR MATCH BREAKDOWN (100% ACCURATE!!!):
+              Your mix
             </div>
             {sortedChars.map((char) => {
               const isWinner = char === result.character;
@@ -1572,8 +1407,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                   <div
                     className="quiz-retro-results-bar-label"
                     style={{
-                      fontWeight: isWinner ? "bold" : "normal",
-                      color: isWinner ? color : "#444444",
+                      fontWeight: isWinner ? 700 : 500,
+                      color: isWinner ? color : undefined,
                     }}
                   >
                     {characterEmojis[char]} {char}
@@ -1584,15 +1419,14 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                       style={{
                         width: `${pct}%`,
                         background: color,
-                        boxShadow: isWinner ? `0 0 6px ${color}` : "none",
                       }}
                     />
                   </div>
                   <div
                     className="quiz-retro-results-bar-pct"
                     style={{
-                      fontWeight: isWinner ? "bold" : "normal",
-                      color: isWinner ? color : "#444444",
+                      fontWeight: isWinner ? 700 : 500,
+                      color: isWinner ? color : undefined,
                     }}
                   >
                     {pct}%
@@ -1602,57 +1436,23 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
             })}
           </div>
 
-          {/* Action buttons */}
-          <div style={ACTION_BUTTON_STACK_STYLE}>
+          <div className="quiz-retro-results-actions">
             <button
               className="quiz-retro-btn"
               onClick={onContinue}
-              style={PRIMARY_ACTION_STYLE}
-              aria-label="Continue to movie watchlist"
+              aria-label="Return to the movie library"
             >
-              {"🎬 CONTINUE TO WATCHLIST >>>"}
+              Back to movie night
             </button>
             <button
               className="quiz-retro-btn quiz-retro-btn--secondary"
               onClick={onRetake}
-              style={SECONDARY_ACTION_STYLE}
               aria-label="Retake the quiz"
             >
-              🔄 RETAKE QUIZ - GET NEW RESULTS!!!
+              Retake quiz
             </button>
-            {onEdit && (
-              <button
-                className="quiz-retro-btn quiz-retro-btn--secondary"
-                onClick={onEdit}
-                style={EDIT_ACTION_STYLE}
-                aria-label="Edit quiz questions"
-              >
-                ✏️ EDIT QUIZ QUESTIONS
-              </button>
-            )}
           </div>
         </div>
-
-        {/* Share strip */}
-        <div className="quiz-retro-results-share">
-          <BlinkText style={{ fontSize: "13px" }}>
-            *** SHARE YOUR RESULTS WITH FRIENDS!!! ***
-          </BlinkText>
-          <p>THEY NEED TO KNOW YOUR TRUE PERSONALITY!!!</p>
-        </div>
-      </div>
-
-      <div
-        className="quiz-retro-marquee-bar"
-        style={{ marginTop: 4, marginBottom: 0 }}
-      >
-        <span
-          className="quiz-retro-marquee-inner"
-          style={{ animationDelay: "-5s" }}
-        >
-          🌟 AMAZING RESULTS!!! TELL EVERYONE!!! 🌟 YOU ARE TRULY SPECIAL!!! 🌟
-          TAKE THE QUIZ AGAIN FOR MORE FUN!!! 🌟
-        </span>
       </div>
     </div>
   );

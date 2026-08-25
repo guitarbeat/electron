@@ -8,7 +8,7 @@ import { readHashMainTab, type MainTab } from '@/app/appViewState';
 import { preloadWorkspaceTab } from '@/app/preloadAppModules';
 import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/content';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { readScope, getStoredScopeSnapshot, mutateScope, retryScopeSync } from '../services/state';
+import { readScope, getStoredScopeSnapshot, mutateScope, retryScopeSync, normalizeQuizData } from '../services/state';
 import { areDeeplyEqual } from '../utils';
 import { User } from '../shared/types';
 import { QuizQuestion, QuizCharacter } from '@/components/quiz';
@@ -942,13 +942,17 @@ export const useQuiz = (isPaused: boolean = false) => {
     pollingInterval: QUIZ_POLLING_INTERVAL,
     isPaused,
   });
+  const normalizedQuizData = useMemo(
+    () => (quizData ? normalizeQuizData(quizData) : null),
+    [quizData],
+  );
 
   const performMutation = useCallback(
     async (mutationFn: (data: QuizData) => QuizData) => {
-      if (!quizData) return;
+      if (!normalizedQuizData) return;
 
       try {
-        const updatedData = mutationFn(quizData);
+        const updatedData = mutationFn(normalizedQuizData);
         await mutate({
           op: "replace_quiz",
           payload: { quizData: updatedData },
@@ -960,7 +964,7 @@ export const useQuiz = (isPaused: boolean = false) => {
         throw err;
       }
     },
-    [mutate, quizData, refresh],
+    [mutate, normalizedQuizData, refresh],
   );
 
   const updateQuestions = useCallback(
@@ -1040,7 +1044,7 @@ export const useQuiz = (isPaused: boolean = false) => {
   );
 
   return {
-    quizData,
+    quizData: normalizedQuizData,
     error,
     isLoading,
     isSaving,
