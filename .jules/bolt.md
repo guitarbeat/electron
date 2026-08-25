@@ -1,1 +1,0 @@
-- Extracted large memory functionality out of `useMoviesWorkspace.ts` into a new `useMemories.ts` hook. This makes `useMoviesWorkspace` less bloated and helps maintainability. Tests were run to make sure there are no regressions.
