@@ -69,7 +69,7 @@ const App: React.FC = () => {
 
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
-  const { activeTab, handleTabChange } = useAppTabNavigation({
+  const { activeTab } = useAppTabNavigation({
     initialTab: initialViewState.activeTab,
     prefersReducedMotion,
     isMobile,
