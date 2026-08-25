@@ -33,7 +33,7 @@ import { MinigameModal } from "@/components/ui";
 import { ProfilePinPanel } from "@/components/ui";
 import { WorkspaceTabFallback } from "@/components/ui";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
-import { lazyWithRetry } from "@/app/lazyFeaturePanels";
+import { lazyWithRetry } from "@/utils/lazyWithRetry";
 const AppWorkspaceShell = lazyWithRetry(() => import("@/app/AppWorkspaceShell"));
 import {
   isLibraryWorkspaceTab,

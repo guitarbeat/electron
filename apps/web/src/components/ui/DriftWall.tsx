@@ -8,6 +8,7 @@ import React, {
   CSSProperties,
   ReactNode,
 } from 'react';
+import { isScrollBlockedElement } from '@/hooks';
 import './DriftWall.css';
 
 export interface DriftWallItem {
@@ -78,10 +79,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   direction = 'up',
   variance = 0.45,
   parallax = 0.6,
-  pauseOnHover = true,
+  pauseOnHover = false,
   lift = 64,
   fade = 0.6,
-  dim = 0.55,
+  dim = 1,
   grayscale = false,
   overlayColor = '#060010',
   className = '',
@@ -95,6 +96,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
   const offsetsRef = useRef<number[]>([]);
   const velocitiesRef = useRef<number[]>([]);
+  const scrollVelocityRef = useRef<number>(0);
+  const isDraggingTouchRef = useRef<boolean>(false);
+  const touchLastYRef = useRef<number>(0);
   const hoveredColRef = useRef<number>(-1);
   const wallHoveredRef = useRef<boolean>(false);
   const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -169,6 +173,53 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   );
 
   useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (isScrollBlockedElement(e.target)) return;
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 32;
+      else if (e.deltaMode === 2) delta *= 600;
+      if (Math.abs(delta) < 0.2 && Math.abs(e.deltaX) > 0.2) delta = e.deltaX;
+      scrollVelocityRef.current += delta * 0.85;
+      scrollVelocityRef.current = Math.max(-1400, Math.min(1400, scrollVelocityRef.current));
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (isScrollBlockedElement(e.target)) return;
+      if (e.touches.length === 1) {
+        isDraggingTouchRef.current = true;
+        touchLastYRef.current = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDraggingTouchRef.current || e.touches.length !== 1) return;
+      if (isScrollBlockedElement(e.target)) return;
+      const currentY = e.touches[0].clientY;
+      const dy = touchLastYRef.current - currentY;
+      touchLastYRef.current = currentY;
+      scrollVelocityRef.current += dy * 20;
+    };
+
+    const handleTouchEnd = () => {
+      isDraggingTouchRef.current = false;
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, []);
+
+  useEffect(() => {
     const animate = (ts: number) => {
       if (lastTsRef.current === null) lastTsRef.current = ts;
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
@@ -182,6 +233,13 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       pointerDampedRef.current.y += (targetY - pointerDampedRef.current.y) * damp;
       applyPlaneTransform(pointerDampedRef.current.x, pointerDampedRef.current.y);
 
+      // Scroll decay
+      const scrollFriction = 0.90;
+      const scrollDecay = Math.pow(scrollFriction, dt * 60);
+      const scrollStep = scrollVelocityRef.current * dt;
+      scrollVelocityRef.current *= scrollDecay;
+      if (Math.abs(scrollVelocityRef.current) < 0.15) scrollVelocityRef.current = 0;
+
       if (!reduced) {
         for (let c = 0; c < trackRefs.current.length; c++) {
           const meta = columnMeta[c];
@@ -192,7 +250,8 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
           const ease = 1 - Math.exp(-dt / (target === 0 ? 0.16 : 0.28));
           velocitiesRef.current[c] += (target - velocitiesRef.current[c]) * ease;
-          let next = (offsetsRef.current[c] ?? 0) + velocitiesRef.current[c] * dt;
+          const colDir = c % 2 === 0 ? 1 : -0.85;
+          let next = (offsetsRef.current[c] ?? 0) + velocitiesRef.current[c] * dt + scrollStep * colDir;
           next = ((next % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
           offsetsRef.current[c] = next;
 

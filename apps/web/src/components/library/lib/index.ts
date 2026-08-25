@@ -1,5 +1,5 @@
-import type { MovieAutocompleteResult } from "../../../services/metadata/index.ts";
-import type { Movie, Place } from "../../../shared/types.ts";
+import type { MovieAutocompleteResult } from "@/services/metadata";
+import type { Movie, Place } from "@/shared/types";
 
 export type LibraryIntent = "movie" | "place" | "ambiguous";
 

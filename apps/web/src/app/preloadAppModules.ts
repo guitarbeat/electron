@@ -19,10 +19,16 @@ const staggerPreloads = (
 
       const load = modules[index];
       index += 1;
-      void Promise.resolve(load()).finally(() => {
-        // Minimal delay between chunks — just yield to main thread
-        scheduleIdleWork(loadNext, 50);
-      });
+      void Promise.resolve()
+        .then(() => load())
+        .catch((err) => {
+          // Preload failures should be silent; the lazy boundary will retry on user action
+          console.debug("Preload module notice:", err);
+        })
+        .finally(() => {
+          // Minimal delay between chunks — just yield to main thread
+          scheduleIdleWork(loadNext, 50);
+        });
     };
 
     // Start immediately
@@ -62,9 +68,15 @@ export const preloadCriticalAppModules = (): Promise<void> => {
   }
 
   const tab = readInitialMainTab();
-  criticalPreloadPromise = preloadAppWorkspaceShell().then(() => {
-    void preloadWorkspaceTab(tab);
-  });
+  criticalPreloadPromise = preloadAppWorkspaceShell()
+    .then(() => {
+      void preloadWorkspaceTab(tab).catch((err) => {
+        console.debug("Critical preload tab notice:", err);
+      });
+    })
+    .catch((err) => {
+      console.debug("Critical preload shell notice:", err);
+    });
   return criticalPreloadPromise;
 };
 

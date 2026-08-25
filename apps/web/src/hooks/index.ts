@@ -1388,3 +1388,4 @@ export const useModalBehavior = ({
 import type { QuizData } from '@/services/state';
 import type { StateScope, StateScopeDataMap } from '@/services/state';
 import type { Message } from '@/shared/types';
+export * from './useKineticWallScroll';

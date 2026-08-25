@@ -12,11 +12,13 @@ body,
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  scroll-behavior: smooth;
 }
 
 html,
 body {
   overflow-x: clip;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -28,6 +30,10 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  content-visibility: auto;
 }
 
 :where(button, input, textarea, a, [role='button']):focus-visible {

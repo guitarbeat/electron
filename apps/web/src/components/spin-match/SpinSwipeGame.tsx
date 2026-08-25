@@ -8,12 +8,12 @@ import React, {
 import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/providerContexts";
 import type { Movie } from "@/shared/types";
-import { FilmIcon, SparklesIcon } from "../common/Icons.tsx";
+import { FilmIcon, SparklesIcon } from "@/common/Icons";
 const MovieDetailsModal = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MovieDetailsModal })));
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
-} from "../spin-wheel/SpinWheelGame";
+} from "../spin-wheel/spinWheelUtils";
 import { getUnwatchedCandidatePool } from "../games/movieCandidatePool";
 
 const SWIPE_THRESHOLD = 75;

@@ -10,7 +10,7 @@
   --dw-gap: 18px;
   --dw-radius: 14px;
   --dw-lift: 64px;
-  --dw-dim: 0.55;
+  --dw-dim: 1;
   --dw-gray: 0;
   --dw-overlay: #060010;
   --dw-edge: 40%;
@@ -125,7 +125,7 @@
     0 0 0 2px rgba(255, 255, 255, 0.9);
 }
 
-/* Support for custom interactive children / movie cards inside tiles */
+/* Custom interactive children / movie cards inside tiles */
 .drift-wall__tile-custom {
   position: relative;
   display: block;
@@ -136,21 +136,7 @@
   flex: 0 0 auto;
   transform-style: preserve-3d;
   opacity: 1;
-  transition:
-    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Dim unselected tiles when hovering/focusing an active tile in the wall */
-.drift-wall:has(.drift-wall__tile.is-active) .drift-wall__tile:not(.is-active) .drift-wall__inner,
-.drift-wall:has(.drift-wall__tile:hover) .drift-wall__tile:not(:hover):not(:focus-visible) .drift-wall__inner,
-.drift-wall:has(.drift-wall__tile:focus-visible) .drift-wall__tile:not(:hover):not(:focus-visible) .drift-wall__inner,
-.drift-wall:has(.drift-wall__tile-custom.is-active) .drift-wall__tile-custom:not(.is-active),
-.drift-wall:has(.drift-wall__tile-custom:hover) .drift-wall__tile-custom:not(:hover):not(:focus-within),
-.drift-wall:has(.drift-wall__tile-custom:focus-within) .drift-wall__tile-custom:not(:hover):not(:focus-within) {
-  opacity: calc(var(--dw-dim, 0.55) * 0.65);
-  filter: brightness(0.7) saturate(0.8);
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
