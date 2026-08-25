@@ -106,7 +106,6 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     (profile: User) => {
       if (isLoading || isVerifying) return;
       if (profile === currentUser) {
-        handleLogoutGuarded();
         return;
       }
       setSelectionError(null);
@@ -129,7 +128,6 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     },
     [
       currentUser,
-      handleLogoutGuarded,
       isLoading,
       isVerifying,
       setCurrentUser,

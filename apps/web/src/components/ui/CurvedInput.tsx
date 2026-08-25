@@ -157,6 +157,7 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     const textRef = useRef<SVGTextElement | null>(null);
     const [width, setWidth] = useState(0);
     const [focused, setFocused] = useState(false);
+    const [hovered, setHovered] = useState(false);
     const [caretIndex, setCaretIndex] = useState(value.length);
     const [caretLength, setCaretLength] = useState(0);
     const uid = useId().replace(/:/g, "");
@@ -188,9 +189,47 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       }
     }, [caretIndex, value, width]);
 
+    const targetBend = hovered ? -bend : bend;
+    const [animatedBend, setAnimatedBend] = useState(targetBend);
+    const animatedBendRef = useRef(animatedBend);
+
+    useEffect(() => {
+      animatedBendRef.current = animatedBend;
+    });
+
+    useEffect(() => {
+      let active = true;
+      const startTime = performance.now();
+      const startBend = animatedBendRef.current;
+      const duration = 280; // Smooth 280ms duration
+
+      const step = (now: number) => {
+        if (!active) return;
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing: easeInOutCubic
+        const ease = progress < 0.5 
+          ? 4 * progress * progress * progress 
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+        const current = startBend + (targetBend - startBend) * ease;
+        setAnimatedBend(current);
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+
+      requestAnimationFrame(step);
+      return () => {
+        active = false;
+      };
+    }, [targetBend]);
+
     const geometry = useMemo(
-      () => (width > 2 ? buildGeometry(width, bend, height, 8) : null),
-      [bend, height, width],
+      () => (width > 2 ? buildGeometry(width, animatedBend, height, 8) : null),
+      [animatedBend, height, width],
     );
 
     const layout = useMemo(() => {
@@ -258,7 +297,9 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     return (
       <form
         ref={rootRef}
-        className={`curved-input${focused ? " is-focused" : ""}`}
+        className={`curved-input${focused ? " is-focused" : ""}${hovered ? " is-hovered" : ""}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         onSubmit={(event) => {
           event.preventDefault();
           if (!disabled && !buttonDisabled && !isBusy) onSubmit();

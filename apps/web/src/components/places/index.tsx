@@ -51,17 +51,26 @@ export const PlaceCard: React.FC<{
           <button
             type="button"
             className="movie-item-details-hit-area"
-            aria-label={`View details for "${place.name}"`}
+            onClick={() => {
+              if (canEdit) {
+                if (place.visitedAt) {
+                  onMarkUnvisited(place.id);
+                } else {
+                  onMarkVisited(place.id);
+                }
+              }
+            }}
+            aria-label={`Toggle visited status for "${place.name}"`}
           />
 
           {canEdit && (
-            <div className="movie-item-title-overlay" style={{ pointerEvents: 'auto', bottom: 'auto', top: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'flex-end', padding: '0.75rem' }}>
+            <div className="place-item-actions-overlay" style={{ position: 'absolute', left: 0, right: 0, zIndex: 10, pointerEvents: 'auto', bottom: 'auto', top: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%)', display: 'flex', flexDirection: 'row', gap: '0.5rem', justifyContent: 'flex-end', padding: '0.75rem', opacity: 1 }}>
               {place.visitedAt ? (
-                <Button size="sm" onClick={() => onMarkUnvisited(place.id)} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Unmark</Button>
+                <Button size="sm" onClick={(e) => { e.stopPropagation(); onMarkUnvisited(place.id); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Unmark</Button>
               ) : (
-                <Button size="sm" onClick={() => onMarkVisited(place.id)} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Mark Visited</Button>
+                <Button size="sm" onClick={(e) => { e.stopPropagation(); onMarkVisited(place.id); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Mark Visited</Button>
               )}
-              <Button size="sm" variant="danger" onClick={() => onDelete(place)} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Delete</Button>
+              <Button size="sm" variant="danger" onClick={(e) => { e.stopPropagation(); onDelete(place); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem' }}>Delete</Button>
             </div>
           )}
         </MediaCardPosterWrap>
