@@ -341,7 +341,8 @@ const scopes: {
             return { ok: false, conflict: 'Movie already exists.' };
           }
 
-          if (findMovieByNormalizedTitle(movies, movie.title)) {
+          const normalizedTitle = normalizeMovieTitle(movie.title);
+          if (movies.some((m) => normalizeMovieTitle(m.title) === normalizedTitle)) {
             return {
               ok: false,
               conflict: 'A movie with this title is already in the queue.',
