@@ -89,7 +89,7 @@ const verifyConfirmation = (token: string, expected: Omit<ConfirmationPayload, '
 };
 
 const requestIp = (request: Request): string =>
-  (request.headers.get('x-forwarded-for')?.split(',')[0] ?? request.headers.get('x-real-ip') ?? 'unknown').trim().slice(0, 128);
+  (request.headers.get('x-forwarded-for')?.split(',').pop() ?? request.headers.get('x-real-ip') ?? 'unknown').trim().slice(0, 128);
 
 const paginate = (items: unknown[], url: URL): { data: unknown[]; pagination: Record<string, number> } | null => {
   const page = Number(url.searchParams.get('page') ?? 1);
