@@ -32,8 +32,8 @@ const SESSION_SECRET_CONFIG_ERROR = [
   'action=Set SESSION_SIGNING_SECRET in .env.local and restart pnpm dev',
 ].join('\n');
 
-export const isMissingSessionSecretError = (error: unknown): boolean =>
-  error instanceof Error && error.message.startsWith('SESSION_SIGNING_SECRET is not configured.');
+const isMissingSessionSecretError = (error: unknown): boolean =>
+  error instanceof Error && error.message === 'SESSION_SIGNING_SECRET is not configured.';
 
 const MAX_PIN_ATTEMPTS = 5;
 const PIN_LOCKOUT_MS = 5 * 60 * 1000;
