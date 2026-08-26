@@ -1,4 +1,4 @@
-import { colors } from "../../../theme/tokens.ts";
+import { colors } from "@/theme/tokens";
 
 export interface CategoryMeta {
   icon: string;
