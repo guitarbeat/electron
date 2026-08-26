@@ -4,8 +4,6 @@ import { colors, radius, spacing, typography } from '@/theme/tokens';
 import { getSyncBannerContent, shouldShowSyncBanner } from './lib/syncBannerContent';
 import { isMockMode } from '@/services/state';
 
-const COPY_FEEDBACK_DURATION_MS = 1800;
-
 interface SyncBannerProps {
   isBlocked?: boolean;
   onRetry?: () => Promise<void> | void;
@@ -54,7 +52,7 @@ const SyncBanner: React.FC<SyncBannerProps> = ({
 
   useEffect(() => {
     if (!copied) return undefined;
-    const id = window.setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION_MS);
+    const id = window.setTimeout(() => setCopied(false), 1800);
     return () => window.clearTimeout(id);
   }, [copied]);
 
