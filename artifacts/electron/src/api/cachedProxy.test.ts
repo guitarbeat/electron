@@ -28,11 +28,11 @@ test("isAbsoluteUrl correctly identifies absolute URLs", () => {
   assert.equal(isAbsoluteUrl("ftp://example.com"), true);
   assert.equal(isAbsoluteUrl("custom-scheme://test"), true);
 
+  assert.equal(isAbsoluteUrl("some.schema://test"), true);
   // Invalid or relative URLs
   assert.equal(isAbsoluteUrl("example.com"), false);
   assert.equal(isAbsoluteUrl("/path/to/resource"), false);
   assert.equal(isAbsoluteUrl("http:example.com"), false);
   assert.equal(isAbsoluteUrl("://example.com"), false);
   assert.equal(isAbsoluteUrl("123scheme://example.com"), false);
-  assert.equal(isAbsoluteUrl("some.schema://test"), true);
 });
