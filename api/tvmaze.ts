@@ -1,13 +1,6 @@
-import { fetchWithRetry } from './_lib/retryFetch.js';
-import { withWebHandler } from './_lib/webHandler.js';
-import { resolveConfig } from './_lib/config.js';
-import {
-  BoundedResponseCache,
-  cachedProxyResponse,
-  isAbsoluteUrl,
-  jsonProxyResponse,
-  type CachedProxyResponse,
-} from './_lib/cachedProxy.js';
+import { fetchWithRetry } from './_lib/retryFetch.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
+import { resolveConfig } from './_lib/config.ts';
 
 const TVMAZE_API_BASE_URL = resolveConfig(
   process.env.TVMAZE_API_URL || process.env.VITE_TVMAZE_API_URL,
@@ -16,17 +9,76 @@ const TVMAZE_API_BASE_URL = resolveConfig(
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
 
-const tvMazeCache = new BoundedResponseCache<CachedProxyResponse>({
-  ttlMs: ONE_HOUR_MS,
-  maxEntries: MAX_CACHE_ENTRIES,
-});
+interface CachedResponse {
+  body: string;
+  contentType: string;
+  expiresAt: number;
+  status: number;
+  statusText: string;
+}
+
+const isAbsoluteUrl = (value: string) => /^[a-z][a-z\d+\-.]*:\/\//i.test(value);
+const tvMazeCache = new Map<string, CachedResponse>();
+
+const toJsonResponse = (body: string, status: number): Response =>
+  new Response(body, {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+    },
+  });
 
 const badConfigResponse = (message: string) =>
-  jsonProxyResponse({ error: message }, 500);
+  toJsonResponse(JSON.stringify({ error: message }), 500);
 const badRequestResponse = (message: string) =>
-  jsonProxyResponse({ error: message }, 400);
+  toJsonResponse(JSON.stringify({ error: message }), 400);
 const methodNotAllowedResponse = () =>
-  jsonProxyResponse({ error: 'Method not allowed.' }, 405);
+  toJsonResponse(JSON.stringify({ error: 'Method not allowed.' }), 405);
+
+const getCachedResponse = (cacheKey: string): CachedResponse | null => {
+  const cached = tvMazeCache.get(cacheKey);
+  if (!cached) {
+    return null;
+  }
+
+  if (Date.now() > cached.expiresAt) {
+    tvMazeCache.delete(cacheKey);
+    return null;
+  }
+
+  // Re-insert to move to end of Map insertion order (LRU behavior)
+  tvMazeCache.delete(cacheKey);
+  tvMazeCache.set(cacheKey, cached);
+
+  return cached;
+};
+
+const trimCache = () => {
+  if (tvMazeCache.size < MAX_CACHE_ENTRIES) {
+    return;
+  }
+
+  const now = Date.now();
+  for (const [key, value] of tvMazeCache.entries()) {
+    if (value.expiresAt <= now) {
+      tvMazeCache.delete(key);
+    }
+  }
+
+  while (tvMazeCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = tvMazeCache.keys().next().value;
+    if (!oldestKey) {
+      break;
+    }
+    tvMazeCache.delete(oldestKey);
+  }
+};
+
+const cacheResponse = (cacheKey: string, response: CachedResponse) => {
+  trimCache();
+  tvMazeCache.set(cacheKey, response);
+};
 
 const buildTargetUrl = (req: Request): URL | Response => {
   if (!isAbsoluteUrl(TVMAZE_API_BASE_URL)) {
@@ -66,9 +118,17 @@ async function handler(req: Request): Promise<Response> {
     }
 
     const cacheKey = targetUrl.toString();
-    const cached = tvMazeCache.get(cacheKey);
+    const cached = getCachedResponse(cacheKey);
     if (cached) {
-      return cachedProxyResponse(cached);
+      return new Response(cached.body, {
+        status: cached.status,
+        statusText: cached.statusText,
+        headers: {
+          'Content-Type': cached.contentType,
+          'Cache-Control': 'no-store',
+          'X-Cache': 'HIT',
+        },
+      });
     }
 
     const upstreamResponse = await fetchWithRetry(
@@ -85,9 +145,10 @@ async function handler(req: Request): Promise<Response> {
     const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
 
     if (upstreamResponse.ok) {
-      tvMazeCache.set(cacheKey, {
+      cacheResponse(cacheKey, {
         body,
         contentType,
+        expiresAt: Date.now() + ONE_HOUR_MS,
         status: upstreamResponse.status,
         statusText: upstreamResponse.statusText,
       });
@@ -104,7 +165,7 @@ async function handler(req: Request): Promise<Response> {
     });
   } catch (error) {
     console.error(`Error handling ${req.method} ${req.url}:`, error);
-    return jsonProxyResponse({ error: 'Internal server error.' }, 500);
+    return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), 500);
   }
 }
 

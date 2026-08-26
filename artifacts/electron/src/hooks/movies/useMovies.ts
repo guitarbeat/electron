@@ -16,7 +16,7 @@ import { useCollection } from "../useCollection";
 const POLLING_INTERVAL = 15000;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
-  const { poster, year, plot, imdbRating, runtime, genre, director, type } = metadata;
+  const { poster, year, plot, imdbRating, runtime, genre, director } = metadata;
   const result: Partial<Movie> = {};
   if (poster && isValidUrl(poster)) result.posterUrl = poster;
   if (year) result.year = year;
@@ -26,8 +26,6 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   if (genre && Array.isArray(genre))
     result.genre = sanitizeInput(genre.join(", "));
   if (director) result.director = sanitizeInput(director);
-  if (type === "series" || type === "movie") result.mediaType = type;
-  if (type === "series") result.category = "TV Series";
   return result;
 };
 
@@ -144,8 +142,6 @@ export const useMovies = (
         addedBy: currentUser,
         watchedBy: [],
         createdAt: new Date().toISOString(),
-        mediaType: selectedResult?.type,
-        category: selectedResult?.type === "series" ? "TV Series" : undefined,
       };
 
       await performMutation(
@@ -153,10 +149,6 @@ export const useMovies = (
         {
           id: newMovie.id,
           title: newMovie.title,
-          metadata: {
-            mediaType: newMovie.mediaType,
-            category: newMovie.category,
-          },
         },
         [...movies, newMovie],
       );
@@ -187,8 +179,8 @@ export const useMovies = (
                   : entry,
               ),
           );
-        } catch {
-          // Ignore non-critical metadata fetch errors
+        } catch (metadataError) {
+          console.warn("Metadata enrichment failed:", metadataError);
         }
       })();
 
@@ -248,8 +240,8 @@ export const useMovies = (
                   : movie,
               ),
           );
-        } catch {
-          // Ignore non-critical metadata fetch errors
+        } catch (metadataError) {
+          console.warn("Metadata refresh failed after rename:", metadataError);
         }
       })();
     },
@@ -395,8 +387,8 @@ export const useMovies = (
       if (!currentUser) return;
       try {
         await updateMovieMetadata(movie);
-      } catch {
-        // Ignore non-critical metadata fetch errors
+      } catch (error) {
+        console.warn(`Auto-sync failed for ${movie.title}:`, error);
       }
     });
   }, [currentUser, isSubmitting, movies, updateMovieMetadata]);

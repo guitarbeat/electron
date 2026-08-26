@@ -1,0 +1,142 @@
+/*
+ * Movies photo grid — dense poster wall inside the movies workspace.
+ * Scoped so places and other grids keep their default card chrome.
+ *
+ * ChromaCollectionGrid puts `workspace-content` on the chroma root wrapper;
+ * layout columns must live on the inner `.collection-grid`, not the wrapper.
+ */
+
+.chroma-grid-root.workspace-content {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.chroma-grid-root.workspace-content > .chroma-grid-root__grid.collection-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 639px) {
+  .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) {
+  .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+    gap: 9px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-workspace-stack--movies .workspace-content--poster-grid .chroma-grid-root__grid.collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+    gap: 10px;
+  }
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-container > .card-tilt-wrap > .movie-item-card,
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-card {
+  margin-bottom: 0 !important;
+  border-radius: 10px;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: transparent;
+  position: relative;
+  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-container:hover .movie-item-card {
+  transform: scale(1.04) translateY(-2px);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.6),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-poster-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-info-external {
+  display: none;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-watchers {
+  top: 0.18rem;
+  right: 0.18rem;
+  padding: 1px;
+  z-index: 7;
+  transform: scale(0.68);
+  transform-origin: top right;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-imdb-badge {
+  top: 0.2rem;
+  left: 0.2rem;
+  padding: 0.1rem 0.28rem 0.1rem 0.18rem;
+  border-radius: 0.3rem;
+  gap: 0.1rem;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-imdb-badge__star {
+  font-size: 0.45rem;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-imdb-badge__score {
+  font-size: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-poster-wrap::after {
+  height: 2px;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .card-tilt-wrap {
+  pointer-events: auto;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid .movie-item-details-hit-area {
+  inset: 0;
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid > .watchlist-empty-state,
+.app-workspace-stack--movies .workspace-content--poster-grid > .watchlist-error,
+.app-workspace-stack--movies
+  .workspace-content--poster-grid
+  .chroma-grid-root__grid
+  > .watchlist-empty-state,
+.app-workspace-stack--movies
+  .workspace-content--poster-grid
+  .chroma-grid-root__grid
+  > .watchlist-error {
+  grid-column: 1 / -1;
+}
+
+/* Poster grid: lighter chroma desaturation so posters stay vivid */
+.app-workspace-stack--movies .workspace-content--poster-grid .chroma-overlay,
+.app-workspace-stack--movies .workspace-content--poster-grid .chroma-fade {
+  backdrop-filter: grayscale(0.55) brightness(0.9);
+  -webkit-backdrop-filter: grayscale(0.55) brightness(0.9);
+}
+
+.app-workspace-stack--movies .workspace-content--poster-grid.chroma-grid-root {
+  --r: 220px;
+}

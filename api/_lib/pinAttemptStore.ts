@@ -7,19 +7,59 @@
  * continues to be issued for client-side countdown UX only.
  */
 
-import type pg from 'pg';
-import { createPostgresPool, getDatabaseUrl } from './dbCommon.js';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 let pool: pg.Pool | null = null;
 let poolUrl = '';
 let schemaReady: Promise<void> | null = null;
+
+// ---------------------------------------------------------------------------
+// Internal helpers (mirrors sharedStateStore, kept self-contained)
+// ---------------------------------------------------------------------------
+
+const cleanEnvValue = (value: string | undefined): string => {
+  let normalized = (value || '').trim();
+  while (
+    normalized.length >= 2 &&
+    ((normalized.startsWith('"') && normalized.endsWith('"')) ||
+      (normalized.startsWith("'") && normalized.endsWith("'")))
+  ) {
+    normalized = normalized.slice(1, -1).trim();
+  }
+  return normalized;
+};
+
+const getDatabaseUrl = (): string =>
+  cleanEnvValue(
+    process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.POSTGRES_PRISMA_URL
+  );
+
+const needsSsl = (url: string): boolean => {
+  try {
+    const u = new URL(url);
+    const sslmode = u.searchParams.get('sslmode');
+    if (sslmode === 'disable' || sslmode === 'allow') return false;
+    const cloudHosts = ['neon.tech', 'supabase.co', 'railway.app', 'render.com', 'amazonaws.com'];
+    return cloudHosts.some((h) => u.hostname.includes(h));
+  } catch {
+    return false;
+  }
+};
 
 const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) throw new Error('DATABASE_URL is not configured.');
   if (!pool || poolUrl !== databaseUrl) {
     if (pool) void pool.end().catch(() => undefined);
-    pool = createPostgresPool(databaseUrl);
+    const poolConfig: pg.PoolConfig = { connectionString: databaseUrl };
+    if (needsSsl(databaseUrl)) {
+      poolConfig.ssl = { rejectUnauthorized: true };
+    }
+    pool = new Pool(poolConfig);
     poolUrl = databaseUrl;
     schemaReady = null;
   }
@@ -63,9 +103,6 @@ export interface PinAttemptRecord {
  * Fails silently (returns zeroed record) so a DB outage never blocks login.
  */
 export const getPinAttemptRecord = async (user: string): Promise<PinAttemptRecord> => {
-  if (!getDatabaseUrl()) {
-    return { failures: 0, lockedUntil: null };
-  }
   try {
     await ensureSchema();
     const rows = await query<{ failures: number; locked_until: string | null }>(
@@ -94,8 +131,6 @@ export const recordPinFailure = async (
   failures: number,
   lockedUntil: number | null
 ): Promise<void> => {
-  if (!getDatabaseUrl()) return;
-
   try {
     await ensureSchema();
     await query(
@@ -117,8 +152,6 @@ export const recordPinFailure = async (
  * Called after a successful PIN verification.
  */
 export const clearPinAttempts = async (user: string): Promise<void> => {
-  if (!getDatabaseUrl()) return;
-
   try {
     await ensureSchema();
     await query(

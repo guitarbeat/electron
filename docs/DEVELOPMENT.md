@@ -33,26 +33,20 @@ Command behavior:
 ## Recommended Workflow
 
 1. Install dependencies with `pnpm install`.
-2. Pull development secrets using `npx vercel env pull .env.local --yes` (or copy `.env.example` to `.env.local` if working offline).
+2. Copy `.env.example` to `.env.local` when working with remote sync or external APIs.
 3. Start local development with `pnpm dev`.
 4. Before handing work off or deploying to Vercel, run `pnpm verify`.
 
 ## App and API Workflow
 
 - There is no separate local backend process. `vite.config.ts` mounts a custom middleware that executes `api/*.ts` for `/api/*` requests during local development.
-- `vite.config.ts` loads environment variables from both the workspace root (`.env.local`) and package directory into `process.env`, making database connections and secrets available during `pnpm dev`.
 - Shared app data is served from `/api/state/:scope` and `/api/session`, with the core read/mutate logic in `api/_lib/state.ts` and shared persistence in `api/_lib/sharedStateStore.ts` (Neon/Postgres).
 - Profile selection and PIN login are handled through signed cookies in `api/session.ts`, `api/session/profile.ts`, and `api/_lib/session.ts`.
 - `api/omdb.ts` and `api/tvmaze.ts` are the metadata proxies used in production-style deployments.
 - In development, `src/services/metadataService.ts` defaults metadata reads to the local `/api/omdb` and `/api/tvmaze` proxies. Set `VITE_OMDB_API_URL` or `VITE_TVMAZE_API_URL` only when intentionally bypassing those proxies.
 - Watchlist autocomplete tries OMDb movie search first, then falls back to TVMaze show search when OMDb has no usable match.
 - In local Vite development, `VITE_DATABASE_URL` is accepted as a fallback when `DATABASE_URL` is not set.
-- If database configuration is missing, the app falls back to degraded local snapshot/outbox storage and mock seed arrays (`mockMovies`, `mockSuggestions`, `mockMemories`) instead of crashing.
-
-## Architecture Decisions (ADRs)
-
-Key architectural decisions are documented in `docs/decisions/`:
-- [ADR-001: Serverless Dependency Isolation, Neon Connection String Parsing, and Smart TV Spatial UX](file:///Users/aaron/Downloads/electron/docs/decisions/ADR-001-serverless-isolation-neon-and-tv-ux.md)
+- If database configuration is missing, the app falls back to degraded local snapshot/outbox storage instead of shared persistence.
 
 ## Environment Variables
 
@@ -70,7 +64,6 @@ Server-side variables used by deployed handlers:
 - `DATABASE_URL_UNPOOLED` (optional; for tooling that needs a direct Neon connection)
 - `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING` (optional Vercel Postgres-compatible aliases)
 - `SESSION_SIGNING_SECRET`
-- `AGENT_API_TOKEN` — shared server-only bearer credential for `/api/agent/v1/private/*` and `/api/agent/v1/actions`
 - `OMDB_API_URL`
 - `OMDB_API_KEY` for the default `/api/omdb` proxy path
 - `TVMAZE_API_URL`

@@ -363,10 +363,17 @@ const buildCopyPayload = ({
   ].join("\n");
 };
 
-const isDevBuild = (): boolean =>
-  typeof import.meta !== "undefined" && import.meta.env?.DEV
-    ? Boolean(import.meta.env.DEV)
-    : process.env.NODE_ENV !== "production";
+const isDevBuild = (): boolean => {
+  if (
+    typeof import.meta !== "undefined" &&
+    import.meta.env &&
+    "DEV" in import.meta.env
+  ) {
+    return Boolean(import.meta.env.DEV);
+  }
+
+  return process.env.NODE_ENV !== "production";
+};
 
 export const shouldShowSyncBanner = ({
   isBlocked,

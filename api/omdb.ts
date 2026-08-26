@@ -1,13 +1,6 @@
-import { fetchWithRetry } from './_lib/retryFetch.js';
-import { withWebHandler } from './_lib/webHandler.js';
-import { resolveConfig } from './_lib/config.js';
-import {
-  BoundedResponseCache,
-  cachedProxyResponse,
-  isAbsoluteUrl,
-  jsonProxyResponse,
-  type CachedProxyResponse,
-} from './_lib/cachedProxy.js';
+import { fetchWithRetry } from './_lib/retryFetch.ts';
+import { withWebHandler } from './_lib/webHandler.ts';
+import { resolveConfig } from './_lib/config.ts';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
@@ -17,10 +10,16 @@ const MAX_RATE_LIMIT_ENTRIES = 10_000;
 const OMDB_AUTH_FAILURE_CODE = 'omdb_auth';
 const OMDB_CONFIG_FAILURE_CODE = 'omdb_config';
 
-const omdbCache = new BoundedResponseCache<CachedProxyResponse>({
-  ttlMs: ONE_HOUR_MS,
-  maxEntries: MAX_CACHE_ENTRIES,
-});
+interface CachedResponse {
+  body: string;
+  contentType: string;
+  expiresAt: number;
+  status: number;
+  statusText: string;
+}
+
+const isAbsoluteUrl = (value: string) => /^[a-z][a-z\d+\-.]*:\/\//i.test(value);
+const omdbCache = new Map<string, CachedResponse>();
 const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
 
 const getOmdbApiBaseUrl = (): string =>
@@ -32,18 +31,76 @@ const getOmdbApiBaseUrl = (): string =>
 const getOmdbApiKey = (): string =>
   (process.env.OMDB_API_KEY || process.env.VITE_OMDB_API_KEY || '').trim();
 
+const toJsonResponse = (body: string, status: number): Response =>
+  new Response(body, {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+    },
+  });
+
 const badConfigResponse = (message: string) =>
-  jsonProxyResponse({ error: message, code: OMDB_CONFIG_FAILURE_CODE }, 500);
+  toJsonResponse(
+    JSON.stringify({ error: message, code: OMDB_CONFIG_FAILURE_CODE }),
+    500
+  );
 const badRequestResponse = (message: string) =>
-  jsonProxyResponse({ error: message }, 400);
+  toJsonResponse(JSON.stringify({ error: message }), 400);
 const methodNotAllowedResponse = () =>
-  jsonProxyResponse({ error: 'Method not allowed.' }, 405);
+  toJsonResponse(JSON.stringify({ error: 'Method not allowed.' }), 405);
 const rateLimitResponse = () =>
-  jsonProxyResponse({ error: 'Too many requests.' }, 429);
+  toJsonResponse(JSON.stringify({ error: 'Too many requests.' }), 429);
 const forbiddenResponse = (message: string) =>
-  jsonProxyResponse({ error: message }, 403);
+  toJsonResponse(JSON.stringify({ error: message }), 403);
 const omdbAuthResponse = (message: string) =>
-  jsonProxyResponse({ error: message, code: OMDB_AUTH_FAILURE_CODE }, 502);
+  toJsonResponse(
+    JSON.stringify({ error: message, code: OMDB_AUTH_FAILURE_CODE }),
+    502
+  );
+
+const getCachedResponse = (cacheKey: string): CachedResponse | null => {
+  const cached = omdbCache.get(cacheKey);
+  if (!cached) {
+    return null;
+  }
+
+  if (Date.now() > cached.expiresAt) {
+    omdbCache.delete(cacheKey);
+    return null;
+  }
+
+  return cached;
+};
+
+const trimCache = (cache: Map<string, CachedResponse>) => {
+  if (cache.size < MAX_CACHE_ENTRIES) {
+    return;
+  }
+
+  const now = Date.now();
+  for (const [key, value] of cache.entries()) {
+    if (value.expiresAt <= now) {
+      cache.delete(key);
+    } else {
+      break;
+    }
+  }
+
+  while (cache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = cache.keys().next().value;
+    if (!oldestKey) {
+      break;
+    }
+    cache.delete(oldestKey);
+  }
+};
+
+const cacheResponse = (cacheKey: string, response: CachedResponse) => {
+  trimCache(omdbCache);
+  omdbCache.delete(cacheKey); // Ensure it's moved to the end of insertion order
+  omdbCache.set(cacheKey, response);
+};
 
 const isRateLimited = (ip: string): boolean => {
   const now = Date.now();
@@ -96,14 +153,14 @@ const validateSameOriginRequest = (req: Request): Response | null => {
     const originUrl = new URL(origin);
     const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
       .split(',')
-      .map((entry: string) => entry.trim())
+      .map((entry) => entry.trim())
       .filter(Boolean);
 
     if (allowedOrigins.length === 0) {
       return null;
     }
 
-    const isAllowed = allowedOrigins.some((allowed: string) => {
+    const isAllowed = allowedOrigins.some((allowed) => {
       try {
         return new URL(allowed).origin === originUrl.origin;
       } catch {
@@ -117,25 +174,12 @@ const validateSameOriginRequest = (req: Request): Response | null => {
   }
 };
 
-const isPrivateIp = (ip: string): boolean => {
-  return /^(::f{4}:)?10\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
-    /^(::f{4}:)?192\.168\.\d{1,3}\.\d{1,3}/i.test(ip) ||
-    /^(::f{4}:)?169\.254\.\d{1,3}\.\d{1,3}/i.test(ip) ||
-    /^(::f{4}:)?127\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
-    /^(::f{4}:)?172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}/i.test(ip) ||
-    /^(::1|fc00:|fe80:)/i.test(ip);
-};
-
 const getClientIp = (req: Request): string => {
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    // The right-most IP is the one appended by the last proxy in the chain.
-    // All IPs to the left could potentially be spoofed by the client.
-    const ips = forwardedFor.split(',');
-    return ips[ips.length - 1].trim() || 'unknown';
+    return forwardedFor.split(',')[0].trim();
   }
 
-  // Fallback if x-forwarded-for is missing (e.g., local development or direct connection)
   return req.headers.get('x-real-ip') || 'unknown';
 };
 
@@ -187,9 +231,17 @@ async function handler(req: Request): Promise<Response> {
     }
 
     const cacheKey = targetUrl.toString();
-    const cached = omdbCache.get(cacheKey);
+    const cached = getCachedResponse(cacheKey);
     if (cached) {
-      return cachedProxyResponse(cached);
+      return new Response(cached.body, {
+        status: cached.status,
+        statusText: cached.statusText,
+        headers: {
+          'Content-Type': cached.contentType,
+          'Cache-Control': 'no-store',
+          'X-Cache': 'HIT',
+        },
+      });
     }
 
     const upstreamResponse = await fetchWithRetry(
@@ -227,9 +279,10 @@ async function handler(req: Request): Promise<Response> {
       }
 
       if (isOmdbSuccess) {
-        omdbCache.set(cacheKey, {
+        cacheResponse(cacheKey, {
           body,
           contentType,
+          expiresAt: Date.now() + ONE_HOUR_MS,
           status: upstreamResponse.status,
           statusText: upstreamResponse.statusText,
         });
@@ -247,7 +300,7 @@ async function handler(req: Request): Promise<Response> {
     });
   } catch (error) {
     console.error(`Error handling ${req.method} ${req.url}:`, error);
-    return jsonProxyResponse({ error: 'Internal server error.' }, 500);
+    return toJsonResponse(JSON.stringify({ error: 'Internal server error.' }), 500);
   }
 }
 

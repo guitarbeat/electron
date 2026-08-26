@@ -16,20 +16,13 @@ const walk = (dir) => {
   return out;
 };
 
-import { existsSync } from 'node:fs';
-
-const targetDirs = [
-  fileURLToPath(new URL('../artifacts/electron/src', import.meta.url)),
-  fileURLToPath(new URL('../src', import.meta.url)),
-].filter((d) => existsSync(d));
-
-const files = targetDirs.flatMap((dir) => walk(dir));
+const srcDir = fileURLToPath(new URL('../src', import.meta.url));
+const files = walk(srcDir);
 if (files.length === 0) {
   process.exit(0);
 }
 
-const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
-const result = spawnSync(process.execPath, [tsxCli, '--test', ...files], {
+const result = spawnSync(process.execPath, ['--test', ...files], {
   stdio: 'inherit',
 });
 process.exit(result.status ?? 1);

@@ -8,17 +8,12 @@ import React, {
 import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/useProviders";
 import type { Movie } from "@/shared/types";
-import { FilmIcon, SparklesIcon } from "../common/Icons.tsx";
 const MovieDetailsModal = React.lazy(() => import("@/components/movies/MovieDetailsModal"));
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
 } from "@/components/spin-wheel/lib/spinWheelEngine";
-import {
-  evaluateSwipe,
-  calculateVelocity,
-  filterCandidates,
-} from "./lib/swipeLogic";
+import "./SpinSwipeGame.css";
 
 type Phase = "swipe" | "spin" | "result";
 
@@ -26,6 +21,8 @@ interface SpinSwipeGameProps {
   onSpinningChange?: (isSpinning: boolean) => void;
 }
 
+const SWIPE_THRESHOLD = 75;
+const SWIPE_VELOCITY_THRESHOLD = 0.4;
 const SPIN_DURATION_MS = 4200;
 
 function MovieCard({
@@ -495,7 +492,10 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const dragVelocity = useRef<number>(0);
   const spinTimeoutRef = useRef<number | null>(null);
 
-  const candidates = useMemo(() => filterCandidates(movies), [movies]);
+  const candidates = useMemo(() => {
+    const queue = movies.filter((m) => m.watchedBy.length < 2);
+    return queue.length > 0 ? queue : movies;
+  }, [movies]);
 
   const isDone = currentIndex >= candidates.length;
   const currentMovie = isDone ? null : candidates[currentIndex];
@@ -535,12 +535,10 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging || dragStartX.current === null) return;
     const now = e.timeStamp;
-    dragVelocity.current = calculateVelocity(
-      e.clientX,
-      dragLastX.current,
-      now,
-      dragLastTime.current
-    );
+    const dt = dragLastTime.current !== null ? now - dragLastTime.current : 16;
+    if (dt > 0 && dragLastX.current !== null) {
+      dragVelocity.current = (e.clientX - dragLastX.current) / dt;
+    }
     dragLastX.current = e.clientX;
     dragLastTime.current = now;
     setDragX(e.clientX - dragStartX.current);
@@ -556,9 +554,10 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
     const velocity = dragVelocity.current;
     dragVelocity.current = 0;
     setDragX(0);
-    const action = evaluateSwipe(finalX, velocity);
-    if (action === "keep") advance(true);
-    else if (action === "skip") advance(false);
+    if (finalX > SWIPE_THRESHOLD || velocity > SWIPE_VELOCITY_THRESHOLD)
+      advance(true);
+    else if (finalX < -SWIPE_THRESHOLD || velocity < -SWIPE_VELOCITY_THRESHOLD)
+      advance(false);
   };
 
   const handleSpin = useCallback(() => {
@@ -881,9 +880,7 @@ function DoneCard({ kept, onReset }: { kept: number; onReset: () => void }) {
         boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
       }}
     >
-      <span style={{ color: "var(--color-accent)", display: "inline-flex" }}>
-        {kept === 0 ? <FilmIcon size={40} /> : <SparklesIcon size={40} />}
-      </span>
+      <span style={{ fontSize: "2.5rem" }}>{kept === 0 ? "😅" : "🎬"}</span>
       <p
         style={{
           color: "var(--color-text-primary)",

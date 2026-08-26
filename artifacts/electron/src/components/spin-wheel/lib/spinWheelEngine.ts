@@ -1,8 +1,4 @@
-import type { Movie } from "../../../shared/types.ts";
-import {
-  getUnwatchedCandidatePool,
-  selectCandidateSubset,
-} from "../../games/movieCandidatePool";
+import type { Movie } from "@/shared/types";
 
 const SEGMENT_COLORS = [
   "#ff7ea8",
@@ -28,7 +24,8 @@ export const getSpinCandidates = (movies: Movie[], mode: SpinMode): Movie[] => {
     return movies;
   }
 
-  return getUnwatchedCandidatePool(movies);
+  const queue = movies.filter((movie) => movie.watchedBy.length < 2);
+  return queue.length > 0 ? queue : movies;
 };
 
 export const getSpinPool = (
@@ -37,7 +34,12 @@ export const getSpinPool = (
   selectedMovieIds: ReadonlySet<string> = new Set<string>(),
 ): Movie[] => {
   const candidates = getSpinCandidates(movies, mode);
-  return selectCandidateSubset(candidates, selectedMovieIds);
+  if (selectedMovieIds.size === 0) {
+    return candidates;
+  }
+
+  const selected = candidates.filter((movie) => selectedMovieIds.has(movie.id));
+  return selected.length > 0 ? selected : candidates;
 };
 
 export const buildSpinWheelGradient = (
@@ -65,10 +67,18 @@ export const appendSpinHistory = (
 ): string[] => [title, ...history].slice(0, maxEntries);
 
 const secureRandom = () => {
-  const cryptoObj = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
-  if (cryptoObj?.getRandomValues) {
+  if (
+    typeof window !== "undefined" &&
+    window.crypto &&
+    window.crypto.getRandomValues
+  ) {
     const array = new Uint32Array(1);
-    cryptoObj.getRandomValues(array);
+    window.crypto.getRandomValues(array);
+    return array[0] / 4294967296;
+  }
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
     return array[0] / 4294967296;
   }
   throw new Error(

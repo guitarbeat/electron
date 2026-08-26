@@ -1,5 +1,5 @@
 import type { Movie, User } from "../shared/types.ts";
-import { spacing } from "../theme/tokens.js";
+import { spacing } from "../theme/tokens.ts";
 
 /**
  * Consolidated Utilities
@@ -133,8 +133,6 @@ export const readApiErrorMessage = async (
  */
 export const sanitizeInput = (input: string | null | undefined): string => {
   if (!input) return "";
-  // The sanitizer intentionally matches ASCII control characters.
-  // eslint-disable-next-line no-control-regex
   return input.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "").trim();
 };
 

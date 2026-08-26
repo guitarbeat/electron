@@ -55,17 +55,7 @@ export const useModalBehavior = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isFocusWithin(containerRef.current)) return;
-      const isTextInput =
-        document.activeElement instanceof HTMLInputElement ||
-        document.activeElement instanceof HTMLTextAreaElement;
-      const isBackKey =
-        event.key === "Escape" ||
-        event.key === "GoBack" ||
-        event.keyCode === 10009 ||
-        event.keyCode === 461 ||
-        (event.key === "Backspace" && !isTextInput);
-
-      if (isBackKey && !closeDisabled) {
+      if (event.key === "Escape" && !closeDisabled) {
         event.preventDefault();
         onClose();
         return;

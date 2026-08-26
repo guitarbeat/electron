@@ -1,0 +1,7 @@
+/* Human textures — disabled for performance.
+ * Grain/fiber overlays add GPU compositing cost with minimal visual benefit. */
+
+body {
+  position: relative;
+  background-color: var(--color-surface-0);
+}

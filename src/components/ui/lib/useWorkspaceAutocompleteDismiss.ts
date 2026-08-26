@@ -1,0 +1,97 @@
+import { useCallback, useEffect, useRef, type RefObject } from "react";
+
+export function useWorkspaceAutocompleteDismiss(
+  regionRef: RefObject<HTMLElement | null>,
+  onDismiss: () => void,
+) {
+  // Store onDismiss in a ref so the effect doesn't re-subscribe the listener
+  // on every render when callers pass an inline arrow function.
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+      if (!regionRef.current?.contains(target)) {
+        onDismissRef.current();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [regionRef]);
+}
+
+interface AutocompleteFocusBoundaryOptions {
+  /** Skip blur close while a dropdown interaction is finishing (e.g. pointer-down on panel). */
+  shouldSkipClose?: () => boolean;
+  /** Called when the search region gains or loses focus. */
+  onFocusStateChange?: (isFocused: boolean) => void;
+}
+
+export function useAutocompleteFocusBoundary(
+  regionRef: RefObject<HTMLElement | null>,
+  onClose: () => void,
+  options?: AutocompleteFocusBoundaryOptions,
+) {
+  const focusBoundaryFrameRef = useRef<number | null>(null);
+
+  // Store callback options in refs so useCallback deps stay stable even when
+  // callers pass inline option objects that create new function references each render.
+  const onFocusStateChangeRef = useRef(options?.onFocusStateChange);
+  const shouldSkipCloseRef = useRef(options?.shouldSkipClose);
+  onFocusStateChangeRef.current = options?.onFocusStateChange;
+  shouldSkipCloseRef.current = options?.shouldSkipClose;
+
+  const clearFocusBoundaryCheck = useCallback(() => {
+    if (focusBoundaryFrameRef.current !== null) {
+      window.cancelAnimationFrame(focusBoundaryFrameRef.current);
+      focusBoundaryFrameRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => clearFocusBoundaryCheck(), [clearFocusBoundaryCheck]);
+
+  const onFocusCapture = useCallback(() => {
+    clearFocusBoundaryCheck();
+    onFocusStateChangeRef.current?.(true);
+  }, [clearFocusBoundaryCheck]);
+
+  const onBlurCapture = useCallback(() => {
+    clearFocusBoundaryCheck();
+    focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
+      focusBoundaryFrameRef.current = null;
+      if (shouldSkipCloseRef.current?.()) {
+        return;
+      }
+      const nextIsFocused = Boolean(
+        regionRef.current?.contains(document.activeElement),
+      );
+      onFocusStateChangeRef.current?.(nextIsFocused);
+      if (!nextIsFocused) {
+        onClose();
+      }
+    });
+  }, [clearFocusBoundaryCheck, onClose, regionRef]);
+
+  return { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck };
+}
+
+export function useWorkspaceSearchInputHandle(
+  inputRef: RefObject<HTMLInputElement | null>,
+  onFocusInput?: () => void,
+) {
+  return useCallback(() => {
+    const input = inputRef.current;
+    if (!input) {
+      return;
+    }
+    if (document.activeElement !== input) {
+      input.focus();
+    }
+    onFocusInput?.();
+  }, [inputRef, onFocusInput]);
+}

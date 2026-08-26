@@ -6,10 +6,10 @@ import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
-const [reactHooksRecommended] = reactHooks.configs['flat/recommended'];
+const reactHooksRecommended = reactHooks.configs.flat.recommended;
 
 export default tseslint.config(
-  { ignores: ['dist', 'scripts', 'docs', 'public', '.next', '.vercel', 'node_modules'] },
+  { ignores: ['dist', 'artifacts', 'scripts', 'docs', 'public', '.next'] },
   {
     extends: [
       js.configs.recommended,
@@ -18,12 +18,12 @@ export default tseslint.config(
       react.configs.flat['jsx-runtime'],
       jsxA11y.flatConfigs.recommended,
     ],
-    files: ['artifacts/electron/src/**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: ['./artifacts/electron/tsconfig.eslint.json'],
+        project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -43,21 +43,14 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       'react/prop-types': 'off', // Not needed with TS
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
     },
   },
   {
-    files: ['artifacts/electron/src/**/*.test.{ts,tsx}'],
+    files: ['src/components/effects/Moire/Moire.tsx', 'src/components/effects/Moire/RippleEffect.ts'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-function-type': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^(_|id$|query$|t$)', varsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-empty': 'off',
     },
   },
 );

@@ -1,38 +1,13 @@
-import { fetchOmdbMetadata } from "./omdb.ts";
-import type { MovieMetadata } from "./types.ts";
+import { fetchOmdbMetadata } from "./omdb";
+import type { MovieMetadata } from "./types";
 
-const MAX_CACHE_SIZE = 200;
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-interface CacheEntry {
-  promise: Promise<MovieMetadata>;
-  timestamp: number;
-}
-
-const metadataCache = new Map<string, CacheEntry>();
+const metadataCache = new Map<string, Promise<MovieMetadata>>();
 
 const buildCacheKey = (
   title: string,
   type?: string,
   imdbID?: string,
 ): string => `${imdbID ?? title.trim().toLowerCase()}::${type ?? "movie"}`;
-
-const evictOldest = () => {
-  while (metadataCache.size > MAX_CACHE_SIZE) {
-    let oldestKey: string | null = null;
-    let oldestTimestamp = Infinity;
-
-    for (const [key, entry] of metadataCache.entries()) {
-      if (entry.timestamp < oldestTimestamp) {
-        oldestTimestamp = entry.timestamp;
-        oldestKey = key;
-      }
-    }
-
-    if (!oldestKey) break;
-    metadataCache.delete(oldestKey);
-  }
-};
 
 export const fetchOmdbMetadataCached = (
   title: string,
@@ -41,15 +16,9 @@ export const fetchOmdbMetadataCached = (
   signal?: AbortSignal,
 ): Promise<MovieMetadata> => {
   const key = buildCacheKey(title, type, imdbID);
-  const now = Date.now();
   const cached = metadataCache.get(key);
-
   if (cached) {
-    if (now - cached.timestamp < CACHE_TTL_MS) {
-      cached.timestamp = now;
-      return cached.promise;
-    }
-    metadataCache.delete(key);
+    return cached;
   }
 
   const request = fetchOmdbMetadata(title, type, imdbID, signal).catch(
@@ -58,17 +27,6 @@ export const fetchOmdbMetadataCached = (
       throw error;
     },
   );
-
-  metadataCache.set(key, {
-    promise: request,
-    timestamp: now,
-  });
-
-  evictOldest();
-
+  metadataCache.set(key, request);
   return request;
-};
-
-export const _clearCache = () => {
-  metadataCache.clear();
 };

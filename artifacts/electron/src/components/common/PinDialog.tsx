@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useReducer, useRef } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useReducer, useRef } from "react";
 import type { User } from "@/shared/types";
-import { isFocusWithin, trapFocusOnTab } from "@/components/ui/lib/modalPrimitives";
+import { isFocusWithin } from "@/components/ui/lib/modalPrimitives";
 import { useAudio } from "@/hooks/useAudio";
 import Button from "@/components/ui/Button";
 import { getErrorMessage, consoleError } from "@/utils";
@@ -14,6 +13,7 @@ import {
   pinFlowReducer,
   type PinFlowMode,
 } from "./pinFlowReducer";
+import "./PinDialog.css";
 
 interface PinDialogProps {
   isOpen: boolean;
@@ -68,23 +68,19 @@ const PinDialog: React.FC<PinDialogProps> = ({
       if (event.key === "Escape" && isFocusWithin(formRef.current)) {
         event.preventDefault();
         onCancel();
-        return;
-      }
-      if (event.key === "Tab" && isFocusWithin(formRef.current)) {
-        trapFocusOnTab(event, formRef.current);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onCancel]);
 
-  const reportError = useCallback((message: string, clearDigits = false) => {
+  const reportError = (message: string, clearDigits = false) => {
     dispatch({ type: "set-error", message });
     playError();
     if (clearDigits) {
       dispatch({ type: "clear-digits" });
     }
-  }, [playError]);
+  };
 
   useEffect(() => {
     if (flow.mode !== "enter" || flow.digits.length !== PIN_LENGTH || isLoading) {
@@ -106,7 +102,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
       }
     }, 100);
     return () => window.clearTimeout(id);
-  }, [flow.digits, flow.mode, isLoading, onSubmit, reportError]);
+  }, [flow.digits, flow.mode, isLoading, onSubmit, playError]);
 
   const appendDigit = (value: number) => {
     if (flow.digits.length >= PIN_LENGTH) return;
@@ -200,9 +196,8 @@ const PinDialog: React.FC<PinDialogProps> = ({
   const title = getPinFlowTitle(flow, user, isRequiredSetup);
   const submitLabel = getPinSubmitLabel(flow, isRequiredSetup);
 
-  return createPortal(
-    <div className="pin-panel__overlay">
-      <section className="pin-panel" aria-labelledby="pin-dialog-title">
+  return (
+    <section className="pin-panel"  aria-labelledby="pin-dialog-title">
       <form ref={formRef} className="pin-panel__form" onSubmit={handleSubmit}>
         <div className="pin-panel__header">
           <h2 id="pin-dialog-title" className="pin-panel__title">
@@ -311,9 +306,7 @@ const PinDialog: React.FC<PinDialogProps> = ({
         ) : null}
       </form>
     </section>
-  </div>,
-  document.body
- );
+  );
 };
 
 export default PinDialog;

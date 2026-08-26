@@ -33,8 +33,6 @@ export function useAutocompleteFocusBoundary(
   options?: AutocompleteFocusBoundaryOptions,
 ) {
   const focusBoundaryFrameRef = useRef<number | null>(null);
-  const shouldSkipClose = options?.shouldSkipClose;
-  const onFocusStateChange = options?.onFocusStateChange;
 
   const clearFocusBoundaryCheck = useCallback(() => {
     if (focusBoundaryFrameRef.current !== null) {
@@ -47,20 +45,20 @@ export function useAutocompleteFocusBoundary(
 
   const onFocusCapture = useCallback(() => {
     clearFocusBoundaryCheck();
-    onFocusStateChange?.(true);
-  }, [clearFocusBoundaryCheck, onFocusStateChange]);
+    options?.onFocusStateChange?.(true);
+  }, [clearFocusBoundaryCheck, options?.onFocusStateChange]);
 
   const onBlurCapture = useCallback(() => {
     clearFocusBoundaryCheck();
     focusBoundaryFrameRef.current = window.requestAnimationFrame(() => {
       focusBoundaryFrameRef.current = null;
-      if (shouldSkipClose?.()) {
+      if (options?.shouldSkipClose?.()) {
         return;
       }
       const nextIsFocused = Boolean(
         regionRef.current?.contains(document.activeElement),
       );
-      onFocusStateChange?.(nextIsFocused);
+      options?.onFocusStateChange?.(nextIsFocused);
       if (!nextIsFocused) {
         onClose();
       }
@@ -68,8 +66,8 @@ export function useAutocompleteFocusBoundary(
   }, [
     clearFocusBoundaryCheck,
     onClose,
-    onFocusStateChange,
-    shouldSkipClose,
+    options?.onFocusStateChange,
+    options?.shouldSkipClose,
     regionRef,
   ]);
 

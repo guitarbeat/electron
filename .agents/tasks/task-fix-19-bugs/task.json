@@ -1,0 +1,7 @@
+{
+  "task_id": "task-fix-19-bugs",
+  "task_description": "Fix all 19 bugs identified in the bug scan report covering race conditions, memory leaks, stale closures, cache issues, and other problems across the TypeScript/React codebase.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null
+}

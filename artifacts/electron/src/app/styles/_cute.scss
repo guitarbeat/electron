@@ -1,36 +1,139 @@
 /* ══════════════════════════════════════════════════════════════════
-   Streaming skin — clean dark TV aesthetic with Papyrus display font
+   Y2K layer — holographic border, chrome text, neon glow
    ══════════════════════════════════════════════════════════════════ */
 
 /* ── Design tokens ── */
 :root {
-  --font-electra: 'Papyrus', 'Marker Felt', fantasy;
+  --font-y2k-display: 'Orbitron', 'Segoe UI', sans-serif;
+  --font-y2k-mono:    'VT323', 'Courier New', monospace;
+  --font-y2k-bubbly:  'Nunito', system-ui, sans-serif;
+  --font-electra:     'Papyrus', fantasy; /* 🏺 for Electra */
 
-  --radius-card: 0.75rem;
-  --radius-lg: 0.75rem;
-  --radius-md: 0.5rem;
-  --chrome-radius: 1rem;
-  --chrome-radius-lg: 1.25rem;
+  --y2k-pink:   #ff2d78;
+  --y2k-cyan:   #00d4ff;
+  --y2k-lime:   #39ff14;
+  --y2k-violet: #bf5af2;
+  --y2k-gold:   #ffd700;
+
+  --holo-gradient: linear-gradient(
+    135deg,
+    #ff2d78 0%, #bf5af2 18%, #00d4ff 36%,
+    #39ff14 54%, #ffd700 72%, #ff2d78 90%
+  );
+
+  --radius-card:      1.35rem;
+  --radius-lg:        1.1rem;
+  --radius-md:        0.9rem;
+  --chrome-radius:    1.6rem;
+  --chrome-radius-lg: 2.1rem;
 }
 
-/* ── Section headings — clean, large, legible ── */
+/* ── Keyframes ── */
+
+@keyframes holo-spin {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+@keyframes holo-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1;   }
+}
+
+@keyframes y2k-heartbeat {
+  0%   { transform: rotate(0deg)   scale(1);    }
+  25%  { transform: rotate(90deg)  scale(1.1);  }
+  50%  { transform: rotate(180deg) scale(1);    }
+  75%  { transform: rotate(270deg) scale(1.08); }
+  100% { transform: rotate(360deg) scale(1);    }
+}
+
+@keyframes glitter {
+  0%, 100% { opacity: 0;   transform: scale(0.4) rotate(0deg);   }
+  30%       { opacity: 1;   transform: scale(1)   rotate(180deg); }
+  60%       { opacity: 0.6; transform: scale(0.8) rotate(270deg); }
+}
+
+/* ── Holographic border frame ── */
+/*
+ * Uses the mask punch-through technique so the interior is truly transparent.
+ * The pseudo-element fills the whole viewport area but the mask subtracts the
+ * content-box, leaving only the 2.5 px gradient border strip visible.
+ * High z-index keeps the neon ring on top; pointer-events:none lets clicks
+ * pass through to the app content beneath it.
+ */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 4px;
+  border-radius: 1.6rem;
+  padding: 2.5px;                /* controls visible border thickness */
+  border: none;
+  background: linear-gradient(270deg, #ff2d78, #bf5af2, #00d4ff, #39ff14, #ffd700, #ff2d78);
+  background-size: 400% 400%;
+  pointer-events: none;
+  z-index: 99990;
+  /* Punch a transparent hole inside — only the padding strip is visible */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+/* ── Section / eyebrow labels → Orbitron + holo gradient ── */
 
 [class*="eyebrow"],
 .eyebrow-label,
 .workspace-section__eyebrow {
-  font-family: var(--font-body) !important;
-  font-size: 1.1rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.01em !important;
-  color: var(--color-text-primary) !important;
-  text-transform: none !important;
-  background: none !important;
-  -webkit-background-clip: unset !important;
-  background-clip: unset !important;
-  -webkit-text-fill-color: unset !important;
+  font-family: var(--font-y2k-display) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.14em !important;
+  background: var(--holo-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-size: 200% 200% !important;
 }
 
-/* ── Cards — clean border, subtle shadow ── */
+/* ── Nav tab labels → Orbitron ── */
+
+.app-nav__label,
+.app-tab-label {
+  font-family: var(--font-y2k-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+}
+
+/* ── Counts / badges → Orbitron ── */
+
+.workspace-section__count {
+  font-family: var(--font-y2k-display);
+}
+
+/* ── Movie card titles → Nunito ── */
+
+.movie-item__title,
+.movie-card__title {
+  font-family: var(--font-y2k-bubbly);
+  font-weight: 800;
+}
+
+/* ── Hide IMDB ratings ── */
+
+.movie-item-imdb-badge,
+.media-card__rating-badge,
+[class*="imdb"],
+[class*="rating-badge"] {
+  display: none !important;
+}
+
+/* ── Cards — holographic border + neon glow ── */
 
 .movie-card,
 .place-card,
@@ -38,105 +141,132 @@
 .media-card,
 .ui-card {
   border-radius: var(--radius-card);
-  border: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
-  background: var(--color-surface-1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(var(--color-surface-1, rgba(16,26,58,0.82)), var(--color-surface-1, rgba(16,26,58,0.82))),
+    linear-gradient(135deg, #ff2d78 0%, #bf5af2 50%, #00d4ff 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 18px color-mix(in srgb, var(--y2k-pink) 16%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
 }
 
 .movie-card:hover,
 .place-card:hover {
-  transform: scale(1.04) translateY(-4px);
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 25%, transparent);
+    0 14px 40px rgba(0,0,0,0.55),
+    0 0 36px color-mix(in srgb, var(--y2k-cyan) 30%, transparent),
+    0 0 12px color-mix(in srgb, var(--y2k-pink) 22%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  transform: translateY(-2px);
 }
 
-/* Focus state for TV/remote navigation */
-.movie-card:focus-within,
-.place-card:focus-within,
-.movie-item-container:focus-within .movie-item-card {
-  transform: scale(1.08);
-  border-color: var(--color-accent);
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--color-accent) 40%, transparent),
-    0 16px 48px rgba(0, 0, 0, 0.7);
-  z-index: 10;
-}
-
-/* Highlighted / active card — hero treatment */
-.movie-item-container--highlighted {
-  z-index: 10;
-}
-
-.movie-item-container--highlighted .movie-item-card {
-  transform: scale(1.1);
-  border-color: var(--color-accent);
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--color-accent) 50%, transparent),
-    0 20px 60px rgba(0, 0, 0, 0.8),
-    0 0 40px color-mix(in srgb, var(--color-accent) 15%, transparent);
-}
-
-.movie-item-container--highlighted .movie-item-title-external {
-  color: var(--color-accent);
-  font-weight: 700;
-}
-
-/* Remove hover shine pseudo-element */
 .movie-card::before,
 .place-card::before {
-  display: none;
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255,255,255,0.04) 30%,
+    rgba(0,212,255,0.06) 45%,
+    rgba(255,45,120,0.06) 55%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* ── Quick action buttons — clean sans-serif ── */
+.movie-card:hover::before,
+.place-card:hover::before {
+  opacity: 1;
+}
+
+
+/* Heartbeat disabled for performance */
+.fwp-toggle:not(.fwp-toggle--active):not(.fwp-toggle--dragging) svg {
+  transform-origin: center;
+}
+
+/* ── Quick action buttons ── */
 
 .fwp-action {
-  border-radius: 0.75rem;
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
+  border-radius: 1rem;
+  font-family: var(--font-y2k-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
 }
 
 .fwp-action__label {
-  font-family: var(--font-electra);
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
+  font-family: var(--font-electra); /* 🏺 */
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
 }
 
-/* ── View mode toggle — accent highlight ── */
+/* ── View mode toggle ── */
+
+.magic-toggle__btn.is-active {
+  font-family: var(--font-y2k-display);
+}
 
 .magic-toggle__indicator {
-  background: color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent) !important;
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--y2k-pink) 40%, transparent),
+    color-mix(in srgb, var(--y2k-violet) 30%, transparent)
+  ) !important;
+  border-color: color-mix(in srgb, var(--y2k-pink) 60%, transparent) !important;
+  box-shadow:
+    0 2px 16px color-mix(in srgb, var(--y2k-pink) 50%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.14) !important;
 }
 
-/* ── Scrollbars — subtle, accent-tinted ── */
+/* ── Scrollbars ── */
 
 * {
-  scrollbar-color: color-mix(in srgb, var(--color-accent) 20%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--y2k-pink) 35%, transparent) transparent;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  background: linear-gradient(180deg, var(--y2k-pink), var(--y2k-violet));
   border-radius: 99px;
 }
 
-/* ── Focus rings — accent border for TV navigation ── */
+/* ── Drag/swipe hints → VT323 terminal ── */
+
+[class*="peek"],
+[class*="drag-hint"],
+[class*="swipe-hint"] {
+  font-family: var(--font-y2k-mono) !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.12em !important;
+  color: color-mix(in srgb, var(--y2k-cyan) 70%, transparent) !important;
+}
+
+/* ── Focus rings ── */
 
 :where(button, input, textarea, a, [role='button']):focus-visible {
-  outline: 2.5px solid var(--color-accent);
+  outline: 2px solid var(--y2k-cyan);
   outline-offset: 3px;
-  box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--y2k-cyan) 50%, transparent);
 }
+
+/* Scanlines disabled for performance */
 
 /* ── Reduced motion ── */
 
 @media (prefers-reduced-motion: reduce) {
-  .movie-card,
-  .place-card {
-    transition: none;
+  body::before,
+  [class*="eyebrow"],
+  .fwp-panel::before,
+  .fwp-toggle svg {
+    animation: none !important;
   }
 }
