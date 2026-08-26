@@ -1,6 +1,6 @@
-import React, { useMemo, useRef } from 'react';
-import { useKineticWallScroll } from '@/hooks';
-import { computePosterMatrix } from './lib/posterMatrix';
+import React, { useMemo, useRef } from "react";
+import { useKineticWallScroll } from "@/hooks";
+import { computePosterMatrix } from "./lib/posterMatrix";
 
 export interface TiltedPosterWallProps {
   items: React.ReactNode[];
@@ -46,10 +46,7 @@ export const TiltedPosterWallSkeletonItem: React.FC<{
 export const DriftWallLoading: React.FC<{
   isMobile: boolean;
   fullViewport?: boolean;
-}> = ({
-  isMobile,
-  fullViewport = false,
-}) => {
+}> = ({ isMobile, fullViewport = false }) => {
   const columnCount = isMobile ? 5 : 11;
   const rowCount = isMobile ? 6 : 5;
 
@@ -71,10 +68,12 @@ export const DriftWallLoading: React.FC<{
               <div
                 className="drift-wall-loading__tile"
                 key={`loading-tile-${columnIndex}-${rowIndex}`}
-                style={{
-                  "--loading-tile": rowIndex,
-                  "--loading-tone": (columnIndex * 3 + rowIndex) % 6,
-                } as React.CSSProperties}
+                style={
+                  {
+                    "--loading-tile": rowIndex,
+                    "--loading-tone": (columnIndex * 3 + rowIndex) % 6,
+                  } as React.CSSProperties
+                }
               />
             ))}
           </div>
@@ -126,7 +125,7 @@ export const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
     const cardsPerBand = Math.max(
       minCardsPerBand,
       Math.ceil(posterCards.length / 2),
-      4
+      4,
     );
     return computePosterMatrix(posterCards, columnCount, cardsPerBand);
   }, [columnCount, posterCards, isMobile]);
@@ -142,7 +141,7 @@ export const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
     measureDependencies: [items],
     isStatic,
     baseAmbientSpeed: isMobile ? 16 : 22,
-    friction: 0.90,
+    friction: 0.9,
     parallaxVariance: 0.3,
     enabled: true,
   });
@@ -153,25 +152,36 @@ export const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
       className={`tilted-poster-wall${isStatic ? " is-static" : " is-ambient"}`}
       aria-label="Movies, suggestions, and places"
     >
-      <div className="tilted-poster-wall__fade tilted-poster-wall__fade--top" aria-hidden="true" />
+      <div
+        className="tilted-poster-wall__fade tilted-poster-wall__fade--top"
+        aria-hidden="true"
+      />
       <div className="tilted-poster-wall__plane">
         {columns.map((column, columnIndex) => (
           <div
             className="tilted-poster-wall__column"
             key={`poster-column-${columnIndex}`}
-            style={{ "--poster-column-index": columnIndex } as React.CSSProperties}
+            style={
+              { "--poster-column-index": columnIndex } as React.CSSProperties
+            }
           >
             <div
               className="tilted-poster-wall__track"
-              ref={(element) => { trackRefs.current[columnIndex] = element; }}
+              ref={(element) => {
+                trackRefs.current[columnIndex] = element;
+              }}
             >
               {Array.from({ length: 4 }, (_, copyIndex) => (
                 <div
                   className="tilted-poster-wall__band"
                   key={`poster-band-${columnIndex}-${copyIndex}`}
-                  ref={copyIndex === 0
-                    ? (element) => { bandRefs.current[columnIndex] = element; }
-                    : undefined}
+                  ref={
+                    copyIndex === 0
+                      ? (element) => {
+                          bandRefs.current[columnIndex] = element;
+                        }
+                      : undefined
+                  }
                 >
                   {column}
                 </div>
@@ -180,7 +190,10 @@ export const TiltedPosterWall: React.FC<TiltedPosterWallProps> = ({
           </div>
         ))}
       </div>
-      <div className="tilted-poster-wall__fade tilted-poster-wall__fade--bottom" aria-hidden="true" />
+      <div
+        className="tilted-poster-wall__fade tilted-poster-wall__fade--bottom"
+        aria-hidden="true"
+      />
     </section>
   );
 };

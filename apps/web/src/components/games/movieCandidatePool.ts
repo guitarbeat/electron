@@ -10,6 +10,8 @@ export const selectCandidateSubset = <T extends { id: string }>(
   selectedIds: ReadonlySet<string>,
 ): T[] => {
   if (selectedIds.size === 0) return candidates;
-  const selected = candidates.filter((candidate) => selectedIds.has(candidate.id));
+  const selected = candidates.filter((candidate) =>
+    selectedIds.has(candidate.id),
+  );
   return selected.length > 0 ? selected : candidates;
 };

@@ -1,8 +1,5 @@
 export type QuizCharacter =
-  | "Electra"
-  | "Aaron"
-  | "Madeleine"
-  | "Nosferatu/Smeemo";
+  "Electra" | "Aaron" | "Madeleine" | "Nosferatu/Smeemo";
 
 export const CHARACTERS: QuizCharacter[] = [
   "Aaron",
@@ -85,11 +82,7 @@ export interface QuizAnswer {
   questionId: string;
   answerIndex?: number;
   scaleValue?:
-    | "stronglyDisagree"
-    | "disagree"
-    | "neutral"
-    | "agree"
-    | "stronglyAgree";
+    "stronglyDisagree" | "disagree" | "neutral" | "agree" | "stronglyAgree";
   xyPosition?: { x: number; y: number };
 }
 
@@ -107,7 +100,8 @@ export const quizQuestions: QuizQuestion[] = [
   {
     id: "movie-night-indecision",
     type: "multiple-choice",
-    question: "The group has been scrolling for twenty minutes. What do you do?",
+    question:
+      "The group has been scrolling for twenty minutes. What do you do?",
     options: [
       {
         text: "Shortlist three great options and make the case for each",
@@ -153,7 +147,8 @@ export const quizQuestions: QuizQuestion[] = [
   {
     id: "movie-night-host",
     type: "multiple-choice",
-    question: "When you host movie night, what are you secretly responsible for?",
+    question:
+      "When you host movie night, what are you secretly responsible for?",
     options: [
       {
         text: "The thoughtful lineup and the room being exactly right",
@@ -201,11 +196,21 @@ export const quizQuestions: QuizQuestion[] = [
     type: "agree-disagree",
     question: "A perfect comfort rewatch can beat a promising new release.",
     scores: {
-      stronglyDisagree: { Aaron: 0, Electra: 0, Madeleine: 2, "Nosferatu/Smeemo": 1 },
+      stronglyDisagree: {
+        Aaron: 0,
+        Electra: 0,
+        Madeleine: 2,
+        "Nosferatu/Smeemo": 1,
+      },
       disagree: { Aaron: 0, Electra: 1, Madeleine: 2, "Nosferatu/Smeemo": 0 },
       neutral: { Aaron: 1, Electra: 1, Madeleine: 1, "Nosferatu/Smeemo": 1 },
       agree: { Aaron: 2, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 0 },
-      stronglyAgree: { Aaron: 2, Electra: 0, Madeleine: 0, "Nosferatu/Smeemo": 1 },
+      stronglyAgree: {
+        Aaron: 2,
+        Electra: 0,
+        Madeleine: 0,
+        "Nosferatu/Smeemo": 1,
+      },
     },
   },
   {
@@ -213,11 +218,21 @@ export const quizQuestions: QuizQuestion[] = [
     type: "agree-disagree",
     question: "The conversation after the credits is part of the movie night.",
     scores: {
-      stronglyDisagree: { Aaron: 0, Electra: 0, Madeleine: 1, "Nosferatu/Smeemo": 2 },
+      stronglyDisagree: {
+        Aaron: 0,
+        Electra: 0,
+        Madeleine: 1,
+        "Nosferatu/Smeemo": 2,
+      },
       disagree: { Aaron: 0, Electra: 1, Madeleine: 0, "Nosferatu/Smeemo": 2 },
       neutral: { Aaron: 1, Electra: 1, Madeleine: 1, "Nosferatu/Smeemo": 1 },
       agree: { Aaron: 1, Electra: 2, Madeleine: 1, "Nosferatu/Smeemo": 0 },
-      stronglyAgree: { Aaron: 2, Electra: 2, Madeleine: 0, "Nosferatu/Smeemo": 0 },
+      stronglyAgree: {
+        Aaron: 2,
+        Electra: 2,
+        Madeleine: 0,
+        "Nosferatu/Smeemo": 0,
+      },
     },
   },
   {
@@ -319,9 +334,7 @@ export const normalizeQuizPercentages = (
   );
 
   const bonusCharacters = new Set(
-    rankedRemainders
-      .slice(0, pointsToDistribute)
-      .map((item) => item.character),
+    rankedRemainders.slice(0, pointsToDistribute).map((item) => item.character),
   );
 
   return CHARACTERS.reduce(
@@ -517,7 +530,6 @@ export const clearSavedQuizProgress = (storageKey: string) => {
 
   try {
     window.localStorage.removeItem(storageKey);
-
   } catch {
     // Ignore localStorage cleanup errors
   }

@@ -1,11 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui";
-import { useMovies } from '@/hooks/movies';
-import { useUser, useViewport } from '@/app/providerContexts';
-import { colors, spacing } from '@/theme/tokens';
-import type { Movie } from '@/shared/types';
-const MovieDetailsModal = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MovieDetailsModal })));
+import { useMovies } from "@/hooks/movies";
+import { useUser, useViewport } from "@/app/providerContexts";
+import { colors, spacing } from "@/theme/tokens";
+import type { Movie } from "@/shared/types";
+const MovieDetailsModal = React.lazy(() =>
+  import("@/components/movies").then((m) => ({ default: m.MovieDetailsModal })),
+);
 
 import {
   getSpinCandidates,
@@ -343,12 +345,19 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             ) : null}
           </div>
           {isTv && (
-            <div style={{ textAlign: "center", marginTop: "12px", fontSize: "0.9rem", color: "#ffb703", fontWeight: 600 }}>
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "12px",
+                fontSize: "0.9rem",
+                color: "#ffb703",
+                fontWeight: 600,
+              }}
+            >
               Press SELECT / OK on remote to Spin
             </div>
           )}
         </div>
-
 
         <div className="spin-wheel-panel">
           {selectedMovie ? (

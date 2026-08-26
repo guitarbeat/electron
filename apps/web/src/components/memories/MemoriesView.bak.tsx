@@ -176,7 +176,9 @@ export const useMemoryListActions = ({
   const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
   const [draftNote, setDraftNote] = useState("");
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
-  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
+  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(
+    null,
+  );
 
   const confirmDeleteMemory = useCallback(async () => {
     if (!memoryToDelete) return;
@@ -1132,7 +1134,9 @@ export interface MemoriesViewProps {
 
 const POLLING_INTERVAL = 15_000;
 
-export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) => {
+export const MemoriesView: React.FC<MemoriesViewProps> = ({
+  onJumpToMovies,
+}) => {
   const { currentUser } = useUser();
   const { isMobile } = useViewport();
 
@@ -1168,8 +1172,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) =>
     if (activeMovieFilter === ALL_MOVIES_FILTER) return sortedMemories;
     return sortedMemories.filter(
       (m) =>
-        m.movieId === activeMovieFilter ||
-        m.movieTitle === activeMovieFilter,
+        m.movieId === activeMovieFilter || m.movieTitle === activeMovieFilter,
     );
   }, [sortedMemories, activeMovieFilter]);
 
@@ -1247,8 +1250,11 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) =>
   }, []);
 
   return (
-    <div className="workspace-container memories-container" style={{ position: "relative" }}>
-      {(isDegraded || isSyncBlocked) ? (
+    <div
+      className="workspace-container memories-container"
+      style={{ position: "relative" }}
+    >
+      {isDegraded || isSyncBlocked ? (
         <SyncBanner
           isBlocked={isSyncBlocked}
           label={syncWarning ?? undefined}

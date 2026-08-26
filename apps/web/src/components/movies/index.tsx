@@ -1,25 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { GalleryPhoto } from "@/components/ui";
-import { buildCollectionSections, compareCreatedAtDesc, compareStringsAlpha, type CollectionSections } from "@/utils/shared";
-import { getListEnterSelectionIndex, getNextListIndex } from "@/components/ui/lib/workspaceListAutocomplete";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import {
+  buildCollectionSections,
+  compareCreatedAtDesc,
+  compareStringsAlpha,
+  type CollectionSections,
+} from "@/utils/shared";
+import {
+  getListEnterSelectionIndex,
+  getNextListIndex,
+} from "@/components/ui/lib/workspaceListAutocomplete";
 
 export const MAX_MOVIE_NOTE_LENGTH = 500;
 export const MAX_RECOMMENDATION_REASON_LENGTH = 150;
@@ -94,9 +84,6 @@ export const getMovieActionState = ({
   };
 };
 
-
-
-
 export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
 export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 75;
 
@@ -149,7 +136,8 @@ export const hasStoredMovieAutocompleteFeedback = (
   return normalizedQuery === cachedQuery && (resultCount > 0 || error !== null);
 };
 
-export const getMovieAutocompleteEnterSelectionIndex = getListEnterSelectionIndex;
+export const getMovieAutocompleteEnterSelectionIndex =
+  getListEnterSelectionIndex;
 
 export const getNextMovieAutocompleteIndex = getNextListIndex;
 export type MovieBrowseLayout = "grid" | "scroll";
@@ -201,12 +189,6 @@ export const writeMovieBrowseLayout = (layout: MovieBrowseLayout): void => {
   window.localStorage.setItem(STORAGE_KEY, layout);
 };
 
-
-
-
-
-
-
 const USERS: User[] = ["Aaron", "Electra"];
 const CINEMATIC_FALLBACKS = [
   "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
@@ -216,7 +198,10 @@ const CINEMATIC_FALLBACKS = [
   "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=800&auto=format&fit=crop",
 ];
 
-export function buildGalleryPhotos(memories: SharedMemory[], movie: Movie): GalleryPhoto[] {
+export function buildGalleryPhotos(
+  memories: SharedMemory[],
+  movie: Movie,
+): GalleryPhoto[] {
   const photos = memories
     .filter((memory) => Boolean(memory.imageUrl))
     .slice(0, 5)
@@ -225,13 +210,19 @@ export function buildGalleryPhotos(memories: SharedMemory[], movie: Movie): Gall
   if (poster && poster !== "N/A" && photos.length < 3) {
     photos.push({ id: `poster-${movie.id}`, image: poster });
   }
-  for (let index = 0; photos.length < 5 && index < CINEMATIC_FALLBACKS.length; index += 1) {
+  for (
+    let index = 0;
+    photos.length < 5 && index < CINEMATIC_FALLBACKS.length;
+    index += 1
+  ) {
     photos.push({ id: `fb-${index}`, image: CINEMATIC_FALLBACKS[index] });
   }
   return photos.slice(0, 5);
 }
 
-export const clampMovieTransitionOrigin = (origin: MovieTransitionOrigin | null) =>
+export const clampMovieTransitionOrigin = (
+  origin: MovieTransitionOrigin | null,
+) =>
   origin
     ? {
         top: `${origin.top}px`,
@@ -242,8 +233,10 @@ export const clampMovieTransitionOrigin = (origin: MovieTransitionOrigin | null)
     : { top: "50dvh", left: "50vw", width: "18rem", height: "27rem" };
 
 export const getMovieDialogMetrics = (isMobile: boolean) => {
-  const viewportWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
-  const viewportHeight = typeof window === "undefined" ? 800 : window.innerHeight;
+  const viewportWidth =
+    typeof window === "undefined" ? 1280 : window.innerWidth;
+  const viewportHeight =
+    typeof window === "undefined" ? 800 : window.innerHeight;
   return {
     targetWidth: Math.min(viewportWidth - 32, isMobile ? 544 : 1440),
     targetHeight: Math.min(viewportHeight - 32, isMobile ? 768 : 900),
@@ -255,9 +248,10 @@ export const getMovieWatchStatus = (movie: Movie, memoryCount: number) => {
     return {
       label: "Seen together",
       title: "Already a shared watch",
-      detail: memoryCount > 0
-        ? "You both finished this one, and its comments are part of the story."
-        : "You both marked this watched already.",
+      detail:
+        memoryCount > 0
+          ? "You both finished this one, and its comments are part of the story."
+          : "You both marked this watched already.",
     };
   }
   if (movie.watchedBy.length === 1) {
@@ -266,21 +260,26 @@ export const getMovieWatchStatus = (movie: Movie, memoryCount: number) => {
     return {
       label: `${watcher} watched`,
       title: `${watcher} is ahead on this one`,
-      detail: remaining ? `${remaining} still has this waiting in the queue.` : "One watch logged so far.",
+      detail: remaining
+        ? `${remaining} still has this waiting in the queue.`
+        : "One watch logged so far.",
     };
   }
   return {
     label: "Still queued",
     title: "Still sitting in the lineup",
-    detail: memoryCount > 0
-      ? `${movie.addedBy} queued it, and there is already a note attached to the poster.`
-      : `${movie.addedBy} queued it for a future night.`,
+    detail:
+      memoryCount > 0
+        ? `${movie.addedBy} queued it, and there is already a note attached to the poster.`
+        : `${movie.addedBy} queued it for a future night.`,
   };
 };
 
 export const getMovieNotePreview = (note: string): string => {
   const trimmed = note.trim();
-  return trimmed.length <= 96 ? trimmed : `${trimmed.slice(0, 93).trimEnd()}...`;
+  return trimmed.length <= 96
+    ? trimmed
+    : `${trimmed.slice(0, 93).trimEnd()}...`;
 };
 
 export const getSecondaryMovieMemories = (
@@ -288,13 +287,9 @@ export const getSecondaryMovieMemories = (
   featuredId: string | undefined,
   canManage: boolean,
 ): SharedMemory[] =>
-  canManage ? [] : memories.filter((memory) => memory.id !== featuredId).slice(0, 2);
-
-
-
-
-
-
+  canManage
+    ? []
+    : memories.filter((memory) => memory.id !== featuredId).slice(0, 2);
 
 export type MovieSortOrder = "recent" | "alpha" | "rating";
 
@@ -337,7 +332,6 @@ export const buildMovieSections = (
   );
 };
 
-
 export type MediaTypeFilter = "all" | "movie" | "series";
 
 /**
@@ -347,15 +341,15 @@ export type MediaTypeFilter = "all" | "movie" | "series";
 export const isTvSeries = (movie: Partial<Movie>): boolean => {
   if (movie.mediaType === "series") return true;
   if (movie.mediaType === "movie") return false;
-  
+
   const cat = movie.category?.toLowerCase() ?? "";
   if (cat.includes("series") || cat.includes("tv")) return true;
-  
+
   const runtime = movie.runtime?.toLowerCase() ?? "";
   if (runtime.includes("season") || runtime.includes("ep")) return true;
-  
+
   if (movie.year && /\d{4}\s*[–-]\s*(\d{4})?/.test(movie.year)) return true;
-  
+
   return false;
 };
 
@@ -416,7 +410,13 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import type { Movie, SharedMemory, User, MovieSuggestion, MoviesViewProps } from "@/shared/types";
+import type {
+  Movie,
+  SharedMemory,
+  User,
+  MovieSuggestion,
+  MoviesViewProps,
+} from "@/shared/types";
 import {
   useAutocompleteFocusBoundary,
   useWorkspaceAutocompleteDismiss,
@@ -456,19 +456,39 @@ import {
   type BentoSortChipConfig,
   type SortOrder,
 } from "@/components/ui";
-import { CheckIcon, FilmIcon, MessageIcon, PlusIcon, BookmarkIcon, EditIcon, PlayIcon, StarIcon, TvIcon } from "@/common/Icons";
+import {
+  CheckIcon,
+  FilmIcon,
+  MessageIcon,
+  PlusIcon,
+  BookmarkIcon,
+  EditIcon,
+  PlayIcon,
+  StarIcon,
+  TvIcon,
+} from "@/common/Icons";
 import { useViewport, useUser, useBentoSlot } from "@/app/providerContexts";
 import { useFeatureFonts, mediaBreakpoints, useMediaQuery } from "@/hooks";
 import { colors, radius, spacing, typography } from "@/theme/tokens";
-import { formatMemoryTimestamp, MAX_MOVIE_TITLE_LENGTH, sanitizeInput, getErrorMessage, consoleError } from "@/utils";
-import { searchMovieAutocomplete, getCachedMovieAutocomplete, type MovieAutocompleteResult, fetchOmdbMetadataCached } from "@/services/metadata";
-import { MemoryComposer, MemoryList, INITIAL_VISIBLE_COUNT } from "@/components/memories/shared";
+import {
+  formatMemoryTimestamp,
+  MAX_MOVIE_TITLE_LENGTH,
+  sanitizeInput,
+  getErrorMessage,
+  consoleError,
+} from "@/utils";
+import {
+  searchMovieAutocomplete,
+  getCachedMovieAutocomplete,
+  type MovieAutocompleteResult,
+  fetchOmdbMetadataCached,
+} from "@/services/metadata";
+import {
+  MemoryComposer,
+  MemoryList,
+  INITIAL_VISIBLE_COUNT,
+} from "@/components/memories/shared";
 import { useMoviesWorkspace } from "@/hooks/movies";
-
-
-
-
-
 
 interface MoviesTopControlsProps {
   currentUser: User | null;
@@ -481,7 +501,9 @@ interface MoviesTopControlsProps {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
   selectedAutocompleteResult: MovieAutocompleteResult | null;
-  setSelectedAutocompleteResult: (value: MovieAutocompleteResult | null) => void;
+  setSelectedAutocompleteResult: (
+    value: MovieAutocompleteResult | null,
+  ) => void;
   guestName: string;
   setGuestName: (value: string) => void;
   onSubmit: () => Promise<void> | void;
@@ -503,523 +525,639 @@ export interface MoviesTopControlsHandle {
 export const MoviesTopControls = React.forwardRef<
   MoviesTopControlsHandle,
   MoviesTopControlsProps
->(({
-  currentUser,
-  searchQuery,
-  setSearchQuery,
-  selectedAutocompleteResult,
-  setSelectedAutocompleteResult,
-  guestName,
-  setGuestName,
-  onSubmit,
-  onRecommend,
-  onSubmitRecommendation,
-  onCancelRecommendation,
-  recommendationReason,
-  setRecommendationReason,
-  showRecommendationComposer,
-  isAdding,
-  isSubmittingRecommendation,
-  suggestionError,
-}, forwardedRef) => {
-  const hasSearchQuery = Boolean(searchQuery.trim());
-  const isBusy = isAdding || isSubmittingRecommendation;
-  const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
-  const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
-  const autocompleteRequestIdRef = useRef(0);
-  const dropdownInteractionPendingRef = useRef(false);
-  const autocompleteListId = useId();
-
-  const [autocompleteQuery, setAutocompleteQuery] = useState('');
-  const [autocompleteResults, setAutocompleteResults] = useState<MovieAutocompleteResult[]>([]);
-  const {
-    activeIndex: activeAutocompleteIndex,
-    setActiveIndex: setActiveAutocompleteIndex,
-    resetActiveIndex,
-    moveActiveIndex,
-    getEnterSelectionIndex,
-  } = useWorkspaceAutocompleteNavigation();
-  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
-  const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
-  const autocompleteCloseTimerRef = useRef<number | null>(null);
-  const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
-  const [autocompleteError, setAutocompleteError] = useState<string | null>(null);
-  const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] = useState(false);
-  const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<'all' | 'movie' | 'series'>('all');
-
-  const trimmedSearchQuery = searchQuery.trim();
-  const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
-  const isGuest = !currentUser;
-  const { isMobile } = useViewport();
-  const primaryActionLabel = isGuest ? 'Suggest' : 'Add';
-  const primaryActionTitle = isGuest ? 'Send title to suggestions' : 'Add title to movies';
-  const noteActionLabel = isGuest
-    ? isMobile
-      ? "Note"
-      : "Add a note"
-    : "Recommend";
-
-  const hideAutocomplete = useCallback(() => {
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteOpen(false);
-    resetActiveIndex();
-    setIsAutocompleteLoading(false);
-    setAutocompleteTypeFilter('all');
-    setIsAutocompleteMounted(false);
-  }, [resetActiveIndex]);
-
-  const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
-    useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete, {
-      shouldSkipClose: () => dropdownInteractionPendingRef.current,
-      onFocusStateChange: setIsAutocompleteRegionFocused,
-    });
-
-  const focusSearchInput = useWorkspaceSearchInputHandle(internalSearchInputRef);
-
-  useImperativeHandle(
-    forwardedRef,
-    () => ({
-      focusSearchInput,
-    }),
-    [focusSearchInput],
-  );
-
-  const openAutocomplete = useCallback(() => {
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteMounted(true);
-    setIsAutocompleteOpen(true);
-    resetActiveIndex();
-  }, [resetActiveIndex]);
-
-  const resetAutocomplete = useCallback(() => {
-    autocompleteRequestIdRef.current += 1;
-    setAutocompleteQuery('');
-    setAutocompleteResults([]);
-    resetActiveIndex();
-    setIsAutocompleteOpen(false);
-    setIsAutocompleteMounted(false);
-    setAutocompleteTypeFilter('all');
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteLoading(false);
-    setAutocompleteError(null);
-  }, [resetActiveIndex]);
-
-  const selectAutocompleteResult = useCallback(
-    (result: MovieAutocompleteResult) => {
-      setSelectedAutocompleteResult(result);
-      setSearchQuery(result.title);
-      hideAutocomplete();
+>(
+  (
+    {
+      currentUser,
+      searchQuery,
+      setSearchQuery,
+      selectedAutocompleteResult,
+      setSelectedAutocompleteResult,
+      guestName,
+      setGuestName,
+      onSubmit,
+      onRecommend,
+      onSubmitRecommendation,
+      onCancelRecommendation,
+      recommendationReason,
+      setRecommendationReason,
+      showRecommendationComposer,
+      isAdding,
+      isSubmittingRecommendation,
+      suggestionError,
     },
-    [hideAutocomplete, setSearchQuery, setSelectedAutocompleteResult]
-  );
+    forwardedRef,
+  ) => {
+    const hasSearchQuery = Boolean(searchQuery.trim());
+    const isBusy = isAdding || isSubmittingRecommendation;
+    const autocompleteRegionRef = useRef<HTMLDivElement | null>(null);
+    const internalSearchInputRef = useRef<HTMLInputElement | null>(null);
+    const autocompleteRequestIdRef = useRef(0);
+    const dropdownInteractionPendingRef = useRef(false);
+    const autocompleteListId = useId();
 
-  useWorkspaceAutocompleteDismiss(autocompleteRegionRef, () => {
-    setIsAutocompleteRegionFocused(false);
-    hideAutocomplete();
-  });
+    const [autocompleteQuery, setAutocompleteQuery] = useState("");
+    const [autocompleteResults, setAutocompleteResults] = useState<
+      MovieAutocompleteResult[]
+    >([]);
+    const {
+      activeIndex: activeAutocompleteIndex,
+      setActiveIndex: setActiveAutocompleteIndex,
+      resetActiveIndex,
+      moveActiveIndex,
+      getEnterSelectionIndex,
+    } = useWorkspaceAutocompleteNavigation();
+    const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+    const [isAutocompleteMounted, setIsAutocompleteMounted] = useState(false);
+    const autocompleteCloseTimerRef = useRef<number | null>(null);
+    const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
+    const [autocompleteError, setAutocompleteError] = useState<string | null>(
+      null,
+    );
+    const [isAutocompleteRegionFocused, setIsAutocompleteRegionFocused] =
+      useState(false);
+    const [autocompleteTypeFilter, setAutocompleteTypeFilter] = useState<
+      "all" | "movie" | "series"
+    >("all");
 
-  useEffect(() => {
-    if (!isMobile) {
-      return undefined;
-    }
+    const trimmedSearchQuery = searchQuery.trim();
+    const normalizedSearchQuery = normalizeMovieAutocompleteQuery(searchQuery);
+    const isGuest = !currentUser;
+    const { isMobile } = useViewport();
+    const primaryActionLabel = isGuest ? "Suggest" : "Add";
+    const primaryActionTitle = isGuest
+      ? "Send title to suggestions"
+      : "Add title to movies";
+    const noteActionLabel = isGuest
+      ? isMobile
+        ? "Note"
+        : "Add a note"
+      : "Recommend";
 
-    const viewport = window.visualViewport;
-    if (!viewport) {
-      return undefined;
-    }
-
-    const keepSearchVisible = () => {
-      const active = document.activeElement;
-      if (!(active instanceof HTMLElement)) {
-        return;
+    const hideAutocomplete = useCallback(() => {
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
       }
-      if (!autocompleteRegionRef.current?.contains(active)) {
-        return;
+      setIsAutocompleteOpen(false);
+      resetActiveIndex();
+      setIsAutocompleteLoading(false);
+      setAutocompleteTypeFilter("all");
+      setIsAutocompleteMounted(false);
+    }, [resetActiveIndex]);
+
+    const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
+      useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete, {
+        shouldSkipClose: () => dropdownInteractionPendingRef.current,
+        onFocusStateChange: setIsAutocompleteRegionFocused,
+      });
+
+    const focusSearchInput = useWorkspaceSearchInputHandle(
+      internalSearchInputRef,
+    );
+
+    useImperativeHandle(
+      forwardedRef,
+      () => ({
+        focusSearchInput,
+      }),
+      [focusSearchInput],
+    );
+
+    const openAutocomplete = useCallback(() => {
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
       }
+      setIsAutocompleteMounted(true);
+      setIsAutocompleteOpen(true);
+      resetActiveIndex();
+    }, [resetActiveIndex]);
 
-      const panel = autocompleteRegionRef.current.closest(
-        ".workspace-search__search-form",
-      );
-      if (!panel) {
-        return;
+    const resetAutocomplete = useCallback(() => {
+      autocompleteRequestIdRef.current += 1;
+      setAutocompleteQuery("");
+      setAutocompleteResults([]);
+      resetActiveIndex();
+      setIsAutocompleteOpen(false);
+      setIsAutocompleteMounted(false);
+      setAutocompleteTypeFilter("all");
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
       }
-
-      const panelRect = panel.getBoundingClientRect();
-      const viewportBottom = viewport.offsetTop + viewport.height;
-      if (panelRect.bottom > viewportBottom - 8) {
-        panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      }
-    };
-
-    viewport.addEventListener("resize", keepSearchVisible);
-    viewport.addEventListener("scroll", keepSearchVisible);
-    return () => {
-      viewport.removeEventListener("resize", keepSearchVisible);
-      viewport.removeEventListener("scroll", keepSearchVisible);
-    };
-  }, [isMobile]);
-
-  useEffect(() => () => {
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isAutocompleteRegionFocused) {
-      hideAutocomplete();
-      return;
-    }
-    if (normalizedSearchQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
-      resetAutocomplete();
-      return;
-    }
-    if (!shouldFetchMovieAutocomplete(trimmedSearchQuery, selectedAutocompleteResult)) return;
-
-    const abortController = new AbortController();
-    const requestId = autocompleteRequestIdRef.current + 1;
-    autocompleteRequestIdRef.current = requestId;
-    setAutocompleteQuery(normalizedSearchQuery);
-    resetActiveIndex();
-    if (autocompleteCloseTimerRef.current !== null) {
-      window.clearTimeout(autocompleteCloseTimerRef.current);
-      autocompleteCloseTimerRef.current = null;
-    }
-    setIsAutocompleteMounted(true);
-    setIsAutocompleteOpen(true);
-
-    const cachedResults = getCachedMovieAutocomplete(trimmedSearchQuery);
-    if (cachedResults) {
-      setAutocompleteResults(cachedResults);
       setIsAutocompleteLoading(false);
       setAutocompleteError(null);
-    } else {
-      setIsAutocompleteLoading(true);
-      setAutocompleteError(null);
-    }
+    }, [resetActiveIndex]);
 
-    const timeoutId = window.setTimeout(async () => {
-      try {
-        const nextResults = await searchMovieAutocomplete(trimmedSearchQuery, {
-          signal: abortController.signal,
+    const selectAutocompleteResult = useCallback(
+      (result: MovieAutocompleteResult) => {
+        setSelectedAutocompleteResult(result);
+        setSearchQuery(result.title);
+        hideAutocomplete();
+        window.requestAnimationFrame(() => {
+          void onSubmit();
         });
-        if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) return;
-        setAutocompleteQuery(normalizedSearchQuery);
-        setAutocompleteResults(nextResults);
-        resetActiveIndex();
-      } catch (error) {
-        if (autocompleteRequestIdRef.current !== requestId || abortController.signal.aborted) return;
-        setAutocompleteQuery(normalizedSearchQuery);
-        setAutocompleteResults([]);
-        resetActiveIndex();
-        setAutocompleteError(
-          error instanceof Error && error.message
-            ? error.message
-            : 'Movie suggestions are unavailable right now.'
-        );
-      } finally {
-        if (autocompleteRequestIdRef.current === requestId && !abortController.signal.aborted) {
-          setIsAutocompleteLoading(false);
-        }
+      },
+      [
+        hideAutocomplete,
+        onSubmit,
+        setSearchQuery,
+        setSelectedAutocompleteResult,
+      ],
+    );
+
+    useWorkspaceAutocompleteDismiss(autocompleteRegionRef, () => {
+      setIsAutocompleteRegionFocused(false);
+      hideAutocomplete();
+    });
+
+    useEffect(() => {
+      if (!isMobile) {
+        return undefined;
       }
-    }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      abortController.abort();
-    };
-  }, [
-    hideAutocomplete,
-    isAutocompleteRegionFocused,
-    normalizedSearchQuery,
-    resetAutocomplete,
-    resetActiveIndex,
-    selectedAutocompleteResult,
-    trimmedSearchQuery,
-  ]);
+      const viewport = window.visualViewport;
+      if (!viewport) {
+        return undefined;
+      }
 
-  const hasAutocompleteFeedback = useMemo(
-    () =>
-      isAutocompleteLoading ||
-      hasStoredMovieAutocompleteFeedback(
-        trimmedSearchQuery,
+      const keepSearchVisible = () => {
+        const active = document.activeElement;
+        if (!(active instanceof HTMLElement)) {
+          return;
+        }
+        if (!autocompleteRegionRef.current?.contains(active)) {
+          return;
+        }
+
+        const panel = autocompleteRegionRef.current.closest(
+          ".workspace-search__search-form",
+        );
+        if (!panel) {
+          return;
+        }
+
+        const panelRect = panel.getBoundingClientRect();
+        const viewportBottom = viewport.offsetTop + viewport.height;
+        if (panelRect.bottom > viewportBottom - 8) {
+          panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      };
+
+      viewport.addEventListener("resize", keepSearchVisible);
+      viewport.addEventListener("scroll", keepSearchVisible);
+      return () => {
+        viewport.removeEventListener("resize", keepSearchVisible);
+        viewport.removeEventListener("scroll", keepSearchVisible);
+      };
+    }, [isMobile]);
+
+    useEffect(
+      () => () => {
+        if (autocompleteCloseTimerRef.current !== null) {
+          window.clearTimeout(autocompleteCloseTimerRef.current);
+        }
+      },
+      [],
+    );
+
+    useEffect(() => {
+      if (!isAutocompleteRegionFocused) {
+        hideAutocomplete();
+        return;
+      }
+      if (normalizedSearchQuery.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
+        resetAutocomplete();
+        return;
+      }
+      if (
+        !shouldFetchMovieAutocomplete(
+          trimmedSearchQuery,
+          selectedAutocompleteResult,
+        )
+      )
+        return;
+
+      const abortController = new AbortController();
+      const requestId = autocompleteRequestIdRef.current + 1;
+      autocompleteRequestIdRef.current = requestId;
+      setAutocompleteQuery(normalizedSearchQuery);
+      resetActiveIndex();
+      if (autocompleteCloseTimerRef.current !== null) {
+        window.clearTimeout(autocompleteCloseTimerRef.current);
+        autocompleteCloseTimerRef.current = null;
+      }
+      setIsAutocompleteMounted(true);
+      setIsAutocompleteOpen(true);
+
+      const cachedResults = getCachedMovieAutocomplete(trimmedSearchQuery);
+      if (cachedResults) {
+        setAutocompleteResults(cachedResults);
+        setIsAutocompleteLoading(false);
+        setAutocompleteError(null);
+      } else {
+        setIsAutocompleteLoading(true);
+        setAutocompleteError(null);
+      }
+
+      const timeoutId = window.setTimeout(async () => {
+        try {
+          const nextResults = await searchMovieAutocomplete(
+            trimmedSearchQuery,
+            {
+              signal: abortController.signal,
+            },
+          );
+          if (
+            autocompleteRequestIdRef.current !== requestId ||
+            abortController.signal.aborted
+          )
+            return;
+          setAutocompleteQuery(normalizedSearchQuery);
+          setAutocompleteResults(nextResults);
+          resetActiveIndex();
+        } catch (error) {
+          if (
+            autocompleteRequestIdRef.current !== requestId ||
+            abortController.signal.aborted
+          )
+            return;
+          setAutocompleteQuery(normalizedSearchQuery);
+          setAutocompleteResults([]);
+          resetActiveIndex();
+          setAutocompleteError(
+            error instanceof Error && error.message
+              ? error.message
+              : "Movie suggestions are unavailable right now.",
+          );
+        } finally {
+          if (
+            autocompleteRequestIdRef.current === requestId &&
+            !abortController.signal.aborted
+          ) {
+            setIsAutocompleteLoading(false);
+          }
+        }
+      }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+        abortController.abort();
+      };
+    }, [
+      hideAutocomplete,
+      isAutocompleteRegionFocused,
+      normalizedSearchQuery,
+      resetAutocomplete,
+      resetActiveIndex,
+      selectedAutocompleteResult,
+      trimmedSearchQuery,
+    ]);
+
+    const hasAutocompleteFeedback = useMemo(
+      () =>
+        isAutocompleteLoading ||
+        hasStoredMovieAutocompleteFeedback(
+          trimmedSearchQuery,
+          autocompleteQuery,
+          autocompleteResults.length,
+          autocompleteError,
+        ),
+      [
+        autocompleteError,
         autocompleteQuery,
         autocompleteResults.length,
-        autocompleteError,
-      ),
-    [autocompleteError, autocompleteQuery, autocompleteResults.length, isAutocompleteLoading, trimmedSearchQuery]
-  );
-  const isAutocompleteElevated = isAutocompleteMounted && hasAutocompleteFeedback;
+        isAutocompleteLoading,
+        trimmedSearchQuery,
+      ],
+    );
+    const isAutocompleteElevated =
+      isAutocompleteMounted && hasAutocompleteFeedback;
 
-  const categoryCounts = useMemo(() => {
-    let movieCount = 0;
-    let seriesCount = 0;
-    for (let i = 0; i < autocompleteResults.length; i++) {
-      const type = autocompleteResults[i].type;
-      if (type === 'movie') movieCount++;
-      else if (type === 'series') seriesCount++;
-    }
-    return { all: autocompleteResults.length, movie: movieCount, series: seriesCount };
-  }, [autocompleteResults]);
+    const categoryCounts = useMemo(() => {
+      let movieCount = 0;
+      let seriesCount = 0;
+      for (let i = 0; i < autocompleteResults.length; i++) {
+        const type = autocompleteResults[i].type;
+        if (type === "movie") movieCount++;
+        else if (type === "series") seriesCount++;
+      }
+      return {
+        all: autocompleteResults.length,
+        movie: movieCount,
+        series: seriesCount,
+      };
+    }, [autocompleteResults]);
 
-  const filteredAutocompleteResults = useMemo(
-    () =>
-      autocompleteTypeFilter === 'all'
-        ? autocompleteResults
-        : autocompleteResults.filter((result) => result.type === autocompleteTypeFilter),
-    [autocompleteResults, autocompleteTypeFilter]
-  );
+    const filteredAutocompleteResults = useMemo(
+      () =>
+        autocompleteTypeFilter === "all"
+          ? autocompleteResults
+          : autocompleteResults.filter(
+              (result) => result.type === autocompleteTypeFilter,
+            ),
+      [autocompleteResults, autocompleteTypeFilter],
+    );
 
-  useEffect(() => {
-    setActiveAutocompleteIndex((currentIndex) => {
-      if (filteredAutocompleteResults.length === 0) return -1;
-      return currentIndex >= 0 && currentIndex < filteredAutocompleteResults.length ? currentIndex : -1;
-    });
-  }, [filteredAutocompleteResults.length, setActiveAutocompleteIndex]);
+    useEffect(() => {
+      setActiveAutocompleteIndex((currentIndex) => {
+        if (filteredAutocompleteResults.length === 0) return -1;
+        return currentIndex >= 0 &&
+          currentIndex < filteredAutocompleteResults.length
+          ? currentIndex
+          : -1;
+      });
+    }, [filteredAutocompleteResults.length, setActiveAutocompleteIndex]);
 
-  const handleFormSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      if (isBusy) return;
-      clearFocusBoundaryCheck();
-      hideAutocomplete();
-      internalSearchInputRef.current?.blur();
-      void onSubmit();
-    },
-    [clearFocusBoundaryCheck, hideAutocomplete, isBusy, onSubmit],
-  );
+    const handleFormSubmit = useCallback(
+      (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (isBusy) return;
+        clearFocusBoundaryCheck();
+        hideAutocomplete();
+        internalSearchInputRef.current?.blur();
+        void onSubmit();
+      },
+      [clearFocusBoundaryCheck, hideAutocomplete, isBusy, onSubmit],
+    );
 
-  return (
-    <>
-      <WorkspaceSearchShell
-        isAutocompleteActive={isAutocompleteElevated}
-        onSubmit={handleFormSubmit}
-        icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
-        shellRef={autocompleteRegionRef}
-        onShellFocusCapture={() => {
-          onFocusCapture();
-        }}
-        onShellBlurCapture={onBlurCapture}
-        error={suggestionError && !showRecommendationComposer ? suggestionError : null}
-        input={
-          <WorkspaceSearchField
-            inputRef={internalSearchInputRef}
-            value={searchQuery}
-            onChange={(nextValue: string) => {
-              setSearchQuery(nextValue);
-              if (shouldClearSelectedMovieResult(nextValue, selectedAutocompleteResult)) {
-                setSelectedAutocompleteResult(null);
-              }
-            }}
-            onFocus={() => {
-              setIsAutocompleteRegionFocused(true);
-              if (hasAutocompleteFeedback) openAutocomplete();
-            }}
-            onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
-              if (event.nativeEvent.isComposing) return;
-
-              if (event.key === 'ArrowDown') {
-                if (filteredAutocompleteResults.length === 0) return;
-                event.preventDefault();
-                setIsAutocompleteOpen(true);
-                moveActiveIndex('next', filteredAutocompleteResults.length);
-                return;
-              }
-              if (event.key === 'ArrowUp') {
-                if (filteredAutocompleteResults.length === 0) return;
-                event.preventDefault();
-                setIsAutocompleteOpen(true);
-                moveActiveIndex('previous', filteredAutocompleteResults.length);
-                return;
-              }
-              if (event.key === 'Escape') {
-                if (isAutocompleteOpen) { event.preventDefault(); hideAutocomplete(); }
-                return;
-              }
-              if (event.key === 'Enter' && isAutocompleteOpen) {
-                const selectedIndex = getEnterSelectionIndex(filteredAutocompleteResults.length);
-                if (selectedIndex < 0 || !filteredAutocompleteResults[selectedIndex]) return;
-                event.preventDefault();
-                selectAutocompleteResult(filteredAutocompleteResults[selectedIndex]);
-                return;
-              }
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                clearFocusBoundaryCheck();
-                hideAutocomplete();
-                internalSearchInputRef.current?.blur();
-                void onSubmit();
-              }
-            }}
-            placeholder="What's on tonight? Search a movie or show to add."
-            ariaLabel="Search movies and shows to add"
-            combobox={{
-              expanded: isAutocompleteOpen,
-              controlsId: autocompleteListId,
-              activeDescendantId:
-                isAutocompleteOpen && activeAutocompleteIndex >= 0
-                  ? `${autocompleteListId}-option-${activeAutocompleteIndex}`
-                  : undefined,
-            }}
-            onClear={() => {
-              setSearchQuery("");
-              setSelectedAutocompleteResult(null);
-              resetAutocomplete();
-              internalSearchInputRef.current?.focus();
-            }}
-          />
-        }
-        autocomplete={
-          isAutocompleteMounted && hasAutocompleteFeedback ? (
-            <WorkspaceAutocompletePanel
-              id={autocompleteListId}
-              isOpen={isAutocompleteOpen}
-              ariaLabel="Movie and show suggestions"
-              onPointerDown={() => {
-                dropdownInteractionPendingRef.current = true;
-                window.setTimeout(() => {
-                  dropdownInteractionPendingRef.current = false;
-                }, 300);
-              }}
+    return (
+      <>
+        <WorkspaceSearchShell
+          isAutocompleteActive={isAutocompleteElevated}
+          onSubmit={handleFormSubmit}
+          icon={
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              {isAutocompleteLoading ? <WorkspaceAutocompleteLoading /> : null}
-              {!isAutocompleteLoading && autocompleteResults.length > 0 && (
-                <div className="workspace-search__autocomplete-filters">
-                  <MagicToggle
-                    options={(
-                      [
-                        { value: 'all', label: 'All' },
-                        { value: 'movie', label: 'Movies' },
-                        { value: 'series', label: 'TV Series' },
-                      ] as const
-                    ).map(({ value, label }) => {
-                      const count = categoryCounts[value];
-                      const isDisabled = count === 0 && value !== 'all';
-                      return {
-                        value,
-                        label: (
-                          <span className="workspace-search__autocomplete-filter-label">
-                            {label}
-                            <span className="workspace-search__autocomplete-filter-count">
-                              {count}
-                            </span>
-                          </span>
-                        ),
-                        disabled: isDisabled,
-                      };
-                    })}
-                    activeValue={autocompleteTypeFilter}
-                    onChange={(v) => setAutocompleteTypeFilter(v as 'all' | 'movie' | 'series')}
-                    ariaLabel="Filter by type"
-                  />
-                </div>
-              )}
-              {autocompleteError ? (
-                <WorkspaceAutocompleteStatus role="alert">
-                  {autocompleteError}
-                </WorkspaceAutocompleteStatus>
-              ) : autocompleteResults.length > 0 ? (() => {
-                if (filteredAutocompleteResults.length === 0) {
-                  return (
-                    <WorkspaceAutocompleteStatus>
-                      No {autocompleteTypeFilter === 'series' ? 'TV series' : 'movies'} found
-                    </WorkspaceAutocompleteStatus>
-                  );
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          }
+          shellRef={autocompleteRegionRef}
+          onShellFocusCapture={() => {
+            onFocusCapture();
+          }}
+          onShellBlurCapture={onBlurCapture}
+          error={
+            suggestionError && !showRecommendationComposer
+              ? suggestionError
+              : null
+          }
+          input={
+            <WorkspaceSearchField
+              inputRef={internalSearchInputRef}
+              value={searchQuery}
+              onChange={(nextValue: string) => {
+                setSearchQuery(nextValue);
+                if (
+                  shouldClearSelectedMovieResult(
+                    nextValue,
+                    selectedAutocompleteResult,
+                  )
+                ) {
+                  setSelectedAutocompleteResult(null);
                 }
-                return filteredAutocompleteResults.map((result, index) => (
-                  <WorkspaceAutocompleteOption
-                    key={result.imdbID ?? `${result.title}-${index}`}
-                    id={`${autocompleteListId}-option-${index}`}
-                    isActive={index === activeAutocompleteIndex}
-                    onSelect={() => selectAutocompleteResult(result)}
-                    onHover={() => setActiveAutocompleteIndex(index)}
-                  >
-                    <WorkspaceAutocompletePoster
-                      src={result.poster}
-                      fallbackLetter={result.title.charAt(0).toUpperCase()}
-                    />
-                    <WorkspaceAutocompleteCopy
-                      title={result.title}
-                      meta={`${result.type === "series" ? "TV series" : "Movie"}${result.year ? ` • ${result.year}` : ""}`}
-                    />
-                  </WorkspaceAutocompleteOption>
-                ));
-              })() : !isAutocompleteLoading ? (
-                <WorkspaceAutocompleteStatus>
-                  No titles found for &quot;{trimmedSearchQuery}&quot;
-                </WorkspaceAutocompleteStatus>
-              ) : null}
-            </WorkspaceAutocompletePanel>
-          ) : null
-        }
-        actions={
-          hasSearchQuery ? (
-            <WorkspaceSearchActions>
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                isLoading={isAdding}
-                loadingText={isGuest ? 'Suggesting' : 'Adding'}
-                disabled={isBusy}
-                title={primaryActionTitle}
-                aria-label={primaryActionTitle}
-                className="workspace-search__search-button"
-              >
-                {primaryActionLabel}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="md"
-                onClick={() => {
+              }}
+              onFocus={() => {
+                setIsAutocompleteRegionFocused(true);
+                if (hasAutocompleteFeedback) openAutocomplete();
+              }}
+              onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                if (event.nativeEvent.isComposing) return;
+
+                if (event.key === "ArrowDown") {
+                  if (filteredAutocompleteResults.length === 0) return;
+                  event.preventDefault();
+                  setIsAutocompleteOpen(true);
+                  moveActiveIndex("next", filteredAutocompleteResults.length);
+                  return;
+                }
+                if (event.key === "ArrowUp") {
+                  if (filteredAutocompleteResults.length === 0) return;
+                  event.preventDefault();
+                  setIsAutocompleteOpen(true);
+                  moveActiveIndex(
+                    "previous",
+                    filteredAutocompleteResults.length,
+                  );
+                  return;
+                }
+                if (event.key === "Escape") {
+                  if (isAutocompleteOpen) {
+                    event.preventDefault();
+                    hideAutocomplete();
+                  }
+                  return;
+                }
+                if (event.key === "Enter" && isAutocompleteOpen) {
+                  const selectedIndex = getEnterSelectionIndex(
+                    filteredAutocompleteResults.length,
+                  );
+                  if (
+                    selectedIndex < 0 ||
+                    !filteredAutocompleteResults[selectedIndex]
+                  )
+                    return;
+                  event.preventDefault();
+                  selectAutocompleteResult(
+                    filteredAutocompleteResults[selectedIndex],
+                  );
+                  return;
+                }
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  clearFocusBoundaryCheck();
                   hideAutocomplete();
-                  onRecommend();
+                  internalSearchInputRef.current?.blur();
+                  void onSubmit();
+                }
+              }}
+              placeholder="What's on tonight? Search a movie or show to add."
+              ariaLabel="Search movies and shows to add"
+              combobox={{
+                expanded: isAutocompleteOpen,
+                controlsId: autocompleteListId,
+                activeDescendantId:
+                  isAutocompleteOpen && activeAutocompleteIndex >= 0
+                    ? `${autocompleteListId}-option-${activeAutocompleteIndex}`
+                    : undefined,
+              }}
+              onClear={() => {
+                setSearchQuery("");
+                setSelectedAutocompleteResult(null);
+                resetAutocomplete();
+                internalSearchInputRef.current?.focus();
+              }}
+            />
+          }
+          autocomplete={
+            isAutocompleteMounted && hasAutocompleteFeedback ? (
+              <WorkspaceAutocompletePanel
+                id={autocompleteListId}
+                isOpen={isAutocompleteOpen}
+                ariaLabel="Movie and show suggestions"
+                onPointerDown={() => {
+                  dropdownInteractionPendingRef.current = true;
+                  window.setTimeout(() => {
+                    dropdownInteractionPendingRef.current = false;
+                  }, 300);
                 }}
-                disabled={isBusy}
-                title={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
-                aria-label={isGuest ? 'Add a note for this suggestion' : 'Recommend movie'}
-                leftIcon={<PlusIcon />}
               >
-                {noteActionLabel}
-              </Button>
-            </WorkspaceSearchActions>
-          ) : null
-        }
-      />
-
-      {showRecommendationComposer && hasSearchQuery && (
-        <MovieRecommendationComposer
-          currentUser={currentUser}
-          movieTitle={searchQuery.trim()}
-          guestName={guestName}
-          reason={recommendationReason}
-          error={suggestionError}
-          isSubmitting={isSubmittingRecommendation}
-          onGuestNameChange={setGuestName}
-          onReasonChange={setRecommendationReason}
-          onSubmit={onSubmitRecommendation}
-          onCancel={onCancelRecommendation}
+                {isAutocompleteLoading ? (
+                  <WorkspaceAutocompleteLoading />
+                ) : null}
+                {!isAutocompleteLoading && autocompleteResults.length > 0 && (
+                  <div className="workspace-search__autocomplete-filters">
+                    <MagicToggle
+                      options={(
+                        [
+                          { value: "all", label: "All" },
+                          { value: "movie", label: "Movies" },
+                          { value: "series", label: "TV Series" },
+                        ] as const
+                      ).map(({ value, label }) => {
+                        const count = categoryCounts[value];
+                        const isDisabled = count === 0 && value !== "all";
+                        return {
+                          value,
+                          label: (
+                            <span className="workspace-search__autocomplete-filter-label">
+                              {label}
+                              <span className="workspace-search__autocomplete-filter-count">
+                                {count}
+                              </span>
+                            </span>
+                          ),
+                          disabled: isDisabled,
+                        };
+                      })}
+                      activeValue={autocompleteTypeFilter}
+                      onChange={(v) =>
+                        setAutocompleteTypeFilter(
+                          v as "all" | "movie" | "series",
+                        )
+                      }
+                      ariaLabel="Filter by type"
+                    />
+                  </div>
+                )}
+                {autocompleteError ? (
+                  <WorkspaceAutocompleteStatus role="alert">
+                    {autocompleteError}
+                  </WorkspaceAutocompleteStatus>
+                ) : autocompleteResults.length > 0 ? (
+                  (() => {
+                    if (filteredAutocompleteResults.length === 0) {
+                      return (
+                        <WorkspaceAutocompleteStatus>
+                          No{" "}
+                          {autocompleteTypeFilter === "series"
+                            ? "TV series"
+                            : "movies"}{" "}
+                          found
+                        </WorkspaceAutocompleteStatus>
+                      );
+                    }
+                    return filteredAutocompleteResults.map((result, index) => (
+                      <WorkspaceAutocompleteOption
+                        key={result.imdbID ?? `${result.title}-${index}`}
+                        id={`${autocompleteListId}-option-${index}`}
+                        isActive={index === activeAutocompleteIndex}
+                        onSelect={() => selectAutocompleteResult(result)}
+                        onHover={() => setActiveAutocompleteIndex(index)}
+                      >
+                        <WorkspaceAutocompletePoster
+                          src={result.poster}
+                          fallbackLetter={result.title.charAt(0).toUpperCase()}
+                        />
+                        <WorkspaceAutocompleteCopy
+                          title={result.title}
+                          meta={`${result.type === "series" ? "TV series" : "Movie"}${result.year ? ` • ${result.year}` : ""}`}
+                        />
+                      </WorkspaceAutocompleteOption>
+                    ));
+                  })()
+                ) : !isAutocompleteLoading ? (
+                  <WorkspaceAutocompleteStatus>
+                    No titles found for &quot;{trimmedSearchQuery}&quot;
+                  </WorkspaceAutocompleteStatus>
+                ) : null}
+              </WorkspaceAutocompletePanel>
+            ) : null
+          }
+          actions={
+            hasSearchQuery ? (
+              <WorkspaceSearchActions>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  isLoading={isAdding}
+                  loadingText={isGuest ? "Suggesting" : "Adding"}
+                  disabled={isBusy}
+                  title={primaryActionTitle}
+                  aria-label={primaryActionTitle}
+                  className="workspace-search__search-button"
+                >
+                  {primaryActionLabel}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="md"
+                  onClick={() => {
+                    hideAutocomplete();
+                    onRecommend();
+                  }}
+                  disabled={isBusy}
+                  title={
+                    isGuest
+                      ? "Add a note for this suggestion"
+                      : "Recommend movie"
+                  }
+                  aria-label={
+                    isGuest
+                      ? "Add a note for this suggestion"
+                      : "Recommend movie"
+                  }
+                  leftIcon={<PlusIcon />}
+                >
+                  {noteActionLabel}
+                </Button>
+              </WorkspaceSearchActions>
+            ) : null
+          }
         />
-      )}
 
-    </>
-  );
-});
+        {showRecommendationComposer && hasSearchQuery && (
+          <MovieRecommendationComposer
+            currentUser={currentUser}
+            movieTitle={searchQuery.trim()}
+            guestName={guestName}
+            reason={recommendationReason}
+            error={suggestionError}
+            isSubmitting={isSubmittingRecommendation}
+            onGuestNameChange={setGuestName}
+            onReasonChange={setRecommendationReason}
+            onSubmit={onSubmitRecommendation}
+            onCancel={onCancelRecommendation}
+          />
+        )}
+      </>
+    );
+  },
+);
 
-MoviesTopControls.displayName = 'MoviesTopControls';
-
-
-
+MoviesTopControls.displayName = "MoviesTopControls";
 
 export const MOVIE_SECTION_IDS = {
   incoming: "movies-section-incoming",
@@ -1206,11 +1344,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
       resetRecommendationComposer();
       setSelectedAutocompleteResult(null);
     }
-  }, [
-    resetRecommendationComposer,
-    searchQuery,
-    setSelectedAutocompleteResult,
-  ]);
+  }, [resetRecommendationComposer, searchQuery, setSelectedAutocompleteResult]);
 
   return (
     <section className="library-movies" aria-label="Movies and places">
@@ -1221,7 +1355,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           </span>
         </span>
       </h2>
-      
+
       <div className="watchlist-container places-container">
         {isMoviesWorkspaceDegraded && (
           <SyncBanner
@@ -1275,8 +1409,6 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   );
 };
 
-
-
 /* -------------------------------------------------------------------------- */
 /* Sub-component: PosterHero                                                   */
 /* -------------------------------------------------------------------------- */
@@ -1297,14 +1429,15 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   onPosterError,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
-  
 
-  const shouldShowPoster =
-    Boolean(resolvedPosterUrl) && !hasPosterError;
+  const shouldShowPoster = Boolean(resolvedPosterUrl) && !hasPosterError;
   const activePosterUrl = resolvedPosterUrl;
 
   return (
-    <figure className="movie-details-modal__poster-shell" aria-label={`Poster for ${movie.title}`}>
+    <figure
+      className="movie-details-modal__poster-shell"
+      aria-label={`Poster for ${movie.title}`}
+    >
       {shouldShowPoster ? (
         <>
           <img
@@ -1327,21 +1460,35 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         </>
       ) : (
         <div className="movie-details-modal__poster movie-details-modal__poster--fallback">
-          <FilmIcon size={32} style={{ opacity: 0.4, marginBottom: "0.5rem" }} />
+          <FilmIcon
+            size={32}
+            style={{ opacity: 0.4, marginBottom: "0.5rem" }}
+          />
           <span>No Poster Available</span>
         </div>
       )}
-      <div className="movie-details-modal__poster-gradient" aria-hidden="true" />
+      <div
+        className="movie-details-modal__poster-gradient"
+        aria-hidden="true"
+      />
 
       {/* Badges Overlay */}
       <div className="movie-details-modal__poster-badges" role="status">
-        <span className={`movie-details-modal__poster-pill ${movie.watchedBy.length > 0 ? "movie-details-modal__poster-pill--status" : ""}`}>
-          {movie.watchedBy.length > 0 && <CheckIcon size={12} style={{ marginRight: "0.25rem" }} />}
+        <span
+          className={`movie-details-modal__poster-pill ${movie.watchedBy.length > 0 ? "movie-details-modal__poster-pill--status" : ""}`}
+        >
+          {movie.watchedBy.length > 0 && (
+            <CheckIcon size={12} style={{ marginRight: "0.25rem" }} />
+          )}
           {watchStatusLabel}
         </span>
         {movie.imdbRating && movie.imdbRating !== "N/A" && (
           <span className="movie-details-modal__poster-pill movie-details-modal__poster-pill--rating">
-            <StarIcon size={11} fill style={{ color: "#fbbf24", marginRight: "0.2rem" }} />
+            <StarIcon
+              size={11}
+              fill
+              style={{ color: "#fbbf24", marginRight: "0.2rem" }}
+            />
             {movie.imdbRating}
           </span>
         )}
@@ -1401,7 +1548,11 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
       {/* Clean Eyebrow Category */}
       <div className="movie-details-modal__eyebrow">
         <span className="movie-details-modal__type-badge">
-          {isSeries ? <TvIcon size={12} style={{ marginRight: "0.3rem" }} /> : <FilmIcon size={12} style={{ marginRight: "0.3rem" }} />}
+          {isSeries ? (
+            <TvIcon size={12} style={{ marginRight: "0.3rem" }} />
+          ) : (
+            <FilmIcon size={12} style={{ marginRight: "0.3rem" }} />
+          )}
           {isSeries ? "TV SERIES" : "FEATURE FILM"}
         </span>
         {movie.category && movie.category !== "TV Series" && (
@@ -1419,15 +1570,30 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
 
       {/* Clean Specs Fact Pills */}
       {metadataItems.length > 0 && (
-        <div className="movie-details-modal__fact-row" role="list" aria-label="Movie specs">
+        <div
+          className="movie-details-modal__fact-row"
+          role="list"
+          aria-label="Movie specs"
+        >
           {metadataItems.map((item) => (
-            <span key={item} className="movie-details-modal__fact-pill" role="listitem">
+            <span
+              key={item}
+              className="movie-details-modal__fact-pill"
+              role="listitem"
+            >
               {item}
             </span>
           ))}
           {movie.imdbRating && movie.imdbRating !== "N/A" && (
-            <span className="movie-details-modal__fact-pill movie-details-modal__fact-pill--imdb" role="listitem">
-              <StarIcon size={12} fill style={{ color: "#fbbf24", marginRight: "0.25rem" }} />
+            <span
+              className="movie-details-modal__fact-pill movie-details-modal__fact-pill--imdb"
+              role="listitem"
+            >
+              <StarIcon
+                size={12}
+                fill
+                style={{ color: "#fbbf24", marginRight: "0.25rem" }}
+              />
               {movie.imdbRating} IMDb
             </span>
           )}
@@ -1435,7 +1601,11 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
       )}
 
       {/* Primary Action Buttons */}
-      <div className="movie-details-modal__actions" role="toolbar" aria-label="Movie actions">
+      <div
+        className="movie-details-modal__actions"
+        role="toolbar"
+        aria-label="Movie actions"
+      >
         <StremioButton movie={movie} variant="full" />
         {onToggleWatched && (
           <CardActionButton
@@ -1486,11 +1656,17 @@ export const SummaryBand: React.FC<SummaryBandProps> = ({
   watchStatusLabel,
   memoriesCount,
 }) => (
-  <div className="movie-details-modal__summary-band" role="region" aria-label="Movie details summary">
+  <div
+    className="movie-details-modal__summary-band"
+    role="region"
+    aria-label="Movie details summary"
+  >
     <div className="movie-details-modal__summary-item">
       <span className="movie-details-modal__meta-label">Queued By</span>
       <span className="movie-details-modal__summary-value">{addedBy}</span>
-      <span className="movie-details-modal__summary-sub">{formatMemoryTimestamp(movie.createdAt)}</span>
+      <span className="movie-details-modal__summary-sub">
+        {formatMemoryTimestamp(movie.createdAt)}
+      </span>
     </div>
     <div className="movie-details-modal__summary-item">
       <span className="movie-details-modal__meta-label">Watch Status</span>
@@ -1542,7 +1718,9 @@ interface NotesAndMemoriesSectionProps {
   onAddMemory?: (note: string) => Promise<void>;
 }
 
-export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = ({
+export const NotesAndMemoriesSection: React.FC<
+  NotesAndMemoriesSectionProps
+> = ({
   movie,
   memories,
   currentUser,
@@ -1575,9 +1753,16 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
   );
 
   return (
-    <section ref={notesSectionRef} className="movie-details-modal__section" aria-labelledby="poster-comments-heading">
+    <section
+      ref={notesSectionRef}
+      className="movie-details-modal__section"
+      aria-labelledby="poster-comments-heading"
+    >
       <div className="movie-details-modal__section-head">
-        <h3 id="poster-comments-heading" className="movie-details-modal__section-label">
+        <h3
+          id="poster-comments-heading"
+          className="movie-details-modal__section-label"
+        >
           Shared Notes & Memories
         </h3>
         {memories.length > 0 && (
@@ -1644,7 +1829,8 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
           </div>
         ) : (
           <div className="movie-details-modal__memory-empty">
-            No notes on this title yet. Share what you thought or why you added it.
+            No notes on this title yet. Share what you thought or why you added
+            it.
           </div>
         )
       ) : featuredMemory ? (
@@ -1671,7 +1857,10 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
           {secondaryMemories.length > 0 && (
             <div className="movie-details-modal__memory-list">
               {secondaryMemories.map((memory) => (
-                <div key={memory.id} className="movie-details-modal__memory-row">
+                <div
+                  key={memory.id}
+                  className="movie-details-modal__memory-row"
+                >
                   <div className="movie-details-modal__memory-row-copy">
                     <span className="movie-details-modal__memory-row-author">
                       {memory.author}
@@ -1695,7 +1884,8 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
         </>
       ) : (
         <div className="movie-details-modal__memory-empty">
-          No notes on this title yet. Share what you thought or why you added it.
+          No notes on this title yet. Share what you thought or why you added
+          it.
         </div>
       )}
     </section>
@@ -1703,11 +1893,6 @@ export const NotesAndMemoriesSection: React.FC<NotesAndMemoriesSectionProps> = (
 };
 
 /* -------------------------------------------------------------------------- */
-
-
-
-
-
 
 interface MovieRecommendationComposerProps {
   currentUser: User | null;
@@ -1874,15 +2059,15 @@ export const MovieRecommendationComposer: React.FC<
   );
 };
 
-
-
-
 interface MovieEditModalProps {
   movie: Movie;
   isOpen: boolean;
   isMobile: boolean;
   onClose: () => void;
-  onSubmit: (updates: { title: string; customPosterUrl?: string }) => Promise<void>;
+  onSubmit: (updates: {
+    title: string;
+    customPosterUrl?: string;
+  }) => Promise<void>;
   onDelete?: () => void;
 }
 
@@ -1895,7 +2080,9 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
   onDelete,
 }) => {
   const [draftTitle, setDraftTitle] = React.useState(movie.title);
-  const [draftPosterUrl, setDraftPosterUrl] = React.useState(movie.customPosterUrl || "");
+  const [draftPosterUrl, setDraftPosterUrl] = React.useState(
+    movie.customPosterUrl || "",
+  );
   const [error, setError] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -1919,8 +2106,10 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
 
   const cleanTitle = sanitizeInput(draftTitle);
   const cleanPosterUrl = draftPosterUrl.trim();
-  const isUnchanged = cleanTitle === movie.title && cleanPosterUrl === (movie.customPosterUrl || "");
-  
+  const isUnchanged =
+    cleanTitle === movie.title &&
+    cleanPosterUrl === (movie.customPosterUrl || "");
+
   const canSubmit =
     !isSaving &&
     Boolean(cleanTitle) &&
@@ -1937,9 +2126,9 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
     setError(null);
 
     try {
-      await onSubmit({ 
-        title: cleanTitle, 
-        customPosterUrl: cleanPosterUrl || undefined 
+      await onSubmit({
+        title: cleanTitle,
+        customPosterUrl: cleanPosterUrl || undefined,
       });
       onClose();
     } catch (submitError) {
@@ -2083,12 +2272,7 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
   );
 };
 
-
-
-
-
 export interface MovieTransitionOrigin {
-
   top: number;
   left: number;
   width: number;
@@ -2101,7 +2285,10 @@ interface MovieCardProps {
   onToggle: () => void | Promise<void>;
   onToggleError?: (message: string) => void;
   onDelete: () => void;
-  onEditMetadata?: (updates: { title: string; customPosterUrl?: string }) => Promise<void>;
+  onEditMetadata?: (updates: {
+    title: string;
+    customPosterUrl?: string;
+  }) => Promise<void>;
   memories?: SharedMemory[];
   onAddMemory?: (note: string) => Promise<void>;
   onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
@@ -2292,11 +2479,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   );
 };
 
-
-
-
 interface SuggestionCardProps {
-
   suggestion: MovieSuggestion;
   onAccept: () => void;
   onReject: () => void;
@@ -2369,7 +2552,15 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         />
       }
       details={
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "4px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            flexWrap: "wrap",
+            marginTop: "4px",
+          }}
+        >
           {/* We remove year from here since it's now in the overlay */}
           <StremioButton
             movie={{
@@ -2472,7 +2663,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
   React.useEffect(() => {
     if (isOpen) {
-      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+      previouslyFocusedRef.current =
+        document.activeElement as HTMLElement | null;
       setIsVisible(true);
       setIsEntering(false);
       const frame = window.requestAnimationFrame(() => {
@@ -2676,8 +2868,14 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
             {/* Overview / Plot Section */}
             {movie.plot && (
-              <section className="movie-details-modal__section" aria-labelledby="movie-overview-heading">
-                <h3 id="movie-overview-heading" className="movie-details-modal__section-label">
+              <section
+                className="movie-details-modal__section"
+                aria-labelledby="movie-overview-heading"
+              >
+                <h3
+                  id="movie-overview-heading"
+                  className="movie-details-modal__section-label"
+                >
                   Overview
                 </h3>
                 <p className="movie-details-modal__plot">{movie.plot}</p>
@@ -2718,7 +2916,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 );
               }}
               onShowLess={() => {
-                setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
+                setVisibleCount(
+                  Math.min(INITIAL_VISIBLE_COUNT, memories.length),
+                );
               }}
               onUpdateMemory={onUpdateMemory}
               onDeleteMemory={onDeleteMemory}
@@ -2728,13 +2928,15 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
             {/* Footer Status Metadata */}
             <footer className="movie-details-modal__footer">
-              <span>Catalog item added {formatMemoryTimestamp(movie.createdAt)}</span>
+              <span>
+                Catalog item added {formatMemoryTimestamp(movie.createdAt)}
+              </span>
               <span>
                 {movie.watchedBy.length === 2
                   ? "Watched by Aaron & Electra"
                   : movie.watchedBy.length === 1
-                  ? `Watched by ${movie.watchedBy[0]}`
-                  : "Not watched yet"}
+                    ? `Watched by ${movie.watchedBy[0]}`
+                    : "Not watched yet"}
               </span>
             </footer>
           </div>

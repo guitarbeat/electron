@@ -1,7 +1,4 @@
-import type {
-  QuizCharacter,
-  QuizQuestion,
-} from "../../shared/quizData.js";
+import type { QuizCharacter, QuizQuestion } from "../../shared/quizData.js";
 import type {
   MatchmakerGame,
   Message,
@@ -119,12 +116,7 @@ export interface SessionState {
 }
 
 export type StateClientErrorCode =
-  | "unauthorized"
-  | "forbidden"
-  | "conflict"
-  | "invalid"
-  | "server"
-  | "network";
+  "unauthorized" | "forbidden" | "conflict" | "invalid" | "server" | "network";
 
 export class StateClientError extends Error {
   status: number;

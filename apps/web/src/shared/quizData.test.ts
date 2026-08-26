@@ -82,7 +82,10 @@ test("a broadly balanced answer set produces the hybrid result", () => {
     return { questionId: question.id, answerIndex };
   });
 
-  assert.equal(calculateQuizResults(answers, quizQuestions).character, "Neither");
+  assert.equal(
+    calculateQuizResults(answers, quizQuestions).character,
+    "Neither",
+  );
 });
 
 test("ties resolve deterministically using character order", () => {
@@ -125,7 +128,10 @@ test.skip("saves, reads, and clears in-progress quiz progress using local storag
   const mockStorage = {
     getItem: (key: string) => store.get(key) ?? null,
     setItem: (key: string, value: string) => store.set(key, value),
-    removeItem: (key: string) => { console.log("removeItem called with", key); return store.delete(key); },
+    removeItem: (key: string) => {
+      console.log("removeItem called with", key);
+      return store.delete(key);
+    },
     clear: () => store.clear(),
   };
 
@@ -146,7 +152,6 @@ test.skip("saves, reads, and clears in-progress quiz progress using local storag
     };
 
     writeSavedQuizProgress(storageKey, sampleProgress);
-    
 
     const restored = readSavedQuizProgress(storageKey, signature);
     assert.deepEqual(restored, sampleProgress);
@@ -154,11 +159,9 @@ test.skip("saves, reads, and clears in-progress quiz progress using local storag
     const invalidSig = readSavedQuizProgress(storageKey, "wrong-signature");
     assert.equal(invalidSig, null);
     console.log("invalidSig", invalidSig);
-    
 
     writeSavedQuizProgress(storageKey, sampleProgress);
     clearSavedQuizProgress(storageKey);
-    
   } finally {
     globalThis.window = originalWindow;
   }

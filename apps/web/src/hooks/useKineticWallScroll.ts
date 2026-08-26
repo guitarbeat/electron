@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from "react";
 
 export interface KineticWallScrollOptions {
   /** Total number of visual columns rendered in the wall */
@@ -48,8 +48,8 @@ export function isScrollBlockedElement(target: EventTarget | null): boolean {
   if (!target || !(target instanceof HTMLElement)) return false;
   return Boolean(
     target.closest(
-      '.movie-details-modal, .chat-dock, .modal-backdrop, [role="dialog"], textarea, input, select, [contenteditable="true"]'
-    )
+      '.movie-details-modal, .chat-dock, .modal-backdrop, [role="dialog"], textarea, input, select, [contenteditable="true"]',
+    ),
   );
 }
 
@@ -68,7 +68,7 @@ export function useKineticWallScroll({
   measureDependencies = [],
   isStatic = false,
   baseAmbientSpeed = 22,
-  friction = 0.90,
+  friction = 0.9,
   parallaxVariance = 0.3,
   enabled = true,
   onBeforeStep,
@@ -77,40 +77,48 @@ export function useKineticWallScroll({
   const isDraggingRef = useRef<boolean>(false);
   const dragStartYRef = useRef<number>(0);
   const touchLastYRef = useRef<number>(0);
-  const touchVelocityTrackerRef = useRef<Array<{ y: number; time: number }>>([]);
+  const touchVelocityTrackerRef = useRef<Array<{ y: number; time: number }>>(
+    [],
+  );
   const hasDraggedRef = useRef<boolean>(false);
   const lastFrameRef = useRef<number | null>(null);
 
   // Auto layout measurement and resize observer for column bands
-  useEffect(() => {
+  const measureAndSyncColumnLayout = useCallback(() => {
     if (!bandRefs) return;
 
-    const measureAndSyncColumnLayout = () => {
-      bandRefs.current.forEach((bandElement, columnIndex) => {
-        if (!bandElement) return;
-        const trackElement = trackRefs.current[columnIndex];
-        const rowGap = trackElement ? Number.parseFloat(getComputedStyle(trackElement).rowGap) || 0 : 0;
-        const boundingRectangle = bandElement.getBoundingClientRect();
-        const copyHeight = boundingRectangle.height + rowGap;
-        if (copyHeight <= 0) return;
+    bandRefs.current.forEach((bandElement, columnIndex) => {
+      if (!bandElement) return;
+      const trackElement = trackRefs.current[columnIndex];
+      const rowGap = trackElement
+        ? Number.parseFloat(getComputedStyle(trackElement).rowGap) || 0
+        : 0;
+      const boundingRectangle = bandElement.getBoundingClientRect();
+      const copyHeight = boundingRectangle.height + rowGap;
+      if (copyHeight <= 0) return;
 
-        copyHeightsRef.current[columnIndex] = copyHeight;
-        if (offsetsRef.current[columnIndex] === undefined) {
-          offsetsRef.current[columnIndex] = copyHeight * ((columnIndex * 0.382) % 1);
-        } else {
-          offsetsRef.current[columnIndex] =
-            ((offsetsRef.current[columnIndex] % copyHeight) + copyHeight) % copyHeight;
-        }
+      copyHeightsRef.current[columnIndex] = copyHeight;
+      if (offsetsRef.current[columnIndex] === undefined) {
+        offsetsRef.current[columnIndex] =
+          copyHeight * ((columnIndex * 0.382) % 1);
+      } else {
+        offsetsRef.current[columnIndex] =
+          ((offsetsRef.current[columnIndex] % copyHeight) + copyHeight) %
+          copyHeight;
+      }
 
-        // Apply initial transform position
-        if (trackElement) {
-          const currentOffset = offsetsRef.current[columnIndex];
-          const baseShift = copyHeight;
-          const yPosition = -(baseShift + currentOffset);
-          trackElement.style.transform = `translate3d(0, ${yPosition.toFixed(2)}px, 0)`;
-        }
-      });
-    };
+      // Apply initial transform position
+      if (trackElement) {
+        const currentOffset = offsetsRef.current[columnIndex];
+        const baseShift = copyHeight;
+        const yPosition = -(baseShift + currentOffset);
+        trackElement.style.transform = `translate3d(0, ${yPosition.toFixed(2)}px, 0)`;
+      }
+    });
+  }, [bandRefs, copyHeightsRef, offsetsRef, trackRefs]);
+
+  useEffect(() => {
+    if (!bandRefs) return;
 
     measureAndSyncColumnLayout();
     const resizeObserver = new ResizeObserver(measureAndSyncColumnLayout);
@@ -120,7 +128,20 @@ export function useKineticWallScroll({
     });
 
     return () => resizeObserver.disconnect();
-  }, [columnCount, bandRefs, copyHeightsRef, offsetsRef, trackRefs, wallRef, ...measureDependencies]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [bandRefs, measureAndSyncColumnLayout, wallRef]);
+
+  // Re-measure when external measureDependencies update
+  const prevMeasureDepsRef = useRef(measureDependencies);
+  useEffect(() => {
+    const prev = prevMeasureDepsRef.current;
+    const isChanged =
+      prev.length !== measureDependencies.length ||
+      prev.some((dep, index) => dep !== measureDependencies[index]);
+    if (isChanged) {
+      prevMeasureDepsRef.current = measureDependencies;
+      measureAndSyncColumnLayout();
+    }
+  }, [measureDependencies, measureAndSyncColumnLayout]);
 
   // Applies vertical delta displacement across all columns with organic parallax speed variance
   const applyDisplacement = useCallback(
@@ -136,11 +157,13 @@ export function useKineticWallScroll({
         if (!trackElement || !copyHeight || copyHeight <= 0) continue;
 
         // Organic parallax depth variation per column
-        const columnParallaxMultiplier = 0.85 + ((columnIndex * 0.47 + 0.18) % 1) * parallaxVariance;
+        const columnParallaxMultiplier =
+          0.85 + ((columnIndex * 0.47 + 0.18) % 1) * parallaxVariance;
         const columnStep = stepDeltaPixels * columnParallaxMultiplier;
 
         const nextOffset = (offsets[columnIndex] ?? 0) + columnStep;
-        const normalizedOffset = ((nextOffset % copyHeight) + copyHeight) % copyHeight;
+        const normalizedOffset =
+          ((nextOffset % copyHeight) + copyHeight) % copyHeight;
         offsets[columnIndex] = normalizedOffset;
 
         const baseShift = copyHeight;
@@ -148,7 +171,7 @@ export function useKineticWallScroll({
         trackElement.style.transform = `translate3d(0, ${yPosition.toFixed(2)}px, 0)`;
       }
     },
-    [columnCount, copyHeightsRef, offsetsRef, trackRefs, parallaxVariance]
+    [columnCount, copyHeightsRef, offsetsRef, trackRefs, parallaxVariance],
   );
 
   // Event handlers for Wheel, Pointer/Touch Drag, and Keyboard scrolling
@@ -173,19 +196,24 @@ export function useKineticWallScroll({
       // Add scroll momentum velocity for continuous gliding
       velocityRef.current = Math.max(
         -2600,
-        Math.min(2600, velocityRef.current * 0.45 + deltaY * 10)
+        Math.min(2600, velocityRef.current * 0.45 + deltaY * 10),
       );
     };
 
+    const dragThreshold = 14;
+    let dragSuppressTimeout: number | null = null;
+
     const handleDragStart = (event: PointerEvent) => {
       if (isScrollBlockedElement(event.target)) return;
-      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (event.pointerType === "mouse" && event.button !== 0) return;
 
       isDraggingRef.current = true;
       hasDraggedRef.current = false;
       dragStartYRef.current = event.clientY;
       touchLastYRef.current = event.clientY;
-      touchVelocityTrackerRef.current = [{ y: event.clientY, time: performance.now() }];
+      touchVelocityTrackerRef.current = [
+        { y: event.clientY, time: performance.now() },
+      ];
       velocityRef.current = 0;
     };
 
@@ -195,7 +223,7 @@ export function useKineticWallScroll({
 
       const currentY = event.clientY;
       const totalDragDistance = Math.abs(currentY - dragStartYRef.current);
-      if (totalDragDistance > 5) {
+      if (totalDragDistance > dragThreshold) {
         hasDraggedRef.current = true;
       }
 
@@ -225,10 +253,22 @@ export function useKineticWallScroll({
         if (timeDeltaSeconds > 0.015) {
           const pixelDelta = oldestSample.y - newestSample.y;
           const computedVelocity = pixelDelta / timeDeltaSeconds;
-          velocityRef.current = Math.max(-2400, Math.min(2400, computedVelocity * 0.7));
+          velocityRef.current = Math.max(
+            -2400,
+            Math.min(2400, computedVelocity * 0.7),
+          );
         }
       }
       touchVelocityTrackerRef.current = [];
+
+      // Automatically release drag suppression shortly after drag end so subsequent clicks are not blocked
+      if (hasDraggedRef.current) {
+        if (dragSuppressTimeout !== null)
+          window.clearTimeout(dragSuppressTimeout);
+        dragSuppressTimeout = window.setTimeout(() => {
+          hasDraggedRef.current = false;
+        }, 120);
+      }
     };
 
     const handleSuppressedClickCapture = (event: MouseEvent) => {
@@ -242,37 +282,37 @@ export function useKineticWallScroll({
     const handleKeyboardScroll = (event: KeyboardEvent) => {
       if (isScrollBlockedElement(event.target)) return;
 
-      if (event.key === 'ArrowDown' || event.key === 'j') {
+      if (event.key === "ArrowDown" || event.key === "j") {
         applyDisplacement(120);
         velocityRef.current += 400;
-      } else if (event.key === 'ArrowUp' || event.key === 'k') {
+      } else if (event.key === "ArrowUp" || event.key === "k") {
         applyDisplacement(-120);
         velocityRef.current -= 400;
-      } else if (event.key === 'PageDown' || event.key === ' ') {
+      } else if (event.key === "PageDown" || event.key === " ") {
         applyDisplacement(350);
         velocityRef.current += 900;
-      } else if (event.key === 'PageUp') {
+      } else if (event.key === "PageUp") {
         applyDisplacement(-350);
         velocityRef.current -= 900;
       }
     };
 
-    window.addEventListener('wheel', handleWheelScroll, { passive: true });
-    window.addEventListener('pointerdown', handleDragStart, { passive: true });
-    window.addEventListener('pointermove', handleDragMove, { passive: true });
-    window.addEventListener('pointerup', handleDragEnd, { passive: true });
-    window.addEventListener('pointercancel', handleDragEnd, { passive: true });
-    window.addEventListener('click', handleSuppressedClickCapture, true);
-    window.addEventListener('keydown', handleKeyboardScroll);
+    window.addEventListener("wheel", handleWheelScroll, { passive: true });
+    window.addEventListener("pointerdown", handleDragStart, { passive: true });
+    window.addEventListener("pointermove", handleDragMove, { passive: true });
+    window.addEventListener("pointerup", handleDragEnd, { passive: true });
+    window.addEventListener("pointercancel", handleDragEnd, { passive: true });
+    window.addEventListener("click", handleSuppressedClickCapture, true);
+    window.addEventListener("keydown", handleKeyboardScroll);
 
     return () => {
-      window.removeEventListener('wheel', handleWheelScroll);
-      window.removeEventListener('pointerdown', handleDragStart);
-      window.removeEventListener('pointermove', handleDragMove);
-      window.removeEventListener('pointerup', handleDragEnd);
-      window.removeEventListener('pointercancel', handleDragEnd);
-      window.removeEventListener('click', handleSuppressedClickCapture, true);
-      window.removeEventListener('keydown', handleKeyboardScroll);
+      window.removeEventListener("wheel", handleWheelScroll);
+      window.removeEventListener("pointerdown", handleDragStart);
+      window.removeEventListener("pointermove", handleDragMove);
+      window.removeEventListener("pointerup", handleDragEnd);
+      window.removeEventListener("pointercancel", handleDragEnd);
+      window.removeEventListener("click", handleSuppressedClickCapture, true);
+      window.removeEventListener("keydown", handleKeyboardScroll);
     };
   }, [applyDisplacement, enabled]);
 
@@ -321,7 +361,14 @@ export function useKineticWallScroll({
       window.cancelAnimationFrame(animationFrameId);
       lastFrameRef.current = null;
     };
-  }, [applyDisplacement, isStatic, baseAmbientSpeed, friction, enabled, onBeforeStep]);
+  }, [
+    applyDisplacement,
+    isStatic,
+    baseAmbientSpeed,
+    friction,
+    enabled,
+    onBeforeStep,
+  ]);
 
   return {
     velocityRef,

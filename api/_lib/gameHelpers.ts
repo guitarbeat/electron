@@ -1,22 +1,22 @@
-import type { MatchmakerGame, User } from '../../apps/web/src/shared/types.js';
+import type { MatchmakerGame, User } from "../../apps/web/src/shared/types.js";
 
 export const SPIN_HISTORY_MAX = 10;
 
 export const appendSpinHistory = (
   history: string[],
   title: string,
-  maxEntries: number = SPIN_HISTORY_MAX
+  maxEntries: number = SPIN_HISTORY_MAX,
 ): string[] => [title, ...history].slice(0, maxEntries);
 
 export const getUserSwipedIds = (
   game: MatchmakerGame | null,
-  user: User | null
+  user: User | null,
 ): string[] => {
   if (!game || !user) {
     return [];
   }
 
-  return user === 'Aaron'
+  return user === "Aaron"
     ? [...game.aaronLikes, ...game.aaronDislikes]
     : [...game.electraLikes, ...game.electraDislikes];
 };
@@ -27,26 +27,26 @@ export const isMatchmakerComplete = (game: MatchmakerGame | null): boolean => {
   }
 
   const aaronCompleted =
-    getUserSwipedIds(game, 'Aaron').length >= game.moviePool.length;
+    getUserSwipedIds(game, "Aaron").length >= game.moviePool.length;
   const electraCompleted =
-    getUserSwipedIds(game, 'Electra').length >= game.moviePool.length;
+    getUserSwipedIds(game, "Electra").length >= game.moviePool.length;
   return aaronCompleted && electraCompleted;
 };
 
 export const reconcileMatchmakerStatus = (
-  game: MatchmakerGame
+  game: MatchmakerGame,
 ): MatchmakerGame => ({
   ...game,
-  status: isMatchmakerComplete(game) ? 'completed' : 'active',
+  status: isMatchmakerComplete(game) ? "completed" : "active",
 });
 
 export const applyMatchmakerSwipe = (
   game: MatchmakerGame,
   user: User,
   movieId: string,
-  liked: boolean
+  liked: boolean,
 ): MatchmakerGame => {
-  if (game.status !== 'active') {
+  if (game.status !== "active") {
     return game;
   }
 
@@ -56,7 +56,7 @@ export const applyMatchmakerSwipe = (
   }
 
   const updatedGame =
-    user === 'Aaron'
+    user === "Aaron"
       ? {
           ...game,
           aaronLikes: liked ? [...game.aaronLikes, movieId] : game.aaronLikes,
@@ -81,10 +81,10 @@ export const applyMatchmakerSwipe = (
 
 export const undoMatchmakerSwipe = (
   game: MatchmakerGame,
-  user: User
+  user: User,
 ): MatchmakerGame => {
   const swipeOrder =
-    user === 'Aaron'
+    user === "Aaron"
       ? (game.aaronSwipeOrder ?? [])
       : (game.electraSwipeOrder ?? []);
 
@@ -103,24 +103,24 @@ export const undoMatchmakerSwipe = (
   }
 
   const updatedGame =
-    user === 'Aaron'
+    user === "Aaron"
       ? {
           ...game,
           aaronLikes: game.aaronLikes.filter(
-            (movieId) => movieId !== lastSwipedId
+            (movieId) => movieId !== lastSwipedId,
           ),
           aaronDislikes: game.aaronDislikes.filter(
-            (movieId) => movieId !== lastSwipedId
+            (movieId) => movieId !== lastSwipedId,
           ),
           aaronSwipeOrder: swipeOrder.slice(0, -1),
         }
       : {
           ...game,
           electraLikes: game.electraLikes.filter(
-            (movieId) => movieId !== lastSwipedId
+            (movieId) => movieId !== lastSwipedId,
           ),
           electraDislikes: game.electraDislikes.filter(
-            (movieId) => movieId !== lastSwipedId
+            (movieId) => movieId !== lastSwipedId,
           ),
           electraSwipeOrder: swipeOrder.slice(0, -1),
         };

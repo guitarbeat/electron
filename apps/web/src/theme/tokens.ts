@@ -218,7 +218,8 @@ export const moviesThemeDefinition: AppThemeDefinition = {
     surface1: moviesSemantic.surface1,
     surface2: moviesSemantic.surface2,
     surface3: moviesSemantic.surface3,
-    gradientCard: "linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%)",
+    gradientCard:
+      "linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%)",
     glow: "0 0 20px rgba(56, 189, 248, 0.15)",
     glowStrong: "0 0 30px rgba(56, 189, 248, 0.25)",
   },
@@ -234,7 +235,8 @@ export const moviesThemeDefinition: AppThemeDefinition = {
     panelGlass: "rgba(15, 23, 42, 0.8)",
     panelShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
     panelShadowSoft: "0 4px 16px rgba(0, 0, 0, 0.2)",
-    headerSurface: "linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(9, 13, 22, 0.95) 100%)",
+    headerSurface:
+      "linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(9, 13, 22, 0.95) 100%)",
     panelSurface: "rgba(15, 23, 42, 0.9)",
   },
   cssVars: buildCleanCssVars(moviesSemantic, "#38bdf8", "#818cf8"),
@@ -260,7 +262,8 @@ export const placesThemeDefinition: AppThemeDefinition = {
     surface1: placesSemantic.surface1,
     surface2: placesSemantic.surface2,
     surface3: placesSemantic.surface3,
-    gradientCard: "linear-gradient(180deg, rgba(13, 31, 38, 0.9) 0%, rgba(19, 47, 56, 0.95) 100%)",
+    gradientCard:
+      "linear-gradient(180deg, rgba(13, 31, 38, 0.9) 0%, rgba(19, 47, 56, 0.95) 100%)",
     glow: "0 0 20px rgba(45, 212, 191, 0.18)",
     glowStrong: "0 0 30px rgba(45, 212, 191, 0.28)",
   },
@@ -276,7 +279,8 @@ export const placesThemeDefinition: AppThemeDefinition = {
     panelGlass: "rgba(13, 31, 38, 0.8)",
     panelShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
     panelShadowSoft: "0 4px 16px rgba(0, 0, 0, 0.2)",
-    headerSurface: "linear-gradient(180deg, rgba(13, 31, 38, 0.95) 0%, rgba(7, 19, 24, 0.95) 100%)",
+    headerSurface:
+      "linear-gradient(180deg, rgba(13, 31, 38, 0.95) 0%, rgba(7, 19, 24, 0.95) 100%)",
     panelSurface: "rgba(13, 31, 38, 0.9)",
   },
   cssVars: buildCleanCssVars(placesSemantic, "#2dd4bf", "#a78bfa"),

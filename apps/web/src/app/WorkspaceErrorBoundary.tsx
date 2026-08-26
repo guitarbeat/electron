@@ -35,7 +35,10 @@ interface LazyBoundaryProps {
   label?: string;
 }
 
-export const LazyBoundary: React.FC<LazyBoundaryProps> = ({ children, label }) => (
+export const LazyBoundary: React.FC<LazyBoundaryProps> = ({
+  children,
+  label,
+}) => (
   <Suspense fallback={<AppSuspenseFallback label={label} />}>
     {children}
   </Suspense>
@@ -68,7 +71,7 @@ export class WorkspaceErrorBoundary extends React.Component<Props, State> {
 
   static getDerivedStateFromError(error: unknown): State {
     const message = getErrorMessage(error, "An unexpected error occurred.");
-    const stack = error instanceof Error ? error.stack ?? null : null;
+    const stack = error instanceof Error ? (error.stack ?? null) : null;
     return { hasError: true, errorMessage: message, errorStack: stack };
   }
 
@@ -94,27 +97,59 @@ export class WorkspaceErrorBoundary extends React.Component<Props, State> {
   } {
     const msg = (this.state.errorMessage ?? "").toLowerCase();
 
-    if (msg.includes("failed to fetch") || msg.includes("dynamically imported") || msg.includes("loading chunk")) {
+    if (
+      msg.includes("failed to fetch") ||
+      msg.includes("dynamically imported") ||
+      msg.includes("loading chunk")
+    ) {
       return {
-        icon: <RefreshCw size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
+        icon: (
+          <RefreshCw
+            size={36}
+            strokeWidth={1.8}
+            style={{ color: "var(--color-accent, #c88d59)" }}
+          />
+        ),
         title: "Connection interrupted",
         description: "A part of the app couldn't be loaded from the server.",
-        suggestion: "This usually happens after a deploy or on an unstable connection. Reloading should fix it.",
+        suggestion:
+          "This usually happens after a deploy or on an unstable connection. Reloading should fix it.",
       };
     }
 
-    if (msg.includes("network") || msg.includes("offline") || msg.includes("timeout")) {
+    if (
+      msg.includes("network") ||
+      msg.includes("offline") ||
+      msg.includes("timeout")
+    ) {
       return {
-        icon: <WifiOff size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
+        icon: (
+          <WifiOff
+            size={36}
+            strokeWidth={1.8}
+            style={{ color: "var(--color-accent, #c88d59)" }}
+          />
+        ),
         title: "Network issue",
         description: "The app couldn't reach the server.",
         suggestion: "Check your internet connection and try again.",
       };
     }
 
-    if (msg.includes("permission") || msg.includes("unauthorized") || msg.includes("403") || msg.includes("401")) {
+    if (
+      msg.includes("permission") ||
+      msg.includes("unauthorized") ||
+      msg.includes("403") ||
+      msg.includes("401")
+    ) {
       return {
-        icon: <Lock size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
+        icon: (
+          <Lock
+            size={36}
+            strokeWidth={1.8}
+            style={{ color: "var(--color-accent, #c88d59)" }}
+          />
+        ),
         title: "Access denied",
         description: "You don't have permission to view this content.",
         suggestion: "Try signing in again or switching profiles.",
@@ -122,9 +157,16 @@ export class WorkspaceErrorBoundary extends React.Component<Props, State> {
     }
 
     return {
-      icon: <AlertCircle size={36} strokeWidth={1.8} style={{ color: "var(--color-accent, #c88d59)" }} />,
+      icon: (
+        <AlertCircle
+          size={36}
+          strokeWidth={1.8}
+          style={{ color: "var(--color-accent, #c88d59)" }}
+        />
+      ),
       title: "Something went wrong",
-      description: "The workspace encountered an error it couldn't recover from.",
+      description:
+        "The workspace encountered an error it couldn't recover from.",
       suggestion: "Try again, or reload the page if the problem persists.",
     };
   }
@@ -157,7 +199,8 @@ export class WorkspaceErrorBoundary extends React.Component<Props, State> {
             textAlign: "center",
             padding: "2.5rem 2rem",
             borderRadius: "1rem",
-            border: "1px solid var(--color-border-subtle, rgba(148,163,200,0.12))",
+            border:
+              "1px solid var(--color-border-subtle, rgba(148,163,200,0.12))",
             background: "var(--color-surface-1, rgba(12,18,42,0.85))",
             boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
           }}
@@ -225,7 +268,8 @@ export class WorkspaceErrorBoundary extends React.Component<Props, State> {
                 padding: "0.75rem",
                 borderRadius: "0.5rem",
                 background: "rgba(0,0,0,0.3)",
-                border: "1px solid var(--color-border-subtle, rgba(148,163,200,0.1))",
+                border:
+                  "1px solid var(--color-border-subtle, rgba(148,163,200,0.1))",
               }}
             >
               <summary
@@ -280,7 +324,8 @@ export class WorkspaceErrorBoundary extends React.Component<Props, State> {
                 style={{
                   padding: "0.6rem 1.5rem",
                   borderRadius: "0.5rem",
-                  border: "1px solid var(--color-border, rgba(148,163,200,0.18))",
+                  border:
+                    "1px solid var(--color-border, rgba(148,163,200,0.18))",
                   background: "transparent",
                   color: "var(--color-text-primary, #f0f4ff)",
                   fontFamily: "var(--font-body, system-ui, sans-serif)",

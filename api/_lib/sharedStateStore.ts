@@ -1,5 +1,5 @@
-import type pg from 'pg';
-import { createPostgresPool, getDatabaseUrl } from './dbCommon.js';
+import type pg from "pg";
+import { createPostgresPool, getDatabaseUrl } from "./dbCommon.js";
 
 const CACHE_TTL_MS = 30000;
 
@@ -16,7 +16,7 @@ interface CachedEntry {
 
 const fileCache = new Map<string, CachedEntry>();
 let pool: pg.Pool | null = null;
-let poolUrl = '';
+let poolUrl = "";
 let schemaReady: Promise<void> | null = null;
 let testStore: Map<string, string> | null = null;
 let testPatchBodies: string[] | null = null;
@@ -24,7 +24,7 @@ let testPatchBodies: string[] | null = null;
 const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
   if (!databaseUrl) {
-    throw new Error('DATABASE_URL is not configured.');
+    throw new Error("DATABASE_URL is not configured.");
   }
   if (!pool || poolUrl !== databaseUrl) {
     if (pool) {
@@ -39,7 +39,7 @@ const getPool = (): pg.Pool => {
 
 const query = async <T extends object>(
   sql: string,
-  params: unknown[] = []
+  params: unknown[] = [],
 ): Promise<T[]> => {
   const client = await getPool().connect();
   try {
@@ -62,18 +62,24 @@ const ensureSchema = async (): Promise<void> => {
 };
 
 /** Returns true when the server has Postgres credentials for read/write. */
-export const isSharedStateConfigured = (): boolean => Boolean(testStore || getDatabaseUrl());
+export const isSharedStateConfigured = (): boolean =>
+  Boolean(testStore || getDatabaseUrl());
 
 /** Same as {@link isSharedStateConfigured}; writes use the same database URL. */
-export const isSharedStateWriteConfigured = (): boolean => isSharedStateConfigured();
+export const isSharedStateWriteConfigured = (): boolean =>
+  isSharedStateConfigured();
 
 export const invalidateSharedStateCache = (): void => {
   fileCache.clear();
 };
 
 export const installSharedStateMemoryStoreForTests = (
-  initialFiles: Record<string, string>
-): { getFile: (filename: string) => string | undefined; patchBodies: string[]; dispose: () => void } => {
+  initialFiles: Record<string, string>,
+): {
+  getFile: (filename: string) => string | undefined;
+  patchBodies: string[];
+  dispose: () => void;
+} => {
   const previousStore = testStore;
   const previousPatchBodies = testPatchBodies;
   const store = new Map(Object.entries(initialFiles));
@@ -93,18 +99,20 @@ export const installSharedStateMemoryStoreForTests = (
   };
 };
 
-const readFromDatabase = async (filename: string): Promise<SharedStateFileRecord> => {
+const readFromDatabase = async (
+  filename: string,
+): Promise<SharedStateFileRecord> => {
   if (testStore) {
     if (!testStore.has(filename)) {
       return { exists: false, content: null };
     }
-    return { exists: true, content: testStore.get(filename) ?? '' };
+    return { exists: true, content: testStore.get(filename) ?? "" };
   }
 
   await ensureSchema();
   const rows = await query<{ content: string }>(
-    'SELECT content FROM shared_state_files WHERE filename = $1 LIMIT 1',
-    [filename]
+    "SELECT content FROM shared_state_files WHERE filename = $1 LIMIT 1",
+    [filename],
   );
 
   const row = rows[0];
@@ -119,7 +127,7 @@ const readFromDatabase = async (filename: string): Promise<SharedStateFileRecord
 
 export const readSharedStateFile = async (
   filename: string,
-  options: { bypassCache?: boolean } = {}
+  options: { bypassCache?: boolean } = {},
 ): Promise<string | null> => {
   const record = await readSharedStateFileRecord(filename, options);
   return record.content;
@@ -127,10 +135,10 @@ export const readSharedStateFile = async (
 
 export const readSharedStateFileRecord = async (
   filename: string,
-  options: { bypassCache?: boolean } = {}
+  options: { bypassCache?: boolean } = {},
 ): Promise<SharedStateFileRecord> => {
   if (!isSharedStateConfigured()) {
-    throw new Error('DATABASE_URL is not configured.');
+    throw new Error("DATABASE_URL is not configured.");
   }
 
   if (!options.bypassCache) {
@@ -153,7 +161,7 @@ export const readSharedStateFileRecord = async (
 
 export const listSharedStateFilenames = async (): Promise<string[]> => {
   if (!isSharedStateConfigured()) {
-    throw new Error('DATABASE_URL is not configured.');
+    throw new Error("DATABASE_URL is not configured.");
   }
 
   if (testStore) {
@@ -162,7 +170,7 @@ export const listSharedStateFilenames = async (): Promise<string[]> => {
 
   await ensureSchema();
   const rows = await query<{ filename: string }>(
-    'SELECT filename FROM shared_state_files ORDER BY filename'
+    "SELECT filename FROM shared_state_files ORDER BY filename",
   );
 
   return rows.map((row) => row.filename);
@@ -170,11 +178,11 @@ export const listSharedStateFilenames = async (): Promise<string[]> => {
 
 export const patchSharedStateFile = async (
   filename: string,
-  content: string
+  content: string,
 ): Promise<void> => {
   if (!getDatabaseUrl()) {
     if (!testStore) {
-      throw new Error('DATABASE_URL is not configured.');
+      throw new Error("DATABASE_URL is not configured.");
     }
   }
 
@@ -191,7 +199,7 @@ export const patchSharedStateFile = async (
      VALUES ($1, $2, now())
      ON CONFLICT (filename)
      DO UPDATE SET content = EXCLUDED.content, updated_at = now()`,
-    [filename, content]
+    [filename, content],
   );
 
   fileCache.delete(filename);

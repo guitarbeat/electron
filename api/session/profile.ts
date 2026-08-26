@@ -4,36 +4,37 @@ import {
   methodNotAllowedResponse,
   mergeHeaders,
   serverErrorResponse,
-} from '../_lib/http.js';
+} from "../_lib/http.js";
 import {
   buildClearPinAttemptCookie,
   buildClearProfileCookie,
   buildPinAttemptCookie,
   buildProfileCookie,
   getSessionState,
-} from '../_lib/session.js';
-import { getPinCoverageState, verifyProfilePin } from '../_lib/state.js';
+} from "../_lib/session.js";
+import { getPinCoverageState, verifyProfilePin } from "../_lib/state.js";
 import {
   clearPinAttempts,
   getPinAttemptRecord,
   recordPinFailure,
-} from '../_lib/pinAttemptStore.js';
-import { withWebHandler } from '../_lib/webHandler.js';
-import { isUser } from '../_lib/common.js';
-import { logger } from '../_lib/logger.js';
+} from "../_lib/pinAttemptStore.js";
+import { withWebHandler } from "../_lib/webHandler.js";
+import { isUser } from "../_lib/common.js";
+import { logger } from "../_lib/logger.js";
 
 const SESSION_SECRET_CONFIG_ERROR = [
-  'Profile login is unavailable because SESSION_SIGNING_SECRET is not configured.',
-  '',
-  'Diagnostic (copy/paste):',
-  'code=SESSION_SIGNING_SECRET_MISSING',
-  'endpoint=/api/session/profile',
-  'method=POST',
-  'action=Set SESSION_SIGNING_SECRET in .env.local and restart pnpm dev',
-].join('\n');
+  "Profile login is unavailable because SESSION_SIGNING_SECRET is not configured.",
+  "",
+  "Diagnostic (copy/paste):",
+  "code=SESSION_SIGNING_SECRET_MISSING",
+  "endpoint=/api/session/profile",
+  "method=POST",
+  "action=Set SESSION_SIGNING_SECRET in .env.local and restart pnpm dev",
+].join("\n");
 
 const isMissingSessionSecretError = (error: unknown): boolean =>
-  error instanceof Error && error.message === 'SESSION_SIGNING_SECRET is not configured.';
+  error instanceof Error &&
+  error.message === "SESSION_SIGNING_SECRET is not configured.";
 
 const MAX_PIN_ATTEMPTS = 5;
 const PIN_LOCKOUT_MS = 5 * 60 * 1000;
@@ -48,7 +49,7 @@ const getLockoutRemainingSeconds = (lockedUntil: number, now: number): number =>
 
 export const computeNextPinAttemptState = (
   currentFailures: number,
-  now: number
+  now: number,
 ): { failures: number; lockedUntil: number | null } => {
   const nextFailures = currentFailures + 1;
   return {
@@ -59,7 +60,7 @@ export const computeNextPinAttemptState = (
 
 async function handler(req: Request): Promise<Response> {
   try {
-    if (req.method === 'DELETE') {
+    if (req.method === "DELETE") {
       let pinProtectedUsers: string[] = [];
       let usersMissingPins: string[] = [];
       try {
@@ -67,7 +68,7 @@ async function handler(req: Request): Promise<Response> {
         pinProtectedUsers = pinCoverage.pinProtectedUsers;
         usersMissingPins = pinCoverage.usersMissingPins;
       } catch (error) {
-        logger.error('Failed to read PIN coverage during logout.', error);
+        logger.error("Failed to read PIN coverage during logout.", error);
       }
 
       return jsonResponse(
@@ -80,35 +81,35 @@ async function handler(req: Request): Promise<Response> {
         {
           headers: mergeHeaders(
             {
-              'Set-Cookie': buildClearProfileCookie(req),
+              "Set-Cookie": buildClearProfileCookie(req),
             },
             {
-              'Set-Cookie': buildClearPinAttemptCookie(req),
-            }
+              "Set-Cookie": buildClearPinAttemptCookie(req),
+            },
           ),
-        }
+        },
       );
     }
 
-    if (req.method !== 'POST') {
-      return methodNotAllowedResponse('POST, DELETE');
+    if (req.method !== "POST") {
+      return methodNotAllowedResponse("POST, DELETE");
     }
 
     let payload: unknown;
     try {
       payload = await req.json();
     } catch {
-      return badRequestResponse('Invalid JSON payload.');
+      return badRequestResponse("Invalid JSON payload.");
     }
 
     const user = (payload as { user?: unknown }).user;
     const pin =
-      typeof (payload as { pin?: unknown }).pin === 'string'
+      typeof (payload as { pin?: unknown }).pin === "string"
         ? (payload as { pin: string }).pin
         : undefined;
 
     if (!isUser(user)) {
-      return badRequestResponse('A valid user is required.');
+      return badRequestResponse("A valid user is required.");
     }
 
     let pinProtectedUsers: string[] = [];
@@ -118,7 +119,7 @@ async function handler(req: Request): Promise<Response> {
       pinProtectedUsers = pinCoverage.pinProtectedUsers;
       usersMissingPins = pinCoverage.usersMissingPins;
     } catch (error) {
-      logger.error('Failed to read PIN coverage during profile update.', error);
+      logger.error("Failed to read PIN coverage during profile update.", error);
     }
     const requiresPin = pinProtectedUsers.includes(user);
 
@@ -140,9 +141,9 @@ async function handler(req: Request): Promise<Response> {
           {
             status: 429,
             headers: {
-              'Retry-After': String(retryAfter),
+              "Retry-After": String(retryAfter),
             },
-          }
+          },
         );
       }
 
@@ -150,10 +151,17 @@ async function handler(req: Request): Promise<Response> {
       if (!isValid) {
         const failedState = computeNextPinAttemptState(failuresForUser, now);
         // Persist to DB so lockout survives cookie deletion / new browsers.
-        await recordPinFailure(user, failedState.failures, failedState.lockedUntil);
+        await recordPinFailure(
+          user,
+          failedState.failures,
+          failedState.lockedUntil,
+        );
 
         if (failedState.lockedUntil) {
-          const retryAfter = getLockoutRemainingSeconds(failedState.lockedUntil, now);
+          const retryAfter = getLockoutRemainingSeconds(
+            failedState.lockedUntil,
+            now,
+          );
           return jsonResponse(
             {
               error: `Too many incorrect PIN attempts. Try again in ${retryAfter} seconds.`,
@@ -161,31 +169,31 @@ async function handler(req: Request): Promise<Response> {
             {
               status: 429,
               headers: mergeHeaders(
-                { 'Retry-After': String(retryAfter) },
+                { "Retry-After": String(retryAfter) },
                 {
                   // Cookie is a client hint only; lockout is enforced via DB above.
-                  'Set-Cookie': buildPinAttemptCookie(req, {
+                  "Set-Cookie": buildPinAttemptCookie(req, {
                     user,
                     failures: failedState.failures,
                     lockUntil: failedState.lockedUntil,
                   }),
-                }
+                },
               ),
-            }
+            },
           );
         }
         return jsonResponse(
-          { error: 'Incorrect PIN.' },
+          { error: "Incorrect PIN." },
           {
             status: 401,
             headers: {
-              'Set-Cookie': buildPinAttemptCookie(req, {
+              "Set-Cookie": buildPinAttemptCookie(req, {
                 user,
                 failures: failedState.failures,
                 lockUntil: failedState.lockedUntil,
               }),
             },
-          }
+          },
         );
       }
 
@@ -205,20 +213,23 @@ async function handler(req: Request): Promise<Response> {
       {
         headers: mergeHeaders(
           {
-            'Set-Cookie': buildProfileCookie(req, user),
+            "Set-Cookie": buildProfileCookie(req, user),
           },
           {
-            'Set-Cookie': buildClearPinAttemptCookie(req),
-          }
+            "Set-Cookie": buildClearPinAttemptCookie(req),
+          },
         ),
-      }
+      },
     );
   } catch (error) {
     if (isMissingSessionSecretError(error)) {
       return serverErrorResponse(SESSION_SECRET_CONFIG_ERROR);
     }
 
-    logger.error(`Failed to update profile session during ${req.method} ${req.url}:`, error);
+    logger.error(
+      `Failed to update profile session during ${req.method} ${req.url}:`,
+      error,
+    );
     return serverErrorResponse();
   }
 }

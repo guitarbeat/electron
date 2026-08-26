@@ -1,8 +1,12 @@
 import React, { memo } from "react";
 import type { MainTab } from "@/shared/types";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-const MoviesView = lazyWithRetry(() => import("@/components/movies").then(m => ({ default: m.MoviesView })));
-const PlacesList = lazyWithRetry(() => import("@/components/places").then(m => ({ default: m.PlacesList })));
+const MoviesView = lazyWithRetry(() =>
+  import("@/components/movies").then((m) => ({ default: m.MoviesView })),
+);
+const PlacesList = lazyWithRetry(() =>
+  import("@/components/places").then((m) => ({ default: m.PlacesList })),
+);
 import LibrarySearch from "./LibrarySearch";
 
 interface UnifiedLibraryProps {
@@ -12,18 +16,16 @@ interface UnifiedLibraryProps {
 const UnifiedLibrary: React.FC<UnifiedLibraryProps> = ({
   isInteractionStatic,
 }) => {
-  return (
-    <MoviesView
-      isInteractionStatic={isInteractionStatic}
-    />
-  );
+  return <MoviesView isInteractionStatic={isInteractionStatic} />;
 };
 
 interface LibraryWorkspaceProps {
   activeTab?: MainTab;
 }
 
-const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = ({ activeTab = "movies" }) => {
+const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = ({
+  activeTab = "movies",
+}) => {
   return (
     <div className="library-workspace library-workspace--ambient">
       <LibrarySearch />

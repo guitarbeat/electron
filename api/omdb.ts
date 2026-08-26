@@ -1,21 +1,21 @@
-import { fetchWithRetry } from './_lib/retryFetch.js';
-import { withWebHandler } from './_lib/webHandler.js';
-import { resolveConfig } from './_lib/config.js';
+import { fetchWithRetry } from "./_lib/retryFetch.js";
+import { withWebHandler } from "./_lib/webHandler.js";
+import { resolveConfig } from "./_lib/config.js";
 import {
   BoundedResponseCache,
   cachedProxyResponse,
   isAbsoluteUrl,
   jsonProxyResponse,
   type CachedProxyResponse,
-} from './_lib/cachedProxy.js';
+} from "./_lib/cachedProxy.js";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 30;
 const MAX_RATE_LIMIT_ENTRIES = 10_000;
-const OMDB_AUTH_FAILURE_CODE = 'omdb_auth';
-const OMDB_CONFIG_FAILURE_CODE = 'omdb_config';
+const OMDB_AUTH_FAILURE_CODE = "omdb_auth";
+const OMDB_CONFIG_FAILURE_CODE = "omdb_config";
 
 const omdbCache = new BoundedResponseCache<CachedProxyResponse>({
   ttlMs: ONE_HOUR_MS,
@@ -26,20 +26,20 @@ const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
 const getOmdbApiBaseUrl = (): string =>
   resolveConfig(
     process.env.OMDB_API_URL || process.env.VITE_OMDB_API_URL,
-    'https://www.omdbapi.com'
+    "https://www.omdbapi.com",
   );
 
 const getOmdbApiKey = (): string =>
-  (process.env.OMDB_API_KEY || process.env.VITE_OMDB_API_KEY || '').trim();
+  (process.env.OMDB_API_KEY || process.env.VITE_OMDB_API_KEY || "").trim();
 
 const badConfigResponse = (message: string) =>
   jsonProxyResponse({ error: message, code: OMDB_CONFIG_FAILURE_CODE }, 500);
 const badRequestResponse = (message: string) =>
   jsonProxyResponse({ error: message }, 400);
 const methodNotAllowedResponse = () =>
-  jsonProxyResponse({ error: 'Method not allowed.' }, 405);
+  jsonProxyResponse({ error: "Method not allowed." }, 405);
 const rateLimitResponse = () =>
-  jsonProxyResponse({ error: 'Too many requests.' }, 429);
+  jsonProxyResponse({ error: "Too many requests." }, 429);
 const forbiddenResponse = (message: string) =>
   jsonProxyResponse({ error: message }, 403);
 const omdbAuthResponse = (message: string) =>
@@ -68,7 +68,10 @@ const isRateLimited = (ip: string): boolean => {
     if (record) {
       ipRequestCounts.delete(ip); // Ensure it's moved to the end of insertion order
     }
-    ipRequestCounts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    ipRequestCounts.set(ip, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW_MS,
+    });
     return false;
   }
 
@@ -81,11 +84,11 @@ const isRateLimited = (ip: string): boolean => {
 };
 
 const validateSameOriginRequest = (req: Request): Response | null => {
-  const origin = req.headers.get('origin') || req.headers.get('referer');
-  const secFetchSite = req.headers.get('sec-fetch-site');
+  const origin = req.headers.get("origin") || req.headers.get("referer");
+  const secFetchSite = req.headers.get("sec-fetch-site");
 
-  if (secFetchSite === 'cross-site') {
-    return forbiddenResponse('Cross-site requests not allowed.');
+  if (secFetchSite === "cross-site") {
+    return forbiddenResponse("Cross-site requests not allowed.");
   }
 
   if (!origin) {
@@ -94,8 +97,8 @@ const validateSameOriginRequest = (req: Request): Response | null => {
 
   try {
     const originUrl = new URL(origin);
-    const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-      .split(',')
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+      .split(",")
       .map((entry: string) => entry.trim())
       .filter(Boolean);
 
@@ -111,32 +114,34 @@ const validateSameOriginRequest = (req: Request): Response | null => {
       }
     });
 
-    return isAllowed ? null : forbiddenResponse('Origin not allowed.');
+    return isAllowed ? null : forbiddenResponse("Origin not allowed.");
   } catch {
-    return forbiddenResponse('Invalid origin.');
+    return forbiddenResponse("Invalid origin.");
   }
 };
 
 const isPrivateIp = (ip: string): boolean => {
-  return /^(::f{4}:)?10\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
+  return (
+    /^(::f{4}:)?10\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
     /^(::f{4}:)?192\.168\.\d{1,3}\.\d{1,3}/i.test(ip) ||
     /^(::f{4}:)?169\.254\.\d{1,3}\.\d{1,3}/i.test(ip) ||
     /^(::f{4}:)?127\.\d{1,3}\.\d{1,3}\.\d{1,3}/i.test(ip) ||
     /^(::f{4}:)?172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}/i.test(ip) ||
-    /^(::1|fc00:|fe80:)/i.test(ip);
+    /^(::1|fc00:|fe80:)/i.test(ip)
+  );
 };
 
 const getClientIp = (req: Request): string => {
-  const forwardedFor = req.headers.get('x-forwarded-for');
+  const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
     // The right-most IP is the one appended by the last proxy in the chain.
     // All IPs to the left could potentially be spoofed by the client.
-    const ips = forwardedFor.split(',');
-    return ips[ips.length - 1].trim() || 'unknown';
+    const ips = forwardedFor.split(",");
+    return ips[ips.length - 1].trim() || "unknown";
   }
 
   // Fallback if x-forwarded-for is missing (e.g., local development or direct connection)
-  return req.headers.get('x-real-ip') || 'unknown';
+  return req.headers.get("x-real-ip") || "unknown";
 };
 
 const isOmdbCredentialFailure = (body: string): boolean =>
@@ -144,7 +149,7 @@ const isOmdbCredentialFailure = (body: string): boolean =>
 
 async function handler(req: Request): Promise<Response> {
   try {
-    if (req.method !== 'GET') {
+    if (req.method !== "GET") {
       return methodNotAllowedResponse();
     }
 
@@ -154,7 +159,7 @@ async function handler(req: Request): Promise<Response> {
     }
 
     const clientIp = getClientIp(req);
-    if (clientIp !== 'unknown' && isRateLimited(clientIp)) {
+    if (clientIp !== "unknown" && isRateLimited(clientIp)) {
       return rateLimitResponse();
     }
 
@@ -162,28 +167,33 @@ async function handler(req: Request): Promise<Response> {
     const omdbApiKey = getOmdbApiKey();
 
     if (!isAbsoluteUrl(omdbApiBaseUrl)) {
-      return badConfigResponse('Invalid OMDB_API_URL configuration.');
+      return badConfigResponse("Invalid OMDB_API_URL configuration.");
     }
 
     if (omdbApiKey.length === 0) {
       return badConfigResponse(
-        'OMDb is not configured. Set OMDB_API_KEY or VITE_OMDB_API_KEY for the /api/omdb proxy.'
+        "OMDb is not configured. Set OMDB_API_KEY or VITE_OMDB_API_KEY for the /api/omdb proxy.",
       );
     }
 
     // Vercel may pass a relative `req.url` which requires a base.
-    const sourceUrl = new URL(req.url, 'http://localhost');
+    const sourceUrl = new URL(req.url, "http://localhost");
     if ([...sourceUrl.searchParams.keys()].length === 0) {
-      return badRequestResponse('At least one OMDb lookup parameter is required.');
+      return badRequestResponse(
+        "At least one OMDb lookup parameter is required.",
+      );
     }
 
     const targetUrl = new URL(omdbApiBaseUrl);
     sourceUrl.searchParams.forEach((value, key) => {
       targetUrl.searchParams.set(key, value);
     });
-    const incomingApiKey = targetUrl.searchParams.get('apikey')?.trim();
-    if ((!incomingApiKey || incomingApiKey.length === 0) && omdbApiKey.length > 0) {
-      targetUrl.searchParams.set('apikey', omdbApiKey);
+    const incomingApiKey = targetUrl.searchParams.get("apikey")?.trim();
+    if (
+      (!incomingApiKey || incomingApiKey.length === 0) &&
+      omdbApiKey.length > 0
+    ) {
+      targetUrl.searchParams.set("apikey", omdbApiKey);
     }
 
     const cacheKey = targetUrl.toString();
@@ -196,21 +206,22 @@ async function handler(req: Request): Promise<Response> {
       targetUrl,
       {
         headers: {
-          Accept: 'application/json',
+          Accept: "application/json",
         },
       },
-      'omdb',
-      { timeoutMs: 5000 }
+      "omdb",
+      { timeoutMs: 5000 },
     );
     const body = await upstreamResponse.text();
-    const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
+    const contentType =
+      upstreamResponse.headers.get("content-type") || "application/json";
 
     if (
       upstreamResponse.status === 401 ||
       upstreamResponse.status === 403 ||
       isOmdbCredentialFailure(body)
     ) {
-      return omdbAuthResponse('OMDb rejected the configured API key.');
+      return omdbAuthResponse("OMDb rejected the configured API key.");
     }
 
     if (upstreamResponse.ok) {
@@ -240,14 +251,14 @@ async function handler(req: Request): Promise<Response> {
       status: upstreamResponse.status,
       statusText: upstreamResponse.statusText,
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'no-store',
-        'X-Cache': 'MISS',
+        "Content-Type": contentType,
+        "Cache-Control": "no-store",
+        "X-Cache": "MISS",
       },
     });
   } catch (error) {
     console.error(`Error handling ${req.method} ${req.url}:`, error);
-    return jsonProxyResponse({ error: 'Internal server error.' }, 500);
+    return jsonProxyResponse({ error: "Internal server error." }, 500);
   }
 }
 

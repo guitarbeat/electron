@@ -9,7 +9,9 @@ import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/providerContexts";
 import type { Movie } from "@/shared/types";
 import { FilmIcon, SparklesIcon } from "@/common/Icons";
-const MovieDetailsModal = React.lazy(() => import("@/components/movies").then(m => ({ default: m.MovieDetailsModal })));
+const MovieDetailsModal = React.lazy(() =>
+  import("@/components/movies").then((m) => ({ default: m.MovieDetailsModal })),
+);
 import {
   buildSpinWheelGradient,
   computeSpinOutcome,
@@ -43,7 +45,9 @@ function calculateVelocity(
   return (currentX - lastX) / dt;
 }
 
-function filterCandidates<T extends { watchedBy: unknown[] }>(movies: T[]): T[] {
+function filterCandidates<T extends { watchedBy: unknown[] }>(
+  movies: T[],
+): T[] {
   return getUnwatchedCandidatePool(movies);
 }
 
@@ -564,7 +568,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
       e.clientX,
       dragLastX.current,
       now,
-      dragLastTime.current
+      dragLastTime.current,
     );
     dragLastX.current = e.clientX;
     dragLastTime.current = now;

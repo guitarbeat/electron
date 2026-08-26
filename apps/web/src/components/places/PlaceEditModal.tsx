@@ -39,9 +39,11 @@ export const PlaceEditModal: React.FC<PlaceEditModalProps> = ({
 
   const cleanName = sanitizeInput(draftName);
   const cleanImageUrl = draftImageUrl.trim();
-  const isUnchanged = cleanName === place.name && cleanImageUrl === (place.imageUrl || "");
-  
-  const canSubmit = !isSaving && Boolean(cleanName) && cleanName.length <= 100 && !isUnchanged;
+  const isUnchanged =
+    cleanName === place.name && cleanImageUrl === (place.imageUrl || "");
+
+  const canSubmit =
+    !isSaving && Boolean(cleanName) && cleanName.length <= 100 && !isUnchanged;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -56,7 +58,9 @@ export const PlaceEditModal: React.FC<PlaceEditModalProps> = ({
       onClose();
     } catch (submitError) {
       setError(
-        submitError instanceof Error ? submitError.message : "Failed to update place",
+        submitError instanceof Error
+          ? submitError.message
+          : "Failed to update place",
       );
     } finally {
       setIsSaving(false);
@@ -75,10 +79,23 @@ export const PlaceEditModal: React.FC<PlaceEditModalProps> = ({
     >
       <form
         onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: spacing.lg, padding: spacing.lg }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: spacing.lg,
+          padding: spacing.lg,
+        }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: spacing.sm }}>
-          <p style={{ margin: 0, color: colors.textSecondary, ...typography.presets.bodySm }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: spacing.sm }}
+        >
+          <p
+            style={{
+              margin: 0,
+              color: colors.textSecondary,
+              ...typography.presets.bodySm,
+            }}
+          >
             Update the shared place name or provide a custom poster image URL.
           </p>
           <Input
@@ -113,7 +130,11 @@ export const PlaceEditModal: React.FC<PlaceEditModalProps> = ({
               ...typography.presets.caption,
             }}
           >
-            <span>{isUnchanged ? "Make a change to save." : "Changes are shared immediately."}</span>
+            <span>
+              {isUnchanged
+                ? "Make a change to save."
+                : "Changes are shared immediately."}
+            </span>
             <span>{cleanName.length} / 100</span>
           </div>
         </div>

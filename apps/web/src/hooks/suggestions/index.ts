@@ -75,24 +75,40 @@ export const useSuggestionCollection = <T extends SuggestionRecord>(
         updateSuggestionStatus(suggestions, suggestionId, status, respondedBy),
       );
     },
-    [config.acceptOperation, config.rejectOperation, performMutation, suggestions],
+    [
+      config.acceptOperation,
+      config.rejectOperation,
+      performMutation,
+      suggestions,
+    ],
   );
 
   const add = useCallback(
     async (suggestion: T, signedInPayload: unknown, guestPayload: unknown) => {
       const optimisticData = [...suggestions, suggestion];
       if (currentUser) {
-        await performMutation(config.addOperation, signedInPayload, optimisticData);
+        await performMutation(
+          config.addOperation,
+          signedInPayload,
+          optimisticData,
+        );
       } else {
         await mutateScope(config.scope, {
           op: config.addOperation,
           payload: guestPayload,
-          optimisticData: optimisticData as unknown as StateScopeDataMap[SuggestionScope],
+          optimisticData:
+            optimisticData as unknown as StateScopeDataMap[SuggestionScope],
         });
       }
       return suggestion;
     },
-    [config.addOperation, config.scope, currentUser, performMutation, suggestions],
+    [
+      config.addOperation,
+      config.scope,
+      currentUser,
+      performMutation,
+      suggestions,
+    ],
   );
 
   return {

@@ -10,13 +10,13 @@ import React, {
   useRef,
   useState,
   ReactNode,
-} from 'react';
-import type { User } from '@/shared/types';
-import { applyTheme, spacing } from '@/theme/tokens';
+} from "react";
+import type { User } from "@/shared/types";
+import { applyTheme, spacing } from "@/theme/tokens";
 import { Toast } from "@/components/ui";
-import { sessionInvalidationEvent } from '@/services/state';
-import type { SessionState } from '@/services/state';
-import { getErrorMessage, readApiErrorMessage } from '@/utils';
+import { sessionInvalidationEvent } from "@/services/state";
+import type { SessionState } from "@/services/state";
+import { getErrorMessage, readApiErrorMessage } from "@/utils";
 import {
   ThemeContext,
   ToastContext,
@@ -38,7 +38,7 @@ const debugSession = (...args: unknown[]) => {
 // Theme Context
 // ============================================================================
 
-import { getAppTheme, type ThemeName } from '@/theme/tokens';
+import { getAppTheme, type ThemeName } from "@/theme/tokens";
 
 export const ThemeProvider: React.FC<{
   children: ReactNode;
@@ -58,7 +58,9 @@ export const ThemeProvider: React.FC<{
     [themeName, theme],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };
 
 // ============================================================================

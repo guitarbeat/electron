@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useUser, useViewport } from "@/app/providerContexts";
 import { useSyncedScope } from "@/hooks";
+import { warmServiceWorkerMedia } from "@/services/swMediaCache";
 import {
   deleteMemory as deleteMemoryService,
   toggleMemoryPin as toggleMemoryPinService,
@@ -14,16 +15,15 @@ import {
   ALL_MOVIES_FILTER,
   type MemorySortMode,
   sortMemories,
-  
-  
-  
   MemoryList,
   type MemoriesViewProps,
 } from "./shared";
 
 const POLLING_INTERVAL = 15_000;
 
-export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) => {
+export const MemoriesView: React.FC<MemoriesViewProps> = ({
+  onJumpToMovies,
+}) => {
   const { currentUser } = useUser();
   const { isMobile } = useViewport();
 
@@ -45,6 +45,15 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) =>
     [remoteMemories],
   );
 
+  useEffect(() => {
+    if (memories && memories.length > 0) {
+      const imageUrls = memories
+        .map((m) => m.imageUrl)
+        .filter((url): url is string => Boolean(url));
+      warmServiceWorkerMedia(imageUrls);
+    }
+  }, [memories]);
+
   const [sortMode, setSortMode] = useState<MemorySortMode>("newest");
   const [activeMovieFilter, setActiveMovieFilter] =
     useState<string>(ALL_MOVIES_FILTER);
@@ -59,8 +68,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) =>
     if (activeMovieFilter === ALL_MOVIES_FILTER) return sortedMemories;
     return sortedMemories.filter(
       (m) =>
-        m.movieId === activeMovieFilter ||
-        m.movieTitle === activeMovieFilter,
+        m.movieId === activeMovieFilter || m.movieTitle === activeMovieFilter,
     );
   }, [sortedMemories, activeMovieFilter]);
 
@@ -138,8 +146,11 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ onJumpToMovies }) =>
   }, []);
 
   return (
-    <div className="workspace-container memories-container" style={{ position: "relative" }}>
-      {(isDegraded || isSyncBlocked) ? (
+    <div
+      className="workspace-container memories-container"
+      style={{ position: "relative" }}
+    >
+      {isDegraded || isSyncBlocked ? (
         <SyncBanner
           isBlocked={isSyncBlocked}
           label={syncWarning ?? undefined}

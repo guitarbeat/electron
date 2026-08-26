@@ -3,14 +3,15 @@ import type { Movie, Place } from "@/shared/types";
 
 export type LibraryIntent = "movie" | "place" | "ambiguous";
 
-export type LibrarySubmitKind =
-  | "movie"
-  | "place"
-  | "show-movie"
-  | "show-place";
+export type LibrarySubmitKind = "movie" | "place" | "show-movie" | "show-place";
 
 export type LibrarySelection =
-  | { kind: "movie-result"; title: string; imdbID?: string; type: "movie" | "series" }
+  | {
+      kind: "movie-result";
+      title: string;
+      imdbID?: string;
+      type: "movie" | "series";
+    }
   | { kind: "library-movie"; movieId: string; title: string }
   | { kind: "library-place"; placeId: string; name: string }
   | { kind: "place-draft"; name: string }
@@ -88,8 +89,9 @@ export const resolveLibrarySubmitKind = ({
     return "movie";
   }
 
-  const wordCount = normalizeLibraryQuery(query).split(/\s+/).filter(Boolean)
-    .length;
+  const wordCount = normalizeLibraryQuery(query)
+    .split(/\s+/)
+    .filter(Boolean).length;
   return wordCount >= 2 ? "place" : "movie";
 };
 
@@ -156,13 +158,19 @@ export const matchLibraryMovies = (
   movies
     .map((movie) => ({ movie, score: scoreLibraryMatch(movie.title, query) }))
     .filter((entry) => entry.score > 0)
-    .sort((left, right) => right.score - left.score || left.movie.title.localeCompare(right.movie.title))
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        left.movie.title.localeCompare(right.movie.title),
+    )
     .slice(0, MAX_SAVED)
     .map((entry) => ({
       id: `saved-movie-${entry.movie.id}`,
       group: "saved" as const,
       title: entry.movie.title,
-      meta: entry.movie.year ? `Saved movie • ${entry.movie.year}` : "Saved movie",
+      meta: entry.movie.year
+        ? `Saved movie • ${entry.movie.year}`
+        : "Saved movie",
       posterUrl: entry.movie.posterUrl,
       selection: {
         kind: "library-movie" as const,
@@ -178,7 +186,11 @@ export const matchLibraryPlaces = (
   places
     .map((place) => ({ place, score: scoreLibraryMatch(place.name, query) }))
     .filter((entry) => entry.score > 0)
-    .sort((left, right) => right.score - left.score || left.place.name.localeCompare(right.place.name))
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        left.place.name.localeCompare(right.place.name),
+    )
     .slice(0, MAX_SAVED)
     .map((entry) => {
       const meta = { title: entry.place.name, label: "Place", icon: "📍" };

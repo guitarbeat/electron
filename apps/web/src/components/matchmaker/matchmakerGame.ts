@@ -1,6 +1,5 @@
 import type { MatchmakerGame, Movie, User } from "../../shared/types.ts";
 
-
 const MATCHMAKER_POOL_SIZE = 10;
 
 const shuffleWithSource = <T>(array: T[], randomSource: () => number): T[] => {

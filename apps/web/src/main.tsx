@@ -7,7 +7,10 @@ import { applyTheme } from "@/theme/tokens";
 import App from "./app/App";
 
 // Dev convenience: ?mock=1 in URL sets mock data mode
-if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("mock") === "1") {
+if (
+  import.meta.env.DEV &&
+  new URLSearchParams(window.location.search).get("mock") === "1"
+) {
   window.localStorage.setItem("useMockData", "true");
 }
 
@@ -41,15 +44,24 @@ if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     });
   } else {
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      let unreg = false;
-      for (const registration of registrations) {
-        registration.unregister();
-        unreg = true;
-      }
-      if (unreg) {
-        window.location.reload();
-      }
-    }).catch(() => undefined);
+    if (new URLSearchParams(window.location.search).get("sw") === "1") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+      });
+    } else {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => {
+          let unreg = false;
+          for (const registration of registrations) {
+            registration.unregister();
+            unreg = true;
+          }
+          if (unreg) {
+            window.location.reload();
+          }
+        })
+        .catch(() => undefined);
+    }
   }
 }

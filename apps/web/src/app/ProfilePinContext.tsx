@@ -34,10 +34,7 @@ interface PinPanelContextValue {
   isSavingPin: boolean;
   handlePinSubmit: (pin: string) => Promise<boolean>;
   handlePinSettingsCancel: () => void;
-  handlePinSettingsSubmit: (
-    pin: string,
-    newPin?: string,
-  ) => Promise<boolean>;
+  handlePinSettingsSubmit: (pin: string, newPin?: string) => Promise<boolean>;
   clearPendingUser: () => void;
 }
 

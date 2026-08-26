@@ -1,19 +1,56 @@
-import { useRef, useMemo, type RefObject, startTransition, useSyncExternalStore, useCallback, useState, useEffect } from 'react';
-import { usePwaInstall } from '@/app/PwaInstallProvider';
-import { useToast, useAppSession, useUser } from '@/app/providerContexts';
-import { getOutboxStatusSummary, type OutboxStatusSummary, syncOutboxStatusEvent, flushPendingSync } from "@/services/state";
-import { stagger, animate } from 'motion/react';
-import { readApiErrorMessage, compareCreatedAtAsc, prefersReducedMotion, sanitizeInput, runWithViewTransition, consoleError, subscribeMotionPreferences, getErrorMessage, isChromaSpotlightEnabled, hasHoverCapability, loadFeatureFonts } from '@/utils';
-import { readHashMainTab, type MainTab } from '@/app/appViewState';
-import { preloadWorkspaceTab } from '@/app/preloadAppModules';
-import { addMessage as addMessageService, deleteMessage as deleteMessageService } from '@/services/content';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { readScope, getStoredScopeSnapshot, mutateScope, retryScopeSync, normalizeQuizData } from '../services/state';
-import { areDeeplyEqual } from '../utils';
-import { User } from '../shared/types';
-import { QuizQuestion, QuizCharacter } from '@/components/quiz';
-import { trapFocusOnTab, isFocusWithin } from '@/components/ui/lib/modalPrimitives';
-
+import {
+  useRef,
+  useMemo,
+  type RefObject,
+  startTransition,
+  useSyncExternalStore,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
+import { usePwaInstall } from "@/app/PwaInstallProvider";
+import { useToast, useAppSession, useUser } from "@/app/providerContexts";
+import {
+  getOutboxStatusSummary,
+  type OutboxStatusSummary,
+  syncOutboxStatusEvent,
+  flushPendingSync,
+} from "@/services/state";
+import { stagger, animate } from "motion/react";
+import {
+  readApiErrorMessage,
+  compareCreatedAtAsc,
+  prefersReducedMotion,
+  sanitizeInput,
+  runWithViewTransition,
+  consoleError,
+  subscribeMotionPreferences,
+  getErrorMessage,
+  isChromaSpotlightEnabled,
+  hasHoverCapability,
+  loadFeatureFonts,
+} from "@/utils";
+import { readHashMainTab, type MainTab } from "@/app/appViewState";
+import { preloadWorkspaceTab } from "@/app/preloadAppModules";
+import {
+  addMessage as addMessageService,
+  deleteMessage as deleteMessageService,
+} from "@/services/content";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  readScope,
+  getStoredScopeSnapshot,
+  mutateScope,
+  retryScopeSync,
+  normalizeQuizData,
+} from "../services/state";
+import { areDeeplyEqual } from "../utils";
+import { User } from "../shared/types";
+import { QuizQuestion, QuizCharacter } from "@/components/quiz";
+import {
+  trapFocusOnTab,
+  isFocusWithin,
+} from "@/components/ui/lib/modalPrimitives";
 
 export interface PwaRuntimeResult {
   isOnline: boolean;
@@ -213,7 +250,6 @@ export function usePwaRuntime(): PwaRuntimeResult {
   };
 }
 
-
 /**
  * Cinematic card drop-in entrance using motion's animate + stagger.
  * Skipped on mobile/coarse pointers and when reduced motion is requested.
@@ -269,7 +305,9 @@ export function useCinematicEntrance(
         },
         {
           duration: 0.55,
-          delay: stagger(staggerAmount / Math.max(targets.length - 1, 1), { startDelay: delay }),
+          delay: stagger(staggerAmount / Math.max(targets.length - 1, 1), {
+            startDelay: delay,
+          }),
           ease: [0.16, 1, 0.3, 1],
           onComplete: () => {
             // Clean up inline styles after animation
@@ -299,16 +337,17 @@ export function useCinematicEntrance(
       cancelled = true;
       observer?.disconnect();
       if (!hasAnimated.current) {
-        cleanupContainer?.querySelectorAll<HTMLElement>(selector).forEach((el) => {
-          el.style.removeProperty("transform");
-          el.style.removeProperty("opacity");
-          el.style.removeProperty("filter");
-        });
+        cleanupContainer
+          ?.querySelectorAll<HTMLElement>(selector)
+          .forEach((el) => {
+            el.style.removeProperty("transform");
+            el.style.removeProperty("opacity");
+            el.style.removeProperty("filter");
+          });
       }
     };
   }, [ready, containerRef, selector, delay]);
 }
-
 
 interface UseAppTabNavigationOptions {
   initialTab: MainTab;
@@ -342,19 +381,16 @@ export function useAppTabNavigation({
       onTabSwitch?.();
       void preloadWorkspaceTab(nextTab);
 
-      runWithViewTransition(
-        () => {
-          startTransition(() => {
-            setActiveTab(nextTab);
-            window.requestAnimationFrame(() => {
-              document
-                .getElementById("main-content")
-                ?.focus({ preventScroll: true });
-            });
+      runWithViewTransition(() => {
+        startTransition(() => {
+          setActiveTab(nextTab);
+          window.requestAnimationFrame(() => {
+            document
+              .getElementById("main-content")
+              ?.focus({ preventScroll: true });
           });
-        },
-        prefersReducedMotion || isMobile,
-      );
+        });
+      }, prefersReducedMotion || isMobile);
     },
     [activeTab, isMobile, onTabSwitch, prefersReducedMotion],
   );
@@ -381,7 +417,6 @@ export function useAppTabNavigation({
   return { activeTab, handleTabChange };
 }
 
-
 const POLLING_INTERVAL = 15000;
 
 export const useMessages = () => {
@@ -395,7 +430,7 @@ export const useMessages = () => {
     syncWarning,
     refresh,
     retrySync,
-      } = useSyncedScope("messages", {
+  } = useSyncedScope("messages", {
     pollingInterval: POLLING_INTERVAL,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -466,7 +501,6 @@ export const useMessages = () => {
   };
 };
 
-
 const TILT_MAX_DEG = 8;
 const SCALE_ON_HOVER = 1.025;
 
@@ -475,6 +509,13 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
 }: { disabled?: boolean } = {}) {
   const ref = useRef<T | null>(null);
   const raf = useRef<number>(0);
+  const coordsRef = useRef<{ clientX: number; clientY: number } | null>(null);
+  const rectRef = useRef<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const prefersReduced = useRef(false);
   const isDisabled = useRef(disabled);
 
@@ -491,7 +532,10 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
     mq.addEventListener("change", h);
     return () => {
       mq.removeEventListener("change", h);
-      cancelAnimationFrame(raf.current);
+      if (raf.current) {
+        cancelAnimationFrame(raf.current);
+        raf.current = 0;
+      }
     };
   }, []);
 
@@ -499,49 +543,72 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
     if (prefersReduced.current || isDisabled.current) return;
     const el = ref.current;
     if (!el) return;
+    const domRect = el.getBoundingClientRect();
+    rectRef.current = {
+      left: domRect.left,
+      top: domRect.top,
+      width: domRect.width || 1,
+      height: domRect.height || 1,
+    };
     el.style.willChange = "transform";
-    el.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)";
+    el.style.transition = "transform 0.08s ease-out";
   }, []);
 
   const onMouseMove = useCallback((e: React.MouseEvent) => {
     if (prefersReduced.current || isDisabled.current) return;
-    const clientX = e.clientX;
-    const clientY = e.clientY;
-    cancelAnimationFrame(raf.current);
-    raf.current = requestAnimationFrame(() => {
-      const el = ref.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) return;
+    coordsRef.current = { clientX: e.clientX, clientY: e.clientY };
 
-      const x = clientX - r.left;
-      const y = clientY - r.top;
+    if (raf.current !== 0) return;
+
+    raf.current = requestAnimationFrame(() => {
+      raf.current = 0;
+      const el = ref.current;
+      const coords = coordsRef.current;
+      if (!el || !coords) return;
+
+      let r = rectRef.current;
+      if (!r) {
+        const domRect = el.getBoundingClientRect();
+        r = {
+          left: domRect.left,
+          top: domRect.top,
+          width: domRect.width || 1,
+          height: domRect.height || 1,
+        };
+        rectRef.current = r;
+      }
+
+      const x = coords.clientX - r.left;
+      const y = coords.clientY - r.top;
       const dx = Math.max(-1, Math.min(1, (x / r.width - 0.5) * 2));
       const dy = Math.max(-1, Math.min(1, (y / r.height - 0.5) * 2));
       const rotY = dx * TILT_MAX_DEG;
       const rotX = -dy * TILT_MAX_DEG;
 
-      el.style.transition = "transform 0.15s ease-out";
+      // Instant 1:1 cursor response without transition latency
+      el.style.transition = "none";
       el.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(${SCALE_ON_HOVER}, ${SCALE_ON_HOVER}, ${SCALE_ON_HOVER})`;
-      el.style.setProperty(
-        "--sheen-x",
-        `${(((dx + 1) / 2) * 100).toFixed(1)}%`,
-      );
-      el.style.setProperty(
-        "--sheen-y",
-        `${(((dy + 1) / 2) * 100).toFixed(1)}%`,
-      );
+      const sheenX = ((dx + 1) * 0.5 * 100).toFixed(1);
+      const sheenY = ((dy + 1) * 0.5 * 100).toFixed(1);
+      el.style.setProperty("--sheen-x", `${sheenX}%`);
+      el.style.setProperty("--sheen-y", `${sheenY}%`);
       el.style.setProperty("--mouse-x", `${x.toFixed(1)}px`);
       el.style.setProperty("--mouse-y", `${y.toFixed(1)}px`);
     });
   }, []);
 
   const onMouseLeave = useCallback(() => {
-    cancelAnimationFrame(raf.current);
+    if (raf.current) {
+      cancelAnimationFrame(raf.current);
+      raf.current = 0;
+    }
+    coordsRef.current = null;
+    rectRef.current = null;
     const el = ref.current;
     if (!el) return;
-    el.style.transition = "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)";
-    el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+    el.style.transition = "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+    el.style.transform =
+      "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
     el.style.willChange = "auto";
     el.style.removeProperty("--sheen-x");
     el.style.removeProperty("--sheen-y");
@@ -552,7 +619,6 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
   return { ref, onMouseEnter, onMouseMove, onMouseLeave };
 }
 
-
 /**
  * Spatial navigation and audio unlock hook for TV remote D-Pad controls.
  */
@@ -562,7 +628,9 @@ export function useTvSpatialNavigation(isTvEnabled: boolean = true) {
 
     // Helper to attempt unlocking Web Audio AudioContext on remote input
     const unlockAudio = () => {
-      const audioCtx = (window as unknown as { _sharedAudioContext?: AudioContext })._sharedAudioContext;
+      const audioCtx = (
+        window as unknown as { _sharedAudioContext?: AudioContext }
+      )._sharedAudioContext;
       if (audioCtx && audioCtx.state === "suspended") {
         audioCtx.resume().catch(() => {});
       }
@@ -571,13 +639,21 @@ export function useTvSpatialNavigation(isTvEnabled: boolean = true) {
     const handleKeyDown = (e: KeyboardEvent) => {
       unlockAudio();
 
-      const navigationKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+      const navigationKeys = [
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+      ];
       if (!navigationKeys.includes(e.key)) return;
 
       const active = document.activeElement as HTMLElement | null;
 
       // If user is inside a text input or textarea, let default text editing work
-      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+      if (
+        active &&
+        (active.tagName === "INPUT" || active.tagName === "TEXTAREA")
+      ) {
         if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
           return;
         }
@@ -586,7 +662,7 @@ export function useTvSpatialNavigation(isTvEnabled: boolean = true) {
       const focusableSelector =
         'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"]), .ups-card, .card-tilt-wrap';
       const elements = Array.from(
-        document.querySelectorAll<HTMLElement>(focusableSelector)
+        document.querySelectorAll<HTMLElement>(focusableSelector),
       ).filter((el) => {
         const style = window.getComputedStyle(el);
         return (
@@ -671,10 +747,8 @@ export function useTvSpatialNavigation(isTvEnabled: boolean = true) {
  * so consumers don't need changes.
  */
 
-
 const noop = (..._args: unknown[]) => {};
 export const useAudio = () => {
-
   const playTone = useCallback(
     (
       _frequency: number,
@@ -698,7 +772,6 @@ export const useAudio = () => {
   };
 };
 
-
 export interface SyncedScopeOptions {
   pollingInterval?: number;
   isPaused?: boolean;
@@ -711,7 +784,6 @@ interface ScopeMutation<TScope extends StateScope> {
 }
 
 export const useSyncedScope = <TScope extends StateScope>(
-
   scope: TScope,
   options: SyncedScopeOptions = {},
 ) => {
@@ -762,8 +834,10 @@ export const useSyncedScope = <TScope extends StateScope>(
   };
 };
 
-export const useMoviesScope = (options?: SyncedScopeOptions) => useSyncedScope("movies", options);
-export const useSuggestionsScope = (options?: SyncedScopeOptions) => useSyncedScope("suggestions", options);
+export const useMoviesScope = (options?: SyncedScopeOptions) =>
+  useSyncedScope("movies", options);
+export const useSuggestionsScope = (options?: SyncedScopeOptions) =>
+  useSyncedScope("suggestions", options);
 interface CollectionOptions {
   pollingInterval?: number;
   isPaused?: boolean;
@@ -855,7 +929,7 @@ export const useCollection = <T>(
         payload,
         optimisticData: optimisticData as StateScopeDataMap[CollectionScope],
       });
-        setData(nextSnapshot.data as T[]);
+      setData(nextSnapshot.data as T[]);
       if (nextSnapshot.degraded) {
         throw new Error(
           nextSnapshot.warning ??
@@ -881,14 +955,12 @@ export const useCollection = <T>(
   };
 };
 
-
 /** Loads quiz/memories feature fonts once when a feature surface mounts. */
 export const useFeatureFonts = (): void => {
   useEffect(() => {
     void loadFeatureFonts();
   }, []);
 };
-
 
 export const mediaBreakpoints = {
   sm: "(max-width: 640px)",
@@ -920,7 +992,6 @@ export const useMediaQuery = (query: string): boolean => {
  *
  * Provides quiz data with polling and mutation support
  */
-
 
 const QUIZ_POLLING_INTERVAL = 30000;
 
@@ -1000,7 +1071,9 @@ export const useQuiz = (isPaused: boolean = false) => {
     async (questionId: string) => {
       await performMutation((data) => ({
         ...data,
-        questions: data.questions.filter((q: QuizQuestion) => q.id !== questionId),
+        questions: data.questions.filter(
+          (q: QuizQuestion) => q.id !== questionId,
+        ),
       }));
     },
     [performMutation],
@@ -1062,7 +1135,6 @@ export const useQuiz = (isPaused: boolean = false) => {
     saveAllData,
   };
 };
-
 
 const PINS_POLL_INTERVAL = 30000;
 
@@ -1182,7 +1254,6 @@ export const usePins = (isPaused: boolean = false) => {
   };
 };
 
-
 export interface ChromaSpotlightOptions {
   radius?: number;
   /** Lerp factor per frame (0–1). Higher = snappier. */
@@ -1197,11 +1268,17 @@ export interface ChromaSpotlightOptions {
  */
 export function useChromaSpotlight({
   radius = 280,
-  damping = 0.12,
+  damping = 0.32,
   fadeOut = 0.6,
 }: ChromaSpotlightOptions = {}) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const fadeRef = useRef<HTMLDivElement | null>(null);
+  const rectRef = useRef<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Target position (where the pointer is)
   const target = useRef({ x: 0, y: 0 });
@@ -1212,32 +1289,35 @@ export function useChromaSpotlight({
   const frameRef = useRef<number | null>(null);
 
   // Start the rAF lerp loop
-  const startLoop = useCallback((el: HTMLDivElement) => {
-    if (frameRef.current !== null) return;
+  const startLoop = useCallback(
+    (el: HTMLDivElement) => {
+      if (frameRef.current !== null) return;
 
-    function tick() {
-      const dx = target.current.x - current.current.x;
-      const dy = target.current.y - current.current.y;
+      function tick() {
+        const dx = target.current.x - current.current.x;
+        const dy = target.current.y - current.current.y;
 
-      // Only keep looping while there's meaningful movement
-      if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-        current.current.x += dx * damping;
-        current.current.y += dy * damping;
-        el.style.setProperty("--x", `${current.current.x}px`);
-        el.style.setProperty("--y", `${current.current.y}px`);
-        frameRef.current = requestAnimationFrame(tick);
-      } else {
-        // Snap to target and stop
-        current.current.x = target.current.x;
-        current.current.y = target.current.y;
-        el.style.setProperty("--x", `${current.current.x}px`);
-        el.style.setProperty("--y", `${current.current.y}px`);
-        frameRef.current = null;
+        // Only keep looping while there's meaningful movement
+        if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+          current.current.x += dx * damping;
+          current.current.y += dy * damping;
+          el.style.setProperty("--x", `${current.current.x.toFixed(1)}px`);
+          el.style.setProperty("--y", `${current.current.y.toFixed(1)}px`);
+          frameRef.current = requestAnimationFrame(tick);
+        } else {
+          // Snap to target and stop
+          current.current.x = target.current.x;
+          current.current.y = target.current.y;
+          el.style.setProperty("--x", `${current.current.x.toFixed(1)}px`);
+          el.style.setProperty("--y", `${current.current.y.toFixed(1)}px`);
+          frameRef.current = null;
+        }
       }
-    }
 
-    frameRef.current = requestAnimationFrame(tick);
-  }, [damping]);
+      frameRef.current = requestAnimationFrame(tick);
+    },
+    [damping],
+  );
 
   useEffect(() => {
     const el = rootRef.current;
@@ -1250,12 +1330,18 @@ export function useChromaSpotlight({
     syncEnabled();
 
     // Initialise position to element center
-    const { width, height } = el.getBoundingClientRect();
-    target.current = { x: width / 2, y: height / 2 };
+    const domRect = el.getBoundingClientRect();
+    rectRef.current = {
+      left: domRect.left,
+      top: domRect.top,
+      width: domRect.width || 1,
+      height: domRect.height || 1,
+    };
+    target.current = { x: domRect.width / 2, y: domRect.height / 2 };
     current.current = { ...target.current };
     el.style.setProperty("--r", `${radius}px`);
-    el.style.setProperty("--x", `${current.current.x}px`);
-    el.style.setProperty("--y", `${current.current.y}px`);
+    el.style.setProperty("--x", `${current.current.x.toFixed(1)}px`);
+    el.style.setProperty("--y", `${current.current.y.toFixed(1)}px`);
 
     const unsubscribe = subscribeMotionPreferences(syncEnabled);
     return () => {
@@ -1267,13 +1353,37 @@ export function useChromaSpotlight({
     };
   }, [radius]);
 
+  const handlePointerEnter = useCallback(() => {
+    if (!enabled.current) return;
+    const root = rootRef.current;
+    if (!root) return;
+    const domRect = root.getBoundingClientRect();
+    rectRef.current = {
+      left: domRect.left,
+      top: domRect.top,
+      width: domRect.width || 1,
+      height: domRect.height || 1,
+    };
+  }, []);
+
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!enabled.current) return;
       const root = rootRef.current;
       if (!root) return;
 
-      const rect = root.getBoundingClientRect();
+      let rect = rectRef.current;
+      if (!rect) {
+        const domRect = root.getBoundingClientRect();
+        rect = {
+          left: domRect.left,
+          top: domRect.top,
+          width: domRect.width || 1,
+          height: domRect.height || 1,
+        };
+        rectRef.current = rect;
+      }
+
       target.current = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -1281,7 +1391,7 @@ export function useChromaSpotlight({
 
       // Show spotlight
       if (fadeRef.current) {
-        fadeRef.current.style.transition = "opacity 0.25s ease";
+        fadeRef.current.style.transition = "opacity 0.2s ease";
         fadeRef.current.style.opacity = "0";
       }
 
@@ -1291,15 +1401,21 @@ export function useChromaSpotlight({
   );
 
   const handlePointerLeave = useCallback(() => {
+    rectRef.current = null;
     if (!enabled.current || !fadeRef.current) return;
     const fade = fadeRef.current;
     fade.style.transition = `opacity ${fadeOut}s ease`;
     fade.style.opacity = "1";
   }, [fadeOut]);
 
-  return { rootRef, fadeRef, handlePointerMove, handlePointerLeave };
+  return {
+    rootRef,
+    fadeRef,
+    handlePointerEnter,
+    handlePointerMove,
+    handlePointerLeave,
+  };
 }
-
 
 export interface UseModalBehaviorOptions {
   isOpen: boolean;
@@ -1385,7 +1501,7 @@ export const useModalBehavior = ({
 
   return { handleClose };
 };
-import type { QuizData } from '@/services/state';
-import type { StateScope, StateScopeDataMap } from '@/services/state';
-import type { Message } from '@/shared/types';
-export * from './useKineticWallScroll';
+import type { QuizData } from "@/services/state";
+import type { StateScope, StateScopeDataMap } from "@/services/state";
+import type { Message } from "@/shared/types";
+export * from "./useKineticWallScroll";

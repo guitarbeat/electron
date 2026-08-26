@@ -2,7 +2,7 @@ import type {
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../apps/web/src/services/state/stateTypes.js';
+} from "../../apps/web/src/services/state/stateTypes.js";
 import {
   badRequestResponse,
   conflictResponse,
@@ -12,9 +12,9 @@ import {
   serverErrorResponse,
   toQuotedEtag,
   unauthorizedResponse,
-} from './http.js';
-import { patchSharedStateFile } from './sharedStateStore.js';
-import { hasAccessSession, requireProfileUser } from './session.js';
+} from "./http.js";
+import { patchSharedStateFile } from "./sharedStateStore.js";
+import { hasAccessSession, requireProfileUser } from "./session.js";
 import {
   buildFallbackScopeData,
   computeVersion,
@@ -22,13 +22,13 @@ import {
   getScopeWarning,
   parseMutationRequest,
   readScopeStoredData,
-} from './state.js';
+} from "./state.js";
 
 export const createReadHandler =
   <TScope extends StateScope>(scope: TScope) =>
   async (request: Request): Promise<Response> => {
     try {
-      if (request.method !== 'GET') return methodNotAllowedResponse('GET');
+      if (request.method !== "GET") return methodNotAllowedResponse("GET");
       if (!hasAccessSession(request)) return unauthorizedResponse();
 
       let clientData: StateScopeDataMap[TScope];
@@ -42,7 +42,9 @@ export const createReadHandler =
         version = stored.version;
         if (stored.usesFallbackStore) {
           degraded = true;
-          warning = getScopeWarning(new Error('DATABASE_URL is not configured.'));
+          warning = getScopeWarning(
+            new Error("DATABASE_URL is not configured."),
+          );
         }
       } catch (error) {
         const fallback = buildFallbackScopeData(scope);
@@ -53,22 +55,26 @@ export const createReadHandler =
         console.warn(`Falling back to default ${scope} state.`, error);
       }
 
-      const incomingEtag = normalizeEtag(request.headers.get('if-none-match'));
-      if (!degraded && incomingEtag && incomingEtag === normalizeEtag(version)) {
+      const incomingEtag = normalizeEtag(request.headers.get("if-none-match"));
+      if (
+        !degraded &&
+        incomingEtag &&
+        incomingEtag === normalizeEtag(version)
+      ) {
         return new Response(null, {
           status: 304,
-          headers: { ETag: toQuotedEtag(version), 'Cache-Control': 'no-store' },
+          headers: { ETag: toQuotedEtag(version), "Cache-Control": "no-store" },
         });
       }
 
       return jsonResponse(
         { data: clientData, version, degraded, warning },
-        { headers: { ETag: toQuotedEtag(version) } }
+        { headers: { ETag: toQuotedEtag(version) } },
       );
     } catch (error) {
       console.error(
         `Failed to read ${scope} state during ${request.method} ${request.url}:`,
-        error
+        error,
       );
       const fallback = buildFallbackScopeData(scope);
       return jsonResponse(
@@ -78,7 +84,7 @@ export const createReadHandler =
           degraded: true,
           warning: getScopeWarning(error),
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
   };
@@ -87,7 +93,7 @@ export const createMutateHandler =
   <TScope extends StateScope>(scope: TScope) =>
   async (request: Request): Promise<Response> => {
     try {
-      if (request.method !== 'POST') return methodNotAllowedResponse('POST');
+      if (request.method !== "POST") return methodNotAllowedResponse("POST");
       if (!hasAccessSession(request)) return unauthorizedResponse();
 
       const definition = getScopeDefinition(scope);
@@ -100,16 +106,18 @@ export const createMutateHandler =
         mutation = await parseMutationRequest(request);
       } catch (error) {
         return badRequestResponse(
-          error instanceof Error ? error.message : 'Invalid mutation request.'
+          error instanceof Error ? error.message : "Invalid mutation request.",
         );
       }
 
       const currentUser = requireProfileUser(request);
       const anonymousAllowed =
         !currentUser &&
-        Boolean(definition.allowAnonymousMutation?.(mutation.op, mutation.payload));
+        Boolean(
+          definition.allowAnonymousMutation?.(mutation.op, mutation.payload),
+        );
       if (!currentUser && !anonymousAllowed) {
-        return unauthorizedResponse('Profile session required.');
+        return unauthorizedResponse("Profile session required.");
       }
 
       const latest = await readScopeStoredData(scope, { bypassCache: true });
@@ -118,14 +126,19 @@ export const createMutateHandler =
           `[state] Version divergence on "${scope}" (op: ${mutation.op}): ` +
             `client sent ${mutation.baseVersion.slice(0, 8)}…, ` +
             `server has ${latest.version.slice(0, 8)}…. ` +
-            `Proceeding with last-writer-wins merge.`
+            `Proceeding with last-writer-wins merge.`,
         );
       }
 
-      const result = definition.mutate(latest.stored, mutation.op, mutation.payload, {
-        currentUser,
-        now: new Date().toISOString(),
-      });
+      const result = definition.mutate(
+        latest.stored,
+        mutation.op,
+        mutation.payload,
+        {
+          currentUser,
+          now: new Date().toISOString(),
+        },
+      );
       if (!result.ok) {
         return conflictResponse({
           currentData: latest.clientData,
@@ -134,18 +147,28 @@ export const createMutateHandler =
         });
       }
 
-      const clientData = definition.toClient(result.data) as StateScopeDataMap[TScope];
+      const clientData = definition.toClient(
+        result.data,
+      ) as StateScopeDataMap[TScope];
       const nextVersion = computeVersion(clientData);
-      await patchSharedStateFile(definition.filename, definition.serialize(result.data));
+      await patchSharedStateFile(
+        definition.filename,
+        definition.serialize(result.data),
+      );
 
       return jsonResponse(
-        { data: clientData, version: nextVersion, degraded: false, applied: true },
-        { headers: { ETag: toQuotedEtag(nextVersion) } }
+        {
+          data: clientData,
+          version: nextVersion,
+          degraded: false,
+          applied: true,
+        },
+        { headers: { ETag: toQuotedEtag(nextVersion) } },
       );
     } catch (error) {
       console.error(
         `Failed to mutate ${scope} state during ${request.method} ${request.url}:`,
-        error
+        error,
       );
       return serverErrorResponse(error);
     }

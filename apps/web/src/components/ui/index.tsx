@@ -14,11 +14,35 @@ import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { motion, useInView } from "motion/react";
 
 import { useProfileSelection, usePinPanel } from "@/app/ProfilePinContext";
-import { colors, shadows, spacing, typography, radius, zIndex, motion as motionToken } from "@/theme/tokens";
-import { getSyncBannerContent, shouldShowSyncBanner, type SyncBannerProps } from "./lib/syncBanner";
-import type { User, Movie, MovieSuggestion, SharedMemory, MainTab } from "@/shared/types";
+import {
+  colors,
+  shadows,
+  spacing,
+  typography,
+  radius,
+  zIndex,
+  motion as motionToken,
+} from "@/theme/tokens";
+import {
+  getSyncBannerContent,
+  shouldShowSyncBanner,
+  type SyncBannerProps,
+} from "./lib/syncBanner";
+import type {
+  User,
+  Movie,
+  MovieSuggestion,
+  SharedMemory,
+  MainTab,
+} from "@/shared/types";
 import { Spinner, CheckIcon, CrossIcon } from "@/common/Icons";
-import { useCardTilt, mediaBreakpoints, useMediaQuery, useModalBehavior, useAudio } from "@/hooks";
+import {
+  useCardTilt,
+  mediaBreakpoints,
+  useMediaQuery,
+  useModalBehavior,
+  useAudio,
+} from "@/hooks";
 import ChromaCollectionGrid from "@/components/effects/ChromaCollectionGrid";
 import { USER_PHOTOS } from "@/shared/types";
 import {
@@ -35,17 +59,21 @@ import {
   PLACES_GRID_MIN_COL,
   WORKSPACE_SKELETON_KEYS,
 } from "@/utils/workspaceConfig";
-import { getWorkspaceCollectionState, consoleError, getErrorMessage } from "@/utils";
+import {
+  getWorkspaceCollectionState,
+  consoleError,
+  getErrorMessage,
+} from "@/utils";
 import { useViewport } from "@/app/providerContexts";
 import { MoviesEmptyIllustration } from "./EmptyStateIllustrations";
 import { MovieCard, SuggestionCard } from "@/components/movies";
-import { getStremioUrls, type StremioMediaObject, cn, USER_OPTIONS } from "@/utils";
+import {
+  getStremioUrls,
+  type StremioMediaObject,
+  cn,
+  USER_OPTIONS,
+} from "@/utils";
 import type { MovieSections } from "@/components/movies";
-
-
-
-
-
 
 interface MediaPosterProps {
   title: string;
@@ -87,9 +115,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   const activeSrc = posterUrl;
 
   return (
-    <div
-      className={`media-poster-wrap ${className}`}
-    >
+    <div className={`media-poster-wrap ${className}`}>
       {shouldShowPoster && (
         <div className={`media-poster-skeleton ${isLoaded ? "loaded" : ""}`} />
       )}
@@ -117,9 +143,6 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     </div>
   );
 };
-
-
-
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
@@ -198,9 +221,6 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = "Card";
 
-
-
-
 // ─── Input ────────────────────────────────────────────────────────────────────
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -237,12 +257,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         if (typeof ref === "function") {
           ref(node);
         } else if (ref) {
-          (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+          (ref as React.MutableRefObject<HTMLInputElement | null>).current =
+            node;
         }
         if (typeof inputRef === "function") {
           inputRef(node);
         } else if (inputRef) {
-          (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+          (
+            inputRef as React.MutableRefObject<HTMLInputElement | null>
+          ).current = node;
         }
       },
       [ref, inputRef],
@@ -418,7 +441,6 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
 Textarea.displayName = "Textarea";
 
-
 export interface WorkspaceFeatureSectionProps {
   id: string;
   ariaLabel: string;
@@ -455,15 +477,14 @@ export const WorkspaceFeatureSection: FC<WorkspaceFeatureSectionProps> = ({
       </header>
     ) : null}
     <div
-      className={["workspace-feature-body", bodyClassName].filter(Boolean).join(" ")}
+      className={["workspace-feature-body", bodyClassName]
+        .filter(Boolean)
+        .join(" ")}
     >
       {children}
     </div>
   </section>
 );
-
-
-
 
 interface Props_ProfileMenu {
   onOpenChange?: (isOpen: boolean) => void;
@@ -664,7 +685,11 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   return (
     <div className="inline-profiles-container">
       {/* Profiles Switcher Row */}
-      <div className="profiles-switcher-row" role="group" aria-label="Switch profile">
+      <div
+        className="profiles-switcher-row"
+        role="group"
+        aria-label="Switch profile"
+      >
         {([...USER_OPTIONS] as User[]).map((profile) => {
           const isActive = currentUser === profile;
           const hasPin = userHasPin(profile);
@@ -692,9 +717,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                     <LockIcon size={10} />
                   </span>
                 )}
-                {isActive && (
-                  <span className="profile-switcher-indicator" />
-                )}
+                {isActive && <span className="profile-switcher-indicator" />}
               </div>
               <svg viewBox="0 0 58 58" className="profile-switcher-curve-svg">
                 <path
@@ -746,8 +769,12 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                   aria-label="Profile settings"
                 >
                   <div className="profile-settings-header">
-                    <span className="profile-settings-title">{currentUser}</span>
-                    <span className="profile-settings-subtitle">Profile Options</span>
+                    <span className="profile-settings-title">
+                      {currentUser}
+                    </span>
+                    <span className="profile-settings-subtitle">
+                      Profile Options
+                    </span>
                   </div>
 
                   <div className="profile-settings-section">
@@ -795,9 +822,6 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   );
 };
 
-
-
-
 export const ProfilePinPanel: React.FC = () => {
   const { userNeedsPin } = useProfileSelection();
   const {
@@ -844,9 +868,6 @@ export const ProfilePinPanel: React.FC = () => {
   return null;
 };
 
-
-
-
 interface MediaCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   variant?: "default" | "visited" | "highlighted" | "watched";
@@ -875,10 +896,6 @@ export const MediaCard: React.FC<MediaCardProps> = ({
     </div>
   );
 };
-
-
-
-
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -988,8 +1005,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = "Button";
 
-
-
 /**
  * HandWritingText
  *
@@ -1011,7 +1026,6 @@ Button.displayName = "Button";
  * Or use the built-in preset phrases:
  *   <HandWritingText text="Movie night" />
  */
-
 
 // ---------------------------------------------------------------------------
 // Preset SVG paths for common phrases used in the app
@@ -1248,26 +1262,29 @@ export function HandWritingText({
 
 export { HandWritingText as Component_hand_writing_text };
 
-
-export type SortOrder = 'recent' | 'alpha' | 'rating';
+export type SortOrder = "recent" | "alpha" | "rating";
 
 export interface BentoSortChipConfig {
   value: SortOrder;
   label: string;
 }
 
-
-
-
-
-
-
-
 export interface MovieBodyActions {
   toggleWatched: (id: string) => void | unknown;
-  editMovie: (id: string, updates: { title: string; customPosterUrl?: string }) => void | unknown;
-  addMemory: (movieId: string | undefined, movieTitle: string, author: string, note: string) => Promise<unknown>;
-  updateMemory: (memoryId: string, updates: { note?: string; movieId?: string; movieTitle?: string }) => Promise<unknown>;
+  editMovie: (
+    id: string,
+    updates: { title: string; customPosterUrl?: string },
+  ) => void | unknown;
+  addMemory: (
+    movieId: string | undefined,
+    movieTitle: string,
+    author: string,
+    note: string,
+  ) => Promise<unknown>;
+  updateMemory: (
+    memoryId: string,
+    updates: { note?: string; movieId?: string; movieTitle?: string },
+  ) => Promise<unknown>;
   deleteMemory: (memoryId: string) => Promise<void>;
   togglePin: (memoryId: string) => Promise<unknown>;
 }
@@ -1302,12 +1319,12 @@ export {
   DriftWallLoading,
   type TiltedPosterWallProps,
 } from "./TiltedPosterWall";
-export { interleaveCollectionItems, computePosterMatrix } from "./lib/posterMatrix";
+export {
+  interleaveCollectionItems,
+  computePosterMatrix,
+} from "./lib/posterMatrix";
 
-import {
-  TiltedPosterWall,
-  DriftWallLoading,
-} from "./TiltedPosterWall";
+import { TiltedPosterWall, DriftWallLoading } from "./TiltedPosterWall";
 import { interleaveCollectionItems } from "./lib/posterMatrix";
 
 export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
@@ -1339,24 +1356,36 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       key={movie.id}
       movie={movie}
       currentUser={currentUser}
-      onToggle={() => { actions.toggleWatched(movie.id); }}
+      onToggle={() => {
+        actions.toggleWatched(movie.id);
+      }}
       onToggleError={onToggleError}
-      onEditMetadata={async (updates) => { await actions.editMovie(movie.id, updates); }}
+      onEditMetadata={async (updates) => {
+        await actions.editMovie(movie.id, updates);
+      }}
       onDelete={() => onDeleteRequest(movie)}
       isHighlighted={successMovieId === movie.id}
       memories={movieMemories.get(movie.id) ?? []}
       onAddMemory={
         currentUser
-          ? async (note) => { await actions.addMemory(movie.id, movie.title, currentUser, note); }
+          ? async (note) => {
+              await actions.addMemory(movie.id, movie.title, currentUser, note);
+            }
           : undefined
       }
-      onUpdateMemory={async (memoryId, note) => { await actions.updateMemory(memoryId, { note }); }}
-      onDeleteMemory={async (memoryId) => { await actions.deleteMemory(memoryId); }}
-      onTogglePin={async (memoryId) => { await actions.togglePin(memoryId); }}
+      onUpdateMemory={async (memoryId, note) => {
+        await actions.updateMemory(memoryId, { note });
+      }}
+      onDeleteMemory={async (memoryId) => {
+        await actions.deleteMemory(memoryId);
+      }}
+      onTogglePin={async (memoryId) => {
+        await actions.togglePin(memoryId);
+      }}
     />
   );
 
-  if (collectionState === 'loading') {
+  if (collectionState === "loading") {
     return <DriftWallLoading isMobile={isMobile} />;
   }
 
@@ -1382,23 +1411,27 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   return (
     <div
       className="unified-wall-content"
-      style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? spacing.md : spacing.lg }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: isMobile ? spacing.md : spacing.lg,
+      }}
     >
       {unifiedCards.length > 0 ? (
-          <TiltedPosterWall
-            items={unifiedCards}
-            isMobile={isMobile}
-            isStatic={isInteractionStatic}
-          />
-        ) : (
-          <CollectionEmptyState
-            padding={isMobile ? spacing.md : spacing['3xl']}
-            className="poster-wall-empty"
-          >
-            <MoviesEmptyIllustration />
-            <strong>No cards yet</strong>
-            <span>Add a movie, suggestion, or place to fill this wall.</span>
-          </CollectionEmptyState>
+        <TiltedPosterWall
+          items={unifiedCards}
+          isMobile={isMobile}
+          isStatic={isInteractionStatic}
+        />
+      ) : (
+        <CollectionEmptyState
+          padding={isMobile ? spacing.md : spacing["3xl"]}
+          className="poster-wall-empty"
+        >
+          <MoviesEmptyIllustration />
+          <strong>No cards yet</strong>
+          <span>Add a movie, suggestion, or place to fill this wall.</span>
+        </CollectionEmptyState>
       )}
     </div>
   );
@@ -1422,9 +1455,6 @@ export const WorkspaceTabLoading: FC<WorkspaceTabLoadingProps> = ({
     {children}
   </div>
 );
-
-
-
 
 interface MediaCardWatcherStackProps {
   watchers: string[];
@@ -1455,9 +1485,6 @@ export const MediaCardWatcherStack: React.FC<MediaCardWatcherStackProps> = ({
     </div>
   );
 };
-
-
-
 
 // ── WorkspaceSearch Exports ───────────────────────────────────────────────
 export {
@@ -1491,9 +1518,6 @@ export type {
   WorkspaceAutocompleteNoMatchPanelProps,
   WorkspaceComboboxConfig,
 } from "./WorkspaceSearch";
-
-
-
 
 interface MediaCardMetadataProps {
   items: (string | number | undefined | null)[];
@@ -1543,9 +1567,6 @@ export const MediaCardMetadata: React.FC<MediaCardMetadataProps> = ({
   );
 };
 
-
-
-
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
@@ -1581,13 +1602,23 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onCancel();
   };
 
-  const variantClass = variant === "primary" ? "confirm-dialog-content-primary" : "confirm-dialog-content-danger";
+  const variantClass =
+    variant === "primary"
+      ? "confirm-dialog-content-primary"
+      : "confirm-dialog-content-danger";
 
   return (
-    <AlertDialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
+    <AlertDialog.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+    >
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="confirm-dialog-overlay" />
-        <AlertDialog.Content className={`confirm-dialog-content ${variantClass}`}>
+        <AlertDialog.Content
+          className={`confirm-dialog-content ${variantClass}`}
+        >
           <AlertDialog.Title className="confirm-dialog-title">
             {title}
           </AlertDialog.Title>
@@ -1596,12 +1627,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </AlertDialog.Description>
           <div className="confirm-dialog-actions">
             <AlertDialog.Cancel asChild>
-              <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
+              <Button
+                variant="ghost"
+                onClick={handleCancel}
+                disabled={isLoading}
+              >
                 {cancelText}
               </Button>
             </AlertDialog.Cancel>
             <AlertDialog.Action asChild>
-              <Button variant={variant} onClick={handleConfirm} isLoading={isLoading}>
+              <Button
+                variant={variant}
+                onClick={handleConfirm}
+                isLoading={isLoading}
+              >
                 {confirmText}
               </Button>
             </AlertDialog.Action>
@@ -1611,9 +1650,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     </AlertDialog.Root>
   );
 };
-
-
-
 
 export interface GalleryPhoto {
   id: string | number;
@@ -1681,11 +1717,13 @@ export function InteractiveFolderGallery({
       <div className="relative w-full min-h-[500px] flex flex-col items-center justify-center">
         {/* ── Folder shell ─────────────────────────────────────────────── */}
         <div className="relative w-[400px] h-[500px] flex justify-center pointer-events-none z-0">
-
           {/* Folder back body — uses the app's surface-1 token */}
           <motion.div
             className="absolute bottom-6 w-80 h-56 drop-shadow-2xl"
-            animate={{ opacity: isFolderOpen ? 0 : 1, scale: isFolderOpen ? 0.9 : 1 }}
+            animate={{
+              opacity: isFolderOpen ? 0 : 1,
+              scale: isFolderOpen ? 0.9 : 1,
+            }}
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
           >
             {/* Tab — accent-tinted so it reads as "this tab belongs to the app" */}
@@ -1919,7 +1957,6 @@ export function InteractiveFolderGallery({
 
 export { InteractiveFolderGallery as Component_interactive_folder_gallery };
 
-
 export interface SuggestionCardBaseProps {
   suggestedBy: string;
   title: string;
@@ -1975,9 +2012,7 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
 
   if (media) {
     return (
-      <div
-        className={`movie-item-container suggestion-item-container`}
-      >
+      <div className={`movie-item-container suggestion-item-container`}>
         <Card
           variant="default"
           className={`suggestion-item-card suggestion-item-card--media chroma-card ${className}`.trim()}
@@ -1993,48 +2028,48 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
           <MediaCardPosterWrap className="movie-item-poster-wrap">
             {media}
             <div className="movie-item-title-overlay" aria-hidden="true">
-            <MediaCardTitle className="movie-item-title-overlay__title">
-              {title}
-            </MediaCardTitle>
-            {year && (
-              <div className="movie-item-title-overlay__meta">
-                <span className="movie-item-meta__year">{year}</span>
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            className="movie-item-details-hit-area"
-            aria-label={`View details for "${title}"`}
-          />
-          <CardActionRail
-            variant="glass"
-            primary={
-              <CardActionButton
-                isCircle
-                variant="primary"
-                onClick={onAccept}
-                disabled={actionsDisabled}
-                leftIcon={<CheckIcon />}
-                aria-label="Accept suggestion"
-                title="Accept suggestion"
-              />
-            }
-            cluster={
-              <CardActionButton
-                isCircle
-                variant="glass"
-                onClick={onReject}
-                disabled={actionsDisabled}
-                leftIcon={<CrossIcon />}
-                aria-label="Reject suggestion"
-                title="Reject suggestion"
-              />
-            }
-          />
-        </MediaCardPosterWrap>
+              <MediaCardTitle className="movie-item-title-overlay__title">
+                {title}
+              </MediaCardTitle>
+              {year && (
+                <div className="movie-item-title-overlay__meta">
+                  <span className="movie-item-meta__year">{year}</span>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="movie-item-details-hit-area"
+              aria-label={`View details for "${title}"`}
+            />
+            <CardActionRail
+              variant="glass"
+              primary={
+                <CardActionButton
+                  isCircle
+                  variant="primary"
+                  onClick={onAccept}
+                  disabled={actionsDisabled}
+                  leftIcon={<CheckIcon />}
+                  aria-label="Accept suggestion"
+                  title="Accept suggestion"
+                />
+              }
+              cluster={
+                <CardActionButton
+                  isCircle
+                  variant="glass"
+                  onClick={onReject}
+                  disabled={actionsDisabled}
+                  leftIcon={<CrossIcon />}
+                  aria-label="Reject suggestion"
+                  title="Reject suggestion"
+                />
+              }
+            />
+          </MediaCardPosterWrap>
 
-        {isProcessing ? <SuggestionCardProcessingOverlay /> : null}
+          {isProcessing ? <SuggestionCardProcessingOverlay /> : null}
         </Card>
       </div>
     );
@@ -2155,9 +2190,6 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
     </Card>
   );
 };
-
-
-
 
 interface MinigameModalProps {
   isOpen: boolean;
@@ -2498,9 +2530,6 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
   );
 };
 
-
-
-
 interface Props_UserAvatar {
   user: User | null;
 }
@@ -2514,10 +2543,7 @@ export const UserAvatar: FC<Props_UserAvatar> = ({ user }) => {
   const [imgFailed, setImgFailed] = useState(false);
 
   if (!user) {
-    return (
-      <span className="app-header__avatar-placeholder">
-      </span>
-    );
+    return <span className="app-header__avatar-placeholder"></span>;
   }
 
   const photoUrl = USER_PHOTOS[user];
@@ -2537,14 +2563,13 @@ export const UserAvatar: FC<Props_UserAvatar> = ({ user }) => {
   return <span className="app-header__avatar-initial">{user.charAt(0)}</span>;
 };
 
-
-
-
 export interface WorkspaceTabFallbackProps {
   tab: MainTab;
 }
 
-export const WorkspaceTabFallback: FC<WorkspaceTabFallbackProps> = ({ tab }) => {
+export const WorkspaceTabFallback: FC<WorkspaceTabFallbackProps> = ({
+  tab,
+}) => {
   const { isMobile } = useViewport();
   if (tab === "movies" || tab === "places") {
     return <DriftWallLoading isMobile={isMobile} fullViewport />;
@@ -2557,13 +2582,6 @@ export const WorkspaceTabFallback: FC<WorkspaceTabFallbackProps> = ({ tab }) => 
     </div>
   );
 };
-
-
-
-
-
-
-
 
 interface CardActionRailProps {
   primary?: React.ReactNode;
@@ -2668,8 +2686,6 @@ export const CardActionButton: React.FC<CardActionButtonProps> = ({
   );
 };
 
-
-
 /**
  * SidebarRail — persistent left navigation rail (Disney+/HBO Max style).
  * Collapsed: 60px icon strip. Expanded: 200px with labels on hover.
@@ -2688,17 +2704,15 @@ export {
 } from "./SidebarRail";
 export type { SidebarRailProps, PwaStatus } from "./SidebarRail";
 
-
-
-
-
 interface StremioButtonProps {
   movie: string | StremioMediaObject;
   variant?: "pill" | "icon" | "full";
   className?: string;
 }
 
-export const StremioIcon: React.FC<{ className?: string }> = ({ className = "" }) => (
+export const StremioIcon: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
   <svg
     viewBox="0 0 24 24"
     width="18"
@@ -2740,7 +2754,8 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
     );
   }
 
-  const variantClass = variant === "full" ? "stremio-btn-full" : "stremio-btn-pill";
+  const variantClass =
+    variant === "full" ? "stremio-btn-full" : "stremio-btn-pill";
 
   return (
     <a
@@ -2755,15 +2770,10 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
       tabIndex={0}
     >
       <StremioIcon />
-      <span>
-        {variant === "full" ? "Watch on Stremio" : "Stremio"}
-      </span>
+      <span>{variant === "full" ? "Watch on Stremio" : "Stremio"}</span>
     </a>
   );
 };
-
-
-
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -2976,9 +2986,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   );
 };
 
-
-
-
 interface CardTiltShellProps {
   children: React.ReactNode;
   className?: string;
@@ -3008,13 +3015,6 @@ export const CardTiltShell: React.FC<CardTiltShellProps> = ({
     </div>
   );
 };
-
-
-
-
-
-
-
 
 interface ToastProps {
   message: string;
@@ -3285,9 +3285,6 @@ export const Toast: React.FC<ToastProps> = ({
   );
 };
 
-
-
-
 // ============================================================================
 // CollectionEmptyState
 // ============================================================================
@@ -3415,7 +3412,10 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
           <span className="workspace-section-heading__content">
             <span className="workspace-section-heading__label">{heading}</span>
             {shouldShowCount ? (
-              <span className="workspace-section-heading__count" aria-hidden="true">
+              <span
+                className="workspace-section-heading__count"
+                aria-hidden="true"
+              >
                 {count}
               </span>
             ) : null}
@@ -3427,9 +3427,6 @@ export const CollectionSection: React.FC<CollectionSectionProps> = ({
   );
 };
 
-
-
-
 interface WorkspaceCollectionLoadingProps {
   tab: MainTab;
   gridClassName?: string;
@@ -3437,12 +3434,9 @@ interface WorkspaceCollectionLoadingProps {
   browseLayoutClass?: string;
 }
 
-export const WorkspaceCollectionLoading: FC<WorkspaceCollectionLoadingProps> = ({
-  tab,
-  gridClassName,
-  minColumnWidth,
-  browseLayoutClass = "",
-}) => {
+export const WorkspaceCollectionLoading: FC<
+  WorkspaceCollectionLoadingProps
+> = ({ tab, gridClassName, minColumnWidth, browseLayoutClass = "" }) => {
   const { isMobile } = useViewport();
   const { emoji, label } = WORKSPACE_LOADING_COPY[tab];
   const skeletonKeys = isMobile
@@ -3474,9 +3468,6 @@ export const WorkspaceCollectionLoading: FC<WorkspaceCollectionLoadingProps> = (
     </ChromaCollectionGrid>
   );
 };
-
-
-
 
 interface SkeletonProps {
   variant?: "text" | "circular" | "rectangular" | "poster";
@@ -3576,9 +3567,6 @@ export const MovieCardSkeleton: React.FC = () => (
   </div>
 );
 
-
-
-
 export interface BentoStatTileConfig {
   id: string;
   label: string;
@@ -3631,9 +3619,6 @@ export const StatTile: React.FC<StatTileProps> = ({ tile }) => {
     </button>
   );
 };
-
-
-
 
 export interface MagicToggleOption<T extends string> {
   value: T;
@@ -3820,7 +3805,6 @@ export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   );
 };
 
-
 export const PIN_LENGTH = 4;
 
 export type PinFlowMode = "enter" | "set" | "change";
@@ -4000,8 +3984,7 @@ const getPinSubmitLabel = (
   return "Continue";
 };
 
-const needsPinSubmitButton = (mode: PinFlowMode): boolean =>
-  mode !== "enter";
+const needsPinSubmitButton = (mode: PinFlowMode): boolean => mode !== "enter";
 
 const KEYPAD_LETTERS: Record<number, string> = {
   1: "",
@@ -4037,11 +4020,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const [flow, dispatch] = useReducer(
-    pinFlowReducer,
-    mode,
-    createPinFlowState,
-  );
+  const [flow, dispatch] = useReducer(pinFlowReducer, mode, createPinFlowState);
   const { playKeypad, playError } = useAudio();
 
   useEffect(() => {
@@ -4056,26 +4035,29 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     if (!flow.isShaking) return;
-    const id = window.setTimeout(
-      () => dispatch({ type: "clear-shake" }),
-      450,
-    );
+    const id = window.setTimeout(() => dispatch({ type: "clear-shake" }), 450);
     return () => window.clearTimeout(id);
   }, [flow.isShaking]);
 
-  const reportError = useCallback((message: string, clearDigits = false) => {
-    dispatch({ type: "set-error", message });
-    playError();
-    if (clearDigits) {
-      dispatch({ type: "clear-digits" });
-    }
-  }, [playError]);
+  const reportError = useCallback(
+    (message: string, clearDigits = false) => {
+      dispatch({ type: "set-error", message });
+      playError();
+      if (clearDigits) {
+        dispatch({ type: "clear-digits" });
+      }
+    },
+    [playError],
+  );
 
-  const appendDigit = useCallback((value: number) => {
-    if (flow.digits.length >= PIN_LENGTH || isLoading) return;
-    dispatch({ type: "digit", value });
-    playKeypad(value);
-  }, [flow.digits.length, isLoading, playKeypad]);
+  const appendDigit = useCallback(
+    (value: number) => {
+      if (flow.digits.length >= PIN_LENGTH || isLoading) return;
+      dispatch({ type: "digit", value });
+      playKeypad(value);
+    },
+    [flow.digits.length, isLoading, playKeypad],
+  );
 
   const backspace = useCallback(() => {
     if (flow.digits.length === 0 || isLoading) return;
@@ -4094,7 +4076,11 @@ export const PinDialog: React.FC<PinDialogProps> = ({
         }
         return;
       }
-      if (event.key === "Tab" && formRef.current && isFocusWithin(formRef.current)) {
+      if (
+        event.key === "Tab" &&
+        formRef.current &&
+        isFocusWithin(formRef.current)
+      ) {
         trapFocusOnTab(event, formRef.current);
         return;
       }
@@ -4113,7 +4099,11 @@ export const PinDialog: React.FC<PinDialogProps> = ({
   }, [isOpen, isLoading, onCancel, appendDigit, backspace]);
 
   useEffect(() => {
-    if (flow.mode !== "enter" || flow.digits.length !== PIN_LENGTH || isLoading) {
+    if (
+      flow.mode !== "enter" ||
+      flow.digits.length !== PIN_LENGTH ||
+      isLoading
+    ) {
       return;
     }
     const id = window.setTimeout(async () => {
@@ -4126,7 +4116,10 @@ export const PinDialog: React.FC<PinDialogProps> = ({
       } catch (submitError) {
         consoleError("PIN submit failed:", submitError);
         reportError(
-          getErrorMessage(submitError, "Unable to verify PIN. Please try again."),
+          getErrorMessage(
+            submitError,
+            "Unable to verify PIN. Please try again.",
+          ),
           true,
         );
       }
@@ -4162,9 +4155,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
         }
         dispatch({
           type:
-            flow.phase === "set-new"
-              ? "advance-set-new"
-              : "advance-change-new",
+            flow.phase === "set-new" ? "advance-set-new" : "advance-change-new",
         });
         return;
       }
@@ -4256,7 +4247,9 @@ export const PinDialog: React.FC<PinDialogProps> = ({
               className="pin-dialog-close-btn"
               onClick={onCancel}
               disabled={isLoading}
-              aria-label={isRequiredSetup ? "Exit to guest mode" : "Close dialog"}
+              aria-label={
+                isRequiredSetup ? "Exit to guest mode" : "Close dialog"
+              }
             >
               <svg
                 width="16"
@@ -4330,66 +4323,68 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
           {/* Keypad */}
           <div className="pin-dialog-keypad" role="group" aria-label="Keypad">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, "cancel", 0, "del"].map((num, _index) => {
-              if (num === "cancel") {
-                return (
-                  <button
-                    key="cancel"
-                    type="button"
-                    className="pin-dialog-key pin-dialog-key-cancel"
-                    onClick={onCancel}
-                    disabled={isLoading}
-                    aria-label="Cancel"
-                  >
-                    Cancel
-                  </button>
-                );
-              }
-              if (num === "del") {
-                return (
-                  <button
-                    key="del"
-                    type="button"
-                    className="pin-dialog-key pin-dialog-key-del"
-                    onClick={backspace}
-                    aria-label="Delete last digit"
-                    disabled={isLoading || flow.digits.length === 0}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, "cancel", 0, "del"].map(
+              (num, _index) => {
+                if (num === "cancel") {
+                  return (
+                    <button
+                      key="cancel"
+                      type="button"
+                      className="pin-dialog-key pin-dialog-key-cancel"
+                      onClick={onCancel}
+                      disabled={isLoading}
+                      aria-label="Cancel"
                     >
-                      <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
-                      <line x1="18" y1="9" x2="12" y2="15" />
-                      <line x1="12" y1="9" x2="18" y2="15" />
-                    </svg>
+                      Cancel
+                    </button>
+                  );
+                }
+                if (num === "del") {
+                  return (
+                    <button
+                      key="del"
+                      type="button"
+                      className="pin-dialog-key pin-dialog-key-del"
+                      onClick={backspace}
+                      aria-label="Delete last digit"
+                      disabled={isLoading || flow.digits.length === 0}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
+                        <line x1="18" y1="9" x2="12" y2="15" />
+                        <line x1="12" y1="9" x2="18" y2="15" />
+                      </svg>
+                    </button>
+                  );
+                }
+                const digit = num as number;
+                const letters = KEYPAD_LETTERS[digit];
+                return (
+                  <button
+                    key={digit}
+                    type="button"
+                    className="pin-dialog-key"
+                    onClick={() => appendDigit(digit)}
+                    disabled={isLoading || flow.digits.length >= PIN_LENGTH}
+                    aria-label={`${digit} ${letters}`}
+                  >
+                    <span className="pin-dialog-key-number">{digit}</span>
+                    {letters ? (
+                      <span className="pin-dialog-key-letters">{letters}</span>
+                    ) : null}
                   </button>
                 );
-              }
-              const digit = num as number;
-              const letters = KEYPAD_LETTERS[digit];
-              return (
-                <button
-                  key={digit}
-                  type="button"
-                  className="pin-dialog-key"
-                  onClick={() => appendDigit(digit)}
-                  disabled={isLoading || flow.digits.length >= PIN_LENGTH}
-                  aria-label={`${digit} ${letters}`}
-                >
-                  <span className="pin-dialog-key-number">{digit}</span>
-                  {letters ? (
-                    <span className="pin-dialog-key-letters">{letters}</span>
-                  ) : null}
-                </button>
-              );
-            })}
+              },
+            )}
           </div>
 
           <input
@@ -4424,15 +4419,15 @@ export const PinDialog: React.FC<PinDialogProps> = ({
         </form>
       </section>
     </div>,
-    document.body
+    document.body,
   );
 };
 
-
-
-
-
-export const SyncBanner: FC<SyncBannerProps> = ({ isBlocked, onRetry, label }) => {
+export const SyncBanner: FC<SyncBannerProps> = ({
+  isBlocked,
+  onRetry,
+  label,
+}) => {
   if (!shouldShowSyncBanner({ isBlocked, label })) return null;
   const content = getSyncBannerContent({ isBlocked, label });
   return (
@@ -4443,10 +4438,12 @@ export const SyncBanner: FC<SyncBannerProps> = ({ isBlocked, onRetry, label }) =
         "sync-banner px-4 py-2 text-xs flex items-center justify-between gap-2 border-b",
         isBlocked
           ? "bg-rose-950/60 text-rose-200 border-rose-800/40"
-          : "bg-amber-950/60 text-amber-200 border-amber-800/40"
+          : "bg-amber-950/60 text-amber-200 border-amber-800/40",
       )}
     >
-      <span className="font-mono truncate">{content.description || label || content.title}</span>
+      <span className="font-mono truncate">
+        {content.description || label || content.title}
+      </span>
       {onRetry && (
         <button
           type="button"
@@ -4497,12 +4494,15 @@ export const Modal: FC<ModalProps> = ({
         className="relative w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6"
         style={{
           maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth,
-          maxHeight: typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
+          maxHeight:
+            typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
         }}
       >
         {title && (
           <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
-            <h2 className="text-lg font-bold text-white tracking-wide">{title}</h2>
+            <h2 className="text-lg font-bold text-white tracking-wide">
+              {title}
+            </h2>
             <button
               type="button"
               onClick={closeDisabled ? undefined : onClose}
@@ -4555,47 +4555,63 @@ export const useModalBase = (
 export { DriftWall } from "./DriftWall";
 export type { DriftWallProps, DriftWallItem } from "./DriftWall";
 
-export const MediaCardPosterWrap = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  (props, ref) => <div ref={ref} {...props} />
-);
+export const MediaCardPosterWrap = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>((props, ref) => <div ref={ref} {...props} />);
 MediaCardPosterWrap.displayName = "MediaCardPosterWrap";
 
-export const MediaCardTitle: FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ children, ...props }) => (
-  <h3 {...props}>{children}</h3>
-);
+export const MediaCardTitle: FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
+  children,
+  ...props
+}) => <h3 {...props}>{children}</h3>;
 
 export interface MediaCardRatingBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   rating?: string;
 }
 
-export const MediaCardRatingBadge: FC<MediaCardRatingBadgeProps> = ({ rating, children, className, ...props }) => (
+export const MediaCardRatingBadge: FC<MediaCardRatingBadgeProps> = ({
+  rating,
+  children,
+  className,
+  ...props
+}) => (
   <span className={cn("media-card-rating-badge", className)} {...props}>
     {children ?? (rating ? `★ ${rating}` : null)}
   </span>
 );
 
-export const MediaCardCover: FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
-  <div {...props}>{children}</div>
-);
+export const MediaCardCover: FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
 
-export const MediaCardInfo: FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
-  <div {...props}>{children}</div>
-);
+export const MediaCardInfo: FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
 
-export const MediaCardOverlay: FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
-  <div {...props}>{children}</div>
-);
+export const MediaCardOverlay: FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => <div {...props}>{children}</div>;
 
-export const MediaCardSubtext: FC<React.HTMLAttributes<HTMLParagraphElement>> = ({ children, ...props }) => (
-  <p {...props}>{children}</p>
-);
+export const MediaCardSubtext: FC<
+  React.HTMLAttributes<HTMLParagraphElement>
+> = ({ children, ...props }) => <p {...props}>{children}</p>;
 
 export interface MediaCardStatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   label?: string;
   icon?: ReactNode;
 }
 
-export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({ label, icon, children, className, ...props }) => (
+export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({
+  label,
+  icon,
+  children,
+  className,
+  ...props
+}) => (
   <span className={cn("media-card-status-badge", className)} {...props}>
     {icon && <span className="media-card-status-badge__icon mr-1">{icon}</span>}
     {children ?? label}

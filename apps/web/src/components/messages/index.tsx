@@ -1,4 +1,3 @@
-
 /* eslint-disable react-refresh/only-export-components */
 export const IOS_BLUE = "#007aff";
 export const IOS_GRAY = "#e5e5ea";
@@ -40,7 +39,11 @@ export const shouldSubmitMessageOnKeyDown = ({
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Message, User } from "@/shared/types";
-import { formatMessageTimestamp, MAX_MESSAGE_LENGTH, getErrorMessage } from "@/utils";
+import {
+  formatMessageTimestamp,
+  MAX_MESSAGE_LENGTH,
+  getErrorMessage,
+} from "@/utils";
 
 import { useMessages } from "@/hooks";
 import { TrashIcon, Spinner } from "@/common/Icons";
@@ -177,9 +180,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   );
 };
 
-
-
-
 /* -------------------------------------------------------------------------- */
 /* Sub-component: MessageBoardHeader                                          */
 /* -------------------------------------------------------------------------- */
@@ -195,7 +195,7 @@ export const MessageBoardHeader: React.FC<MessageBoardHeaderProps> = ({
 }) => (
   <header className={"msg-board-header"}>
     <div className={"msg-board-side"} aria-hidden="true" />
-    
+
     <div className={"msg-board-center"}>
       <h2 className={"msg-board-title"}>Messages</h2>
       <div className={"msg-board-user-badge"}>
@@ -208,7 +208,10 @@ export const MessageBoardHeader: React.FC<MessageBoardHeaderProps> = ({
     </div>
 
     <div className="msg-board-side msg-board-side-right">
-      <span className={"msg-board-count-pill"} aria-label={`${messageCount} total messages`}>
+      <span
+        className={"msg-board-count-pill"}
+        aria-label={`${messageCount} total messages`}
+      >
         {messageCount} total
       </span>
     </div>
@@ -310,10 +313,7 @@ export const MessageBoard: React.FC = () => {
 
   return (
     <>
-      <section
-        className={"msg-board"}
-        aria-label="Shared Message Board"
-      >
+      <section className={"msg-board"} aria-label="Shared Message Board">
         <div className={"msg-board-surface"}>
           <MessageBoardHeader
             currentUser={currentUser}
@@ -367,9 +367,6 @@ export const MessageBoard: React.FC = () => {
     </>
   );
 };
-
-
-
 
 interface MessageListProps {
   messages: Message[];
@@ -671,9 +668,6 @@ export const MessageList: React.FC<MessageListProps> = ({
   );
 };
 
-
-
-
 interface MessageInputProps {
   currentUser: User | null;
   isSubmitting: boolean;
@@ -875,7 +869,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               backgroundColor:
                 showSendButton && currentUser ? colors.accent : "transparent",
               border: "none",
-              color: showSendButton && currentUser ? colors.textPrimary : colors.textTertiary,
+              color:
+                showSendButton && currentUser
+                  ? colors.textPrimary
+                  : colors.textTertiary,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -895,7 +892,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           >
             {isSubmitting ? (
               <Spinner
-                style={{ width: "18px", height: "18px", color: colors.textPrimary }}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  color: colors.textPrimary,
+                }}
               />
             ) : (
               <svg
@@ -907,7 +908,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               >
                 <path
                   d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
-                  stroke={showSendButton && currentUser ? colors.textPrimary : colors.textTertiary}
+                  stroke={
+                    showSendButton && currentUser
+                      ? colors.textPrimary
+                      : colors.textTertiary
+                  }
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -937,5 +942,3 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     </div>
   );
 };
-
-

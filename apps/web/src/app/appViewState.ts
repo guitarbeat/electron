@@ -69,7 +69,12 @@ export const readInitialAppViewState = (): StoredAppViewState => {
 
   const panelIsMessages = search.get("panel") === "messages";
   return {
-    activeTab: fromHash ?? fromQuery ?? (panelIsMessages ? ("messages" as const) : null) ?? stored?.activeTab ?? "movies",
+    activeTab:
+      fromHash ??
+      fromQuery ??
+      (panelIsMessages ? ("messages" as const) : null) ??
+      stored?.activeTab ??
+      "movies",
     showMessages: panelIsMessages || Boolean(stored?.showMessages),
   };
 };

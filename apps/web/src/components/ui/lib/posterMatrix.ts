@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * Fairly interleaves multiple streams of items (e.g. movies, suggestions, places)
@@ -10,13 +10,16 @@ import React from 'react';
 export function interleaveCollectionItems(
   ...streams: (React.ReactNode[] | undefined)[]
 ): React.ReactNode[] {
-  const activeStreams = streams.filter(
-    (stream): stream is React.ReactNode[] => Boolean(stream && stream.length > 0)
+  const activeStreams = streams.filter((stream): stream is React.ReactNode[] =>
+    Boolean(stream && stream.length > 0),
   );
   if (activeStreams.length === 0) return [];
   if (activeStreams.length === 1) return [...activeStreams[0]];
 
-  const totalItemCount = activeStreams.reduce((sum, stream) => sum + stream.length, 0);
+  const totalItemCount = activeStreams.reduce(
+    (sum, stream) => sum + stream.length,
+    0,
+  );
   const streamReadPointers = activeStreams.map(() => 0);
   const interleavedResult: React.ReactNode[] = [];
 
@@ -24,7 +27,11 @@ export function interleaveCollectionItems(
     let optimalStreamIndex = -1;
     let maximumLag = -Infinity;
 
-    for (let streamIndex = 0; streamIndex < activeStreams.length; streamIndex++) {
+    for (
+      let streamIndex = 0;
+      streamIndex < activeStreams.length;
+      streamIndex++
+    ) {
       const currentStream = activeStreams[streamIndex];
       const currentPointer = streamReadPointers[streamIndex];
 
@@ -41,7 +48,10 @@ export function interleaveCollectionItems(
     }
 
     if (optimalStreamIndex !== -1) {
-      const selectedItem = activeStreams[optimalStreamIndex][streamReadPointers[optimalStreamIndex]];
+      const selectedItem =
+        activeStreams[optimalStreamIndex][
+          streamReadPointers[optimalStreamIndex]
+        ];
       interleavedResult.push(selectedItem);
       streamReadPointers[optimalStreamIndex]++;
     }
@@ -60,7 +70,7 @@ function calculateNeighborPenalty(
   rowIndex: number,
   grid: number[][],
   itemFrequencies: number[],
-  cardsPerBand: number
+  cardsPerBand: number,
 ): number {
   let penalty = itemFrequencies[candidateIndex] * 12;
 
@@ -78,7 +88,8 @@ function calculateNeighborPenalty(
     for (let rowOffset = -2; rowOffset <= 2; rowOffset++) {
       const neighborRow = (rowIndex + rowOffset + cardsPerBand) % cardsPerBand;
       if (grid[columnIndex - 1][neighborRow] === candidateIndex) {
-        penalty += rowOffset === 0 ? 6000 : Math.abs(rowOffset) === 1 ? 2500 : 800;
+        penalty +=
+          rowOffset === 0 ? 6000 : Math.abs(rowOffset) === 1 ? 2500 : 800;
       }
     }
   }
@@ -94,7 +105,9 @@ function calculateNeighborPenalty(
   }
 
   // Add deterministic jitter to break ties evenly
-  const deterministicJitter = (((columnIndex * 37 + rowIndex * 19 + candidateIndex * 13) % 23) / 23) * 0.1;
+  const deterministicJitter =
+    (((columnIndex * 37 + rowIndex * 19 + candidateIndex * 13) % 23) / 23) *
+    0.1;
   return penalty + deterministicJitter;
 }
 
@@ -110,7 +123,7 @@ function calculateNeighborPenalty(
 export function computePosterMatrix(
   posterCards: React.ReactNode[],
   columnCount: number,
-  cardsPerBand: number
+  cardsPerBand: number,
 ): React.ReactNode[][] {
   const totalCards = posterCards.length;
   if (totalCards === 0) return [];
@@ -123,13 +136,13 @@ export function computePosterMatrix(
           ? React.cloneElement(singleCard, {
               key: `col-${columnIndex}-card-${rowIndex}-0`,
             })
-          : singleCard
-      )
+          : singleCard,
+      ),
     );
   }
 
   const grid: number[][] = Array.from({ length: columnCount }, () =>
-    Array(cardsPerBand).fill(-1)
+    Array(cardsPerBand).fill(-1),
   );
   const itemFrequencies = Array(totalCards).fill(0);
 
@@ -138,14 +151,18 @@ export function computePosterMatrix(
       let optimalCandidateIndex = 0;
       let lowestPenalty = Infinity;
 
-      for (let candidateIndex = 0; candidateIndex < totalCards; candidateIndex++) {
+      for (
+        let candidateIndex = 0;
+        candidateIndex < totalCards;
+        candidateIndex++
+      ) {
         const candidatePenalty = calculateNeighborPenalty(
           candidateIndex,
           columnIndex,
           rowIndex,
           grid,
           itemFrequencies,
-          cardsPerBand
+          cardsPerBand,
         );
 
         if (candidatePenalty < lowestPenalty) {
@@ -167,6 +184,6 @@ export function computePosterMatrix(
             key: `col-${columnIndex}-row-${rowIndex}-item-${itemIndex}`,
           })
         : cardElement;
-    })
+    }),
   );
 }

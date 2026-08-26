@@ -1,12 +1,12 @@
-import { jsonResponse, methodNotAllowedResponse } from './_lib/http.js';
-import { getSessionState } from './_lib/session.js';
-import { getPinCoverageState } from './_lib/state.js';
-import { withWebHandler } from './_lib/webHandler.js';
-import { logger } from './_lib/logger.js';
+import { jsonResponse, methodNotAllowedResponse } from "./_lib/http.js";
+import { getSessionState } from "./_lib/session.js";
+import { getPinCoverageState } from "./_lib/state.js";
+import { withWebHandler } from "./_lib/webHandler.js";
+import { logger } from "./_lib/logger.js";
 
 async function handler(req: Request): Promise<Response> {
-  if (req.method !== 'GET') {
-    return methodNotAllowedResponse('GET');
+  if (req.method !== "GET") {
+    return methodNotAllowedResponse("GET");
   }
 
   try {
@@ -27,9 +27,9 @@ async function handler(req: Request): Promise<Response> {
         currentUser: null,
         pinProtectedUsers: [],
         usersMissingPins: [],
-        warning: 'Session state is temporarily unavailable.',
+        warning: "Session state is temporarily unavailable.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

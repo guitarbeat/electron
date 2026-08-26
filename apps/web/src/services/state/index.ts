@@ -185,7 +185,8 @@ export const mockPlaces: Place[] = [
     rating: "4.8",
     lat: 40.7128,
     lng: -74.006,
-    imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80",
   },
   {
     id: "place-2",
@@ -198,7 +199,8 @@ export const mockPlaces: Place[] = [
     rating: "4.5",
     lat: 40.6501,
     lng: -74.0027,
-    imageUrl: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=600&q=80",
   },
   {
     id: "place-3",
@@ -210,7 +212,8 @@ export const mockPlaces: Place[] = [
     rating: "4.9",
     lat: 40.7484,
     lng: -73.9857,
-    imageUrl: "https://images.unsplash.com/photo-1507842229452-96a92881a293?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1507842229452-96a92881a293?w=600&q=80",
   },
   {
     id: "place-4",
@@ -222,7 +225,8 @@ export const mockPlaces: Place[] = [
     rating: "4.7",
     lat: 40.7589,
     lng: -73.9851,
-    imageUrl: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=80",
   },
   {
     id: "place-5",
@@ -234,7 +238,8 @@ export const mockPlaces: Place[] = [
     rating: "4.9",
     lat: 40.7306,
     lng: -73.9352,
-    imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
   },
 ];
 
@@ -289,7 +294,6 @@ export const isMockMode = (): boolean => {
   // routes should use the backend by default.
   return window.localStorage.getItem("useMockData") === "true";
 };
-
 
 export const STATE_SCOPES = [
   "movies",
@@ -397,12 +401,7 @@ export interface SessionState {
 }
 
 export type StateClientErrorCode =
-  | "unauthorized"
-  | "forbidden"
-  | "conflict"
-  | "invalid"
-  | "server"
-  | "network";
+  "unauthorized" | "forbidden" | "conflict" | "invalid" | "server" | "network";
 
 export class StateClientError extends Error {
   status: number;
@@ -425,7 +424,6 @@ export class StateClientError extends Error {
   }
 }
 
-
 export type {
   MatchmakerGame,
   Message,
@@ -439,126 +437,150 @@ export type {
 // Zod schemas for scope validation and rehydration
 export const UserSchema = z.enum(["Aaron", "Electra"]);
 
-export const MovieSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  addedBy: z.enum(["Aaron", "Electra"]).or(z.string().min(1)),
-  watchedBy: z.array(z.string()).default([]),
-  createdAt: z.string(),
-  posterUrl: z.string().optional(),
-  year: z.string().optional(),
-  plot: z.string().optional(),
-  imdbRating: z.string().optional(),
-  runtime: z.string().optional(),
-  genre: z.string().optional(),
-  director: z.string().optional(),
-  category: z.string().optional(),
-  mediaType: z.enum(["movie", "series"]).optional(),
-  votes: z.union([z.number(), z.record(z.any())]).optional(),
-  voteCount: z.number().optional(),
-}).passthrough();
+export const MovieSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    addedBy: z.enum(["Aaron", "Electra"]).or(z.string().min(1)),
+    watchedBy: z.array(z.string()).default([]),
+    createdAt: z.string(),
+    posterUrl: z.string().optional(),
+    year: z.string().optional(),
+    plot: z.string().optional(),
+    imdbRating: z.string().optional(),
+    runtime: z.string().optional(),
+    genre: z.string().optional(),
+    director: z.string().optional(),
+    category: z.string().optional(),
+    mediaType: z.enum(["movie", "series"]).optional(),
+    votes: z.union([z.number(), z.record(z.any())]).optional(),
+    voteCount: z.number().optional(),
+  })
+  .passthrough();
 
-export const MovieSuggestionSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  suggestedBy: z.string().min(1),
-  reason: z.string().optional(),
-  notes: z.string().optional(),
-  imdbID: z.string().optional(),
-  type: z.enum(["movie", "series"]).optional(),
-  status: z.enum(["pending", "accepted", "rejected"]),
-  createdAt: z.string(),
-  respondedAt: z.string().optional(),
-  respondedBy: z.enum(["Aaron", "Electra"]).optional(),
-}).passthrough();
+export const MovieSuggestionSchema = z
+  .object({
+    id: z.string().min(1),
+    title: z.string().min(1),
+    suggestedBy: z.string().min(1),
+    reason: z.string().optional(),
+    notes: z.string().optional(),
+    imdbID: z.string().optional(),
+    type: z.enum(["movie", "series"]).optional(),
+    status: z.enum(["pending", "accepted", "rejected"]),
+    createdAt: z.string(),
+    respondedAt: z.string().optional(),
+    respondedBy: z.enum(["Aaron", "Electra"]).optional(),
+  })
+  .passthrough();
 
-export const MessageSchema = z.object({
-  id: z.string().min(1),
-  author: z.string().min(1),
-  content: z.string(),
-  createdAt: z.string(),
-}).passthrough();
+export const MessageSchema = z
+  .object({
+    id: z.string().min(1),
+    author: z.string().min(1),
+    content: z.string(),
+    createdAt: z.string(),
+  })
+  .passthrough();
 
-export const SharedMemorySchema = z.object({
-  id: z.string().min(1),
-  movieId: z.string().optional(),
-  movieTitle: z.string().min(1),
-  author: z.string().min(1),
-  note: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string().optional(),
-  isPinned: z.boolean().optional(),
-  imageUrl: z.string().optional(),
-}).passthrough();
+export const SharedMemorySchema = z
+  .object({
+    id: z.string().min(1),
+    movieId: z.string().optional(),
+    movieTitle: z.string().min(1),
+    author: z.string().min(1),
+    note: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().optional(),
+    isPinned: z.boolean().optional(),
+    imageUrl: z.string().optional(),
+  })
+  .passthrough();
 
-export const PlaceSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  addedBy: z.enum(["Aaron", "Electra"]).optional(),
-  notes: z.string().optional(),
-  createdAt: z.string(),
-  visitedAt: z.string().optional(),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
-  category: z.string().optional(),
-  rating: z.string().optional(),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
-}).passthrough();
+export const PlaceSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    addedBy: z.enum(["Aaron", "Electra"]).optional(),
+    notes: z.string().optional(),
+    createdAt: z.string(),
+    visitedAt: z.string().optional(),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+    category: z.string().optional(),
+    rating: z.string().optional(),
+    description: z.string().optional(),
+    imageUrl: z.string().optional(),
+  })
+  .passthrough();
 
-export const PlaceSuggestionSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  suggestedBy: z.string().min(1),
-  createdAt: z.string(),
-  notes: z.string().optional(),
-  category: z.string().optional(),
-  rating: z.string().optional(),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
-  status: z.enum(["pending", "accepted", "rejected"]),
-  respondedAt: z.string().optional(),
-  respondedBy: z.enum(["Aaron", "Electra"]).optional(),
-}).passthrough();
+export const PlaceSuggestionSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    suggestedBy: z.string().min(1),
+    createdAt: z.string(),
+    notes: z.string().optional(),
+    category: z.string().optional(),
+    rating: z.string().optional(),
+    description: z.string().optional(),
+    imageUrl: z.string().optional(),
+    status: z.enum(["pending", "accepted", "rejected"]),
+    respondedAt: z.string().optional(),
+    respondedBy: z.enum(["Aaron", "Electra"]).optional(),
+  })
+  .passthrough();
 
-export const QuizDataSchema = z.object({
-  questions: z.array(z.any()),
-  characterDescriptions: z.record(z.string()),
-  neitherDescription: z.string(),
-}).passthrough();
+export const QuizDataSchema = z
+  .object({
+    questions: z.array(z.any()),
+    characterDescriptions: z.record(z.string()),
+    neitherDescription: z.string(),
+  })
+  .passthrough();
 
-export const MatchmakerGameSchema = z.object({
-  id: z.string(),
-  moviePool: z.array(z.string()),
-  aaronLikes: z.array(z.string()),
-  electraLikes: z.array(z.string()),
-  aaronDislikes: z.array(z.string()),
-  electraDislikes: z.array(z.string()),
-  aaronSwipeOrder: z.array(z.string()).optional(),
-  electraSwipeOrder: z.array(z.string()).optional(),
-  status: z.enum(["active", "completed"]),
-  createdAt: z.string(),
-  startedBy: z.enum(["Aaron", "Electra"]),
-}).passthrough().nullable();
+export const MatchmakerGameSchema = z
+  .object({
+    id: z.string(),
+    moviePool: z.array(z.string()),
+    aaronLikes: z.array(z.string()),
+    electraLikes: z.array(z.string()),
+    aaronDislikes: z.array(z.string()),
+    electraDislikes: z.array(z.string()),
+    aaronSwipeOrder: z.array(z.string()).optional(),
+    electraSwipeOrder: z.array(z.string()).optional(),
+    status: z.enum(["active", "completed"]),
+    createdAt: z.string(),
+    startedBy: z.enum(["Aaron", "Electra"]),
+  })
+  .passthrough()
+  .nullable();
 
-export const PinsStateSchema = z.object({
-  Aaron: z.boolean(),
-  Electra: z.boolean(),
-}).passthrough();
+export const PinsStateSchema = z
+  .object({
+    Aaron: z.boolean(),
+    Electra: z.boolean(),
+  })
+  .passthrough();
 
 export const SpinHistorySchema = z.array(z.string());
 
-export const DailySpinRecordSchema = z.object({
-  date: z.string(),
-  spins: z.array(
-    z.object({
-      movieId: z.string(),
-      movieTitle: z.string(),
-      spunBy: z.enum(["Aaron", "Electra"]).or(z.string()),
-      createdAt: z.string(),
-    }).passthrough(),
-  ),
-}).passthrough().nullable();
+export const DailySpinRecordSchema = z
+  .object({
+    date: z.string(),
+    spins: z.array(
+      z
+        .object({
+          movieId: z.string(),
+          movieTitle: z.string(),
+          spunBy: z.enum(["Aaron", "Electra"]).or(z.string()),
+          createdAt: z.string(),
+        })
+        .passthrough(),
+    ),
+  })
+  .passthrough()
+  .nullable();
 
 export const StateScopeSchemas = {
   movies: z.array(MovieSchema),
@@ -578,7 +600,10 @@ export const validateScopeData = <TScope extends StateScope>(
   scope: TScope,
   data: unknown,
 ): StateScopeDataMap[TScope] | null => {
-  if (data === undefined || data === null && scope !== "matchmaker" && scope !== "dailySpin") {
+  if (
+    data === undefined ||
+    (data === null && scope !== "matchmaker" && scope !== "dailySpin")
+  ) {
     return null;
   }
   const schema = StateScopeSchemas[scope];
@@ -641,7 +666,8 @@ export const normalizeQuizData = (value: unknown): QuizData | null => {
         : defaultQuestions,
     characterDescriptions,
     neitherDescription:
-      !shouldUpgradeLegacyDefaults && typeof candidate.neitherDescription === "string"
+      !shouldUpgradeLegacyDefaults &&
+      typeof candidate.neitherDescription === "string"
         ? candidate.neitherDescription
         : defaultNeither,
   };
@@ -1054,15 +1080,12 @@ export const normalizeDailySpinRecord = (
 
 // State management module
 
-
 export const normalizeRequiredString = (value: unknown): string | null => {
   if (typeof value !== "string") return null;
   return sanitizeInput(value) || null;
 };
 
-export const normalizeOptionalString = (
-  value: unknown,
-): string | undefined => {
+export const normalizeOptionalString = (value: unknown): string | undefined => {
   if (typeof value !== "string") return undefined;
   return sanitizeInput(value) || undefined;
 };
@@ -1072,13 +1095,10 @@ export const normalizeRequiredDate = (value: unknown): string | null => {
   return Number.isNaN(Date.parse(value)) ? null : value;
 };
 
-export const normalizeOptionalDate = (
-  value: unknown,
-): string | undefined => normalizeRequiredDate(value) ?? undefined;
+export const normalizeOptionalDate = (value: unknown): string | undefined =>
+  normalizeRequiredDate(value) ?? undefined;
 
-export const normalizeOptionalUrl = (
-  value: unknown,
-): string | undefined => {
+export const normalizeOptionalUrl = (value: unknown): string | undefined => {
   const normalized = normalizeOptionalString(value);
   return normalized && isValidUrl(normalized) ? normalized : undefined;
 };
@@ -1098,7 +1118,6 @@ export const normalizeRecordList = <T>(
         return normalized === null ? [] : [normalized];
       })
     : [];
-
 
 const VERSIONED_SNAPSHOT_PREFIX = "movienight_v1_scope_state_v1_";
 const LEGACY_SNAPSHOT_PREFIX = "movieList.scopeSnapshot.";
@@ -1320,7 +1339,9 @@ const readSnapshot = <TScope extends StateScope>(
 
     const validatedData = validateScopeData(scope, candidateData);
     if (validatedData === null) {
-      console.warn(`Corrupted or obsolete stored data rejected for scope "${scope}".`);
+      console.warn(
+        `Corrupted or obsolete stored data rejected for scope "${scope}".`,
+      );
       return null;
     }
 
@@ -2021,9 +2042,6 @@ export const flushPendingSync = async (): Promise<OutboxStatusSummary> => {
 
   return getOutboxStatusSummaryInternal();
 };
-
-
-
 
 /**
  * Fast path when version + metadata match; still compares data if the reference changed.

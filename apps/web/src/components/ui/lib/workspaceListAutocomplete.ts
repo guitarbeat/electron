@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 
 export function getNextListIndex(
   currentIndex: number,
@@ -50,7 +56,8 @@ export const useWorkspaceAutocompleteNavigation = () => {
     [],
   );
   const getEnterSelectionIndex = useCallback(
-    (resultCount: number) => getListEnterSelectionIndex(activeIndex, resultCount),
+    (resultCount: number) =>
+      getListEnterSelectionIndex(activeIndex, resultCount),
     [activeIndex],
   );
 
@@ -152,4 +159,3 @@ export function useWorkspaceSearchInputHandle(
     onFocusInput?.();
   }, [inputRef, onFocusInput]);
 }
-

@@ -169,7 +169,9 @@ export const useMemoryListActions = ({
   const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
   const [draftNote, setDraftNote] = useState("");
   const [isBusyMemoryId, setIsBusyMemoryId] = useState<string | null>(null);
-  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(null);
+  const [memoryToDelete, setMemoryToDelete] = useState<SharedMemory | null>(
+    null,
+  );
 
   const confirmDeleteMemory = useCallback(async () => {
     if (!memoryToDelete) return;

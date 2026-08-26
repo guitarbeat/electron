@@ -1,17 +1,17 @@
-import { fetchWithRetry } from './_lib/retryFetch.js';
-import { withWebHandler } from './_lib/webHandler.js';
-import { resolveConfig } from './_lib/config.js';
+import { fetchWithRetry } from "./_lib/retryFetch.js";
+import { withWebHandler } from "./_lib/webHandler.js";
+import { resolveConfig } from "./_lib/config.js";
 import {
   BoundedResponseCache,
   cachedProxyResponse,
   isAbsoluteUrl,
   jsonProxyResponse,
   type CachedProxyResponse,
-} from './_lib/cachedProxy.js';
+} from "./_lib/cachedProxy.js";
 
 const TVMAZE_API_BASE_URL = resolveConfig(
   process.env.TVMAZE_API_URL || process.env.VITE_TVMAZE_API_URL,
-  'https://api.tvmaze.com'
+  "https://api.tvmaze.com",
 );
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
@@ -26,37 +26,39 @@ const badConfigResponse = (message: string) =>
 const badRequestResponse = (message: string) =>
   jsonProxyResponse({ error: message }, 400);
 const methodNotAllowedResponse = () =>
-  jsonProxyResponse({ error: 'Method not allowed.' }, 405);
+  jsonProxyResponse({ error: "Method not allowed." }, 405);
 
 const buildTargetUrl = (req: Request): URL | Response => {
   if (!isAbsoluteUrl(TVMAZE_API_BASE_URL)) {
-    return badConfigResponse('Invalid TVMAZE_API_URL configuration.');
+    return badConfigResponse("Invalid TVMAZE_API_URL configuration.");
   }
 
   // Vercel may pass a relative `req.url` which requires a base.
-  const sourceUrl = new URL(req.url, 'http://localhost');
-  const mode = sourceUrl.searchParams.get('mode');
-  const id = sourceUrl.searchParams.get('id');
-  const query = sourceUrl.searchParams.get('q');
+  const sourceUrl = new URL(req.url, "http://localhost");
+  const mode = sourceUrl.searchParams.get("mode");
+  const id = sourceUrl.searchParams.get("id");
+  const query = sourceUrl.searchParams.get("q");
   const targetUrl = new URL(TVMAZE_API_BASE_URL);
 
-  if (mode === 'show' && id) {
-    targetUrl.pathname = `${targetUrl.pathname.replace(/\/$/, '')}/shows/${encodeURIComponent(id)}`;
+  if (mode === "show" && id) {
+    targetUrl.pathname = `${targetUrl.pathname.replace(/\/$/, "")}/shows/${encodeURIComponent(id)}`;
     return targetUrl;
   }
 
-  if (mode === 'search' && query) {
-    targetUrl.pathname = `${targetUrl.pathname.replace(/\/$/, '')}/search/shows`;
-    targetUrl.searchParams.set('q', query);
+  if (mode === "search" && query) {
+    targetUrl.pathname = `${targetUrl.pathname.replace(/\/$/, "")}/search/shows`;
+    targetUrl.searchParams.set("q", query);
     return targetUrl;
   }
 
-  return badRequestResponse('mode=show&id=... or mode=search&q=... is required.');
+  return badRequestResponse(
+    "mode=show&id=... or mode=search&q=... is required.",
+  );
 };
 
 async function handler(req: Request): Promise<Response> {
   try {
-    if (req.method !== 'GET') {
+    if (req.method !== "GET") {
       return methodNotAllowedResponse();
     }
 
@@ -75,14 +77,15 @@ async function handler(req: Request): Promise<Response> {
       targetUrl,
       {
         headers: {
-          Accept: 'application/json',
+          Accept: "application/json",
         },
       },
-      'tvmaze',
-      { timeoutMs: 5000 }
+      "tvmaze",
+      { timeoutMs: 5000 },
     );
     const body = await upstreamResponse.text();
-    const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
+    const contentType =
+      upstreamResponse.headers.get("content-type") || "application/json";
 
     if (upstreamResponse.ok) {
       tvMazeCache.set(cacheKey, {
@@ -97,14 +100,14 @@ async function handler(req: Request): Promise<Response> {
       status: upstreamResponse.status,
       statusText: upstreamResponse.statusText,
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'no-store',
-        'X-Cache': 'MISS',
+        "Content-Type": contentType,
+        "Cache-Control": "no-store",
+        "X-Cache": "MISS",
       },
     });
   } catch (error) {
     console.error(`Error handling ${req.method} ${req.url}:`, error);
-    return jsonProxyResponse({ error: 'Internal server error.' }, 500);
+    return jsonProxyResponse({ error: "Internal server error." }, 500);
   }
 }
 

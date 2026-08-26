@@ -101,7 +101,8 @@ export const normalizeQuizData = (value: unknown): QuizData | null => {
         : defaultQuestions,
     characterDescriptions,
     neitherDescription:
-      !shouldUpgradeLegacyDefaults && typeof candidate.neitherDescription === "string"
+      !shouldUpgradeLegacyDefaults &&
+      typeof candidate.neitherDescription === "string"
         ? candidate.neitherDescription
         : defaultNeither,
   };

@@ -37,7 +37,8 @@ const PwaInstallContext = createContext<PwaInstallContextValue | null>(null);
 // eslint-disable-next-line react-refresh/only-export-components
 export const usePwaInstall = (): PwaInstallContextValue => {
   const ctx = useContext(PwaInstallContext);
-  if (!ctx) throw new Error("usePwaInstall must be used within PwaInstallProvider");
+  if (!ctx)
+    throw new Error("usePwaInstall must be used within PwaInstallProvider");
   return ctx;
 };
 
@@ -46,7 +47,8 @@ export const usePwaInstall = (): PwaInstallContextValue => {
 const readStandaloneMode = (): boolean =>
   typeof window !== "undefined" &&
   (window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true);
 
 /** True on iOS Safari, which doesn't fire beforeinstallprompt */
 const isIosSafari = (): boolean =>
@@ -56,7 +58,9 @@ const isIosSafari = (): boolean =>
 
 // ── Provider ───────────────────────────────────────────────────────
 
-export const PwaInstallProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const PwaInstallProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const { showToast } = useToast();
   const promptRef = useRef<BeforeInstallPromptEvent | null>(null);
   const autoShownRef = useRef(false);
@@ -114,7 +118,8 @@ export const PwaInstallProvider: React.FC<{ children: ReactNode }> = ({ children
       setIsStandalone(true);
       showToast({
         type: "success",
-        message: "Electron is installed. Open it from your home screen or dock.",
+        message:
+          "Electron is installed. Open it from your home screen or dock.",
       });
     };
     window.addEventListener("appinstalled", handler);

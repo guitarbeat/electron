@@ -163,7 +163,8 @@ export const mockPlaces: Place[] = [
     rating: "4.8",
     lat: 40.7128,
     lng: -74.006,
-    imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&q=80",
   },
   {
     id: "place-2",
@@ -176,7 +177,8 @@ export const mockPlaces: Place[] = [
     rating: "4.5",
     lat: 40.6501,
     lng: -74.0027,
-    imageUrl: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=600&q=80",
   },
   {
     id: "place-3",
@@ -188,7 +190,8 @@ export const mockPlaces: Place[] = [
     rating: "4.9",
     lat: 40.7484,
     lng: -73.9857,
-    imageUrl: "https://images.unsplash.com/photo-1507842229452-96a92881a293?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1507842229452-96a92881a293?w=600&q=80",
   },
   {
     id: "place-4",
@@ -200,7 +203,8 @@ export const mockPlaces: Place[] = [
     rating: "4.7",
     lat: 40.7589,
     lng: -73.9851,
-    imageUrl: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=80",
   },
   {
     id: "place-5",
@@ -212,7 +216,8 @@ export const mockPlaces: Place[] = [
     rating: "4.9",
     lat: 40.7306,
     lng: -73.9352,
-    imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
   },
 ];
 

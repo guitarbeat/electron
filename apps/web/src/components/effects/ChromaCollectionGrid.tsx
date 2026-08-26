@@ -1,9 +1,10 @@
 import React from "react";
-import { CollectionGrid  } from "@/components/ui";
+import { CollectionGrid } from "@/components/ui";
 import { useChromaSpotlight } from "@/hooks";
 
-interface ChromaCollectionGridProps
-  extends React.ComponentProps<typeof CollectionGrid> {
+interface ChromaCollectionGridProps extends React.ComponentProps<
+  typeof CollectionGrid
+> {
   spotlightRadius?: number;
 }
 
@@ -17,13 +18,19 @@ const ChromaCollectionGrid: React.FC<ChromaCollectionGridProps> = ({
   children,
   ...props
 }) => {
-  const { rootRef, fadeRef, handlePointerMove, handlePointerLeave } =
-    useChromaSpotlight({ radius: spotlightRadius });
+  const {
+    rootRef,
+    fadeRef,
+    handlePointerEnter,
+    handlePointerMove,
+    handlePointerLeave,
+  } = useChromaSpotlight({ radius: spotlightRadius });
 
   return (
     <div
       ref={rootRef}
       className={`chroma-grid-root ${className}`.trim()}
+      onPointerEnter={handlePointerEnter}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >

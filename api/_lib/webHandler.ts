@@ -1,11 +1,11 @@
-import { serverErrorResponse } from './http.js';
+import { serverErrorResponse } from "./http.js";
 import {
   isWebRequest,
   toWebRequest,
   writeFetchResponse,
   type NodeLikeRequest,
   type NodeLikeResponse,
-} from './nodeBridge.js';
+} from "./nodeBridge.js";
 
 type WebHandler = (req: Request) => Promise<Response> | Response;
 
@@ -17,7 +17,7 @@ type DualModeHandler = {
 export function withWebHandler(handler: WebHandler): DualModeHandler {
   const dualModeHandler = async (
     req: Request | NodeLikeRequest,
-    res?: NodeLikeResponse
+    res?: NodeLikeResponse,
   ): Promise<Response | void> => {
     try {
       if (isWebRequest(req) && !res) {
@@ -34,7 +34,9 @@ export function withWebHandler(handler: WebHandler): DualModeHandler {
       await writeFetchResponse(res, response);
     } catch (error) {
       const url = isWebRequest(req) ? req.url : (req as NodeLikeRequest).url;
-      const method = isWebRequest(req) ? req.method : (req as NodeLikeRequest).method;
+      const method = isWebRequest(req)
+        ? req.method
+        : (req as NodeLikeRequest).method;
       console.error(`[webHandler] Fatal error during ${method} ${url}:`, error);
 
       const response = serverErrorResponse(error);

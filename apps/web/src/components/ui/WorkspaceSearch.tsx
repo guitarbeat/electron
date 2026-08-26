@@ -12,10 +12,10 @@ import { cn } from "@/utils/shared";
 
 // ── Icons ───────────────────────────────────────────────────────────────────
 
-export const SearchFieldLensIcon: React.FC<{ size?: number; className?: string }> = ({
-  size = 18,
-  className = "",
-}) => (
+export const SearchFieldLensIcon: React.FC<{
+  size?: number;
+  className?: string;
+}> = ({ size = 18, className = "" }) => (
   <svg
     width={size}
     height={size}
@@ -50,7 +50,9 @@ export const ClearInputIcon: React.FC<{ size?: number }> = ({ size = 14 }) => (
   </svg>
 );
 
-export const SparkleFilterIcon: React.FC<{ size?: number }> = ({ size = 14 }) => (
+export const SparkleFilterIcon: React.FC<{ size?: number }> = ({
+  size = 14,
+}) => (
   <svg
     width={size}
     height={size}
@@ -83,11 +85,10 @@ export interface WorkspaceSearchShellProps {
   onShellBlurCapture?: () => void;
 }
 
-export interface WorkspaceSearchFieldProps
-  extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    "value" | "onChange" | "aria-label"
-  > {
+export interface WorkspaceSearchFieldProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange" | "aria-label"
+> {
   inputRef?: React.Ref<HTMLInputElement>;
   value?: string;
   onChange?: (value: string) => void;
@@ -117,7 +118,7 @@ export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
       <form
         className={cn(
           "workspace-search__search-form",
-          isAutocompleteActive && "is-autocomplete-active"
+          isAutocompleteActive && "is-autocomplete-active",
         )}
         onSubmit={onSubmit}
         noValidate
@@ -126,7 +127,7 @@ export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
           ref={shellRef as React.Ref<HTMLDivElement>}
           className={cn(
             "workspace-search__search-shell",
-            icon && "workspace-search__search-shell--with-icon"
+            icon && "workspace-search__search-shell--with-icon",
           )}
           onFocusCapture={onShellFocusCapture}
           onBlurCapture={onShellBlurCapture}
@@ -135,14 +136,10 @@ export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
             {icon ?? <SearchFieldLensIcon size={18} />}
           </div>
 
-          <div className="workspace-search__search-input-wrap">
-            {input}
-          </div>
+          <div className="workspace-search__search-input-wrap">{input}</div>
 
           {actions && (
-            <div className="workspace-search__search-actions">
-              {actions}
-            </div>
+            <div className="workspace-search__search-actions">{actions}</div>
           )}
         </div>
 
@@ -193,7 +190,7 @@ export const WorkspaceSearchField = forwardRef<
       onBlur,
       ...rest
     },
-    forwardedRef
+    forwardedRef,
   ) => {
     const internalRef = useRef<HTMLInputElement | null>(null);
 
@@ -203,15 +200,19 @@ export const WorkspaceSearchField = forwardRef<
         if (typeof forwardedRef === "function") {
           forwardedRef(node);
         } else if (forwardedRef) {
-          (forwardedRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+          (
+            forwardedRef as React.MutableRefObject<HTMLInputElement | null>
+          ).current = node;
         }
         if (typeof inputRef === "function") {
           inputRef(node);
         } else if (inputRef) {
-          (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+          (
+            inputRef as React.MutableRefObject<HTMLInputElement | null>
+          ).current = node;
         }
       },
-      [forwardedRef, inputRef]
+      [forwardedRef, inputRef],
     );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,7 +247,9 @@ export const WorkspaceSearchField = forwardRef<
           aria-expanded={combobox ? combobox.expanded : undefined}
           aria-controls={combobox ? combobox.controlsId : undefined}
           aria-autocomplete={combobox ? "list" : undefined}
-          aria-activedescendant={combobox ? combobox.activeDescendantId : undefined}
+          aria-activedescendant={
+            combobox ? combobox.activeDescendantId : undefined
+          }
           className={cn("workspace-search__search-field", className)}
           autoComplete="off"
           spellCheck={false}
@@ -267,14 +270,16 @@ export const WorkspaceSearchField = forwardRef<
         )}
       </div>
     );
-  }
+  },
 );
 WorkspaceSearchField.displayName = "WorkspaceSearchField";
 
 // ── Autocomplete Subcomponents ──────────────────────────────────────────────
 
-export interface WorkspaceAutocompletePanelProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "aria-label"> {
+export interface WorkspaceAutocompletePanelProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "aria-label"
+> {
   isOpen?: boolean;
   ariaLabel?: string;
   "aria-label"?: string;
@@ -283,22 +288,32 @@ export interface WorkspaceAutocompletePanelProps
 export const WorkspaceAutocompletePanel = forwardRef<
   HTMLDivElement,
   WorkspaceAutocompletePanelProps
->(({ isOpen = true, ariaLabel, className, children, "aria-label": ariaLabelProp, ...rest }, ref) => {
-  if (!isOpen) return null;
-  return (
-    <div
-      ref={ref}
-      role="listbox"
-      aria-label={ariaLabel || ariaLabelProp}
-      className={cn("workspace-search__autocomplete is-open", className)}
-      {...rest}
-    >
-      <div className="workspace-search__autocomplete-inner">
-        {children}
+>(
+  (
+    {
+      isOpen = true,
+      ariaLabel,
+      className,
+      children,
+      "aria-label": ariaLabelProp,
+      ...rest
+    },
+    ref,
+  ) => {
+    if (!isOpen) return null;
+    return (
+      <div
+        ref={ref}
+        role="listbox"
+        aria-label={ariaLabel || ariaLabelProp}
+        className={cn("workspace-search__autocomplete is-open", className)}
+        {...rest}
+      >
+        <div className="workspace-search__autocomplete-inner">{children}</div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 WorkspaceAutocompletePanel.displayName = "WorkspaceAutocompletePanel";
 
 export const WorkspaceAutocompleteLoading: React.FC = () => (
@@ -312,7 +327,9 @@ export const WorkspaceAutocompleteLoading: React.FC = () => (
       <span className="workspace-search__autocomplete-loading-dot" />
       <span className="workspace-search__autocomplete-loading-dot" />
     </div>
-    <span className="workspace-search__loading-label">Searching catalog...</span>
+    <span className="workspace-search__loading-label">
+      Searching catalog...
+    </span>
   </div>
 );
 
@@ -321,18 +338,19 @@ export interface WorkspaceAutocompleteStatusProps {
   role?: "status" | "alert";
 }
 
-export const WorkspaceAutocompleteStatus: React.FC<WorkspaceAutocompleteStatusProps> = ({
-  children,
-  role = "status",
-}) => (
+export const WorkspaceAutocompleteStatus: React.FC<
+  WorkspaceAutocompleteStatusProps
+> = ({ children, role = "status" }) => (
   <div
     className={cn(
       "workspace-search__autocomplete-status",
-      role === "alert" && "is-error"
+      role === "alert" && "is-error",
     )}
     role={role}
   >
-    {role === "alert" && <span className="workspace-search__status-dot" aria-hidden="true" />}
+    {role === "alert" && (
+      <span className="workspace-search__status-dot" aria-hidden="true" />
+    )}
     <span>{children}</span>
   </div>
 );
@@ -345,13 +363,9 @@ export interface WorkspaceAutocompleteOptionProps {
   children: React.ReactNode;
 }
 
-export const WorkspaceAutocompleteOption: React.FC<WorkspaceAutocompleteOptionProps> = ({
-  id,
-  isActive,
-  onSelect,
-  onHover,
-  children,
-}) => (
+export const WorkspaceAutocompleteOption: React.FC<
+  WorkspaceAutocompleteOptionProps
+> = ({ id, isActive, onSelect, onHover, children }) => (
   <button
     id={id}
     type="button"
@@ -359,7 +373,7 @@ export const WorkspaceAutocompleteOption: React.FC<WorkspaceAutocompleteOptionPr
     aria-selected={isActive}
     className={cn(
       "workspace-search__autocomplete-option",
-      isActive && "is-active"
+      isActive && "is-active",
     )}
     onPointerDown={(event) => {
       event.preventDefault();
@@ -376,10 +390,9 @@ export interface WorkspaceAutocompleteCopyProps {
   meta?: string;
 }
 
-export const WorkspaceAutocompleteCopy: React.FC<WorkspaceAutocompleteCopyProps> = ({
-  title,
-  meta,
-}) => (
+export const WorkspaceAutocompleteCopy: React.FC<
+  WorkspaceAutocompleteCopyProps
+> = ({ title, meta }) => (
   <span className="workspace-search__autocomplete-copy">
     <span className="workspace-search__autocomplete-title">{title}</span>
     {meta ? (
@@ -402,7 +415,10 @@ export const WorkspaceAutocompletePosterImage: React.FC<{
 
   if (failed) {
     return (
-      <span className="workspace-search__autocomplete-poster-fallback" aria-hidden>
+      <span
+        className="workspace-search__autocomplete-poster-fallback"
+        aria-hidden
+      >
         {fallbackLetter}
       </span>
     );
@@ -416,7 +432,7 @@ export const WorkspaceAutocompletePosterImage: React.FC<{
       loading="lazy"
       className={cn(
         "workspace-search__autocomplete-poster-image",
-        loaded && "is-loaded"
+        loaded && "is-loaded",
       )}
       onLoad={() => setLoaded(true)}
       onError={() => setFailed(true)}
@@ -424,10 +440,9 @@ export const WorkspaceAutocompletePosterImage: React.FC<{
   );
 };
 
-export const WorkspaceAutocompletePoster: React.FC<WorkspaceAutocompletePosterProps> = ({
-  src,
-  fallbackLetter,
-}) => (
+export const WorkspaceAutocompletePoster: React.FC<
+  WorkspaceAutocompletePosterProps
+> = ({ src, fallbackLetter }) => (
   <span className="workspace-search__autocomplete-poster">
     {src ? (
       <WorkspaceAutocompletePosterImage
@@ -436,7 +451,10 @@ export const WorkspaceAutocompletePoster: React.FC<WorkspaceAutocompletePosterPr
         fallbackLetter={fallbackLetter}
       />
     ) : (
-      <span className="workspace-search__autocomplete-poster-fallback" aria-hidden>
+      <span
+        className="workspace-search__autocomplete-poster-fallback"
+        aria-hidden
+      >
         {fallbackLetter}
       </span>
     )}
@@ -447,11 +465,13 @@ export interface WorkspaceAutocompleteGroupProps {
   children: React.ReactNode;
 }
 
-export const WorkspaceAutocompleteGroup: React.FC<WorkspaceAutocompleteGroupProps> = ({
-  children,
-}) => (
+export const WorkspaceAutocompleteGroup: React.FC<
+  WorkspaceAutocompleteGroupProps
+> = ({ children }) => (
   <div className="workspace-search__autocomplete-group" role="presentation">
-    <span className="workspace-search__autocomplete-group-text">{children}</span>
+    <span className="workspace-search__autocomplete-group-text">
+      {children}
+    </span>
   </div>
 );
 
@@ -459,9 +479,9 @@ export interface WorkspaceAutocompleteNoMatchPanelProps {
   children: React.ReactNode;
 }
 
-export const WorkspaceAutocompleteNoMatchPanel: React.FC<WorkspaceAutocompleteNoMatchPanelProps> = ({
-  children,
-}) => (
+export const WorkspaceAutocompleteNoMatchPanel: React.FC<
+  WorkspaceAutocompleteNoMatchPanelProps
+> = ({ children }) => (
   <div className="workspace-search__autocomplete is-open" role="status">
     <div className="workspace-search__autocomplete-inner">
       <p className="workspace-search__autocomplete-status">{children}</p>

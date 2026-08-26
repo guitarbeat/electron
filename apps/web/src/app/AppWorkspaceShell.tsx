@@ -1,12 +1,14 @@
 import React, { useCallback, useMemo, useState } from "react";
 
 import type { MainTab } from "@/shared/types";
-import { MessageIcon, WorkspaceTabFallback, ProfileMenu } from "@/components/ui";
+import {
+  MessageIcon,
+  WorkspaceTabFallback,
+  ProfileMenu,
+} from "@/components/ui";
 import { BentoSlotContext } from "@/app/providerContexts";
 import type { RegisteredBentoSlotConfig } from "@/app/providerContexts";
-import {
-  isLibraryWorkspaceTab,
-} from "@/utils/workspaceConfig";
+import { isLibraryWorkspaceTab } from "@/utils/workspaceConfig";
 
 import {
   LibraryWorkspacePanel as LibraryWorkspace,
@@ -27,7 +29,9 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   openPanels,
   onTogglePanel,
 }) => {
-  const [, setTabConfigs] = useState<Partial<Record<MainTab, RegisteredBentoSlotConfig>>>({});
+  const [, setTabConfigs] = useState<
+    Partial<Record<MainTab, RegisteredBentoSlotConfig>>
+  >({});
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
     null,
   );
@@ -58,13 +62,13 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <h1 className="sr-only">
-        {isLibraryWorkspaceTab(activeTab) ? "Movies & Places" :
-         "Message Board"}
+        {isLibraryWorkspaceTab(activeTab) ? "Movies & Places" : "Message Board"}
       </h1>
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
-         "Messages workspace"}
+        {isLibraryWorkspaceTab(activeTab)
+          ? "Movies and places workspace"
+          : "Messages workspace"}
       </p>
 
       {/* Main content area */}
@@ -77,7 +81,10 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         {hasInlinePanels && (
           <div className="toggle-panels">
             {openPanels.has("spin") && (
-              <section className="toggle-panel toggle-panel--spin" aria-label="Spin">
+              <section
+                className="toggle-panel toggle-panel--spin"
+                aria-label="Spin"
+              >
                 <div className="toggle-panel__header">
                   <h2 className="toggle-panel__title">Spin</h2>
                   <button
@@ -102,8 +109,9 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           className={`workspace-surface workspace-surface--${isLibraryWorkspaceTab(activeTab) ? "movies" : activeTab}`}
           style={{ position: "relative", zIndex: 1, minWidth: 0 }}
           aria-label={
-            isLibraryWorkspaceTab(activeTab) ? "Movies and places workspace" :
-            "Messages workspace"
+            isLibraryWorkspaceTab(activeTab)
+              ? "Movies and places workspace"
+              : "Messages workspace"
           }
         >
           <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>

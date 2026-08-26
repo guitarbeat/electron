@@ -1,4 +1,3 @@
-
 /* eslint-disable react-refresh/only-export-components */
 /**
  * Quiz Type Definitions
@@ -7,10 +6,7 @@
  */
 
 export type QuizCharacter =
-  | "Electra"
-  | "Aaron"
-  | "Madeleine"
-  | "Nosferatu/Smeemo";
+  "Electra" | "Aaron" | "Madeleine" | "Nosferatu/Smeemo";
 
 // Multiple Choice Question
 export interface MultipleChoiceOption {
@@ -87,11 +83,7 @@ export interface QuizAnswer {
   questionId: string;
   answerIndex?: number; // For multiple choice and image choice
   scaleValue?:
-    | "stronglyDisagree"
-    | "disagree"
-    | "neutral"
-    | "agree"
-    | "stronglyAgree"; // For agree/disagree
+    "stronglyDisagree" | "disagree" | "neutral" | "agree" | "stronglyAgree"; // For agree/disagree
   xyPosition?: { x: number; y: number }; // For xy-axis (-1 to 1 range)
 }
 
@@ -118,7 +110,6 @@ export interface QuizResult {
  * Placeholder quiz questions and character descriptions
  * USER WILL REPLACE THESE WITH ACTUAL CONTENT
  */
-
 
 export const quizQuestions: QuizQuestion[] = [
   // Multiple Choice Questions (3)
@@ -362,7 +353,6 @@ export const characterDescriptions: Record<QuizCharacter, string> = {
 export const neitherDescription =
   "You're a unique enigma! Your personality doesn't fit neatly into any of our boxes. You're truly one of a kind.";
 
-
 export const calculateQuizResults = (
   answers: QuizAnswer[],
   questions: QuizQuestion[],
@@ -464,8 +454,13 @@ export const calculateQuizResults = (
   return result;
 };
 
-
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import type { FC } from "react";
 import type { User } from "@/shared/types";
 import {
@@ -487,7 +482,6 @@ export {
 import { WorkspaceFeatureSectionLoading } from "@/components/ui";
 import { useQuiz, type QuizData, useFeatureFonts } from "@/hooks";
 
-
 export const BLINK_COLORS = [
   "#ff0000",
   "#ff7700",
@@ -502,16 +496,16 @@ interface BlinkTextProps {
   style?: React.CSSProperties;
 }
 
-export const BlinkText: React.FC<BlinkTextProps> = ({ children, style = {} }) => {
+export const BlinkText: React.FC<BlinkTextProps> = ({
+  children,
+  style = {},
+}) => {
   return (
     <span className="quiz-retro-blink" style={style}>
       {children}
     </span>
   );
 };
-
-
-
 
 interface MultipleChoiceQuestionViewProps {
   question: MultipleChoiceQuestion;
@@ -555,11 +549,7 @@ interface AgreeDisagreeQuestionViewProps {
     | null;
   onSelect: (
     value:
-      | "stronglyDisagree"
-      | "disagree"
-      | "neutral"
-      | "agree"
-      | "stronglyAgree",
+      "stronglyDisagree" | "disagree" | "neutral" | "agree" | "stronglyAgree",
   ) => void;
 }
 
@@ -578,7 +568,11 @@ export const AgreeDisagreeQuestionView: React.FC<
     <div>
       <div className="quiz-retro-question-text">{question.question}</div>
       <div className="quiz-retro-slider-wrap">
-        <div className="quiz-retro-scale-options" role="group" aria-label="How much does this sound like you?">
+        <div
+          className="quiz-retro-scale-options"
+          role="group"
+          aria-label="How much does this sound like you?"
+        >
           {scaleOptions.map((option, index) => {
             const isSelected = selectedValue === option.value;
             return (
@@ -663,11 +657,27 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
   onSelect,
 }) => {
   const gridRef = useRef<HTMLDivElement>(null);
+  const gridRectRef = useRef<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const calculatePosition = useCallback((clientX: number, clientY: number) => {
-    if (!gridRef.current) return null;
-    const rect = gridRef.current.getBoundingClientRect();
+    let rect = gridRectRef.current;
+    if (!rect && gridRef.current) {
+      const domRect = gridRef.current.getBoundingClientRect();
+      rect = {
+        left: domRect.left,
+        top: domRect.top,
+        width: domRect.width || 1,
+        height: domRect.height || 1,
+      };
+      gridRectRef.current = rect;
+    }
+    if (!rect) return null;
     const x = ((clientX - rect.left) / rect.width) * 2 - 1;
     const y = 1 - ((clientY - rect.top) / rect.height) * 2;
     return {
@@ -678,6 +688,15 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
+    if (gridRef.current) {
+      const domRect = gridRef.current.getBoundingClientRect();
+      gridRectRef.current = {
+        left: domRect.left,
+        top: domRect.top,
+        width: domRect.width || 1,
+        height: domRect.height || 1,
+      };
+    }
     const pos = calculatePosition(e.clientX, e.clientY);
     if (pos) onSelect(pos);
   };
@@ -688,10 +707,22 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
     if (pos) onSelect(pos);
   };
 
-  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    gridRectRef.current = null;
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
+    if (gridRef.current) {
+      const domRect = gridRef.current.getBoundingClientRect();
+      gridRectRef.current = {
+        left: domRect.left,
+        top: domRect.top,
+        width: domRect.width || 1,
+        height: domRect.height || 1,
+      };
+    }
     const [touch] = Array.from(e.touches);
     if (!touch) return;
     const pos = calculatePosition(touch.clientX, touch.clientY);
@@ -706,7 +737,10 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
     if (pos) onSelect(pos);
   };
 
-  const handleTouchEnd = () => setIsDragging(false);
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    gridRectRef.current = null;
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const step = 0.1;
@@ -804,7 +838,7 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
             marginTop: 6,
             fontSize: "9px",
             color: "#888888",
-            fontFamily: 'var(--font-body)',
+            fontFamily: "var(--font-body)",
           }}
           role="status"
           aria-live="polite"
@@ -817,30 +851,26 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
   );
 };
 
-
 interface QuizEditorProps {
-    onClose: () => void;
+  onClose: () => void;
 }
 
 export const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
-    return (
-        <div className={"quiz-editor-shell"}>
-            <div className={"quiz-editor__hero"}>
-                <h1 className={"quiz-editor__hero-title"}>Quiz Editor</h1>
-                <p>The quiz editor is temporarily unavailable while styles are being updated.</p>
-                <button 
-                    className="ui-button ui-button--primary" 
-                    onClick={onClose}
-                >
-                    <span className={"ui-button__content"}>Close Editor</span>
-                </button>
-            </div>
-        </div>
-    );
+  return (
+    <div className={"quiz-editor-shell"}>
+      <div className={"quiz-editor__hero"}>
+        <h1 className={"quiz-editor__hero-title"}>Quiz Editor</h1>
+        <p>
+          The quiz editor is temporarily unavailable while styles are being
+          updated.
+        </p>
+        <button className="ui-button ui-button--primary" onClick={onClose}>
+          <span className={"ui-button__content"}>Close Editor</span>
+        </button>
+      </div>
+    </div>
+  );
 };
-
-
-
 
 export interface QuizExperienceProps {
   currentUser: User | null;
@@ -861,9 +891,7 @@ export const QuizExperience: FC<QuizExperienceProps> = ({
   useFeatureFonts();
 
   if (isLoading || !quizData) {
-    return (
-      <WorkspaceFeatureSectionLoading label="Loading personality quiz…" />
-    );
+    return <WorkspaceFeatureSectionLoading label="Loading personality quiz…" />;
   }
 
   return (
@@ -878,9 +906,6 @@ export const QuizExperience: FC<QuizExperienceProps> = ({
     />
   );
 };
-
-
-
 
 interface QuizFlowProps {
   onComplete: () => void;
@@ -900,7 +925,7 @@ interface QuizFlowInitialState {
 }
 
 export const QUIZ_EMPTY_STATE_TEXT_STYLE = {
-  fontFamily: 'var(--font-body)',
+  fontFamily: "var(--font-body)",
   color: "#000080",
   fontWeight: "bold",
 } satisfies React.CSSProperties;
@@ -1039,11 +1064,7 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
   const handleAnswer = (
     answerIndex?: number,
     scaleValue?:
-      | "stronglyDisagree"
-      | "disagree"
-      | "neutral"
-      | "agree"
-      | "stronglyAgree",
+      "stronglyDisagree" | "disagree" | "neutral" | "agree" | "stronglyAgree",
     xyPosition?: { x: number; y: number },
   ) => {
     if (!currentQuestion) {
@@ -1194,7 +1215,9 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
           aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
         >
           <div className="quiz-retro-progress-label">
-            <span>Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+            <span>
+              Question {currentQuestionIndex + 1} of {totalQuestions}
+            </span>
             <span>{progress}%</span>
           </div>
           <div className="quiz-retro-progress-track">
@@ -1246,9 +1269,6 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
     </div>
   );
 };
-
-
-
 
 interface ResultsScreenProps {
   result: QuizResult;
@@ -1303,8 +1323,11 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   const characterColor = characterColors[result.character] || "#888888";
   const characterEmoji = characterEmojis[result.character] || "🎞️";
   const resultName =
-    result.character === "Neither" ? "A little bit of everyone" : result.character;
-  const archetype = characterArchetypes[result.character] ?? "Your movie-night match";
+    result.character === "Neither"
+      ? "A little bit of everyone"
+      : result.character;
+  const archetype =
+    characterArchetypes[result.character] ?? "Your movie-night match";
   const description = getResultDescription(
     result,
     characterDescriptions,
@@ -1344,9 +1367,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
           </div>
 
           <div className="quiz-retro-results-breakdown">
-            <div className="quiz-retro-results-breakdown-title">
-              Your mix
-            </div>
+            <div className="quiz-retro-results-breakdown-title">Your mix</div>
             {sortedChars.map((char) => {
               const isWinner = char === result.character;
               const pct = result.percentages[char];

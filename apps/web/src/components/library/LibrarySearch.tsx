@@ -13,7 +13,10 @@ import { useUser, useToast } from "@/app/providerContexts";
 import { useMovies } from "@/hooks/movies";
 import { useSuggestions } from "@/hooks/suggestions";
 import { usePlaces, usePlaceSuggestions } from "@/hooks/places";
-import { searchMovieAutocomplete, getCachedMovieAutocomplete } from "@/services/metadata";
+import {
+  searchMovieAutocomplete,
+  getCachedMovieAutocomplete,
+} from "@/services/metadata";
 import type { MovieAutocompleteResult } from "@/services/metadata";
 import {
   MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
@@ -21,18 +24,16 @@ import {
 } from "@/components/movies";
 
 import { MovieRecommendationComposer } from "@/components/movies";
+import { WorkspaceSearchActions, CurvedInput } from "@/components/ui";
 import {
-  WorkspaceSearchActions,
-  CurvedInput,
-} from "@/components/ui";
-import { WorkspaceAutocompleteCopy,
+  WorkspaceAutocompleteCopy,
   WorkspaceAutocompleteGroup,
   WorkspaceAutocompleteLoading,
   WorkspaceAutocompleteOption,
   WorkspaceAutocompletePanel,
   WorkspaceAutocompletePoster,
   WorkspaceAutocompleteStatus,
- } from "@/components/ui";
+} from "@/components/ui";
 import {
   useAutocompleteFocusBoundary,
   useWorkspaceAutocompleteDismiss,
@@ -59,9 +60,20 @@ export interface LibrarySearchHandle {
 
 const revealLibraryItem = (selection: LibrarySelection) => {
   if (selection?.kind === "library-movie") {
-    document
-      .querySelector(`[data-movie-id="${selection.movieId}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const movieElement = document.querySelector(
+      `[data-movie-id="${selection.movieId}"]`,
+    );
+    if (movieElement) {
+      movieElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      const hitArea = movieElement.querySelector<HTMLButtonElement>(
+        ".movie-item-details-hit-area",
+      );
+      if (hitArea) {
+        window.setTimeout(() => {
+          hitArea.click();
+        }, 150);
+      }
+    }
     return;
   }
   if (selection?.kind === "library-place") {
@@ -71,210 +83,401 @@ const revealLibraryItem = (selection: LibrarySelection) => {
   }
 };
 
-const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) => {
-  const [query, setQuery] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
-  const isSearchActive = isFocused || query.length > 0;
+const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
+  (_, forwardedRef) => {
+    const [query, setQuery] = useState("");
+    const [isFocused, setIsFocused] = useState(false);
+    const isSearchActive = isFocused || query.length > 0;
 
-  const { currentUser } = useUser();
-  const { showToast } = useToast();
-  const { movies, addMovie } = useMovies(currentUser);
-  const { addSuggestion } = useSuggestions();
-  const { places, addPlace } = usePlaces(currentUser, !isSearchActive);
-  const { addPlaceSuggestion } = usePlaceSuggestions(!isSearchActive);
+    const { currentUser } = useUser();
+    const { showToast } = useToast();
+    const { movies, addMovie } = useMovies(currentUser);
+    const { addSuggestion } = useSuggestions();
+    const { places, addPlace } = usePlaces(currentUser, !isSearchActive);
+    const { addPlaceSuggestion } = usePlaceSuggestions(!isSearchActive);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRegionRef = useRef<HTMLDivElement>(null);
-  const requestIdRef = useRef(0);
-  const dropdownInteractionPendingRef = useRef(false);
-  const listId = useId();
+    const inputRef = useRef<HTMLInputElement>(null);
+    const autocompleteRegionRef = useRef<HTMLDivElement>(null);
+    const requestIdRef = useRef(0);
+    const dropdownInteractionPendingRef = useRef(false);
+    const listId = useId();
 
-  const [selection, setSelection] = useState<LibrarySelection>(null);
-  const [movieResults, setMovieResults] = useState<MovieAutocompleteResult[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [isBusy, setIsBusy] = useState(false);
-  const [showRecommend, setShowRecommend] = useState(false);
-  const [guestName, setGuestName] = useState("");
-  const [recommendReason, setRecommendReason] = useState("");
-  const {
-    activeIndex,
-    setActiveIndex,
-    resetActiveIndex,
-    moveActiveIndex,
-    getEnterSelectionIndex,
-  } = useWorkspaceAutocompleteNavigation();
+    const [selection, setSelection] = useState<LibrarySelection>(null);
+    const [movieResults, setMovieResults] = useState<MovieAutocompleteResult[]>(
+      [],
+    );
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [isBusy, setIsBusy] = useState(false);
+    const [showRecommend, setShowRecommend] = useState(false);
+    const [guestName, setGuestName] = useState("");
+    const [recommendReason, setRecommendReason] = useState("");
+    const {
+      activeIndex,
+      setActiveIndex,
+      resetActiveIndex,
+      moveActiveIndex,
+      getEnterSelectionIndex,
+    } = useWorkspaceAutocompleteNavigation();
 
-  const trimmed = query.trim();
-  const normalized = normalizeLibraryQuery(query);
-  const isGuest = !currentUser;
-  const rows = useMemo(
-    () =>
-      buildLibraryAutocompleteRows({
-        query: trimmed,
-        movies,
-        places,
-        movieResults,
-      }),
-    [movieResults, movies, places, trimmed],
-  );
-  const submitKind = resolveLibrarySubmitKind({
-    query: trimmed,
-    selection,
-    movieResultCount: movieResults.length,
-  });
-  const alternateKind = libraryAlternateKind(submitKind);
-  const primaryLabel = librarySubmitLabel(submitKind, isGuest);
-  const hasQuery = trimmed.length > 0;
+    const trimmed = query.trim();
+    const normalized = normalizeLibraryQuery(query);
+    const isGuest = !currentUser;
+    const rows = useMemo(
+      () =>
+        buildLibraryAutocompleteRows({
+          query: trimmed,
+          movies,
+          places,
+          movieResults,
+        }),
+      [movieResults, movies, places, trimmed],
+    );
+    const submitKind = resolveLibrarySubmitKind({
+      query: trimmed,
+      selection,
+      movieResultCount: movieResults.length,
+    });
+    const alternateKind = libraryAlternateKind(submitKind);
+    const primaryLabel = librarySubmitLabel(submitKind, isGuest);
+    const hasQuery = trimmed.length > 0;
 
-  const hideAutocomplete = useCallback(() => {
-    setIsOpen(false);
-    resetActiveIndex();
-    setIsMounted(false);
-    setIsLoading(false);
-  }, [resetActiveIndex]);
+    const hideAutocomplete = useCallback(() => {
+      setIsOpen(false);
+      resetActiveIndex();
+      setIsMounted(false);
+      setIsLoading(false);
+    }, [resetActiveIndex]);
 
-  const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
-    useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete, {
-      shouldSkipClose: () => dropdownInteractionPendingRef.current,
-      onFocusStateChange: setIsFocused,
+    const { onFocusCapture, onBlurCapture, clearFocusBoundaryCheck } =
+      useAutocompleteFocusBoundary(autocompleteRegionRef, hideAutocomplete, {
+        shouldSkipClose: () => dropdownInteractionPendingRef.current,
+        onFocusStateChange: setIsFocused,
+      });
+
+    const focusSearchInput = useWorkspaceSearchInputHandle(inputRef);
+    useImperativeHandle(forwardedRef, () => ({ focusSearchInput }), [
+      focusSearchInput,
+    ]);
+
+    useWorkspaceAutocompleteDismiss(autocompleteRegionRef, () => {
+      setIsFocused(false);
+      hideAutocomplete();
     });
 
-  const focusSearchInput = useWorkspaceSearchInputHandle(inputRef);
-  useImperativeHandle(forwardedRef, () => ({ focusSearchInput }), [focusSearchInput]);
-
-  useWorkspaceAutocompleteDismiss(autocompleteRegionRef, () => {
-    setIsFocused(false);
-    hideAutocomplete();
-  });
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === "/" &&
-        !(event.target instanceof HTMLInputElement) &&
-        !(event.target instanceof HTMLTextAreaElement) &&
-        !event.metaKey &&
-        !event.ctrlKey
-      ) {
-        event.preventDefault();
-        focusSearchInput();
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [focusSearchInput]);
-
-  useEffect(() => {
-    if (!isFocused) {
-      hideAutocomplete();
-      return;
-    }
-    if (normalized.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
-      requestIdRef.current += 1;
-      setMovieResults([]);
-      setFetchError(null);
-      setIsLoading(false);
-      return;
-    }
-    if (classifyLibraryIntent(trimmed) === "place") {
-      requestIdRef.current += 1;
-      setMovieResults([]);
-      setFetchError(null);
-      setIsLoading(false);
-      setIsMounted(true);
-      setIsOpen(true);
-      return;
-    }
-
-    const abortController = new AbortController();
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
-    setIsMounted(true);
-    setIsOpen(true);
-
-    const cachedResults = getCachedMovieAutocomplete(trimmed);
-    if (cachedResults) {
-      setMovieResults(cachedResults);
-      setIsLoading(false);
-      setFetchError(null);
-    } else {
-      setIsLoading(true);
-      setFetchError(null);
-    }
-
-    const timeoutId = window.setTimeout(async () => {
-      try {
-        const nextResults = await searchMovieAutocomplete(trimmed, {
-          signal: abortController.signal,
-        });
-        if (requestIdRef.current !== requestId || abortController.signal.aborted) {
-          return;
+    useEffect(() => {
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (
+          event.key === "/" &&
+          !(event.target instanceof HTMLInputElement) &&
+          !(event.target instanceof HTMLTextAreaElement) &&
+          !event.metaKey &&
+          !event.ctrlKey
+        ) {
+          event.preventDefault();
+          focusSearchInput();
         }
-        setMovieResults(nextResults);
-        resetActiveIndex();
-      } catch (error) {
-        if (requestIdRef.current !== requestId || abortController.signal.aborted) {
-          return;
-        }
-        if (!cachedResults) {
-          setMovieResults([]);
-          setFetchError(
-            error instanceof Error && error.message
-              ? error.message
-              : "Suggestions are unavailable right now.",
-          );
-        }
-      } finally {
-        if (requestIdRef.current === requestId && !abortController.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
+      };
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }, [focusSearchInput]);
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      abortController.abort();
-    };
-  }, [hideAutocomplete, isFocused, normalized, resetActiveIndex, trimmed]);
-
-  useEffect(() => {
-    if (trimmed.length >= 2 && isFocused) {
-      setIsMounted(true);
-      setIsOpen(true);
-    }
-  }, [isFocused, trimmed.length]);
-
-  const selectRow = useCallback((row: LibraryAutocompleteRow) => {
-    setSelection(row.selection);
-    setQuery(row.title);
-    hideAutocomplete();
-    inputRef.current?.focus();
-  }, [hideAutocomplete]);
-
-  const clearQuery = useCallback(() => {
-    setQuery("");
-    setSelection(null);
-    setMovieResults([]);
-    setActionError(null);
-    setShowRecommend(false);
-    hideAutocomplete();
-  }, [hideAutocomplete]);
-
-  const submitKindAction = useCallback(
-    async (kind: LibrarySubmitKind) => {
-      if (isBusy || !trimmed) {
-        return;
-      }
-      if (kind === "show-movie" || kind === "show-place") {
-        revealLibraryItem(selection);
+    useEffect(() => {
+      if (!isFocused) {
         hideAutocomplete();
         return;
       }
+      if (normalized.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
+        requestIdRef.current += 1;
+        setMovieResults([]);
+        setFetchError(null);
+        setIsLoading(false);
+        return;
+      }
+      if (classifyLibraryIntent(trimmed) === "place") {
+        requestIdRef.current += 1;
+        setMovieResults([]);
+        setFetchError(null);
+        setIsLoading(false);
+        setIsMounted(true);
+        setIsOpen(true);
+        return;
+      }
 
+      const abortController = new AbortController();
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+      setIsMounted(true);
+      setIsOpen(true);
+
+      const cachedResults = getCachedMovieAutocomplete(trimmed);
+      if (cachedResults) {
+        setMovieResults(cachedResults);
+        setIsLoading(false);
+        setFetchError(null);
+      } else {
+        setIsLoading(true);
+        setFetchError(null);
+      }
+
+      const timeoutId = window.setTimeout(async () => {
+        try {
+          const nextResults = await searchMovieAutocomplete(trimmed, {
+            signal: abortController.signal,
+          });
+          if (
+            requestIdRef.current !== requestId ||
+            abortController.signal.aborted
+          ) {
+            return;
+          }
+          setMovieResults(nextResults);
+          resetActiveIndex();
+        } catch (error) {
+          if (
+            requestIdRef.current !== requestId ||
+            abortController.signal.aborted
+          ) {
+            return;
+          }
+          if (!cachedResults) {
+            setMovieResults([]);
+            setFetchError(
+              error instanceof Error && error.message
+                ? error.message
+                : "Suggestions are unavailable right now.",
+            );
+          }
+        } finally {
+          if (
+            requestIdRef.current === requestId &&
+            !abortController.signal.aborted
+          ) {
+            setIsLoading(false);
+          }
+        }
+      }, MOVIE_AUTOCOMPLETE_DEBOUNCE_MS);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+        abortController.abort();
+      };
+    }, [hideAutocomplete, isFocused, normalized, resetActiveIndex, trimmed]);
+
+    useEffect(() => {
+      if (trimmed.length >= 2 && isFocused) {
+        setIsMounted(true);
+        setIsOpen(true);
+      }
+    }, [isFocused, trimmed.length]);
+
+    const clearQuery = useCallback(() => {
+      setQuery("");
+      setSelection(null);
+      setMovieResults([]);
+      setActionError(null);
+      setShowRecommend(false);
+      hideAutocomplete();
+    }, [hideAutocomplete]);
+
+    const selectRow = useCallback(
+      async (row: LibraryAutocompleteRow) => {
+        if (row.selection?.kind === "library-movie") {
+          revealLibraryItem(row.selection);
+          hideAutocomplete();
+          clearQuery();
+          return;
+        }
+        if (row.selection?.kind === "library-place") {
+          revealLibraryItem(row.selection);
+          hideAutocomplete();
+          clearQuery();
+          return;
+        }
+        if (row.selection?.kind === "movie-result") {
+          const item = row.selection;
+          hideAutocomplete();
+          setIsBusy(true);
+          setActionError(null);
+          try {
+            if (isGuest) {
+              const suggestion = await addSuggestion(
+                item.title,
+                undefined,
+                guestName.trim() || undefined,
+                { imdbID: item.imdbID, type: item.type },
+              );
+              showToast({
+                message: `"${item.title}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
+                type: "success",
+              });
+            } else {
+              const added = await addMovie(item.title, {
+                imdbID: item.imdbID,
+                type: item.type,
+              });
+              showToast({
+                message: `"${item.title}" added to movies!`,
+                type: "success",
+              });
+              window.requestAnimationFrame(() => {
+                const movieEl = document.querySelector(
+                  `[data-movie-id="${added.id}"]`,
+                );
+                if (movieEl) {
+                  movieEl.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
+                  const hitArea = movieEl.querySelector<HTMLButtonElement>(
+                    ".movie-item-details-hit-area",
+                  );
+                  if (hitArea) {
+                    window.setTimeout(() => {
+                      hitArea.click();
+                    }, 200);
+                  }
+                }
+              });
+            }
+            clearQuery();
+            window.requestAnimationFrame(focusSearchInput);
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Could not save that right now.";
+            setActionError(message);
+            showToast({ message, type: "error" });
+          } finally {
+            setIsBusy(false);
+          }
+          return;
+        }
+
+        setSelection(row.selection);
+        setQuery(row.title);
+        hideAutocomplete();
+        inputRef.current?.focus();
+      },
+      [
+        addMovie,
+        addSuggestion,
+        clearQuery,
+        focusSearchInput,
+        guestName,
+        hideAutocomplete,
+        isGuest,
+        showToast,
+      ],
+    );
+
+    const submitKindAction = useCallback(
+      async (kind: LibrarySubmitKind) => {
+        if (isBusy || !trimmed) {
+          return;
+        }
+        if (kind === "show-movie" || kind === "show-place") {
+          revealLibraryItem(selection);
+          hideAutocomplete();
+          return;
+        }
+
+        setIsBusy(true);
+        setActionError(null);
+        try {
+          const movieTitle =
+            selection?.kind === "movie-result" ? selection.title : trimmed;
+          const movieMeta =
+            selection?.kind === "movie-result"
+              ? { imdbID: selection.imdbID, type: selection.type }
+              : undefined;
+          const placeName =
+            selection?.kind === "place-draft" ? selection.name : trimmed;
+
+          if (kind === "movie") {
+            if (isGuest) {
+              const suggestion = await addSuggestion(
+                movieTitle,
+                undefined,
+                guestName.trim() || undefined,
+                movieMeta,
+              );
+              showToast({
+                message: `"${movieTitle}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
+                type: "success",
+              });
+            } else {
+              const added = await addMovie(movieTitle, movieMeta);
+              showToast({
+                message: `"${movieTitle}" added to movies!`,
+                type: "success",
+              });
+              window.requestAnimationFrame(() => {
+                document
+                  .querySelector(`[data-movie-id="${added.id}"]`)
+                  ?.scrollIntoView({ behavior: "smooth", block: "center" });
+              });
+            }
+          } else if (isGuest) {
+            await addPlaceSuggestion(placeName);
+            showToast({
+              message: `"${placeName}" suggested as a place!`,
+              type: "success",
+            });
+          } else {
+            await addPlace(placeName);
+            showToast({
+              message: `"${placeName}" added to places!`,
+              type: "success",
+            });
+            window.requestAnimationFrame(() => {
+              document
+                .getElementById(LIBRARY_PLACES_ANCHOR_ID)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+          }
+          clearQuery();
+          window.requestAnimationFrame(focusSearchInput);
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Could not save that right now.";
+          setActionError(message);
+          showToast({ message, type: "error" });
+        } finally {
+          setIsBusy(false);
+        }
+      },
+      [
+        addMovie,
+        addPlace,
+        addPlaceSuggestion,
+        addSuggestion,
+        clearQuery,
+        focusSearchInput,
+        guestName,
+        hideAutocomplete,
+        isBusy,
+        isGuest,
+        selection,
+        showToast,
+        trimmed,
+      ],
+    );
+
+    const handlePrimary = useCallback(() => {
+      void submitKindAction(submitKind);
+    }, [submitKind, submitKindAction]);
+
+    const handleRecommend = useCallback(async () => {
+      if (isBusy || !trimmed) {
+        return;
+      }
       setIsBusy(true);
       setActionError(null);
       try {
@@ -284,344 +487,295 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>((_, forwardedRef) =>
           selection?.kind === "movie-result"
             ? { imdbID: selection.imdbID, type: selection.type }
             : undefined;
-        const placeName =
-          selection?.kind === "place-draft" ? selection.name : trimmed;
-
-        if (kind === "movie") {
-          if (isGuest) {
-            const suggestion = await addSuggestion(
-              movieTitle,
-              undefined,
-              guestName.trim() || undefined,
-              movieMeta,
-            );
-            showToast({
-              message: `"${movieTitle}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
-              type: "success",
-            });
-          } else {
-            const added = await addMovie(movieTitle, movieMeta);
-            showToast({ message: `"${movieTitle}" added to movies!`, type: "success" });
-            window.requestAnimationFrame(() => {
-              document
-                .querySelector(`[data-movie-id="${added.id}"]`)
-                ?.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-          }
-        } else if (isGuest) {
-          await addPlaceSuggestion(placeName);
-          showToast({
-            message: `"${placeName}" suggested as a place!`,
-            type: "success",
-          });
-        } else {
-          await addPlace(placeName);
-          showToast({ message: `"${placeName}" added to places!`, type: "success" });
-          window.requestAnimationFrame(() => {
-            document
-              .getElementById(LIBRARY_PLACES_ANCHOR_ID)
-              ?.scrollIntoView({ behavior: "smooth", block: "start" });
-          });
-        }
+        const suggestion = await addSuggestion(
+          movieTitle,
+          recommendReason,
+          guestName.trim() || undefined,
+          movieMeta,
+        );
+        showToast({
+          message: `"${movieTitle}" recommended as ${suggestion.suggestedBy}.`,
+          type: "success",
+        });
+        setShowRecommend(false);
+        setRecommendReason("");
         clearQuery();
-        window.requestAnimationFrame(focusSearchInput);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Could not save that right now.";
+          error instanceof Error
+            ? error.message
+            : "Could not send that recommendation.";
         setActionError(message);
-        showToast({ message, type: "error" });
       } finally {
         setIsBusy(false);
       }
-    },
-    [
-      addMovie,
-      addPlace,
-      addPlaceSuggestion,
+    }, [
       addSuggestion,
       clearQuery,
-      focusSearchInput,
       guestName,
-      hideAutocomplete,
       isBusy,
-      isGuest,
+      recommendReason,
       selection,
       showToast,
       trimmed,
-    ],
-  );
+    ]);
 
-  const handlePrimary = useCallback(() => {
-    void submitKindAction(submitKind);
-  }, [submitKind, submitKindAction]);
-
-  const handleRecommend = useCallback(async () => {
-    if (isBusy || !trimmed) {
-      return;
-    }
-    setIsBusy(true);
-    setActionError(null);
-    try {
-      const movieTitle =
-        selection?.kind === "movie-result" ? selection.title : trimmed;
-      const movieMeta =
-        selection?.kind === "movie-result"
-          ? { imdbID: selection.imdbID, type: selection.type }
-          : undefined;
-      const suggestion = await addSuggestion(
-        movieTitle,
-        recommendReason,
-        guestName.trim() || undefined,
-        movieMeta,
-      );
-      showToast({
-        message: `"${movieTitle}" recommended as ${suggestion.suggestedBy}.`,
-        type: "success",
-      });
-      setShowRecommend(false);
-      setRecommendReason("");
-      clearQuery();
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Could not send that recommendation.";
-      setActionError(message);
-    } finally {
-      setIsBusy(false);
-    }
-  }, [
-    addSuggestion,
-    clearQuery,
-    guestName,
-    isBusy,
-    recommendReason,
-    selection,
-    showToast,
-    trimmed,
-  ]);
-
-  const groupedRows = useMemo(() => {
-    const groups: Array<{
-      group: LibraryAutocompleteRow["group"];
-      rows: LibraryAutocompleteRow[];
-    }> = [];
-    for (const row of rows) {
-      const last = groups[groups.length - 1];
-      if (last?.group === row.group) {
-        last.rows.push(row);
-      } else {
-        groups.push({ group: row.group, rows: [row] });
+    const groupedRows = useMemo(() => {
+      const groups: Array<{
+        group: LibraryAutocompleteRow["group"];
+        rows: LibraryAutocompleteRow[];
+      }> = [];
+      for (const row of rows) {
+        const last = groups[groups.length - 1];
+        if (last?.group === row.group) {
+          last.rows.push(row);
+        } else {
+          groups.push({ group: row.group, rows: [row] });
+        }
       }
-    }
-    return groups;
-  }, [rows]);
+      return groups;
+    }, [rows]);
 
-  const showPanel = isMounted && (isLoading || rows.length > 0 || Boolean(fetchError) || trimmed.length >= 2);
+    const showPanel =
+      isMounted &&
+      (isLoading ||
+        rows.length > 0 ||
+        Boolean(fetchError) ||
+        trimmed.length >= 2);
 
-  return (
-    <>
-      <div className="workspace-search__stage curved-library-search">
-        <div
-          ref={autocompleteRegionRef}
-          className={`curved-library-search__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}`}
-          onFocusCapture={onFocusCapture}
-          onBlurCapture={onBlurCapture}
-        >
-          <div className="curved-library-search__row">
-            <div className="curved-library-search__input-wrap">
-              <CurvedInput
-                ref={inputRef}
-                value={query}
-                onChange={(nextValue) => {
-                  setQuery(nextValue);
-                  setSelection(null);
-                  setActionError(null);
-                  setShowRecommend(false);
-                }}
-                onSubmit={() => {
-                  if (isBusy || !hasQuery) return;
-                  clearFocusBoundaryCheck();
-                  hideAutocomplete();
-                  inputRef.current?.blur();
-                  handlePrimary();
-                }}
-                buttonText={primaryLabel}
-                secondaryButtonText="Quiz"
-                onSecondaryPointerEnter={() => void import("@/components/quiz")}
-                onSecondaryFocus={() => void import("@/components/quiz")}
-                onSecondarySubmit={() => {
-                  window.dispatchEvent(new CustomEvent("open-quiz-experience"));
-                }}
-                spinButtonText="Spin"
-                onSpinPointerEnter={() => void import("@/components/spin-match/SpinSwipeGame")}
-                onSpinFocus={() => void import("@/components/spin-match/SpinSwipeGame")}
-                onSpinSubmit={() => {
-                  window.dispatchEvent(new CustomEvent("open-spin-experience"));
-                }}
-                isBusy={isBusy}
-                buttonDisabled={!hasQuery}
-                placeholder="Add a movie, show, or place"
-                aria-label="Search movies, shows, and places to add"
-                combobox={{
-                  expanded: isOpen,
-                  controlsId: listId,
-                  activeDescendantId:
-                    isOpen && activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined,
-                }}
-                onFocus={() => {
-                  setIsFocused(true);
-                  if (trimmed.length >= 2) {
-                    setIsMounted(true);
-                    setIsOpen(true);
-                  }
-                }}
-                onKeyDown={(event) => {
-                  if (event.nativeEvent.isComposing) return;
-                  if (event.key === "ArrowDown") {
-                    if (rows.length === 0) return;
-                    event.preventDefault();
-                    setIsOpen(true);
-                    moveActiveIndex("next", rows.length);
-                    return;
-                  }
-                  if (event.key === "ArrowUp") {
-                    if (rows.length === 0) return;
-                    event.preventDefault();
-                    setIsOpen(true);
-                    moveActiveIndex("previous", rows.length);
-                    return;
-                  }
-                  if (event.key === "Escape") {
-                    if (isOpen) {
-                      event.preventDefault();
-                      hideAutocomplete();
-                    }
-                    return;
-                  }
-                  if (event.key === "Enter" && isOpen) {
-                    const selectedIndex = getEnterSelectionIndex(rows.length);
-                    if (selectedIndex >= 0 && rows[selectedIndex]) {
-                      event.preventDefault();
-                      selectRow(rows[selectedIndex]);
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-          {showPanel ? (
-            <WorkspaceAutocompletePanel
-              id={listId}
-              isOpen={isOpen}
-              ariaLabel="Movie, show, and place suggestions"
-              onPointerDown={() => {
-                dropdownInteractionPendingRef.current = true;
-                window.setTimeout(() => {
-                  dropdownInteractionPendingRef.current = false;
-                }, 300);
-              }}
-            >
-              {isLoading ? <WorkspaceAutocompleteLoading /> : null}
-              {fetchError ? (
-                <WorkspaceAutocompleteStatus role="alert">{fetchError}</WorkspaceAutocompleteStatus>
-              ) : null}
-              {!isLoading && rows.length === 0 && trimmed.length >= 2 ? (
-                <WorkspaceAutocompleteStatus>
-                  No matches yet — add this as a movie or a place.
-                </WorkspaceAutocompleteStatus>
-              ) : null}
-              {!isLoading
-                ? groupedRows.map((group) => (
-                    <React.Fragment key={group.group}>
-                      <WorkspaceAutocompleteGroup>
-                        {libraryAutocompleteGroupLabel(group.group)}
-                      </WorkspaceAutocompleteGroup>
-                      {group.rows.map((row) => {
-                        const index = rows.indexOf(row);
-                        return (
-                          <WorkspaceAutocompleteOption
-                            key={row.id}
-                            id={`${listId}-option-${index}`}
-                            isActive={index === activeIndex}
-                            onSelect={() => selectRow(row)}
-                            onHover={() => setActiveIndex(index)}
-                          >
-                            {row.posterUrl || !row.icon ? (
-                              <WorkspaceAutocompletePoster
-                                src={row.posterUrl}
-                                fallbackLetter={row.title.charAt(0).toUpperCase()}
-                              />
-                            ) : (
-                              <span className="workspace-search__autocomplete-poster" aria-hidden>
-                                {row.icon}
-                              </span>
-                            )}
-                            <WorkspaceAutocompleteCopy title={row.title} meta={row.meta} />
-                          </WorkspaceAutocompleteOption>
-                        );
-                      })}
-                    </React.Fragment>
-                  ))
-                : null}
-            </WorkspaceAutocompletePanel>
-          ) : null}
-          {hasQuery && (alternateKind || submitKind === "movie") ? (
-            <WorkspaceSearchActions className="curved-library-search__secondary-actions">
-              {alternateKind ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="md"
-                  disabled={isBusy}
-                  onClick={() => void submitKindAction(alternateKind)}
-                >
-                  {librarySubmitLabel(alternateKind, isGuest)}
-                </Button>
-              ) : null}
-              {submitKind === "movie" ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="md"
-                  disabled={isBusy}
-                  leftIcon={<PlusIcon />}
-                  onClick={() => {
-                    hideAutocomplete();
-                    setShowRecommend(true);
+    return (
+      <>
+        <div className="workspace-search__stage curved-library-search">
+          <div
+            ref={autocompleteRegionRef}
+            className={`curved-library-search__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}`}
+            onFocusCapture={onFocusCapture}
+            onBlurCapture={onBlurCapture}
+          >
+            <div className="curved-library-search__row">
+              <div className="curved-library-search__input-wrap">
+                <CurvedInput
+                  ref={inputRef}
+                  value={query}
+                  onChange={(nextValue) => {
+                    setQuery(nextValue);
+                    setSelection(null);
+                    setActionError(null);
+                    setShowRecommend(false);
                   }}
-                >
-                  Recommend
-                </Button>
-              ) : null}
-            </WorkspaceSearchActions>
+                  onSubmit={() => {
+                    if (isBusy || !hasQuery) return;
+                    clearFocusBoundaryCheck();
+                    hideAutocomplete();
+                    inputRef.current?.blur();
+                    handlePrimary();
+                  }}
+                  buttonText={primaryLabel}
+                  secondaryButtonText="Quiz"
+                  onSecondaryPointerEnter={() =>
+                    void import("@/components/quiz")
+                  }
+                  onSecondaryFocus={() => void import("@/components/quiz")}
+                  onSecondarySubmit={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("open-quiz-experience"),
+                    );
+                  }}
+                  spinButtonText="Spin"
+                  onSpinPointerEnter={() =>
+                    void import("@/components/spin-match/SpinSwipeGame")
+                  }
+                  onSpinFocus={() =>
+                    void import("@/components/spin-match/SpinSwipeGame")
+                  }
+                  onSpinSubmit={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("open-spin-experience"),
+                    );
+                  }}
+                  isBusy={isBusy}
+                  buttonDisabled={!hasQuery}
+                  placeholder="Add a movie, show, or place"
+                  aria-label="Search movies, shows, and places to add"
+                  combobox={{
+                    expanded: isOpen,
+                    controlsId: listId,
+                    activeDescendantId:
+                      isOpen && activeIndex >= 0
+                        ? `${listId}-option-${activeIndex}`
+                        : undefined,
+                  }}
+                  onFocus={() => {
+                    setIsFocused(true);
+                    if (trimmed.length >= 2) {
+                      setIsMounted(true);
+                      setIsOpen(true);
+                    }
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.nativeEvent.isComposing) return;
+                    if (event.key === "ArrowDown") {
+                      if (rows.length === 0) return;
+                      event.preventDefault();
+                      setIsOpen(true);
+                      moveActiveIndex("next", rows.length);
+                      return;
+                    }
+                    if (event.key === "ArrowUp") {
+                      if (rows.length === 0) return;
+                      event.preventDefault();
+                      setIsOpen(true);
+                      moveActiveIndex("previous", rows.length);
+                      return;
+                    }
+                    if (event.key === "Escape") {
+                      if (isOpen) {
+                        event.preventDefault();
+                        hideAutocomplete();
+                      }
+                      return;
+                    }
+                    if (event.key === "Enter" && isOpen) {
+                      const selectedIndex = getEnterSelectionIndex(rows.length);
+                      if (selectedIndex >= 0 && rows[selectedIndex]) {
+                        event.preventDefault();
+                        selectRow(rows[selectedIndex]);
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            {showPanel ? (
+              <WorkspaceAutocompletePanel
+                id={listId}
+                isOpen={isOpen}
+                ariaLabel="Movie, show, and place suggestions"
+                onPointerDown={() => {
+                  dropdownInteractionPendingRef.current = true;
+                  window.setTimeout(() => {
+                    dropdownInteractionPendingRef.current = false;
+                  }, 300);
+                }}
+              >
+                {isLoading ? <WorkspaceAutocompleteLoading /> : null}
+                {fetchError ? (
+                  <WorkspaceAutocompleteStatus role="alert">
+                    {fetchError}
+                  </WorkspaceAutocompleteStatus>
+                ) : null}
+                {!isLoading && rows.length === 0 && trimmed.length >= 2 ? (
+                  <WorkspaceAutocompleteStatus>
+                    No matches yet — add this as a movie or a place.
+                  </WorkspaceAutocompleteStatus>
+                ) : null}
+                {!isLoading
+                  ? groupedRows.map((group) => (
+                      <React.Fragment key={group.group}>
+                        <WorkspaceAutocompleteGroup>
+                          {libraryAutocompleteGroupLabel(group.group)}
+                        </WorkspaceAutocompleteGroup>
+                        {group.rows.map((row) => {
+                          const index = rows.indexOf(row);
+                          return (
+                            <WorkspaceAutocompleteOption
+                              key={row.id}
+                              id={`${listId}-option-${index}`}
+                              isActive={index === activeIndex}
+                              onSelect={() => selectRow(row)}
+                              onHover={() => setActiveIndex(index)}
+                            >
+                              {row.posterUrl || !row.icon ? (
+                                <WorkspaceAutocompletePoster
+                                  src={row.posterUrl}
+                                  fallbackLetter={row.title
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                />
+                              ) : (
+                                <span
+                                  className="workspace-search__autocomplete-poster"
+                                  aria-hidden
+                                >
+                                  {row.icon}
+                                </span>
+                              )}
+                              <WorkspaceAutocompleteCopy
+                                title={row.title}
+                                meta={row.meta}
+                              />
+                            </WorkspaceAutocompleteOption>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))
+                  : null}
+              </WorkspaceAutocompletePanel>
+            ) : null}
+            {hasQuery && (alternateKind || submitKind === "movie") ? (
+              <WorkspaceSearchActions className="curved-library-search__secondary-actions">
+                {alternateKind ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="md"
+                    disabled={isBusy}
+                    onClick={() => void submitKindAction(alternateKind)}
+                  >
+                    {librarySubmitLabel(alternateKind, isGuest)}
+                  </Button>
+                ) : null}
+                {submitKind === "movie" ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="md"
+                    disabled={isBusy}
+                    leftIcon={<PlusIcon />}
+                    onClick={() => {
+                      hideAutocomplete();
+                      setShowRecommend(true);
+                    }}
+                  >
+                    Recommend
+                  </Button>
+                ) : null}
+              </WorkspaceSearchActions>
+            ) : null}
+          </div>
+          {actionError ? (
+            <div className="workspace-search__error" role="alert">
+              <span
+                className="workspace-search__error-dot"
+                aria-hidden="true"
+              />
+              <span>{actionError}</span>
+            </div>
           ) : null}
         </div>
-        {actionError ? (
-          <div className="workspace-search__error" role="alert">
-            <span className="workspace-search__error-dot" aria-hidden="true" />
-            <span>{actionError}</span>
-          </div>
+        {showRecommend && hasQuery ? (
+          <MovieRecommendationComposer
+            currentUser={currentUser}
+            movieTitle={
+              selection?.kind === "movie-result" ? selection.title : trimmed
+            }
+            guestName={guestName}
+            reason={recommendReason}
+            error={actionError}
+            isSubmitting={isBusy}
+            onGuestNameChange={setGuestName}
+            onReasonChange={setRecommendReason}
+            onSubmit={handleRecommend}
+            onCancel={() => {
+              setShowRecommend(false);
+              setRecommendReason("");
+            }}
+          />
         ) : null}
-      </div>
-      {showRecommend && hasQuery ? (
-        <MovieRecommendationComposer
-          currentUser={currentUser}
-          movieTitle={selection?.kind === "movie-result" ? selection.title : trimmed}
-          guestName={guestName}
-          reason={recommendReason}
-          error={actionError}
-          isSubmitting={isBusy}
-          onGuestNameChange={setGuestName}
-          onReasonChange={setRecommendReason}
-          onSubmit={handleRecommend}
-          onCancel={() => {
-            setShowRecommend(false);
-            setRecommendReason("");
-          }}
-        />
-      ) : null}
-    </>
-  );
-});
+      </>
+    );
+  },
+);
 
 LibrarySearch.displayName = "LibrarySearch";
 

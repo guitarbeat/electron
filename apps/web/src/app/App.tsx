@@ -1,9 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   APP_VIEW_STATE_KEY,
   readInitialAppViewState,
@@ -29,7 +24,9 @@ import { ProfilePinPanel } from "@/components/ui";
 import { WorkspaceTabFallback } from "@/components/ui";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-const AppWorkspaceShell = lazyWithRetry(() => import("@/app/AppWorkspaceShell"));
+const AppWorkspaceShell = lazyWithRetry(
+  () => import("@/app/AppWorkspaceShell"),
+);
 import {
   isLibraryWorkspaceTab,
   libraryWorkspaceStackClass,
@@ -52,7 +49,6 @@ const App: React.FC = () => {
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
   );
-
 
   const initialViewState = useMemo(() => readInitialAppViewState(), []);
   const { activeTab } = useAppTabNavigation({
@@ -200,7 +196,9 @@ const App: React.FC = () => {
               className={`app-tab-shell ${isLibraryWorkspaceTab(activeTab) ? "app-tab-shell--movies" : `app-tab-shell--${activeTab}`} workspace-unified-shell`}
             >
               <WorkspaceErrorBoundary>
-                <React.Suspense fallback={<WorkspaceTabFallback tab={activeTab} />}>
+                <React.Suspense
+                  fallback={<WorkspaceTabFallback tab={activeTab} />}
+                >
                   <AppWorkspaceShell
                     activeTab={activeTab}
                     openPanels={openPanels}

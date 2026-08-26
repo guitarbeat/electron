@@ -1,6 +1,6 @@
-import { mockMovies } from '../../../apps/web/src/services/state/mockData.js';
-import type { StateScopeDataMap } from '../../../apps/web/src/services/state/stateTypes.js';
-import type { Movie, User } from '../../../apps/web/src/shared/types.js';
+import { mockMovies } from "../../../apps/web/src/services/state/mockData.js";
+import type { StateScopeDataMap } from "../../../apps/web/src/services/state/stateTypes.js";
+import type { Movie, User } from "../../../apps/web/src/shared/types.js";
 import {
   findMovieByNormalizedTitle,
   isUser,
@@ -8,20 +8,20 @@ import {
   MAX_MOVIE_TITLE_LENGTH,
   parseJsonContent,
   sanitizeInput,
-} from '../common.js';
-import type { MutationContext, ScopeDefinition } from '../state.js';
-import { randomUUID } from 'node:crypto';
+} from "../common.js";
+import type { MutationContext, ScopeDefinition } from "../state.js";
+import { randomUUID } from "node:crypto";
 
 const extractString = (value: unknown): string =>
-  typeof value === 'string' ? sanitizeInput(value) : '';
+  typeof value === "string" ? sanitizeInput(value) : "";
 
 const normalizeOptionalString = (value: unknown): string | undefined => {
-  const normalized = typeof value === 'string' ? sanitizeInput(value) : '';
+  const normalized = typeof value === "string" ? sanitizeInput(value) : "";
   return normalized || undefined;
 };
 
 const normalizeRequiredDate = (value: unknown): string | null =>
-  typeof value === 'string' && !Number.isNaN(Date.parse(value)) ? value : null;
+  typeof value === "string" && !Number.isNaN(Date.parse(value)) ? value : null;
 
 const normalizePosterUrl = (value: unknown): string | undefined => {
   const normalized = normalizeOptionalString(value);
@@ -30,14 +30,14 @@ const normalizePosterUrl = (value: unknown): string | undefined => {
   }
 
   const parsed = new URL(normalized);
-  if (parsed.protocol === 'http:') {
-    parsed.protocol = 'https:';
+  if (parsed.protocol === "http:") {
+    parsed.protocol = "https:";
   }
   return parsed.toString();
 };
 
 const normalizeMovieRecord = (value: unknown): Movie | null => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return null;
   }
 
@@ -76,9 +76,9 @@ export const parseMovies = (content: string | null): Movie[] => {
   }
 
   try {
-    const parsed = parseJsonContent(content, 'movies');
+    const parsed = parseJsonContent(content, "movies");
     if (!Array.isArray(parsed)) {
-      console.warn('movies was not an array; defaulting to seed state.');
+      console.warn("movies was not an array; defaulting to seed state.");
       return mockMovies;
     }
 
@@ -87,13 +87,13 @@ export const parseMovies = (content: string | null): Movie[] => {
       return next ? [next] : [];
     });
   } catch (error) {
-    console.error('Failed to parse movies; defaulting to seed state.', error);
+    console.error("Failed to parse movies; defaulting to seed state.", error);
     return mockMovies;
   }
 };
 
 export const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return {};
   }
 
@@ -103,11 +103,11 @@ export const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
   const assignString = (
     key: keyof Pick<
       Movie,
-      'year' | 'plot' | 'imdbRating' | 'runtime' | 'genre' | 'director'
+      "year" | "plot" | "imdbRating" | "runtime" | "genre" | "director"
     >,
-    nextValue: unknown
+    nextValue: unknown,
   ) => {
-    if (typeof nextValue === 'string') {
+    if (typeof nextValue === "string") {
       const normalized = sanitizeInput(nextValue);
       if (normalized) {
         next[key] = normalized;
@@ -115,31 +115,31 @@ export const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
     }
   };
 
-  assignString('year', metadata.year);
-  assignString('plot', metadata.plot);
-  assignString('imdbRating', metadata.imdbRating);
-  assignString('runtime', metadata.runtime);
-  assignString('genre', metadata.genre);
-  assignString('director', metadata.director);
+  assignString("year", metadata.year);
+  assignString("plot", metadata.plot);
+  assignString("imdbRating", metadata.imdbRating);
+  assignString("runtime", metadata.runtime);
+  assignString("genre", metadata.genre);
+  assignString("director", metadata.director);
 
-  if (typeof metadata.posterUrl === 'string') {
+  if (typeof metadata.posterUrl === "string") {
     const normalized = sanitizeInput(metadata.posterUrl);
     if (normalized && isValidUrl(normalized)) {
       next.posterUrl = normalized;
     }
   }
 
-  if (metadata.mediaType === 'movie' || metadata.mediaType === 'series') {
+  if (metadata.mediaType === "movie" || metadata.mediaType === "series") {
     next.mediaType = metadata.mediaType;
   }
 
-  if (typeof metadata.category === 'string') {
+  if (typeof metadata.category === "string") {
     const normalized = sanitizeInput(metadata.category);
     if (normalized) {
       next.category = normalized;
     }
-  } else if (next.mediaType === 'series') {
-    next.category = 'TV Series';
+  } else if (next.mediaType === "series") {
+    next.category = "TV Series";
   }
 
   return next;
@@ -151,7 +151,7 @@ export const createMovieFromPayload = (
   value: unknown,
   context: MutationContext,
 ): Movie | null => {
-  if (!value || typeof value !== 'object' || !context.currentUser) {
+  if (!value || typeof value !== "object" || !context.currentUser) {
     return null;
   }
 
@@ -176,29 +176,29 @@ export const createMovieFromPayload = (
   };
 };
 
-export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
-  filename: 'movielist.json',
+export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
+  filename: "movielist.json",
   parse: parseMovies,
   serialize: (value) => JSON.stringify(value, null, 2),
-  toClient: (value) => value as StateScopeDataMap['movies'],
+  toClient: (value) => value as StateScopeDataMap["movies"],
   mutate: (current, op, payload, context) => {
     const movies = current as Movie[];
 
     switch (op) {
-      case 'add_movie': {
+      case "add_movie": {
         const movie = createMovieFromPayload(payload, context);
         if (!movie || !(payload as { id?: unknown }).id) {
-          return { ok: false, conflict: 'Invalid movie payload.' };
+          return { ok: false, conflict: "Invalid movie payload." };
         }
 
         if (movies.some((entry) => entry.id === movie.id)) {
-          return { ok: false, conflict: 'Movie already exists.' };
+          return { ok: false, conflict: "Movie already exists." };
         }
 
         if (findMovieByNormalizedTitle(movies, movie.title)) {
           return {
             ok: false,
-            conflict: 'A movie with this title is already in the queue.',
+            conflict: "A movie with this title is already in the queue.",
           };
         }
 
@@ -207,7 +207,7 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
           data: [...movies, movie],
         };
       }
-      case 'add_movies': {
+      case "add_movies": {
         const items = (payload as { items?: unknown })?.items;
         if (
           !Array.isArray(items) ||
@@ -220,16 +220,18 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
           };
         }
 
-        const parsed = items.map((item) => createMovieFromPayload(item, context));
+        const parsed = items.map((item) =>
+          createMovieFromPayload(item, context),
+        );
         if (parsed.some((movie) => movie === null)) {
-          return { ok: false, conflict: 'Invalid movie batch payload.' };
+          return { ok: false, conflict: "Invalid movie batch payload." };
         }
 
         const next = [...movies];
         const knownIds = new Set(movies.map((movie) => movie.id));
         for (const movie of parsed as Movie[]) {
           if (knownIds.has(movie.id)) {
-            return { ok: false, conflict: 'Movie already exists.' };
+            return { ok: false, conflict: "Movie already exists." };
           }
           if (findMovieByNormalizedTitle(next, movie.title)) {
             continue;
@@ -240,8 +242,8 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
 
         return { ok: true, data: next };
       }
-      case 'edit_movie':
-      case 'rename_movie': {
+      case "edit_movie":
+      case "rename_movie": {
         const nextPayload = payload as {
           movieId?: unknown;
           title?: unknown;
@@ -252,11 +254,11 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
         const customPosterUrl = extractString(nextPayload.customPosterUrl);
 
         if (!movieId || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
-          return { ok: false, conflict: 'Invalid movie title.' };
+          return { ok: false, conflict: "Invalid movie title." };
         }
 
         if (!movies.some((movie) => movie.id === movieId)) {
-          return { ok: false, conflict: 'Movie not found.' };
+          return { ok: false, conflict: "Movie not found." };
         }
 
         return {
@@ -266,18 +268,22 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
               ? {
                   ...movie,
                   title,
-                  ...(customPosterUrl !== undefined ? { customPosterUrl: customPosterUrl || undefined } : {})
+                  ...(customPosterUrl !== undefined
+                    ? { customPosterUrl: customPosterUrl || undefined }
+                    : {}),
                 }
-              : movie
+              : movie,
           ),
         };
       }
-      case 'toggle_watched': {
-        const movieId = extractString((payload as { movieId?: unknown }).movieId);
+      case "toggle_watched": {
+        const movieId = extractString(
+          (payload as { movieId?: unknown }).movieId,
+        );
 
         const target = movies.find((movie) => movie.id === movieId);
         if (!target) {
-          return { ok: false, conflict: 'Movie not found.' };
+          return { ok: false, conflict: "Movie not found." };
         }
 
         return {
@@ -288,7 +294,9 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
             }
 
             const watchedBy = movie.watchedBy.includes(context.currentUser!)
-              ? movie.watchedBy.filter((user: User) => user !== context.currentUser!)
+              ? movie.watchedBy.filter(
+                  (user: User) => user !== context.currentUser!,
+                )
               : [...movie.watchedBy, context.currentUser!];
 
             return {
@@ -298,11 +306,13 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
           }),
         };
       }
-      case 'delete_movie': {
-        const movieId = extractString((payload as { movieId?: unknown }).movieId);
+      case "delete_movie": {
+        const movieId = extractString(
+          (payload as { movieId?: unknown }).movieId,
+        );
 
         if (!movies.some((movie) => movie.id === movieId)) {
-          return { ok: false, conflict: 'Movie not found.' };
+          return { ok: false, conflict: "Movie not found." };
         }
 
         return {
@@ -310,17 +320,17 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
           data: movies.filter((movie) => movie.id !== movieId),
         };
       }
-      case 'restore_movie': {
+      case "restore_movie": {
         const restored = normalizeMovieRecord(
-          (payload as { movie?: unknown }).movie
+          (payload as { movie?: unknown }).movie,
         );
 
         if (!restored) {
-          return { ok: false, conflict: 'Invalid movie restore payload.' };
+          return { ok: false, conflict: "Invalid movie restore payload." };
         }
 
         if (movies.some((movie) => movie.id === restored.id)) {
-          return { ok: false, conflict: 'Movie already exists.' };
+          return { ok: false, conflict: "Movie already exists." };
         }
 
         return {
@@ -328,7 +338,7 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
           data: [...movies, restored],
         };
       }
-      case 'update_metadata': {
+      case "update_metadata": {
         const nextPayload = payload as {
           movieId?: unknown;
           metadata?: unknown;
@@ -337,11 +347,11 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
         const metadata = sanitizeMovieMetadata(nextPayload.metadata);
 
         if (!movieId || Object.keys(metadata).length === 0) {
-          return { ok: false, conflict: 'Invalid metadata payload.' };
+          return { ok: false, conflict: "Invalid metadata payload." };
         }
 
         if (!movies.some((movie) => movie.id === movieId)) {
-          return { ok: false, conflict: 'Movie not found.' };
+          return { ok: false, conflict: "Movie not found." };
         }
 
         return {
@@ -352,7 +362,7 @@ export const movieScopeDefinition: ScopeDefinition<'movies', unknown> = {
                   ...movie,
                   ...metadata,
                 }
-              : movie
+              : movie,
           ),
         };
       }

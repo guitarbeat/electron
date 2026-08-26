@@ -26,11 +26,13 @@ import { useCollection } from "../index.ts";
 import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/providerContexts";
 import { isMockMode } from "../../services/state";
+import { warmServiceWorkerMedia } from "../../services/swMediaCache";
 
 const POLLING_INTERVAL = 15000;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
-  const { poster, year, plot, imdbRating, runtime, genre, director, type } = metadata;
+  const { poster, year, plot, imdbRating, runtime, genre, director, type } =
+    metadata;
   const result: Partial<Movie> = {};
   if (poster && isValidUrl(poster)) result.posterUrl = poster;
   if (year) result.year = year;
@@ -99,6 +101,15 @@ export const useMovies = (
   const isRefreshingMetadataRef = useRef(false);
   const moviesRef = useRef(movies);
   moviesRef.current = movies;
+
+  useEffect(() => {
+    if (movies && movies.length > 0) {
+      const posterUrls = movies
+        .map((m) => m.posterUrl)
+        .filter((url): url is string => Boolean(url));
+      warmServiceWorkerMedia(posterUrls);
+    }
+  }, [movies]);
 
   const performMutationIfMoviePresent = useCallback(
     async (
@@ -212,7 +223,10 @@ export const useMovies = (
   );
 
   const editMovie = useCallback(
-    async (movieId: string, updates: { title: string; customPosterUrl?: string }) => {
+    async (
+      movieId: string,
+      updates: { title: string; customPosterUrl?: string },
+    ) => {
       if (!currentUser) {
         throw new Error("Profile required");
       }
@@ -223,13 +237,17 @@ export const useMovies = (
       }
 
       const cleanTitle = validateMovieTitle(updates.title);
-      
+
       const optimisticMovies = movies.map((movie: Movie) =>
-        movie.id === movieId ? { 
-          ...movie, 
-          title: cleanTitle, 
-          ...(updates.customPosterUrl !== undefined ? { customPosterUrl: updates.customPosterUrl || undefined } : {})
-        } : movie,
+        movie.id === movieId
+          ? {
+              ...movie,
+              title: cleanTitle,
+              ...(updates.customPosterUrl !== undefined
+                ? { customPosterUrl: updates.customPosterUrl || undefined }
+                : {}),
+            }
+          : movie,
       );
 
       await performMutation(
@@ -431,7 +449,6 @@ export const useMovies = (
     }
   }, [autoSyncMetadata, currentUser, isLoading, movies]);
 
-
   const sortedMovies = useMemo(() => sortMovies(movies), [movies]);
 
   return {
@@ -617,7 +634,9 @@ export const useMoviesWorkspace = (
 
       const suggestion =
         typeof suggestionOrId === "string"
-          ? suggestionsState.suggestions.find((s: MovieSuggestion) => s.id === suggestionOrId)
+          ? suggestionsState.suggestions.find(
+              (s: MovieSuggestion) => s.id === suggestionOrId,
+            )
           : suggestionOrId;
 
       if (!suggestion) return;
@@ -643,7 +662,8 @@ export const useMoviesWorkspace = (
         });
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : "Failed to accept suggestion",
+          message:
+            err instanceof Error ? err.message : "Failed to accept suggestion",
           type: "error",
         });
       } finally {
@@ -664,10 +684,10 @@ export const useMoviesWorkspace = (
       }
 
       const id =
-        typeof suggestionOrId === "string"
-          ? suggestionOrId
-          : suggestionOrId.id;
-      const target = suggestionsState.suggestions.find((s: MovieSuggestion) => s.id === id);
+        typeof suggestionOrId === "string" ? suggestionOrId : suggestionOrId.id;
+      const target = suggestionsState.suggestions.find(
+        (s: MovieSuggestion) => s.id === id,
+      );
       if (!target) return;
 
       setProcessingSuggestionId(id);
@@ -678,14 +698,15 @@ export const useMoviesWorkspace = (
         }
 
         await suggestionsState.rejectSuggestion(id, currentUser);
-        
+
         showToast({
           message: `Rejected "${target.title}" suggestion`,
           type: "info",
         });
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : "Failed to reject suggestion",
+          message:
+            err instanceof Error ? err.message : "Failed to reject suggestion",
           type: "error",
         });
       } finally {
@@ -841,4 +862,3 @@ export const useMoviesWorkspace = (
 
 export { trackMetric };
 export { useMoviesScope } from "../index.ts";
-

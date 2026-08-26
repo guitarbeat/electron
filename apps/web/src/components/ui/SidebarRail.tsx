@@ -55,7 +55,9 @@ export const SpinIcon: React.FC<{ size?: number }> = ({ size = 20 }) => (
   </svg>
 );
 
-export const CloudOfflineIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+export const CloudOfflineIcon: React.FC<{ size?: number }> = ({
+  size = 16,
+}) => (
   <svg
     width={size}
     height={size}
@@ -72,10 +74,10 @@ export const CloudOfflineIcon: React.FC<{ size?: number }> = ({ size = 16 }) => 
   </svg>
 );
 
-export const SyncRefreshIcon: React.FC<{ size?: number; spinning?: boolean }> = ({
-  size = 16,
-  spinning = false,
-}) => (
+export const SyncRefreshIcon: React.FC<{
+  size?: number;
+  spinning?: boolean;
+}> = ({ size = 16, spinning = false }) => (
   <svg
     width={size}
     height={size}

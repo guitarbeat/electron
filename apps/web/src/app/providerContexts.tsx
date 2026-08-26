@@ -1,5 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useCallback, useSyncExternalStore } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useSyncExternalStore,
+} from "react";
 import type { ReactNode } from "react";
 import type { User, MainTab } from "@/shared/types";
 import type { AppThemeDefinition, ThemeName } from "@/theme/tokens";
@@ -151,17 +157,24 @@ const useMediaQueryLocal = (query: string): boolean => {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 };
 
-export const ViewportProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ViewportProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const isMobile = useMediaQueryLocal("(max-width: 640px)");
 
   const isSilkBrowser = useMemo(() => {
     if (typeof navigator === "undefined") return false;
-    return /Silk|Kindle|FireTV|AFTS|AFTB|AmazonWebAppPlatform/i.test(navigator.userAgent);
+    return /Silk|Kindle|FireTV|AFTS|AFTB|AmazonWebAppPlatform/i.test(
+      navigator.userAgent,
+    );
   }, []);
 
   const isTv = useMemo(() => {
     if (typeof navigator === "undefined") return false;
-    return isSilkBrowser || /tv|smarttv|googletv|appletv|firetv|hbbtv/i.test(navigator.userAgent);
+    return (
+      isSilkBrowser ||
+      /tv|smarttv|googletv|appletv|firetv|hbbtv/i.test(navigator.userAgent)
+    );
   }, [isSilkBrowser]);
 
   useMemo(() => {
@@ -182,11 +195,13 @@ export const ViewportProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const value = useMemo(
     () => ({ isMobile, isTv, isSilkBrowser }),
-    [isMobile, isTv, isSilkBrowser]
+    [isMobile, isTv, isSilkBrowser],
   );
 
   return (
-    <ViewportContext.Provider value={value}>{children}</ViewportContext.Provider>
+    <ViewportContext.Provider value={value}>
+      {children}
+    </ViewportContext.Provider>
   );
 };
 
@@ -202,7 +217,12 @@ export function useViewport(): ViewportContextValue {
 // Bento Slot Context & Hooks (consolidated from BentoSlotContext.tsx)
 // ============================================================================
 
-import type { MagicToggleOption, BentoSortChipConfig, BentoStatTileConfig, SortOrder } from "@/components/ui";
+import type {
+  MagicToggleOption,
+  BentoSortChipConfig,
+  BentoStatTileConfig,
+  SortOrder,
+} from "@/components/ui";
 
 export interface BentoSlotConfig {
   ariaLabel?: string;

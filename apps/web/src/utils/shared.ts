@@ -318,8 +318,7 @@ export const copyTextToClipboard = async (value: string): Promise<void> => {
 export const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
-export const shallowCloneArray = <T>(arr: T[]): T[] =>
-  [...arr];
+export const shallowCloneArray = <T>(arr: T[]): T[] => [...arr];
 
 export const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];
@@ -529,12 +528,10 @@ export const prefersReducedMotion = (): boolean =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const hasHoverCapability = (): boolean =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(hover: hover)").matches;
+  typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
 
 export const hasFinePointer = (): boolean =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(pointer: fine)").matches;
+  typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
 
 export const isChromaSpotlightEnabled = (): boolean =>
   !prefersReducedMotion() && hasHoverCapability() && hasFinePointer();
@@ -588,7 +585,9 @@ export const setSoundEnabled = (enabled: boolean): void => {
   soundListeners.forEach((listener) => listener());
 };
 
-export const subscribeSoundPreference = (onChange: () => void): (() => void) => {
+export const subscribeSoundPreference = (
+  onChange: () => void,
+): (() => void) => {
   soundListeners.add(onChange);
   return () => {
     soundListeners.delete(onChange);
@@ -600,7 +599,9 @@ export function scrollToWorkspaceSection(sectionId: string): boolean {
   const section = document.getElementById(sectionId);
   if (!section) return false;
 
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
   section.scrollIntoView({
     behavior: reducedMotion ? "auto" : "smooth",
     block: "start",
@@ -730,14 +731,19 @@ type ViewTransitionDocument = Document & {
   };
 };
 
-export function runWithViewTransition(callback: () => void, skip: boolean = false): void {
+export function runWithViewTransition(
+  callback: () => void,
+  skip: boolean = false,
+): void {
   if (typeof document === "undefined" || skip) {
     callback();
     return;
   }
 
   const doc = document as ViewTransitionDocument;
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
   if (doc.startViewTransition && !reducedMotion) {
     doc.startViewTransition(callback);

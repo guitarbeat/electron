@@ -55,21 +55,24 @@ export const isAbsoluteUrl = (value: string): boolean =>
   /^[a-z][a-z\d+\-.]*:\/\//i.test(value);
 
 export const jsonProxyResponse = (body: unknown, status: number): Response =>
-  new Response(typeof body === 'string' ? body : JSON.stringify(body), {
+  new Response(typeof body === "string" ? body : JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
   });
 
 export const cachedProxyResponse = (
   cached: CachedProxyResponse,
-  cacheStatus: 'HIT' | 'MISS' = 'HIT'
+  cacheStatus: "HIT" | "MISS" = "HIT",
 ): Response =>
   new Response(cached.body, {
     status: cached.status,
     statusText: cached.statusText,
     headers: {
-      'Content-Type': cached.contentType,
-      'Cache-Control': 'no-store',
-      'X-Cache': cacheStatus,
+      "Content-Type": cached.contentType,
+      "Cache-Control": "no-store",
+      "X-Cache": cacheStatus,
     },
   });

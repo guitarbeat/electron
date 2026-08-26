@@ -7,16 +7,16 @@
  * continues to be issued for client-side countdown UX only.
  */
 
-import type pg from 'pg';
-import { createPostgresPool, getDatabaseUrl } from './dbCommon.js';
+import type pg from "pg";
+import { createPostgresPool, getDatabaseUrl } from "./dbCommon.js";
 
 let pool: pg.Pool | null = null;
-let poolUrl = '';
+let poolUrl = "";
 let schemaReady: Promise<void> | null = null;
 
 const getPool = (): pg.Pool => {
   const databaseUrl = getDatabaseUrl();
-  if (!databaseUrl) throw new Error('DATABASE_URL is not configured.');
+  if (!databaseUrl) throw new Error("DATABASE_URL is not configured.");
   if (!pool || poolUrl !== databaseUrl) {
     if (pool) void pool.end().catch(() => undefined);
     pool = createPostgresPool(databaseUrl);
@@ -26,7 +26,10 @@ const getPool = (): pg.Pool => {
   return pool;
 };
 
-const query = async <T extends object>(sql: string, params: unknown[] = []): Promise<T[]> => {
+const query = async <T extends object>(
+  sql: string,
+  params: unknown[] = [],
+): Promise<T[]> => {
   const client = await getPool().connect();
   try {
     const result = await client.query(sql, params);
@@ -62,24 +65,31 @@ export interface PinAttemptRecord {
  * Returns the current failure count and lock expiry for a user.
  * Fails silently (returns zeroed record) so a DB outage never blocks login.
  */
-export const getPinAttemptRecord = async (user: string): Promise<PinAttemptRecord> => {
+export const getPinAttemptRecord = async (
+  user: string,
+): Promise<PinAttemptRecord> => {
   if (!getDatabaseUrl()) {
     return { failures: 0, lockedUntil: null };
   }
   try {
     await ensureSchema();
     const rows = await query<{ failures: number; locked_until: string | null }>(
-      'SELECT failures, locked_until FROM pin_attempts WHERE user_name = $1',
-      [user]
+      "SELECT failures, locked_until FROM pin_attempts WHERE user_name = $1",
+      [user],
     );
     const row = rows[0];
     if (!row) return { failures: 0, lockedUntil: null };
     return {
       failures: row.failures,
-      lockedUntil: row.locked_until ? new Date(row.locked_until).getTime() : null,
+      lockedUntil: row.locked_until
+        ? new Date(row.locked_until).getTime()
+        : null,
     };
   } catch (error) {
-    console.error('[pinAttemptStore] Failed to read pin attempt record:', error);
+    console.error(
+      "[pinAttemptStore] Failed to read pin attempt record:",
+      error,
+    );
     // Fail closed: deny access when we cannot verify the actual lockout state.
     // This prevents an attacker from exploiting transient DB failures to bypass lockout.
     return { failures: Infinity, lockedUntil: Date.now() + 60_000 };
@@ -92,7 +102,7 @@ export const getPinAttemptRecord = async (user: string): Promise<PinAttemptRecor
 export const recordPinFailure = async (
   user: string,
   failures: number,
-  lockedUntil: number | null
+  lockedUntil: number | null,
 ): Promise<void> => {
   if (!getDatabaseUrl()) return;
 
@@ -105,10 +115,10 @@ export const recordPinFailure = async (
          failures     = EXCLUDED.failures,
          locked_until = EXCLUDED.locked_until,
          updated_at   = now()`,
-      [user, failures, lockedUntil ? new Date(lockedUntil) : null]
+      [user, failures, lockedUntil ? new Date(lockedUntil) : null],
     );
   } catch (error) {
-    console.error('[pinAttemptStore] Failed to record pin failure:', error);
+    console.error("[pinAttemptStore] Failed to record pin failure:", error);
   }
 };
 
@@ -128,9 +138,9 @@ export const clearPinAttempts = async (user: string): Promise<void> => {
          failures     = 0,
          locked_until = NULL,
          updated_at   = now()`,
-      [user]
+      [user],
     );
   } catch (error) {
-    console.error('[pinAttemptStore] Failed to clear pin attempts:', error);
+    console.error("[pinAttemptStore] Failed to clear pin attempts:", error);
   }
 };

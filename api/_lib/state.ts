@@ -1,13 +1,13 @@
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
 
 import type {
   MutationRequest,
   StateScope,
   StateScopeDataMap,
-} from '../../apps/web/src/services/state/stateTypes.js';
-import { STATE_SCOPES } from '../../apps/web/src/services/state/stateTypes.js';
-import type { User } from '../../apps/web/src/shared/types.js';
-import { USER_OPTIONS } from './common.js';
+} from "../../apps/web/src/services/state/stateTypes.js";
+import { STATE_SCOPES } from "../../apps/web/src/services/state/stateTypes.js";
+import type { User } from "../../apps/web/src/shared/types.js";
+import { USER_OPTIONS } from "./common.js";
 import {
   invalidateSharedStateCache,
   isSharedStateConfigured,
@@ -15,23 +15,23 @@ import {
   listSharedStateFilenames,
   patchSharedStateFile,
   readSharedStateFileRecord,
-} from './sharedStateStore.js';
-import { verifyStoredPin } from './session.js';
+} from "./sharedStateStore.js";
+import { verifyStoredPin } from "./session.js";
 
-import { movieScopeDefinition } from './stateScopes/movies.js';
+import { movieScopeDefinition } from "./stateScopes/movies.js";
 import {
   memoriesScopeDefinition,
   messagesScopeDefinition,
   placesScopeDefinition,
-} from './stateScopes/content.js';
-import { suggestionScopeDefinitions } from './stateScopes/suggestions.js';
+} from "./stateScopes/content.js";
+import { suggestionScopeDefinitions } from "./stateScopes/suggestions.js";
 import {
   dailySpinScopeDefinition,
   matchmakerScopeDefinition,
   pinsScopeDefinition,
   quizScopeDefinition,
   spinHistoryScopeDefinition,
-} from './stateScopes/interactive.js';
+} from "./stateScopes/interactive.js";
 
 export interface MutationContext {
   currentUser: User | null;
@@ -64,7 +64,7 @@ export type MutationResult<T> = MutationFailure | MutationSuccess<T>;
 export interface ScopeDefinition<
   TScope extends StateScope,
   TStored,
-  TClient = StateScopeDataMap[TScope]
+  TClient = StateScopeDataMap[TScope],
 > {
   filename: string;
   parse: (content: string | null) => TStored;
@@ -75,16 +75,20 @@ export interface ScopeDefinition<
     current: TStored,
     op: string,
     payload: unknown,
-    context: MutationContext
+    context: MutationContext,
   ) => MutationResult<TStored>;
 }
 
 export const computeVersion = (value: unknown): string =>
-  createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
-const buildPinCoverageState = (pinProtectedUsers: readonly User[]): PinCoverageState => {
+const buildPinCoverageState = (
+  pinProtectedUsers: readonly User[],
+): PinCoverageState => {
   const protectedSet = new Set<User>(pinProtectedUsers);
-  const usersMissingPins = USER_OPTIONS.filter((user) => !protectedSet.has(user));
+  const usersMissingPins = USER_OPTIONS.filter(
+    (user) => !protectedSet.has(user),
+  );
 
   return {
     pinProtectedUsers: [...pinProtectedUsers],
@@ -109,21 +113,24 @@ const scopes: {
 };
 
 export const getScopeDefinition = <TScope extends StateScope>(
-  scope: TScope
+  scope: TScope,
 ): ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]> =>
   scopes[scope] as ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]>;
 
 const repairMissingScopeFile = async <TScope extends StateScope>(
   scope: TScope,
   definition: ScopeDefinition<TScope, unknown, StateScopeDataMap[TScope]>,
-  stored: unknown
+  stored: unknown,
 ): Promise<void> => {
   if (!isSharedStateWriteConfigured()) {
     return;
   }
 
   try {
-    await patchSharedStateFile(definition.filename, definition.serialize(stored));
+    await patchSharedStateFile(
+      definition.filename,
+      definition.serialize(stored),
+    );
   } catch (error) {
     console.warn(`Failed to bootstrap missing ${scope} scope file.`, error);
   }
@@ -131,7 +138,7 @@ const repairMissingScopeFile = async <TScope extends StateScope>(
 
 export const readScopeStoredData = async <TScope extends StateScope>(
   scope: TScope,
-  options: { bypassCache?: boolean } = {}
+  options: { bypassCache?: boolean } = {},
 ): Promise<{
   stored: unknown;
   clientData: StateScopeDataMap[TScope];
@@ -176,7 +183,9 @@ export const readScopeStoredData = async <TScope extends StateScope>(
   };
 };
 
-export const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope) => {
+export const buildFallbackScopeData = <TScope extends StateScope>(
+  scope: TScope,
+) => {
   const definition = getScopeDefinition(scope);
   const stored = definition.parse(null);
   const clientData = definition.toClient(stored) as StateScopeDataMap[TScope];
@@ -188,28 +197,34 @@ export const buildFallbackScopeData = <TScope extends StateScope>(scope: TScope)
   };
 };
 
-export const getStateScopeDiagnostics = async (): Promise<StateScopeDiagnostics> => {
-  const files = new Set(await listSharedStateFilenames());
+export const getStateScopeDiagnostics =
+  async (): Promise<StateScopeDiagnostics> => {
+    const files = new Set(await listSharedStateFilenames());
 
-  return {
-    expectedScopes: [...STATE_SCOPES],
-    missingScopes: STATE_SCOPES.filter((scope: StateScope) => !files.has(getScopeDefinition(scope).filename)),
+    return {
+      expectedScopes: [...STATE_SCOPES],
+      missingScopes: STATE_SCOPES.filter(
+        (scope: StateScope) => !files.has(getScopeDefinition(scope).filename),
+      ),
+    };
   };
-};
 
 /** Ensures every scope has a row in shared_state_files (default content when missing). */
-export const bootstrapMissingScopeFiles = async (): Promise<StateScopeDiagnostics> => {
-  if (!isSharedStateConfigured()) {
-    throw new Error('DATABASE_URL is not configured.');
-  }
+export const bootstrapMissingScopeFiles =
+  async (): Promise<StateScopeDiagnostics> => {
+    if (!isSharedStateConfigured()) {
+      throw new Error("DATABASE_URL is not configured.");
+    }
 
-  await Promise.all(
-    STATE_SCOPES.map((scope: StateScope) => readScopeStoredData(scope, { bypassCache: true }))
-  );
+    await Promise.all(
+      STATE_SCOPES.map((scope: StateScope) =>
+        readScopeStoredData(scope, { bypassCache: true }),
+      ),
+    );
 
-  invalidateSharedStateCache();
-  return getStateScopeDiagnostics();
-};
+    invalidateSharedStateCache();
+    return getStateScopeDiagnostics();
+  };
 
 /**
  * Maps shared-store/API errors to user-safe banner copy (no secrets). Exported for tests.
@@ -221,50 +236,50 @@ export const getScopeWarning = (error: unknown): string | undefined => {
 
   const msg = error.message;
 
-  if (msg === 'DATABASE_URL is not configured.') {
-    return 'Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL in your environment variables, then restart the server.';
+  if (msg === "DATABASE_URL is not configured.") {
+    return "Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL in your environment variables, then restart the server.";
   }
 
   const readMatch = /^Failed to read shared state \((\d+)\)\.$/.exec(msg);
   if (readMatch) {
     const status = Number(readMatch[1]);
     if (status === 404) {
-      return 'Shared sync could not reach the database endpoint (404). Verify DATABASE_URL points to the correct Neon database.';
+      return "Shared sync could not reach the database endpoint (404). Verify DATABASE_URL points to the correct Neon database.";
     }
     if (status === 401 || status === 403) {
-      return 'Neon rejected the request (401/403). Check DATABASE_URL credentials and permissions.';
+      return "Neon rejected the request (401/403). Check DATABASE_URL credentials and permissions.";
     }
     if (status === 429) {
-      return 'Neon or upstream rate limit reached. Retry after a short wait.';
+      return "Neon or upstream rate limit reached. Retry after a short wait.";
     }
     return `Shared state could not be loaded (HTTP ${status}). Check server logs and https://status.neon.tech.`;
   }
 
-  if (msg.startsWith('Failed to read shared state:')) {
-    return 'Shared state could not be read from Neon Postgres. Check server logs and DATABASE_URL.';
+  if (msg.startsWith("Failed to read shared state:")) {
+    return "Shared state could not be read from Neon Postgres. Check server logs and DATABASE_URL.";
   }
 
-  if (msg.includes('unexpected value type')) {
-    return 'The database returned an unexpected value when loading shared state. Check server logs.';
+  if (msg.includes("unexpected value type")) {
+    return "The database returned an unexpected value when loading shared state. Check server logs.";
   }
 
   const updateMatch = /^Failed to update shared state \((\d+)\)\.$/.exec(msg);
   if (updateMatch) {
     const status = Number(updateMatch[1]);
     if (status === 404) {
-      return 'Shared sync could not reach the database endpoint while saving (404). Verify DATABASE_URL.';
+      return "Shared sync could not reach the database endpoint while saving (404). Verify DATABASE_URL.";
     }
     if (status === 401 || status === 403) {
-      return 'Neon rejected the save (401/403). Verify DATABASE_URL credentials allow writes.';
+      return "Neon rejected the save (401/403). Verify DATABASE_URL credentials allow writes.";
     }
     if (status === 429) {
-      return 'Rate limit reached while saving. Retry after a short wait.';
+      return "Rate limit reached while saving. Retry after a short wait.";
     }
     return `Shared state could not be saved (HTTP ${status}). Check server logs.`;
   }
 
-  if (msg.startsWith('Failed to update shared state:')) {
-    return 'Shared state could not be written to Neon Postgres. Check server logs and DATABASE_URL.';
+  if (msg.startsWith("Failed to update shared state:")) {
+    return "Shared state could not be written to Neon Postgres. Check server logs and DATABASE_URL.";
   }
 
   const listMatch = /^list shared state \((\d+)\)\.$/.exec(msg);
@@ -272,28 +287,30 @@ export const getScopeWarning = (error: unknown): string | undefined => {
     return `Health check could not list shared state rows (HTTP ${listMatch[1]}). Check database credentials.`;
   }
 
-  if (msg.startsWith('list shared state:')) {
-    return 'Health check could not list shared state rows. Check server logs and database configuration.';
+  if (msg.startsWith("list shared state:")) {
+    return "Health check could not list shared state rows. Check server logs and database configuration.";
   }
 
-  return 'Shared state could not be loaded. Check server logs and Neon connectivity.';
+  return "Shared state could not be loaded. Check server logs and Neon connectivity.";
 };
 
-export const parseMutationRequest = async (req: Request): Promise<MutationRequest> => {
+export const parseMutationRequest = async (
+  req: Request,
+): Promise<MutationRequest> => {
   let payload: unknown;
   try {
     payload = await req.json();
   } catch {
-    throw new Error('Invalid JSON payload.');
+    throw new Error("Invalid JSON payload.");
   }
 
   const body = payload as Partial<MutationRequest>;
   if (
     !body ||
-    typeof body.baseVersion !== 'string' ||
-    typeof body.op !== 'string'
+    typeof body.baseVersion !== "string" ||
+    typeof body.op !== "string"
   ) {
-    throw new Error('Mutation requests must include baseVersion and op.');
+    throw new Error("Mutation requests must include baseVersion and op.");
   }
 
   return {
@@ -309,11 +326,16 @@ export const getPinProtectedUsers = async (): Promise<User[]> => {
 
 export const getPinCoverageState = async (): Promise<PinCoverageState> => {
   try {
-    const { stored } = await readScopeStoredData('pins');
+    const { stored } = await readScopeStoredData("pins");
     const pins = stored as Record<string, string>;
-    return buildPinCoverageState(USER_OPTIONS.filter((user) => Boolean(pins[user as string])));
+    return buildPinCoverageState(
+      USER_OPTIONS.filter((user) => Boolean(pins[user as string])),
+    );
   } catch (error) {
-    console.warn('Failed to read PIN coverage state, falling back to empty.', error);
+    console.warn(
+      "Failed to read PIN coverage state, falling back to empty.",
+      error,
+    );
     return {
       pinProtectedUsers: [],
       usersMissingPins: [],
@@ -324,9 +346,9 @@ export const getPinCoverageState = async (): Promise<PinCoverageState> => {
 
 export const verifyProfilePin = async (
   user: User,
-  pin: string | undefined
+  pin: string | undefined,
 ): Promise<boolean> => {
-  const { stored } = await readScopeStoredData('pins');
+  const { stored } = await readScopeStoredData("pins");
   const pins = stored as Record<string, string>;
   const storedHash = pins[user as string];
 

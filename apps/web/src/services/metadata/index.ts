@@ -83,11 +83,23 @@ interface SearchCacheEntry<T> {
   timestamp: number;
 }
 
-const omdbSearchCache = new Map<string, SearchCacheEntry<MovieAutocompleteResult[]>>();
-const tvmazeSearchCache = new Map<string, SearchCacheEntry<MovieAutocompleteResult[]>>();
-const autocompleteMergedCache = new Map<string, SearchCacheEntry<MovieAutocompleteResult[]>>();
+const omdbSearchCache = new Map<
+  string,
+  SearchCacheEntry<MovieAutocompleteResult[]>
+>();
+const tvmazeSearchCache = new Map<
+  string,
+  SearchCacheEntry<MovieAutocompleteResult[]>
+>();
+const autocompleteMergedCache = new Map<
+  string,
+  SearchCacheEntry<MovieAutocompleteResult[]>
+>();
 
-const evictMapOldest = <T>(cache: Map<string, SearchCacheEntry<T>>, maxSize: number) => {
+const evictMapOldest = <T>(
+  cache: Map<string, SearchCacheEntry<T>>,
+  maxSize: number,
+) => {
   while (cache.size > maxSize) {
     const oldestKey = cache.keys().next().value;
     if (!oldestKey) break;
@@ -181,7 +193,10 @@ export const searchOmdbMovies = async (
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), AUTOCOMPLETE_REQUEST_TIMEOUT_MS);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      AUTOCOMPLETE_REQUEST_TIMEOUT_MS,
+    );
     const mergedSignal =
       signal && typeof AbortSignal.any === "function"
         ? AbortSignal.any([signal, controller.signal])
@@ -219,15 +234,15 @@ export const searchOmdbMovies = async (
       (movie) => sanitizeInput(movie.Title).length > 0,
     );
 
-    const results = withTitles.slice(0, 6).map(
-      (movie): MovieAutocompleteResult => ({
+    const results = withTitles
+      .slice(0, 6)
+      .map((movie): MovieAutocompleteResult => ({
         title: sanitizeInput(movie.Title),
         year: movie.Year,
         imdbID: movie.imdbID,
         type: movie.Type as "movie" | "series",
         poster: normalizePosterUrl(movie.Poster),
-      }),
-    );
+      }));
 
     omdbSearchCache.set(normKey, { results, timestamp: now });
     evictMapOldest(omdbSearchCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
@@ -254,7 +269,9 @@ export const fetchOmdbMetadata = async (
 ): Promise<MovieMetadata> => {
   try {
     const base =
-      typeof window !== "undefined" ? window.location.origin : "http://localhost";
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost";
     const url = new URL(OMDB_BASE, base);
     if (OMDB_API_KEY.trim().length > 0) {
       url.searchParams.set("apikey", OMDB_API_KEY);
@@ -432,11 +449,8 @@ interface CacheEntry {
 
 const metadataCache = new Map<string, CacheEntry>();
 
-const buildCacheKey = (
-  title: string,
-  type?: string,
-  imdbID?: string,
-): string => `${imdbID ?? title.trim().toLowerCase()}::${type ?? "movie"}`;
+const buildCacheKey = (title: string, type?: string, imdbID?: string): string =>
+  `${imdbID ?? title.trim().toLowerCase()}::${type ?? "movie"}`;
 
 const evictOldest = () => {
   while (metadataCache.size > MAX_CACHE_SIZE) {
@@ -570,12 +584,14 @@ export const getCachedMovieAutocomplete = (
   const omdbCached = omdbSearchCache.get(normKey);
   const tvmazeCached = tvmazeSearchCache.get(normKey);
   if (omdbCached || tvmazeCached) {
-    const omdbList = omdbCached && now - omdbCached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS
-      ? omdbCached.results
-      : [];
-    const tvList = tvmazeCached && now - tvmazeCached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS
-      ? tvmazeCached.results
-      : [];
+    const omdbList =
+      omdbCached && now - omdbCached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS
+        ? omdbCached.results
+        : [];
+    const tvList =
+      tvmazeCached && now - tvmazeCached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS
+        ? tvmazeCached.results
+        : [];
     if (omdbList.length > 0 || tvList.length > 0) {
       const merged = mergeMovieAutocompleteResults(
         omdbList.slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT),
@@ -632,7 +648,11 @@ export const searchMovieAutocomplete = async (
     MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   );
 
-  const merged = mergeMovieAutocompleteResults(omdbLimited, tvMazeLimited, query);
+  const merged = mergeMovieAutocompleteResults(
+    omdbLimited,
+    tvMazeLimited,
+    query,
+  );
 
   autocompleteMergedCache.set(normKey, { results: merged, timestamp: now });
   evictMapOldest(autocompleteMergedCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
@@ -641,4 +661,3 @@ export const searchMovieAutocomplete = async (
 
   return merged;
 };
-

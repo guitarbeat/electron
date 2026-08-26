@@ -5,9 +5,7 @@ export const normalizeRequiredString = (value: unknown): string | null => {
   return sanitizeInput(value) || null;
 };
 
-export const normalizeOptionalString = (
-  value: unknown,
-): string | undefined => {
+export const normalizeOptionalString = (value: unknown): string | undefined => {
   if (typeof value !== "string") return undefined;
   return sanitizeInput(value) || undefined;
 };
@@ -17,13 +15,10 @@ export const normalizeRequiredDate = (value: unknown): string | null => {
   return Number.isNaN(Date.parse(value)) ? null : value;
 };
 
-export const normalizeOptionalDate = (
-  value: unknown,
-): string | undefined => normalizeRequiredDate(value) ?? undefined;
+export const normalizeOptionalDate = (value: unknown): string | undefined =>
+  normalizeRequiredDate(value) ?? undefined;
 
-export const normalizeOptionalUrl = (
-  value: unknown,
-): string | undefined => {
+export const normalizeOptionalUrl = (value: unknown): string | undefined => {
   const normalized = normalizeOptionalString(value);
   return normalized && isValidUrl(normalized) ? normalized : undefined;
 };

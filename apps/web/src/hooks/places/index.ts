@@ -27,7 +27,13 @@ export const usePlaces = (
   });
 
   const addPlace = useCallback(
-    async (name: string, notes?: string, lat?: number, lng?: number, imageUrl?: string) => {
+    async (
+      name: string,
+      notes?: string,
+      lat?: number,
+      lng?: number,
+      imageUrl?: string,
+    ) => {
       validateAndThrow(validatePlace, { name, notes: notes || "" });
 
       const trimmed = sanitizeInput(name.trim());
@@ -96,7 +102,8 @@ export const usePlaces = (
     ) => {
       if (updates.name !== undefined || updates.notes !== undefined) {
         validateAndThrow(validatePlace, {
-          name: updates.name ?? places.find((p: Place) => p.id === id)?.name ?? "",
+          name:
+            updates.name ?? places.find((p: Place) => p.id === id)?.name ?? "",
           notes: updates.notes ?? "",
         });
       }
@@ -126,12 +133,13 @@ export const usePlaces = (
       await performMutation(
         "mark_unvisited",
         { placeId: id },
-        places.map((p: Place) => (p.id === id ? { ...p, visitedAt: undefined } : p)),
+        places.map((p: Place) =>
+          p.id === id ? { ...p, visitedAt: undefined } : p,
+        ),
       );
     },
     [performMutation, places],
   );
-
 
   return {
     places,

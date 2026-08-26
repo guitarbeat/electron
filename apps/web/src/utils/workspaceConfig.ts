@@ -56,7 +56,12 @@ export function workspaceSectionLabel(
     return isMobile ? INCOMING_LABELS.mobile : INCOMING_LABELS.desktop;
   }
 
-  const tabLabels = (TAB_SECTION_LABELS as Record<string, typeof TAB_SECTION_LABELS[keyof typeof TAB_SECTION_LABELS]>)[tab];
+  const tabLabels = (
+    TAB_SECTION_LABELS as Record<
+      string,
+      (typeof TAB_SECTION_LABELS)[keyof typeof TAB_SECTION_LABELS]
+    >
+  )[tab];
   if (!tabLabels) return section;
   const labels = tabLabels[section];
   return isMobile ? labels.mobile : labels.desktop;

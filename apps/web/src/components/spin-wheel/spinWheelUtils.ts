@@ -1,4 +1,4 @@
-import type { Movie } from '@/shared/types';
+import type { Movie } from "@/shared/types";
 import {
   getUnwatchedCandidatePool,
   selectCandidateSubset,
@@ -58,7 +58,8 @@ export const buildSpinWheelGradient = (
 };
 
 const secureRandom = () => {
-  const cryptoObj = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
+  const cryptoObj =
+    typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
   if (cryptoObj?.getRandomValues) {
     const array = new Uint32Array(1);
     cryptoObj.getRandomValues(array);

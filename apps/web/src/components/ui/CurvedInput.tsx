@@ -99,7 +99,10 @@ const curvedRect = (
   bottom: number,
   radius: number,
 ) => {
-  const corner = Math.max(0, Math.min(radius, (bottom - top) / 2, (end - start) / 2));
+  const corner = Math.max(
+    0,
+    Math.min(radius, (bottom - top) / 2, (end - start) / 2),
+  );
   return [
     `M ${formatPoint(geometry, start + corner, top)}`,
     edgeSegment(geometry, end - corner, top, true),
@@ -114,11 +117,18 @@ const curvedRect = (
   ].join(" ");
 };
 
-const curvedLine = (geometry: Geometry, start: number, end: number, offset: number) =>
+const curvedLine = (
+  geometry: Geometry,
+  start: number,
+  end: number,
+  offset: number,
+) =>
   `M ${formatPoint(geometry, start, offset)} ${edgeSegment(geometry, end, offset, true)}`;
 
-export interface CurvedInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "onSubmit"> {
+export interface CurvedInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange" | "onSubmit"
+> {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -187,7 +197,11 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     const spinPathId = `curved-input-spin-button-${uid}`;
     const clipId = `curved-input-clip-${uid}`;
 
-    useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement, []);
+    useImperativeHandle(
+      forwardedRef,
+      () => inputRef.current as HTMLInputElement,
+      [],
+    );
 
     useEffect(() => {
       const element = rootRef.current;
@@ -205,7 +219,12 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
         return;
       }
       try {
-        setCaretLength(textRef.current.getSubStringLength(0, Math.min(caretIndex, value.length)));
+        setCaretLength(
+          textRef.current.getSubStringLength(
+            0,
+            Math.min(caretIndex, value.length),
+          ),
+        );
       } catch {
         setCaretLength(0);
       }
@@ -229,11 +248,12 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
         if (!active) return;
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
+
         // Easing: easeInOutCubic
-        const ease = progress < 0.5 
-          ? 4 * progress * progress * progress 
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        const ease =
+          progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
         const current = startBend + (targetBend - startBend) * ease;
         setAnimatedBend(current);
@@ -268,15 +288,23 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
         ? Math.min(90, Math.max(62, (spinButtonText?.length ?? 4) * 7.2 + 24))
         : 0;
       const secondaryWidth = hasSecondary
-        ? Math.min(90, Math.max(62, (secondaryButtonText?.length ?? 4) * 7.2 + 24))
+        ? Math.min(
+            90,
+            Math.max(62, (secondaryButtonText?.length ?? 4) * 7.2 + 24),
+          )
         : 0;
-      const buttonWidth = Math.min(130, Math.max(76, buttonText.length * 7.2 + 26));
+      const buttonWidth = Math.min(
+        130,
+        Math.max(76, buttonText.length * 7.2 + 26),
+      );
 
       const spinEnd = geometry.width - inset;
       const spinStart = hasSpin ? spinEnd - spinWidth : spinEnd;
 
       const secondaryEnd = hasSpin ? spinStart - gap : geometry.width - inset;
-      const secondaryStart = hasSecondary ? secondaryEnd - secondaryWidth : secondaryEnd;
+      const secondaryStart = hasSecondary
+        ? secondaryEnd - secondaryWidth
+        : secondaryEnd;
 
       const buttonEnd = hasSecondary
         ? secondaryStart - gap
@@ -305,9 +333,21 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       return <form ref={rootRef} className="curved-input" />;
     }
 
-    const bandPath = curvedRect(geometry, 0, width, -height / 2, height / 2, 17);
+    const bandPath = curvedRect(
+      geometry,
+      0,
+      width,
+      -height / 2,
+      height / 2,
+      17,
+    );
     const textBaseline = 5.5;
-    const textPath = curvedLine(geometry, layout.textStart, layout.textEnd, textBaseline);
+    const textPath = curvedLine(
+      geometry,
+      layout.textStart,
+      layout.textEnd,
+      textBaseline,
+    );
     const buttonPath = curvedRect(
       geometry,
       layout.buttonStart,
@@ -353,12 +393,7 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
         )
       : "";
     const spinTextPath = layout.hasSpin
-      ? curvedLine(
-          geometry,
-          layout.spinStart,
-          layout.spinEnd,
-          textBaseline,
-        )
+      ? curvedLine(geometry, layout.spinStart, layout.spinEnd, textBaseline)
       : "";
 
     const clipPath = curvedRect(
@@ -407,12 +442,16 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
           aria-hidden="true"
         >
           <defs>
-            <clipPath id={clipId}><path d={clipPath} /></clipPath>
+            <clipPath id={clipId}>
+              <path d={clipPath} />
+            </clipPath>
           </defs>
           <path className="curved-input__focus-ring" d={bandPath} />
           <path className="curved-input__surface" d={bandPath} />
           <path id={textPathId} d={textPath} fill="none" />
-          <g transform={`translate(${round(iconX)} ${round(iconY)}) rotate(${round(iconAngle)})`}>
+          <g
+            transform={`translate(${round(iconX)} ${round(iconY)}) rotate(${round(iconAngle)})`}
+          >
             <circle className="curved-input__icon-chip" r="16" />
             <circle className="curved-input__lens" cx="-2" cy="-2" r="5.2" />
             <path className="curved-input__lens" d="M 2 2 L 7 7" />
@@ -427,7 +466,9 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
               </text>
             ) : null}
             {focused ? (
-              <g transform={`translate(${round(caretX)} ${round(caretY)}) rotate(${round(caretAngle)})`}>
+              <g
+                transform={`translate(${round(caretX)} ${round(caretY)}) rotate(${round(caretAngle)})`}
+              >
                 <line className="curved-input__caret" y1="-11" y2="11" />
               </g>
             ) : null}
@@ -457,7 +498,11 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
               tabIndex={0}
               onClick={(event) => {
                 event.stopPropagation();
-                if (!disabled && !secondaryButtonDisabled && onSecondarySubmit) {
+                if (
+                  !disabled &&
+                  !secondaryButtonDisabled &&
+                  onSecondarySubmit
+                ) {
                   onSecondarySubmit();
                 }
               }}
@@ -465,7 +510,11 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   event.stopPropagation();
-                  if (!disabled && !secondaryButtonDisabled && onSecondarySubmit) {
+                  if (
+                    !disabled &&
+                    !secondaryButtonDisabled &&
+                    onSecondarySubmit
+                  ) {
                     onSecondarySubmit();
                   }
                 }
@@ -523,10 +572,16 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
           disabled={disabled}
           onChange={(event) => {
             onChange(event.target.value);
-            setCaretIndex(event.target.selectionStart ?? event.target.value.length);
+            setCaretIndex(
+              event.target.selectionStart ?? event.target.value.length,
+            );
           }}
-          onSelect={(event) => setCaretIndex(event.currentTarget.selectionStart ?? value.length)}
-          onKeyUp={(event) => setCaretIndex(event.currentTarget.selectionStart ?? value.length)}
+          onSelect={(event) =>
+            setCaretIndex(event.currentTarget.selectionStart ?? value.length)
+          }
+          onKeyUp={(event) =>
+            setCaretIndex(event.currentTarget.selectionStart ?? value.length)
+          }
           onKeyDown={onKeyDown}
           onFocus={(event) => {
             setFocused(true);

@@ -33,9 +33,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
         <ToastProvider>
           <PwaInstallProvider>
             <ViewportProvider>
-              <ThemeProvider themeName={themeName}>
-                {children}
-              </ThemeProvider>
+              <ThemeProvider themeName={themeName}>{children}</ThemeProvider>
             </ViewportProvider>
           </PwaInstallProvider>
         </ToastProvider>
