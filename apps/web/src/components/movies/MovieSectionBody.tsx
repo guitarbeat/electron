@@ -289,7 +289,7 @@ unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
       }}
     >
       {unifiedCards.length > 0 ? (
-        <div style={{ position: "relative", width: "100%", height: isMobile ? "500px" : "800px", overflow: "hidden", borderRadius: isMobile ? 12 : 24 }}>
+        <div style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: isMobile ? 12 : 24 }}>
           <DriftWall
             items={unifiedCards}
             columns={isMobile ? 3 : 8}

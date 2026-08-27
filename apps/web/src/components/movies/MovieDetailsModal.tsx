@@ -146,7 +146,6 @@ MOVIE_SECTION_IDS,
 MOVIE_SORTS,
 PosterHero,
 MetadataHeader,
-SummaryBand,
 NotesAndMemoriesSection,
 MovieTransitionOrigin,
 MovieBodyActions,
@@ -451,14 +450,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 <p className="movie-details-modal__plot">{movie.plot}</p>
               </section>
             )}
-
-            {/* Clean Details Summary Band */}
-            <SummaryBand
-              movie={movie}
-              addedBy={movie.addedBy}
-              watchStatusLabel={watchStatus.label}
-              memoriesCount={memories.length}
-            />
 
             {/* Notes & Memories Section */}
             <NotesAndMemoriesSection

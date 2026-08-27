@@ -339,7 +339,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           onEdit={
             onEditMetadata
               ? () => {
-                  setIsDetailsOpen(false);
                   setIsTitleEditorOpen(true);
                 }
               : undefined

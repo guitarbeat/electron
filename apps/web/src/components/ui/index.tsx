@@ -4391,14 +4391,14 @@ export const Modal: FC<ModalProps> = ({
   variant: _variant,
   maxWidth = 520,
   maxHeight,
-}) => {
-  if (!isOpen) return null;
-  return (
+}) => {  if (!isOpen) return null;
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel || (typeof title === "string" ? title : "Dialog")}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
     >
       <div
         className="relative w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6"
@@ -4426,7 +4426,8 @@ export const Modal: FC<ModalProps> = ({
         )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

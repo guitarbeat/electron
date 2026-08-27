@@ -76,7 +76,8 @@ const skeletonItems = Array.from({ length: skeletonCount }, (_, i) => {
       style={{
         position: "relative",
         width: "100%",
-        height: fullViewport ? "100vh" : (isMobile ? "500px" : "800px"),
+        height: fullViewport ? "100vh" : "100%",
+        flex: fullViewport ? undefined : 1,
         overflow: "hidden",
         borderRadius: fullViewport ? 0 : (isMobile ? 12 : 24)
       }}

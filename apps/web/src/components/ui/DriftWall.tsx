@@ -108,6 +108,8 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   const hoveredColRef = useRef<number>(-1);
   const wallHoveredRef = useRef<boolean>(false);
   const pointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const hasDraggedRef = useRef<boolean>(false);
   const pointerDampedRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const containerRectRef = useRef<{
     left: number;
@@ -144,8 +146,13 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       { length: columns },
       () => [],
     );
-    safeItems.forEach((item, i) => cols[i % columns].push(item));
-    return cols.map((col) => (col.length ? col : safeItems.slice(0, 1)));
+    // Distribute items until we have placed at least max(safeItems.length, columns * 3) items
+    // This ensures no column is too short and items are well interleaved.
+    const totalToPlace = Math.max(safeItems.length, columns * 4);
+    for (let i = 0; i < totalToPlace; i++) {
+        cols[i % columns].push(safeItems[i % safeItems.length]);
+    }
+    return cols;
   }, [safeItems, columns]);
 
   // Pre-calculate heights and number of copies needed for infinite scroll wrapping
@@ -164,9 +171,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         colHeight += (tileHeight * hr) + gap;
       });
       const copyHeight = Math.max(tileHeight + gap, colHeight);
+      // The track must cover the centered 200% height column plus scroll space
       const copies = Math.max(
         2,
-        Math.ceil((containerHeight * 1.6) / copyHeight) + 1,
+        Math.ceil((containerHeight * 3.5) / copyHeight) + 2,
       );
       return { copyHeight, copies };
     });
@@ -257,11 +265,16 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       );
     };
 
+
+
+
     const handleTouchStart = (e: TouchEvent) => {
       if (isScrollBlockedElement(e.target)) return;
       if (e.touches.length === 1) {
         isDraggingTouchRef.current = true;
         touchLastYRef.current = e.touches[0].clientY;
+        touchStartPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        hasDraggedRef.current = false;
       }
     };
 
@@ -270,12 +283,18 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       if (isScrollBlockedElement(e.target)) return;
 
       const currentY = e.touches[0].clientY;
+      const currentX = e.touches[0].clientX;
       const dy = touchLastYRef.current - currentY;
       touchLastYRef.current = currentY;
+
+      if (Math.abs(currentY - touchStartPosRef.current.y) > 10 || Math.abs(currentX - touchStartPosRef.current.x) > 10) {
+        hasDraggedRef.current = true;
+      }
 
       // Accelerate the scroll velocity based on the user's drag distance
       scrollVelocityRef.current += dy * 20;
     };
+
 
     const handleTouchEnd = () => {
       isDraggingTouchRef.current = false;
@@ -358,11 +377,15 @@ export const DriftWall: React.FC<DriftWallProps> = ({
             scrollStep * colDir;
 
           // 4. Wrap around for infinite scrolling (modulo by the column's total repeated height)
-          next = ((next % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
+          const el = trackRefs.current[c];
+          let actualCopyHeight = meta.copyHeight;
+          if (el && meta.copies > 0) {
+            actualCopyHeight = el.scrollHeight / meta.copies;
+          }
+          next = ((next % actualCopyHeight) + actualCopyHeight) % actualCopyHeight;
           offsetsRef.current[c] = next;
 
           // 5. Apply the transform
-          const el = trackRefs.current[c];
           if (el) el.style.transform = `translate3d(0, ${-next}px, 0)`;
         }
       } else {
@@ -618,6 +641,14 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     <div
       ref={containerRef}
       className={rootClass}
+      onClickCapture={(e) => {
+        if (hasDraggedRef.current) {
+          e.stopPropagation();
+          e.preventDefault();
+          hasDraggedRef.current = false;
+        }
+      }}
+
       style={cssVars}
       onPointerMove={handlePointerMove}
       onPointerEnter={handlePointerEnter}
