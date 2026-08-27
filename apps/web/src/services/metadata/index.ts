@@ -267,6 +267,13 @@ export const fetchOmdbMetadata = async (
   imdbId?: string,
   signal?: AbortSignal,
 ): Promise<MovieMetadata> => {
+  if (type === "youtube") {
+    return {
+      title,
+      type: "youtube",
+    };
+  }
+
   try {
     const base =
       typeof window !== "undefined"

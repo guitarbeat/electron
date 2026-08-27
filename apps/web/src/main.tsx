@@ -39,15 +39,41 @@ root.render(
 );
 
 if ("serviceWorker" in navigator) {
-  if (import.meta.env.PROD) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  const registerSW = () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener("statechange", () => {
+              if (
+                newWorker.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                // Tell the new service worker to take over immediately
+                newWorker.postMessage({ type: "SKIP_WAITING" });
+              }
+            });
+          }
+        });
+      })
+      .catch(() => undefined);
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
     });
+  };
+
+  if (import.meta.env.PROD) {
+    window.addEventListener("load", registerSW);
   } else {
     if (new URLSearchParams(window.location.search).get("sw") === "1") {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-      });
+      window.addEventListener("load", registerSW);
     } else {
       navigator.serviceWorker
         .getRegistrations()

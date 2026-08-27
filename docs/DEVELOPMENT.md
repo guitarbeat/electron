@@ -28,7 +28,7 @@ Command behavior:
 - `pnpm preview`: serves the built app locally.
 - `pnpm lint`: runs `eslint .`.
 - `pnpm check-types`: runs `tsc --noEmit`.
-- `pnpm test`: runs `node --test src/**/*.test.ts`.
+- `pnpm test`: runs `tsx --test "src/**/*.test.ts"` inside `apps/web`.
 
 ## Recommended Workflow
 

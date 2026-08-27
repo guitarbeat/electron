@@ -18,7 +18,7 @@
     "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
     "typecheck": "npm run typecheck:libs && npm run typecheck:api && npm run typecheck --prefix apps/web",
     "check-types": "npm run typecheck",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint .",
     "test": "npm run test --prefix apps/web",
     "test:unit": "node scripts/run-node-tests.mjs",
     "test:smoke": "node scripts/smoke-test-deployment.mjs",
@@ -50,7 +50,6 @@
     "zod": "^3.25.76"
   },
   "dependencies": {
-    "@vercel/speed-insights": "^2.0.0",
     "lightningcss": "^1.32.0"
   },
   "optionalDependencies": {

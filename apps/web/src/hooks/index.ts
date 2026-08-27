@@ -566,17 +566,13 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
       const coords = coordsRef.current;
       if (!el || !coords) return;
 
-      let r = rectRef.current;
-      if (!r) {
-        const domRect = el.getBoundingClientRect();
-        r = {
-          left: domRect.left,
-          top: domRect.top,
-          width: domRect.width || 1,
-          height: domRect.height || 1,
-        };
-        rectRef.current = r;
-      }
+      const domRect = el.getBoundingClientRect();
+      const r = {
+        left: domRect.left,
+        top: domRect.top,
+        width: domRect.width || 1,
+        height: domRect.height || 1,
+      };
 
       const x = coords.clientX - r.left;
       const y = coords.clientY - r.top;

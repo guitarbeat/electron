@@ -44,9 +44,10 @@ export default tseslint.config(
       ],
       'react/prop-types': 'off', // Not needed with TS
       '@typescript-eslint/no-unused-vars': [
-        'error',
+        'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
   {

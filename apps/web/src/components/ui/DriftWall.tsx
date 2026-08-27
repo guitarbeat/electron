@@ -162,10 +162,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       col.forEach((item) => {
         let hr = 1;
         if (React.isValidElement(item)) {
-          if (item.props && 'data-height-ratio' in item.props) {
-            hr = Number(item.props['data-height-ratio']) || 1;
+          if (item.props && 'data-height-ratio' in (item.props as any)) {
+            hr = Number((item.props as any)['data-height-ratio']) || 1;
           }
-        } else if (item && typeof item === "object" && 'heightRatio' in item) {
+        } else if (item && typeof item === "object" && 'heightRatio' in (item as any)) {
           hr = Number((item as any).heightRatio) || 1;
         }
         colHeight += (tileHeight * hr) + gap;
@@ -542,10 +542,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         
       let hr = 1;
       if (React.isValidElement(item)) {
-        if (item.props && 'data-height-ratio' in item.props) {
-          hr = Number(item.props['data-height-ratio']) || 1;
+        if (item.props && 'data-height-ratio' in (item.props as any)) {
+          hr = Number((item.props as any)['data-height-ratio']) || 1;
         }
-      } else if (item && typeof item === "object" && 'heightRatio' in item) {
+      } else if (item && typeof item === "object" && 'heightRatio' in (item as any)) {
         hr = Number((item as any).heightRatio) || 1;
       }
 

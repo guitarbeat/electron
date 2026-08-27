@@ -7,8 +7,8 @@ A two-person movie watchlist and shared space built with **React 19**, **TypeScr
 - **Project Type**: React + TypeScript + Vite
 - **Package Manager**: pnpm
 - **Entry Point**: `src/main.tsx`
-- **Build System**: Vite 8.0.10
-- **Styling**: SCSS + CSS Modules
+- **Build System**: Vite 7.3.2
+- **Styling**: Tailwind CSS + SCSS + CSS Modules
 - **State Management**: Shared state via `/api/session` and `/api/state/*`
 
 ## Quick Start
@@ -49,7 +49,7 @@ See `.env.example` for required variables. Key ones:
 
 ## Tech Stack
 
-- React 19, TypeScript, Vite 8, SCSS
+- React 19, TypeScript, Vite 7, Tailwind CSS, SCSS
 - Three.js / OGL (3D graphics)
 - MapLibre GL (maps)
 - GSAP / Motion (animations)

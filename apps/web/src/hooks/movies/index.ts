@@ -42,7 +42,7 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   if (genre && Array.isArray(genre))
     result.genre = sanitizeInput(genre.join(", "));
   if (director) result.director = sanitizeInput(director);
-  if (type === "series" || type === "movie") result.mediaType = type;
+  if (type === "series" || type === "movie" || type === "youtube") result.mediaType = type;
   if (type === "series") result.category = "TV Series";
   return result;
 };
@@ -130,7 +130,7 @@ export const useMovies = (
 
   const updateMovieMetadata = useCallback(
     async (movie: Movie, searchTerm?: string) => {
-      const metadata = await fetchMovieMetadata(searchTerm || movie.title);
+      const metadata = await fetchMovieMetadata(searchTerm || movie.title, movie.mediaType);
       const safeMetadata = extractSafeMetadata(metadata);
       if (Object.keys(safeMetadata).length === 0) {
         return false;
@@ -359,7 +359,7 @@ export const useMovies = (
       const latestMovies = [...movies];
       const refreshed = await concurrentMap(latestMovies, 5, async (movie) => {
         try {
-          const metadata = await fetchMovieMetadata(movie.title);
+          const metadata = await fetchMovieMetadata(movie.title, movie.mediaType);
           return { movieId: movie.id, metadata: extractSafeMetadata(metadata) };
         } catch {
           return { movieId: movie.id, metadata: {} };

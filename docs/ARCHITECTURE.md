@@ -33,16 +33,15 @@ Preferred communication style: Simple, everyday language.
 ### Frontend
 
 - **Framework:** React 19 with TypeScript, bundled by Vite 7
-- **Entry point:** `index.html` → `src/main.tsx` → `src/app/App.tsx`
-- **Styling:** SCSS (co-located per component + global `src/app/App.scss`), design tokens in `src/theme/`
+- **Entry point:** `index.html` → `apps/web/src/main.tsx` → `apps/web/src/app/App.tsx`
+- **Styling:** CSS (Tailwind CSS in `apps/web/src/app/globals.css`), design tokens in `apps/web/src/theme/`
 - **Graphics:** `ogl` (WebGL), `chroma-js` for color math
 - **Fonts:** Inter, Outfit, Space Grotesk via Google Fonts
 
 **Directory layout:**
 ```
-src/
+apps/web/src/
   app/         # Shell, providers, action bubble, workspace switching
-  branding/    # Logo marks, favicon, logo lab
   components/  # Feature UI (watchlist, messages, matchmaker, spinWheel, places, quiz, effects, ui, ...)
   hooks/       # Shared React hooks (useMovies, useMessages, useMatchmaker, usePolling, ...)
   services/    # Domain modules: state, metadata, content (messages, memories), polling
@@ -131,11 +130,12 @@ Serverless-style handlers in `api/`, designed for Vercel Functions. Each handler
 | Package | Role |
 |---|---|
 | `react` / `react-dom` 19 | UI framework |
-| `vite` 8 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
-| `typescript` ~6.0 | Type safety |
+| `vite` 7 + `@vitejs/plugin-react` | Dev server, HMR, production bundler |
+| `typescript` ~5.9 | Type safety |
 | `ogl` | WebGL for visual effects |
 | `chroma-js` | Color manipulation |
 | `sass` / `sass-embedded` | SCSS compilation |
+| `@tailwindcss/vite` / `tailwindcss` | CSS styling |
 | `eslint` + `typescript-eslint` | Linting |
 
 ### Environment Variables

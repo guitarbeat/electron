@@ -201,6 +201,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 2.5 Metadata API requests (/api/omdb, /api/tvmaze) -> Stale-while-revalidate with DATA_CACHE
+  if (url.pathname.startsWith('/api/omdb') || url.pathname.startsWith('/api/tvmaze')) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const fetchPromise = fetch(req)
+          .then((res) => {
+            if (res.ok) {
+              const copy = res.clone();
+              caches
+                .open(DATA_CACHE)
+                .then((cache) => {
+                  cache.put(req, copy);
+                  // Increase max entries for data cache since metadata can be numerous
+                  trimCache(DATA_CACHE, Math.max(DATA_CACHE_MAX_ENTRIES, 150));
+                })
+                .catch(() => undefined);
+            }
+            return res;
+          })
+          .catch(() => {
+            if (cached) return cached;
+            return new Response(
+              JSON.stringify({ error: 'Offline', Error: 'Offline' }),
+              { status: 503, headers: { 'Content-Type': 'application/json' } }
+            );
+          });
+        return cached || fetchPromise;
+      }),
+    );
+    return;
+  }
+
   // Other non-state /api routes (e.g. search, streaming, auth) bypass SW caching
   if (url.pathname.startsWith('/api/')) return;
 
