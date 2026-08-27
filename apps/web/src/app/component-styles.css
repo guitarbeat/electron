@@ -493,7 +493,7 @@
 .media-poster-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 3;
+  height: 100%;
   background-color: var(--color-surface-2);
   overflow: hidden;
   border-radius: inherit;
@@ -3906,7 +3906,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  aspect-ratio: 2 / 3;
+  /* height: 100%; removed to allow variable height */
   perspective: 1000px;
   opacity: 1;
   filter: brightness(1) saturate(1);
@@ -4066,8 +4066,7 @@
 
 /* Modifier classes */
 .movie-item-container--watched .movie-item-card {
-  opacity: 0.3;
-  filter: grayscale(0.8) brightness(0.6);
+  filter: grayscale(1);
 }
 
 .suggestion-item-card__eyebrow {
@@ -4390,23 +4389,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.3rem 0.35rem 0.3rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid transparent;
   border-radius: 9999px;
-  background: rgba(12, 16, 25, 0.82);
-  backdrop-filter: blur(28px) saturate(1.35);
-  -webkit-backdrop-filter: blur(28px) saturate(1.35);
-  box-shadow:
-    0 18px 40px -4px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  background: transparent;
+  box-shadow: none;
   animation: chatFabIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .floating-dock-cluster:hover {
-  border-color: rgba(255, 255, 255, 0.24);
-  box-shadow:
-    0 22px 48px -4px rgba(0, 0, 0, 0.78),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .floating-dock-cluster__profiles {
@@ -5034,8 +5027,7 @@
 /* ── Tilted poster view ──────────────────────────────────────────────────── */
 
 .drift-wall-loading {
-  position: absolute;
-  inset: 0;
+  position: relative;
   overflow: hidden;
   background: var(--color-surface-0);
   isolation: isolate;
@@ -5077,7 +5069,7 @@
   position: relative;
   width: 100%;
   flex: 0 0 auto;
-  aspect-ratio: 2 / 3;
+  height: 100%;
   overflow: hidden;
   border-radius: 0.35rem;
   background: hsl(

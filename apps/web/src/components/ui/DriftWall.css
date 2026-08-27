@@ -6,7 +6,7 @@
   perspective: var(--dw-perspective, 1200px);
   perspective-origin: 50% 50%;
   --dw-tile-w: 200px;
-  --dw-tile-h: 132px;
+  --dw-tile-h: 300px;
   --dw-gap: 18px;
   --dw-radius: 14px;
   --dw-lift: 64px;
@@ -53,7 +53,7 @@
   position: relative;
   display: block;
   width: 100%;
-  height: calc(var(--dw-tile-h) + var(--dw-gap));
+  height: calc(var(--dw-custom-h, var(--dw-tile-h)) + var(--dw-gap));
   flex: 0 0 auto;
   outline: none;
   transform-style: preserve-3d;
@@ -130,7 +130,7 @@
   position: relative;
   display: block;
   width: 100%;
-  height: calc(var(--dw-tile-h) + var(--dw-gap));
+  height: calc(var(--dw-custom-h, var(--dw-tile-h)) + var(--dw-gap));
   padding: calc(var(--dw-gap) / 2);
   box-sizing: border-box;
   flex: 0 0 auto;

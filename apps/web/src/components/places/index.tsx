@@ -272,23 +272,25 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({
         <DriftWall
           items={driftWallItems}
           columns={8}
-          tileWidth={128}
-          tileHeight={132}
+          tileWidth={120}
+          tileHeight={180}
           gap={18}
           tilt={0}
-          turn={0}
-          perspective={1200}
+          turn={-14}
+          roll={0}
+          perspective={2400}
           depth={120}
           speed={42}
           direction="up"
-          variance={0.45}
-          parallax={1}
+          variance={0.7}
+          parallax={0.6}
           lift={64}
-          fade={0.5}
+          fade={0.4}
           dim={0.85}
           overlayColor="#060010"
-          radius={7}
+          radius={0}
           pauseOnHover
+          grayscale={false}
         />
       </div>
       <div className="watchlist-container places-container">

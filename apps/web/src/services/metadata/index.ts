@@ -7,7 +7,7 @@ export interface MovieAutocompleteResult {
   title: string;
   year?: string;
   imdbID?: string;
-  type: "movie" | "series";
+  type: "movie" | "series" | "youtube";
   poster?: string;
 }
 
@@ -26,7 +26,7 @@ export interface MovieMetadata {
   year?: string;
   imdbID?: string;
   imdbRating?: string;
-  type: "movie" | "series";
+  type: "movie" | "series" | "youtube";
   poster?: string;
   plot?: string;
   director?: string;
@@ -263,7 +263,7 @@ export const searchOmdbMovies = async (
 
 export const fetchOmdbMetadata = async (
   title: string,
-  type?: "movie" | "series",
+  type?: "movie" | "series" | "youtube",
   imdbId?: string,
   signal?: AbortSignal,
 ): Promise<MovieMetadata> => {
@@ -471,7 +471,7 @@ const evictOldest = () => {
 
 export const fetchOmdbMetadataCached = (
   title: string,
-  type?: "movie" | "series",
+  type?: "movie" | "series" | "youtube",
   imdbID?: string,
   signal?: AbortSignal,
 ): Promise<MovieMetadata> => {

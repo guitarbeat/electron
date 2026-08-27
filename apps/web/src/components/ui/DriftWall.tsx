@@ -58,6 +58,8 @@ const DEFAULT_ITEMS: DriftWallItem[] = Array.from({ length: 15 }, (_, i) => {
   };
 });
 
+const GLOBAL_DRIFT_START = Date.now();
+
 const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -71,7 +73,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   items = DEFAULT_ITEMS,
   columns = 5,
   tileWidth = 200,
-  tileHeight = 132,
+  tileHeight = 300,
   gap = 8,
   radius = 14,
   tilt = 16,
@@ -120,6 +122,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   const activeIdRef = useRef<string | null>(null);
   const [reduced, setReduced] = useState<boolean>(false);
 
+  // ============================================================================
+  // 1. Core State & Data Preparation
+  // ============================================================================
   useEffect(() => {
     setReduced(prefersReducedMotion());
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -133,6 +138,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     return items;
   }, [items]);
 
+  // Distribute items sequentially across the given number of columns
   const columnItems = useMemo(() => {
     const cols: (DriftWallItem | ReactNode)[][] = Array.from(
       { length: columns },
@@ -142,10 +148,22 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     return cols.map((col) => (col.length ? col : safeItems.slice(0, 1)));
   }, [safeItems, columns]);
 
+  // Pre-calculate heights and number of copies needed for infinite scroll wrapping
   const columnMeta = useMemo(() => {
-    const unit = tileHeight + gap;
     return columnItems.map((col) => {
-      const copyHeight = Math.max(unit, col.length * unit);
+      let colHeight = 0;
+      col.forEach((item) => {
+        let hr = 1;
+        if (React.isValidElement(item)) {
+          if (item.props && 'data-height-ratio' in item.props) {
+            hr = Number(item.props['data-height-ratio']) || 1;
+          }
+        } else if (item && typeof item === "object" && 'heightRatio' in item) {
+          hr = Number((item as any).heightRatio) || 1;
+        }
+        colHeight += (tileHeight * hr) + gap;
+      });
+      const copyHeight = Math.max(tileHeight + gap, colHeight);
       const copies = Math.max(
         2,
         Math.ceil((containerHeight * 1.6) / copyHeight) + 1,
@@ -154,6 +172,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     });
   }, [columnItems, tileHeight, gap, containerHeight]);
 
+  // ============================================================================
+  // 2. Physics Configuration & Setup
+  // ============================================================================
   useLayoutEffect(() => {
     if (!containerRef.current) return;
     const updateRect = () => {
@@ -180,14 +201,16 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     };
   }, []);
 
+  // Determine each column's target drifting speed (alternating directions)
   const baseVelocities = useMemo(() => {
     const dirSign = direction === "up" ? 1 : -1;
     return columnItems.map((_, c) => {
-      const altSign = c % 2 === 0 ? 1 : -1;
+      const altSign = c % 2 === 0 ? 1 : -1; // Adjacent columns drift in opposite directions
       return speed * columnFactor(c, variance) * dirSign * altSign;
     });
   }, [columnItems, speed, direction, variance]);
 
+  // Reset internal tracking values when layout/content changes
   useEffect(() => {
     offsetsRef.current = columnMeta.map(
       (meta, c) => meta.copyHeight * ((c * 0.37) % 1),
@@ -207,14 +230,27 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     [tilt, turn, roll, depth],
   );
 
+  // ============================================================================
+  // 3. User Input & Scrolling (Wheel / Touch)
+  // ============================================================================
+  // Intercepts wheel events and touch drags to add momentum to the scrolling velocity.
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
+      // Ignore scroll events originating from scrollable overlays (e.g. modals)
       if (isScrollBlockedElement(e.target)) return;
+
       let delta = e.deltaY;
-      if (e.deltaMode === 1) delta *= 32;
-      else if (e.deltaMode === 2) delta *= 600;
+      // Normalize wheel deltas depending on the input device
+      if (e.deltaMode === 1) delta *= 32; // Line mode
+      else if (e.deltaMode === 2) delta *= 600; // Page mode
+
+      // Handle horizontal scrolling (trackpads) when vertical scroll is negligible
       if (Math.abs(delta) < 0.2 && Math.abs(e.deltaX) > 0.2) delta = e.deltaX;
+
+      // Add wheel delta to our running scroll velocity
       scrollVelocityRef.current += delta * 0.85;
+
+      // Cap the maximum scroll velocity to prevent erratic hyper-scrolling
       scrollVelocityRef.current = Math.max(
         -1400,
         Math.min(1400, scrollVelocityRef.current),
@@ -232,9 +268,12 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     const handleTouchMove = (e: TouchEvent) => {
       if (!isDraggingTouchRef.current || e.touches.length !== 1) return;
       if (isScrollBlockedElement(e.target)) return;
+
       const currentY = e.touches[0].clientY;
       const dy = touchLastYRef.current - currentY;
       touchLastYRef.current = currentY;
+
+      // Accelerate the scroll velocity based on the user's drag distance
       scrollVelocityRef.current += dy * 20;
     };
 
@@ -242,6 +281,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       isDraggingTouchRef.current = false;
     };
 
+    // Attach passive event listeners to maintain 60fps scrolling performance
     window.addEventListener("wheel", handleWheel, { passive: true });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
@@ -257,57 +297,76 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     };
   }, []);
 
+  // ============================================================================
+  // 4. Main Animation & Physics Loop
+  // ============================================================================
+  // Runs on requestAnimationFrame to continuously update the visual state.
   useEffect(() => {
     const animate = (ts: number) => {
       if (lastTsRef.current === null) lastTsRef.current = ts;
+      
+      // Calculate delta time (dt) in seconds, clamped to max 50ms to prevent huge jumps if tab is inactive
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
       lastTsRef.current = ts;
 
+      // --- Part A: 3D Parallax Tilt ---
+      // We tilt the entire wall based on the user's mouse position relative to the center
       const maxTilt = parallax * 8;
       const targetX = pointerRef.current.x * maxTilt;
       const targetY = -pointerRef.current.y * maxTilt;
-      // High-speed, responsive damping with zero lag
+      
+      // High-speed, responsive damping formula for the 3D tilt
       const damp = 1 - Math.exp(-dt / 0.045);
-      pointerDampedRef.current.x +=
-        (targetX - pointerDampedRef.current.x) * damp;
-      pointerDampedRef.current.y +=
-        (targetY - pointerDampedRef.current.y) * damp;
-      applyPlaneTransform(
-        pointerDampedRef.current.x,
-        pointerDampedRef.current.y,
-      );
+      pointerDampedRef.current.x += (targetX - pointerDampedRef.current.x) * damp;
+      pointerDampedRef.current.y += (targetY - pointerDampedRef.current.y) * damp;
+      
+      applyPlaneTransform(pointerDampedRef.current.x, pointerDampedRef.current.y);
 
-      // Scroll decay
+      // --- Part B: Scroll Velocity Decay (Friction) ---
       const scrollFriction = 0.9;
       const scrollDecay = Math.pow(scrollFriction, dt * 60);
       const scrollStep = scrollVelocityRef.current * dt;
+      
+      // Apply friction to slow down the manual scroll velocity over time
       scrollVelocityRef.current *= scrollDecay;
-      if (Math.abs(scrollVelocityRef.current) < 0.15)
+      if (Math.abs(scrollVelocityRef.current) < 0.15) {
         scrollVelocityRef.current = 0;
+      }
 
+      // --- Part C: Column Drifting & Infinite Scrolling ---
       if (!reduced) {
+        // Normal mode: columns drift organically
         for (let c = 0; c < trackRefs.current.length; c++) {
           const meta = columnMeta[c];
           if (!meta) continue;
+
+          // 1. Determine Target Speed
           const paused = wallHoveredRef.current && pauseOnHover;
           const factor = paused || hoveredColRef.current === c ? 0 : 1;
           const target = baseVelocities[c] * factor;
 
+          // 2. Smoothly adjust current column velocity towards the target speed
           const ease = 1 - Math.exp(-dt / (target === 0 ? 0.16 : 0.28));
-          velocitiesRef.current[c] +=
-            (target - velocitiesRef.current[c]) * ease;
+          velocitiesRef.current[c] += (target - velocitiesRef.current[c]) * ease;
+
+          // 3. Compute final movement for this frame
+          // colDir alternates the manual scroll direction so adjacent columns move oppositely when scrolling
           const colDir = c % 2 === 0 ? 1 : -0.85;
           let next =
             (offsetsRef.current[c] ?? 0) +
             velocitiesRef.current[c] * dt +
             scrollStep * colDir;
+
+          // 4. Wrap around for infinite scrolling (modulo by the column's total repeated height)
           next = ((next % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
           offsetsRef.current[c] = next;
 
+          // 5. Apply the transform
           const el = trackRefs.current[c];
           if (el) el.style.transform = `translate3d(0, ${-next}px, 0)`;
         }
       } else {
+        // Reduced motion mode: disable auto-drifting and only allow static transforms
         for (let c = 0; c < trackRefs.current.length; c++) {
           const el = trackRefs.current[c];
           const meta = columnMeta[c];
@@ -333,6 +392,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     reduced,
     applyPlaneTransform,
   ]);
+
+  // ============================================================================
+  // 5. Event Handlers & Rendering
+  // ============================================================================
 
   const activate = useCallback((id: string, index: number) => {
     activeIdRef.current = id;
@@ -453,6 +516,16 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       const nodeToRender = React.isValidElement(item)
         ? item
         : (item as DriftWallItem).node;
+        
+      let hr = 1;
+      if (React.isValidElement(item)) {
+        if (item.props && 'data-height-ratio' in item.props) {
+          hr = Number(item.props['data-height-ratio']) || 1;
+        }
+      } else if (item && typeof item === "object" && 'heightRatio' in item) {
+        hr = Number((item as any).heightRatio) || 1;
+      }
+
       return (
         <div
           key={id}
@@ -461,6 +534,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
           className={`drift-wall__tile-custom${activeId === id ? " is-active" : ""}`}
           data-tile-id={id}
           data-col={colIndex}
+          style={{ "--dw-custom-h": `${tileHeight * hr}px` } as React.CSSProperties}
           onFocus={() => activate(id, colIndex)}
           onBlur={release}
           onClick={

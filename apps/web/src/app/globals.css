@@ -114,6 +114,15 @@ img {
   padding: 0;
 }
 
+.app-shell--viewport::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 150px 20px rgba(0, 0, 0, 0.8);
+  z-index: 50; /* ensure it sits above most background elements but below active modals/menus */
+}
+
 .app-shell__canvas {
   position: relative;
   min-height: 100dvh;

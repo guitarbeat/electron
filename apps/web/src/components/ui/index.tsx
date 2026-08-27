@@ -66,6 +66,7 @@ import {
 } from "@/utils";
 import { useViewport } from "@/app/providerContexts";
 import { MoviesEmptyIllustration } from "./EmptyStateIllustrations";
+export { MoviesEmptyIllustration };
 import { MovieCard, SuggestionCard } from "@/components/movies";
 import {
   getStremioUrls,
@@ -1269,50 +1270,6 @@ export interface BentoSortChipConfig {
   label: string;
 }
 
-export interface MovieBodyActions {
-  toggleWatched: (id: string) => void | unknown;
-  editMovie: (
-    id: string,
-    updates: { title: string; customPosterUrl?: string },
-  ) => void | unknown;
-  addMemory: (
-    movieId: string | undefined,
-    movieTitle: string,
-    author: string,
-    note: string,
-  ) => Promise<unknown>;
-  updateMemory: (
-    memoryId: string,
-    updates: { note?: string; movieId?: string; movieTitle?: string },
-  ) => Promise<unknown>;
-  deleteMemory: (memoryId: string) => Promise<void>;
-  togglePin: (memoryId: string) => Promise<unknown>;
-}
-
-export interface MovieSectionIds {
-  incoming?: string;
-  queue?: string;
-  completed?: string;
-}
-
-interface Props_MovieSectionBody {
-  sections: MovieSections;
-  isLoading: boolean;
-  isSuggestionsLoading: boolean;
-  currentUser: User | null;
-  isMobile: boolean;
-  processingSuggestionId: string | null;
-  successMovieId: string | null;
-  movieMemories: Map<string, SharedMemory[]>;
-  onAcceptSuggestion: (s: MovieSuggestion) => void;
-  onRejectSuggestion: (s: MovieSuggestion) => void;
-  onDeleteRequest: (movie: Movie) => void;
-  onToggleError: (msg: string) => void;
-  actions: MovieBodyActions;
-  posterPlaceCards?: React.ReactNode[];
-  isInteractionStatic?: boolean;
-}
-
 export {
   TiltedPosterWall,
   TiltedPosterWallSkeletonItem,
@@ -1324,118 +1281,8 @@ export {
   computePosterMatrix,
 } from "./lib/posterMatrix";
 
-import { TiltedPosterWall, DriftWallLoading } from "./TiltedPosterWall";
-import { interleaveCollectionItems } from "./lib/posterMatrix";
+import { DriftWallLoading } from "./TiltedPosterWall";
 
-export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
-  sections,
-  isLoading,
-  isSuggestionsLoading,
-  currentUser,
-  isMobile,
-  processingSuggestionId,
-  successMovieId,
-  movieMemories,
-  onAcceptSuggestion,
-  onRejectSuggestion,
-  onDeleteRequest,
-  onToggleError,
-  actions,
-  posterPlaceCards = [],
-  isInteractionStatic = false,
-}) => {
-  const collectionState = getWorkspaceCollectionState({
-    itemCount: sections.queue.length + sections.completed.length,
-    suggestionCount: sections.suggestions.length,
-    isLoadingItems: isLoading && isSuggestionsLoading,
-    isLoadingSuggestions: false,
-  });
-
-  const renderMovie = (movie: Movie) => (
-    <MovieCard
-      key={movie.id}
-      movie={movie}
-      currentUser={currentUser}
-      onToggle={() => {
-        actions.toggleWatched(movie.id);
-      }}
-      onToggleError={onToggleError}
-      onEditMetadata={async (updates) => {
-        await actions.editMovie(movie.id, updates);
-      }}
-      onDelete={() => onDeleteRequest(movie)}
-      isHighlighted={successMovieId === movie.id}
-      memories={movieMemories.get(movie.id) ?? []}
-      onAddMemory={
-        currentUser
-          ? async (note) => {
-              await actions.addMemory(movie.id, movie.title, currentUser, note);
-            }
-          : undefined
-      }
-      onUpdateMemory={async (memoryId, note) => {
-        await actions.updateMemory(memoryId, { note });
-      }}
-      onDeleteMemory={async (memoryId) => {
-        await actions.deleteMemory(memoryId);
-      }}
-      onTogglePin={async (memoryId) => {
-        await actions.togglePin(memoryId);
-      }}
-    />
-  );
-
-  if (collectionState === "loading") {
-    return <DriftWallLoading isMobile={isMobile} />;
-  }
-
-  const allPosters = [...sections.queue, ...sections.completed];
-  const suggestionCards = sections.suggestions.map((suggestion) => (
-    <SuggestionCard
-      key={`suggestion-${suggestion.id}`}
-      suggestion={suggestion}
-      onAccept={() => void onAcceptSuggestion(suggestion)}
-      onReject={() => void onRejectSuggestion(suggestion)}
-      canRespond={Boolean(currentUser)}
-      disableActions={!currentUser}
-      isProcessing={processingSuggestionId === suggestion.id}
-    />
-  ));
-  const movieCards = allPosters.map(renderMovie);
-  const unifiedCards = interleaveCollectionItems(
-    suggestionCards,
-    movieCards,
-    posterPlaceCards,
-  );
-  // ── Full section body ─────────────────────────────────────────────────────
-  return (
-    <div
-      className="unified-wall-content"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: isMobile ? spacing.md : spacing.lg,
-      }}
-    >
-      {unifiedCards.length > 0 ? (
-        <TiltedPosterWall
-          items={unifiedCards}
-          isMobile={isMobile}
-          isStatic={isInteractionStatic}
-        />
-      ) : (
-        <CollectionEmptyState
-          padding={isMobile ? spacing.md : spacing["3xl"]}
-          className="poster-wall-empty"
-        >
-          <MoviesEmptyIllustration />
-          <strong>No cards yet</strong>
-          <span>Add a movie, suggestion, or place to fill this wall.</span>
-        </CollectionEmptyState>
-      )}
-    </div>
-  );
-};
 interface WorkspaceTabLoadingProps {
   label: string;
   emoji?: ReactNode;
@@ -2771,6 +2618,69 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
     >
       <StremioIcon />
       <span>{variant === "full" ? "Watch on Stremio" : "Stremio"}</span>
+    </a>
+  );
+};
+
+export const YoutubeIcon: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    width="18"
+    height="18"
+    fill="currentColor"
+    className={`stremio-icon ${className}`.trim()}
+    aria-hidden="true"
+  >
+    <path d="M21.582,6.186c-0.23-0.86-0.908-1.538-1.768-1.768C18.254,4,12,4,12,4S5.746,4,4.186,4.418c-0.86,0.23-1.538,0.908-1.768,1.768 C2,7.746,2,12,2,12s0,4.254,0.418,5.814c0.23,0.86,0.908,1.538,1.768,1.768C5.746,20,12,20,12,20s6.254,0,7.814-0.418 c0.86-0.23,1.538-0.908,1.768-1.768C22,16.254,22,12,22,12S22,7.746,21.582,6.186z M10,15.464V8.536L16,12L10,15.464z" />
+  </svg>
+);
+
+export const YoutubeButton: React.FC<{
+  url: string;
+  movieTitle: string;
+  variant?: "pill" | "icon" | "full";
+  className?: string;
+}> = ({ url, movieTitle, variant = "pill", className = "" }) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.stopPropagation();
+  };
+
+  if (variant === "icon") {
+    return (
+      <a
+        href={url}
+        onClick={handleClick}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`stremio-btn stremio-btn-icon ${className}`.trim()}
+        style={{ background: "#FF0000" }}
+        title={`Open "${movieTitle}" on YouTube`}
+        aria-label={`Open "${movieTitle}" on YouTube`}
+        tabIndex={0}
+      >
+        <YoutubeIcon />
+      </a>
+    );
+  }
+
+  const variantClass =
+    variant === "full" ? "stremio-btn-full" : "stremio-btn-pill";
+
+  return (
+    <a
+      href={url}
+      onClick={handleClick}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`stremio-btn ${variantClass} ${className}`.trim()}
+      style={{ background: "#FF0000", border: variant === "full" ? "1px solid #FF0000" : "none" }}
+      title={`Open "${movieTitle}" on YouTube`}
+      tabIndex={0}
+    >
+      <YoutubeIcon />
+      <span>{variant === "full" ? "Watch on YouTube" : "YouTube"}</span>
     </a>
   );
 };

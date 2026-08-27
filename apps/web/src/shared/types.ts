@@ -56,7 +56,8 @@ export interface Movie {
   genre?: string;
   director?: string;
   category?: string; // e.g. "Humor", "Action", "Drama"
-  mediaType?: "movie" | "series";
+  mediaType?: "movie" | "series" | "youtube";
+  youtubeUrl?: string;
 }
 
 export interface MovieSuggestion {
@@ -66,7 +67,8 @@ export interface MovieSuggestion {
   reason?: string; // Optional: "You'd love this because..."
   notes?: string;
   imdbID?: string;
-  type?: "movie" | "series";
+  type?: "movie" | "series" | "youtube";
+  youtubeUrl?: string;
   status: "pending" | "accepted" | "rejected";
   createdAt: string;
   respondedAt?: string;

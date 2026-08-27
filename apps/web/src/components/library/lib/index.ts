@@ -10,7 +10,7 @@ export type LibrarySelection =
       kind: "movie-result";
       title: string;
       imdbID?: string;
-      type: "movie" | "series";
+      type: "movie" | "series" | "youtube";
     }
   | { kind: "library-movie"; movieId: string; title: string }
   | { kind: "library-place"; placeId: string; name: string }
