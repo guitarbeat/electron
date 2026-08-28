@@ -376,4 +376,6 @@ allowBuilds:
 
 packages:
   - .
+  - apps/*
+  - lib/*
 minimumReleaseAge: 1440
