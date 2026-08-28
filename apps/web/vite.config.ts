@@ -66,6 +66,7 @@ export default defineConfig(({ mode }) => {
   },
   root: path.resolve(import.meta.dirname),
   build: {
+    chunkSizeWarningLimit: 1000,
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     target: "es2022",
