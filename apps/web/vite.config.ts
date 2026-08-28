@@ -53,7 +53,10 @@ export default defineConfig(({ mode }) => {
     tailwindcss(),
     createServerlessRuntimeAdapter(),
   ],
-  css: { transformer: 'lightningcss' },
+  // @tailwindcss/vite processes CSS with LightningCSS internally.
+  // Explicitly setting css.transformer here caused an infinite transformation
+  // loop during production builds, so it is disabled.
+  // css: { transformer: 'lightningcss' },
   resolve: {
     dedupe: ["react", "react-dom"],
     alias: {
