@@ -31,6 +31,7 @@ import {
   isLibraryWorkspaceTab,
   libraryWorkspaceStackClass,
 } from "@/utils/workspaceConfig";
+import { prefetchCatPosters } from "@/utils/catPosters";
 import { AppProviders } from "@/app/AppProviders";
 import "./globals.css";
 import "./component-styles.css";
@@ -78,6 +79,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
+    prefetchCatPosters();
   }, []);
 
   useEffect(() => {

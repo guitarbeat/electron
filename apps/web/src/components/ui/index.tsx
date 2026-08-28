@@ -73,6 +73,7 @@ import {
   type StremioMediaObject,
   cn,
   USER_OPTIONS,
+  getCatPosterUrl,
 } from "@/utils";
 import type { MovieSections } from "@/components/movies";
 
@@ -88,59 +89,52 @@ interface MediaPosterProps {
 export const MediaPoster: React.FC<MediaPosterProps> = ({
   title,
   posterUrl,
-  year,
+  year: _year,
+  id,
   className = "",
   priority = false,
 }) => {
   const [hasImageError, setHasImageError] = React.useState(false);
   const [isLoaded, setIsLoaded] = React.useState(false);
 
+  const fallbackCatUrl = React.useMemo(() => {
+    return getCatPosterUrl(id || title);
+  }, [id, title]);
+
   React.useEffect(() => {
-    if (!posterUrl) {
-      setHasImageError(false);
-      setIsLoaded(false);
-      return;
-    }
+    setHasImageError(false);
+    setIsLoaded(false);
   }, [posterUrl]);
 
   const handleImageError = () => {
-    setHasImageError(true);
-    setIsLoaded(true);
+    if (!hasImageError && posterUrl) {
+      setHasImageError(true);
+      setIsLoaded(false);
+    } else {
+      setIsLoaded(true);
+    }
   };
 
   const handleImageLoad = () => {
     setIsLoaded(true);
   };
 
-  const shouldShowPoster = Boolean(posterUrl) && !hasImageError;
-  const activeSrc = posterUrl;
+  const isCatFallback = !posterUrl || hasImageError;
+  const activeSrc = isCatFallback ? fallbackCatUrl : posterUrl;
 
   return (
-    <div className={`media-poster-wrap ${className}`}>
-      {shouldShowPoster && (
-        <div className={`media-poster-skeleton ${isLoaded ? "loaded" : ""}`} />
-      )}
-      {shouldShowPoster ? (
-        <img
-          src={activeSrc}
-          alt={`${title} poster`}
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          fetchPriority={priority ? "high" : "auto"}
-          className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
-      ) : (
-        <div className="media-poster-fallback">
-          <div className="media-poster-fallback-inner">
-            <p className="media-poster-fallback-title">{title}</p>
-            {year ? (
-              <span className="media-poster-fallback-year">{year}</span>
-            ) : null}
-          </div>
-        </div>
-      )}
+    <div className={`media-poster-wrap ${isCatFallback ? "is-cat-poster" : ""} ${className}`}>
+      <div className={`media-poster-skeleton ${isLoaded ? "loaded" : ""}`} />
+      <img
+        src={activeSrc}
+        alt={`${title} poster`}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
     </div>
   );
 };
@@ -720,23 +714,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                 )}
                 {isActive && <span className="profile-switcher-indicator" />}
               </div>
-              <svg viewBox="0 0 58 58" className="profile-switcher-curve-svg">
-                <path
-                  id={`curve-${profile.toLowerCase()}`}
-                  d="M 6,29 A 23,23 0 0,0 52,29"
-                  fill="none"
-                  stroke="none"
-                />
-                <text className="profile-switcher-curved-text">
-                  <textPath
-                    href={`#curve-${profile.toLowerCase()}`}
-                    startOffset="50%"
-                    textAnchor="middle"
-                  >
-                    {profile}
-                  </textPath>
-                </text>
-              </svg>
+              <span className="profile-switcher-name">{profile}</span>
             </button>
           );
         })}

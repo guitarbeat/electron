@@ -4423,28 +4423,34 @@
 .floating-dock-cluster .profiles-switcher-row {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.45rem;
 }
 
 .floating-dock-cluster .profile-switcher-btn {
-  width: 48px;
-  height: 48px;
+  width: auto;
+  height: auto;
+  min-height: 38px;
+  padding: 0.3rem 0.65rem 0.3rem 0.35rem;
+  border-radius: 0.5rem;
 }
 
 .floating-dock-cluster .profile-switcher-avatar-wrap {
-  top: 7px;
-  left: calc(50% - 13px);
-  width: 26px;
-  height: 26px;
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
 }
 
 .floating-dock-cluster .profile-switcher-avatar .app-header__option-avatar {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
+  border-radius: 0.375rem;
 }
 
-.floating-dock-cluster .profile-switcher-curved-text {
-  font-size: 7.5px;
+.floating-dock-cluster .profile-switcher-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .floating-dock-cluster .profile-settings-trigger-btn {
@@ -4626,28 +4632,32 @@
   }
 
   .floating-dock-cluster .profile-switcher-btn {
-    width: 42px;
-    height: 42px;
+    width: auto;
+    height: auto;
+    min-height: 34px;
+    padding: 0.25rem 0.5rem 0.25rem 0.3rem;
   }
 
   .floating-dock-cluster .profile-switcher-avatar-wrap {
-    top: 5px;
-    left: calc(50% - 11px);
-    width: 22px;
-    height: 22px;
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
   }
 
   .floating-dock-cluster .profile-switcher-avatar .app-header__option-avatar {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
+    border-radius: 0.375rem;
   }
 
-  .floating-dock-cluster .profile-switcher-curved-text {
-    font-size: 6.8px;
+  .floating-dock-cluster .profile-switcher-name {
+    font-size: 0.75rem;
   }
 
   .floating-dock-cluster .profiles-switcher-row {
-    gap: 0.4rem;
+    gap: 0.35rem;
   }
 
   .floating-dock-cluster .chat-fab {
@@ -5491,7 +5501,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: inherit;
 }
 
 .app-header__avatar-initial {
@@ -5803,61 +5813,70 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.15rem;
+  gap: 0.5rem;
 }
 
 .profile-switcher-btn {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.03);
+  gap: 0.5rem;
+  width: auto;
+  height: auto;
+  padding: 0.35rem 0.7rem 0.35rem 0.4rem;
+  background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--color-border);
-  border-radius: 50%;
+  border-radius: 0.5rem;
   color: var(--color-text-secondary);
   cursor: pointer;
   position: relative;
   overflow: visible;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
 }
 
 .profile-switcher-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.85);
   border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
   color: var(--color-text-primary);
   transform: translateY(-1px);
 }
 
 .profile-switcher-btn.is-active {
-  background: color-mix(in srgb, var(--color-accent) 12%, rgba(255, 255, 255, 0.04));
+  background: color-mix(in srgb, var(--color-accent) 15%, rgba(15, 23, 42, 0.9));
   border-color: var(--color-accent);
   color: var(--color-text-primary);
   box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
 .profile-switcher-avatar-wrap {
-  position: absolute;
-  top: 9px;
-  left: calc(50% - 14px);
+  position: relative;
   width: 28px;
   height: 28px;
+  flex-shrink: 0;
 }
 
 .profile-switcher-avatar {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: 0.375rem;
   overflow: hidden;
 }
 
 .profile-switcher-avatar .app-header__option-avatar {
   width: 28px;
   height: 28px;
+  border-radius: 0.375rem;
   border-width: 1px;
+}
+
+.profile-switcher-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: inherit;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .profile-switcher-lock {
@@ -5869,7 +5888,7 @@
   justify-content: center;
   width: 11px;
   height: 11px;
-  border-radius: 50%;
+  border-radius: 3px;
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   color: var(--color-text-tertiary);
@@ -5879,28 +5898,11 @@
   position: absolute;
   top: -2px;
   right: -2px;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background-color: #10b981;
   box-shadow: 0 0 4px #10b981;
-}
-
-.profile-switcher-curve-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.profile-switcher-curved-text {
-  font-family: var(--font-heading);
-  font-size: 8px;
-  font-weight: 750;
-  fill: currentColor;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 /* Settings trigger button & popover */

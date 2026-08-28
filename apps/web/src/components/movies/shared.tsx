@@ -482,6 +482,7 @@ import {
   sanitizeInput,
   getErrorMessage,
   consoleError,
+  resolvePosterUrl,
 } from "@/utils";
 import {
   searchMovieAutocomplete,
@@ -562,44 +563,33 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   onPosterError,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
-
-  const shouldShowPoster = Boolean(resolvedPosterUrl) && !hasPosterError;
-  const activePosterUrl = resolvedPosterUrl;
+  const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
+  const activePosterUrl = isCustomOrValid
+    ? (resolvedPosterUrl as string)
+    : resolvePosterUrl(undefined, movie.id || movie.title);
 
   return (
     <figure
       className="movie-details-modal__poster-shell"
       aria-label={`Poster for ${movie.title}`}
     >
-      {shouldShowPoster ? (
-        <>
-          <img
-            src={activePosterUrl}
-            alt=""
-            aria-hidden="true"
-            className="movie-details-modal__poster-bg"
-            loading="lazy"
-            decoding="async"
-          />
-          <img
-            src={activePosterUrl}
-            alt={`${movie.title} poster`}
-            className="movie-details-modal__poster"
-            loading="lazy"
-            decoding="async"
-            fetchPriority="high"
-            onError={onPosterError}
-          />
-        </>
-      ) : (
-        <div className="movie-details-modal__poster movie-details-modal__poster--fallback">
-          <FilmIcon
-            size={32}
-            style={{ opacity: 0.4, marginBottom: "0.5rem" }}
-          />
-          <span>No Poster Available</span>
-        </div>
-      )}
+      <img
+        src={activePosterUrl}
+        alt=""
+        aria-hidden="true"
+        className="movie-details-modal__poster-bg"
+        loading="lazy"
+        decoding="async"
+      />
+      <img
+        src={activePosterUrl}
+        alt={`${movie.title} poster`}
+        className="movie-details-modal__poster"
+        loading="lazy"
+        decoding="async"
+        fetchPriority="high"
+        onError={onPosterError}
+      />
       <div
         className="movie-details-modal__poster-gradient"
         aria-hidden="true"

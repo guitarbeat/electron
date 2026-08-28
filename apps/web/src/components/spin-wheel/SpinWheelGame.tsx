@@ -4,6 +4,7 @@ import { Button } from "@/components/ui";
 import { useMovies } from "@/hooks/movies";
 import { useUser, useViewport } from "@/app/providerContexts";
 import { colors, spacing } from "@/theme/tokens";
+import { resolvePosterUrl } from "@/utils";
 import type { Movie } from "@/shared/types";
 const MovieDetailsModal = React.lazy(() =>
   import("@/components/movies").then((m) => ({ default: m.MovieDetailsModal })),
@@ -157,16 +158,15 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
   const renderPoster = (movie: Movie, className: string, clickable = true) => {
     const isActuallyClickable = clickable && !isSpinning;
-    const posterContent = movie.posterUrl ? (
+    const activePosterUrl = resolvePosterUrl(movie.posterUrl, movie.id || movie.title);
+    const posterContent = (
       <img
-        src={movie.posterUrl}
+        src={activePosterUrl}
         alt={`${movie.title} poster`}
         className={className}
+        loading="lazy"
+        decoding="async"
       />
-    ) : (
-      <div className={`${className} ${className}--fallback`}>
-        <span>{movie.title.slice(0, 2).toUpperCase()}</span>
-      </div>
     );
 
     if (!isActuallyClickable) return posterContent;

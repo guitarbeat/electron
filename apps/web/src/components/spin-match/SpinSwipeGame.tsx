@@ -8,6 +8,7 @@ import React, {
 import { useMovies } from "@/hooks/movies";
 import { useUser } from "@/app/providerContexts";
 import type { Movie } from "@/shared/types";
+import { resolvePosterUrl } from "@/utils";
 import { FilmIcon, SparklesIcon } from "@/common/Icons";
 const MovieDetailsModal = React.lazy(() =>
   import("@/components/movies").then((m) => ({ default: m.MovieDetailsModal })),
@@ -108,9 +109,7 @@ function MovieCard({
         height: 310,
         borderRadius: 16,
         overflow: "hidden",
-        background: movie.posterUrl
-          ? `url(${movie.posterUrl}) center / cover`
-          : "var(--color-surface-2)",
+        background: `url(${resolvePosterUrl(movie.posterUrl, movie.id || movie.title)}) center / cover`,
         boxShadow: "0 16px 40px rgba(0,0,0,0.5)",
         transform: `translateX(${dragX}px) rotate(${tilt}deg)`,
         transition: isDragging
@@ -122,20 +121,6 @@ function MovieCard({
       }}
       title={`Click for details or swipe to choose`}
     >
-      {!movie.posterUrl && (
-        <span
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "4rem",
-          }}
-        >
-          🎬
-        </span>
-      )}
 
       <div
         style={{
@@ -410,9 +395,7 @@ function ResultScreen({
           position: "relative",
           overflow: "hidden",
           boxShadow: "0 20px 52px rgba(0,0,0,0.55)",
-          background: winner.posterUrl
-            ? `url(${winner.posterUrl}) center / cover`
-            : "var(--color-surface-2)",
+          background: `url(${resolvePosterUrl(winner.posterUrl, winner.id || winner.title)}) center / cover`,
           cursor: onWinnerClick ? "pointer" : "default",
         }}
         title={
@@ -430,20 +413,6 @@ function ResultScreen({
           }
         }}
       >
-        {!winner.posterUrl && (
-          <span
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "4rem",
-            }}
-          >
-            🎬
-          </span>
-        )}
         <div
           style={{
             position: "absolute",
@@ -714,9 +683,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
                       width: 220,
                       height: 310,
                       borderRadius: 16,
-                      background: nextMovie.posterUrl
-                        ? `url(${nextMovie.posterUrl}) center / cover`
-                        : "var(--color-surface-2)",
+                      background: `url(${resolvePosterUrl(nextMovie.posterUrl, nextMovie.id || nextMovie.title)}) center / cover`,
                       boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
                       transform: "scale(0.93) translateY(12px)",
                       opacity: 0.55,

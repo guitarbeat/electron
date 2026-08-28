@@ -9,6 +9,7 @@ import React, {
   type HTMLAttributes,
 } from "react";
 import { cn } from "@/utils/shared";
+import { resolvePosterUrl } from "@/utils/catPosters";
 
 // ── Icons ───────────────────────────────────────────────────────────────────
 
@@ -442,24 +443,18 @@ export const WorkspaceAutocompletePosterImage: React.FC<{
 
 export const WorkspaceAutocompletePoster: React.FC<
   WorkspaceAutocompletePosterProps
-> = ({ src, fallbackLetter }) => (
-  <span className="workspace-search__autocomplete-poster">
-    {src ? (
+> = ({ src, fallbackLetter }) => {
+  const activeSrc = resolvePosterUrl(src, fallbackLetter);
+  return (
+    <span className="workspace-search__autocomplete-poster">
       <WorkspaceAutocompletePosterImage
-        key={src}
-        src={src}
+        key={activeSrc}
+        src={activeSrc}
         fallbackLetter={fallbackLetter}
       />
-    ) : (
-      <span
-        className="workspace-search__autocomplete-poster-fallback"
-        aria-hidden
-      >
-        {fallbackLetter}
-      </span>
-    )}
-  </span>
-);
+    </span>
+  );
+};
 
 export interface WorkspaceAutocompleteGroupProps {
   children: React.ReactNode;
