@@ -1,6 +1,6 @@
-import { describe, it, afterEach } from "node:test";
+import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import { validateSameOriginRequest } from "./omdb.js";
+import { validateSameOriginRequest, isRateLimited, resetRateLimitsForTests } from "./omdb.js";
 
 describe("validateSameOriginRequest", () => {
   const originalAllowedOrigins = process.env.ALLOWED_ORIGINS;
@@ -100,5 +100,60 @@ describe("validateSameOriginRequest", () => {
     assert.strictEqual(res?.status, 403);
     const body = await res?.json();
     assert.strictEqual(body.error, "Origin not allowed.");
+  });
+});
+
+describe("isRateLimited", () => {
+  beforeEach(() => {
+    resetRateLimitsForTests();
+  });
+
+  it("should return false for initial request from an IP", () => {
+    assert.strictEqual(isRateLimited("192.0.2.1"), false);
+  });
+
+  it("should allow up to 30 requests per window and rate limit on 31st request", () => {
+    const ip = "192.0.2.2";
+    for (let i = 0; i < 30; i++) {
+      assert.strictEqual(isRateLimited(ip), false, `Request ${i + 1} should be allowed`);
+    }
+    assert.strictEqual(isRateLimited(ip), true, "31st request should be rate limited");
+  });
+
+  it("should reset count after window expires", (t) => {
+    t.mock.timers.enable({ apis: ["Date"] });
+    const ip = "192.0.2.3";
+
+    for (let i = 0; i < 30; i++) {
+      isRateLimited(ip);
+    }
+    assert.strictEqual(isRateLimited(ip), true);
+
+    t.mock.timers.setTime(Date.now() + 60001);
+
+    assert.strictEqual(isRateLimited(ip), false, "Request after window expiration should be allowed");
+  });
+
+  it("should clean up expired entries when MAX_RATE_LIMIT_ENTRIES is reached", (t) => {
+    t.mock.timers.enable({ apis: ["Date"] });
+    const maxEntries = 10000;
+
+    for (let i = 0; i < maxEntries; i++) {
+      isRateLimited(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+    }
+
+    t.mock.timers.setTime(Date.now() + 60001);
+
+    assert.strictEqual(isRateLimited("192.168.1.100"), false);
+  });
+
+  it("should evict oldest entry when MAX_RATE_LIMIT_ENTRIES is reached and none are expired", () => {
+    const maxEntries = 10000;
+
+    for (let i = 0; i < maxEntries; i++) {
+      isRateLimited(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+    }
+
+    assert.strictEqual(isRateLimited("192.168.1.200"), false);
   });
 });

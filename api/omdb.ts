@@ -45,7 +45,7 @@ const forbiddenResponse = (message: string) =>
 const omdbAuthResponse = (message: string) =>
   jsonProxyResponse({ error: message, code: OMDB_AUTH_FAILURE_CODE }, 502);
 
-const isRateLimited = (ip: string): boolean => {
+export const isRateLimited = (ip: string): boolean => {
   const now = Date.now();
   const record = ipRequestCounts.get(ip);
 
@@ -81,6 +81,10 @@ const isRateLimited = (ip: string): boolean => {
 
   record.count += 1;
   return false;
+};
+
+export const resetRateLimitsForTests = (): void => {
+  ipRequestCounts.clear();
 };
 
 export const validateSameOriginRequest = (req: Request): Response | null => {
