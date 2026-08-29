@@ -24,6 +24,32 @@ describe("validateSameOriginRequest", () => {
     assert.strictEqual(body.error, "Cross-site requests not allowed.");
   });
 
+  it("should allow non-cross-site sec-fetch-site headers", () => {
+    const reqSameOrigin = new Request("http://localhost/api/omdb", {
+      headers: { "sec-fetch-site": "same-origin" },
+    });
+    assert.strictEqual(validateSameOriginRequest(reqSameOrigin), null);
+
+    const reqSameSite = new Request("http://localhost/api/omdb", {
+      headers: { "sec-fetch-site": "same-site" },
+    });
+    assert.strictEqual(validateSameOriginRequest(reqSameSite), null);
+  });
+
+  it("should match allowed origins with trailing slashes or custom ports", () => {
+    process.env.ALLOWED_ORIGINS = "https://app.example.com/, http://localhost:3000";
+
+    const reqTrailing = new Request("http://localhost/api/omdb", {
+      headers: { origin: "https://app.example.com" },
+    });
+    assert.strictEqual(validateSameOriginRequest(reqTrailing), null);
+
+    const reqPort = new Request("http://localhost/api/omdb", {
+      headers: { origin: "http://localhost:3000" },
+    });
+    assert.strictEqual(validateSameOriginRequest(reqPort), null);
+  });
+
   it("should allow requests with no origin or referer", () => {
     const req = new Request("http://localhost/api/omdb");
     const res = validateSameOriginRequest(req);
