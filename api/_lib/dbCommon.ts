@@ -59,7 +59,7 @@ export const createPostgresPool = (databaseUrl: string): pg.Pool => {
   const cleanUrl = cleanDatabaseUrl(databaseUrl);
   const poolConfig: pg.PoolConfig = { connectionString: cleanUrl };
   if (needsSsl(cleanUrl)) {
-    poolConfig.ssl = { rejectUnauthorized: false };
+    poolConfig.ssl = { rejectUnauthorized: true };
   }
   return new Pool(poolConfig);
 };
