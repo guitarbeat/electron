@@ -2958,6 +2958,7 @@
   -webkit-backdrop-filter: blur(40px) saturate(1.6);
   transform-origin: calc(100% - 1.6rem) calc(100% + 0.8rem);
   animation: chatGenieIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  overscroll-behavior: contain;
 }
 
 .chat-dock__close {

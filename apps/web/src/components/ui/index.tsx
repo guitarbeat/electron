@@ -134,9 +134,11 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       <img
         src={activeSrc}
         alt={`${title} poster`}
-        loading={priority ? "eager" : "eager"}
+        width={300}
+        height={450}
+        loading="eager"
         decoding="async"
-        fetchPriority={priority ? "high" : "low"}
+        fetchPriority={priority ? "high" : undefined}
         className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
         onLoad={handleImageLoad}
         onError={handleImageError}
@@ -4376,7 +4378,25 @@ export const Modal: FC<ModalProps> = ({
   variant: _variant,
   maxWidth = 520,
   maxHeight,
-}) => {  if (!isOpen) return null;
+}) => {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !closeDisabled) {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen, closeDisabled, onClose]);
+
+  if (!isOpen) return null;
 
   return createPortal(
     <div
@@ -4385,8 +4405,16 @@ export const Modal: FC<ModalProps> = ({
       aria-label={ariaLabel || (typeof title === "string" ? title : "Dialog")}
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
     >
+      <button
+        type="button"
+        className="fixed inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
+        onClick={closeDisabled ? undefined : onClose}
+        disabled={closeDisabled}
+        aria-label={closeDisabled ? closeDisabledLabel : "Close dialog backdrop"}
+        tabIndex={-1}
+      />
       <div
-        className="relative w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6"
+        className="relative z-10 w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6 overscroll-contain"
         style={{
           maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth,
           maxHeight:
