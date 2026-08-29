@@ -438,33 +438,7 @@ import {
   MemoryList,
 } from "@/components/memories/shared";
 
-export interface MoviesTopControlsProps {
-  currentUser: User | null;
-  upNextCount?: number;
-  watchedCount?: number;
-  noteCount?: number;
-  latestNoteMovieTitle?: string | null;
-  latestNoteAuthor?: string | null;
-  canRecommend?: boolean;
-  searchQuery: string;
-  setSearchQuery: (value: string) => void;
-  selectedAutocompleteResult: MovieAutocompleteResult | null;
-  setSelectedAutocompleteResult: (
-    value: MovieAutocompleteResult | null,
-  ) => void;
-  guestName: string;
-  setGuestName: (value: string) => void;
-  onSubmit: () => Promise<void> | void;
-  onRecommend: () => void;
-  onSubmitRecommendation: () => Promise<void> | void;
-  onCancelRecommendation: () => void;
-  recommendationReason: string;
-  setRecommendationReason: (value: string) => void;
-  showRecommendationComposer: boolean;
-  isAdding: boolean;
-  isSubmittingRecommendation: boolean;
-  suggestionError: string | null;
-}
+
 
 
 

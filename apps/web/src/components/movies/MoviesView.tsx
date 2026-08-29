@@ -6,7 +6,6 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import type {
@@ -44,7 +43,6 @@ MOVIE_SORTS,
 } from "./shared";
 
 import { MovieSectionBody } from "./MovieSectionBody";
-import { type MoviesTopControlsHandle } from "./MoviesTopControls";
 
 export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   isPaused = false,
@@ -61,9 +59,10 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
     [registerTabConfig],
   );
   const [sortOrder, setSortOrder] = useState<MovieSortOrder>("recent");
-  const moviesTopControlsRef = useRef<MoviesTopControlsHandle | null>(null);
   const focusSearchInput = useCallback(() => {
-    moviesTopControlsRef.current?.focusSearchInput();
+    document
+      .querySelector<HTMLInputElement>(".curved-library-search input")
+      ?.focus();
   }, []);
   const {
     searchQuery,

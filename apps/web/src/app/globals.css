@@ -65,13 +65,8 @@ img {
   background: color-mix(in srgb, var(--color-text-secondary) 40%, transparent);
 }
 
-.tabular-nums,
 [data-tabular-nums="true"],
-.stat-value,
-.metric-value,
-.rating-badge,
-.count-badge,
-.timer-display {
+.rating-badge {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
@@ -238,19 +233,7 @@ img {
   color: var(--color-text-primary);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Search & Library Topbar
-   ═══════════════════════════════════════════════════════════════════ */
 
-.movies-search-container,
-.library-search-container {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  min-width: 0;
-  padding: 0.75rem 0;
-  background: linear-gradient(180deg, var(--color-surface-0) 80%, transparent 100%);
-}
 
 /* ═══════════════════════════════════════════════════════════════════
    Workspace Search & Omnibar (Modern Unified Design)
@@ -461,229 +444,6 @@ img {
   flex-shrink: 0;
 }
 
-/* Autocomplete Dropdown Panel */
-.workspace-search__autocomplete {
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  left: 0;
-  right: 0;
-  max-height: 24rem;
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--color-surface-1, #1e293b) 95%, black);
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle, #334155) 75%, transparent);
-  box-shadow:
-    0 20px 48px -8px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-  backdrop-filter: blur(28px) saturate(1.8);
-  -webkit-backdrop-filter: blur(28px) saturate(1.8);
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 100;
-  animation: searchPanelSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--color-border-subtle, #475569) 70%, transparent) transparent;
-}
-
-.workspace-search__autocomplete::-webkit-scrollbar {
-  width: 6px;
-}
-
-.workspace-search__autocomplete::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-border-subtle, #475569) 70%, transparent);
-  border-radius: 999px;
-}
-
-.workspace-search__autocomplete-inner {
-  padding: 0.45rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-/* Category Filter Tabs inside Autocomplete */
-.workspace-search__autocomplete-filters {
-  padding: 0.35rem 0.45rem 0.5rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border-subtle, #334155) 40%, transparent);
-  margin-bottom: 0.3rem;
-}
-
-.workspace-search__autocomplete-filter-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.workspace-search__autocomplete-filter-count {
-  font-size: 0.68rem;
-  padding: 0.05rem 0.35rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-text-primary, #fff) 12%, transparent);
-  opacity: 0.8;
-}
-
-/* Autocomplete Group Label */
-.workspace-search__autocomplete-group {
-  padding: 0.5rem 0.65rem 0.2rem;
-}
-
-.workspace-search__autocomplete-group-text {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-tertiary, #64748b);
-}
-
-/* Autocomplete Option Item */
-.workspace-search__autocomplete-option {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--color-text-primary, #f8fafc);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.14s ease;
-  font-family: inherit;
-}
-
-.workspace-search__autocomplete-option:hover,
-.workspace-search__autocomplete-option.is-active {
-  background: color-mix(in srgb, var(--color-accent, #38bdf8) 12%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent, #38bdf8) 25%, transparent);
-  transform: translateX(2px);
-}
-
-/* Poster / Icon Media in Autocomplete */
-.workspace-search__autocomplete-poster {
-  flex-shrink: 0;
-  width: 36px;
-  height: 48px;
-  border-radius: 0.45rem;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--color-surface-2, #334155) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle, #475569) 40%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary, #94a3b8);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.workspace-search__autocomplete-poster-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.workspace-search__autocomplete-poster-image.is-loaded {
-  opacity: 1;
-}
-
-.workspace-search__autocomplete-poster-fallback {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--color-text-tertiary, #64748b);
-}
-
-/* Option Copy & Metadata */
-.workspace-search__autocomplete-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-  flex: 1;
-}
-
-.workspace-search__autocomplete-title {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--color-text-primary, #f8fafc);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.01em;
-}
-
-.workspace-search__autocomplete-meta {
-  font-size: 0.74rem;
-  font-weight: 500;
-  color: var(--color-text-tertiary, #94a3b8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Loading & Status States */
-.workspace-search__autocomplete-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 1.25rem 1rem;
-}
-
-.workspace-search__loading-dots {
-  display: flex;
-  gap: 0.35rem;
-}
-
-.workspace-search__autocomplete-loading-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-accent, #38bdf8);
-  animation: searchBounceDot 1.4s ease-in-out infinite;
-}
-
-.workspace-search__autocomplete-loading-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.workspace-search__autocomplete-loading-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-.workspace-search__loading-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-text-secondary, #94a3b8);
-}
-
-.workspace-search__autocomplete-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1.15rem 1rem;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--color-text-secondary, #94a3b8);
-  text-align: center;
-}
-
-.workspace-search__autocomplete-status.is-error {
-  color: #fca5a5;
-  background: color-mix(in srgb, #ef4444 10%, transparent);
-  border-radius: 0.6rem;
-  margin: 0.25rem;
-}
-
-.workspace-search__status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ef4444;
-}
-
 @keyframes searchFadeIn {
   from {
     opacity: 0;
@@ -692,28 +452,6 @@ img {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes searchPanelSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes searchBounceDot {
-  0%, 80%, 100% {
-    transform: scale(0.6);
-    opacity: 0.4;
-  }
-  40% {
-    transform: scale(1.15);
-    opacity: 1;
   }
 }
 
@@ -738,10 +476,6 @@ img {
     min-height: 2.15rem !important;
     padding: 0 0.85rem !important;
     font-size: 0.8rem !important;
-  }
-
-  .workspace-search__autocomplete {
-    max-height: 18rem;
   }
 }
 
