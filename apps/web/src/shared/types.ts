@@ -2,7 +2,7 @@ export type User = "Aaron" | "Electra";
 
 export const USER_PHOTOS: Record<User, string> = {
   Aaron: "/aaron-avatar.png",
-  Electra: "https://cataas.com/cat/cute?width=200&height=200",
+  Electra: "/electra-button.png",
 };
 
 export const MAIN_TABS = ["movies", "places", "memories", "messages"] as const;

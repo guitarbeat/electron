@@ -30,9 +30,11 @@ import {
 
 
 
+import { MovieDetailsModal } from "./MovieDetailsModal";
 import {
 MovieSections,
-MovieBodyActions
+MovieBodyActions,
+MovieTransitionOrigin,
 } from "./shared";
 
 interface Props_MovieSectionBody {
@@ -69,6 +71,10 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   actions,
   posterPlaceCards = [],
 }) => {
+  const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
+  const [selectedOrigin, setSelectedOrigin] =
+    React.useState<MovieTransitionOrigin | null>(null);
+
   const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
     typeof window !== "undefined" ? window.innerWidth : 1440,
   );
@@ -96,7 +102,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     isLoadingSuggestions: false,
   });
 
-const renderMovie = (movie: Movie) => {
+  const renderMovie = (movie: Movie) => {
     const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
     const element = (
       <MovieCard
@@ -128,6 +134,10 @@ const renderMovie = (movie: Movie) => {
         }}
         onTogglePin={async (memoryId) => {
           await actions.togglePin(memoryId);
+        }}
+        onOpenDetails={(m, origin) => {
+          setSelectedMovie(m);
+          setSelectedOrigin(origin ?? null);
         }}
       />
     );
@@ -177,6 +187,16 @@ const allPosters = [...sections.queue, ...sections.completed];
       posterPlaceCards,
     );
   }
+  const handleTileClick = (item: unknown) => {
+    if (React.isValidElement(item) && item.props) {
+      const props = item.props as Record<string, unknown>;
+      const movie = props.movie as Movie | undefined;
+      if (movie) {
+        setSelectedMovie(movie);
+      }
+    }
+  };
+
   // ── Full section body ─────────────────────────────────────────────────────
   return (
     <div
@@ -211,6 +231,7 @@ const allPosters = [...sections.queue, ...sections.completed];
             radius={isMobile ? 8 : 10}
             pauseOnHover
             grayscale={false}
+            onTileClick={handleTileClick}
           />
         </div>
       ) : (
@@ -222,6 +243,48 @@ const allPosters = [...sections.queue, ...sections.completed];
           <strong>No cards yet</strong>
           <span>Add a movie, suggestion, or place to fill this wall.</span>
         </CollectionEmptyState>
+      )}
+
+      {selectedMovie && (
+        <MovieDetailsModal
+          movie={selectedMovie}
+          memories={movieMemories.get(selectedMovie.id) ?? []}
+          isOpen={Boolean(selectedMovie)}
+          origin={selectedOrigin}
+          currentUser={currentUser}
+          onToggleWatched={
+            currentUser
+              ? async () => {
+                  await actions.toggleWatched(selectedMovie.id);
+                }
+              : undefined
+          }
+          isWatchedByCurrentUser={Boolean(
+            currentUser && selectedMovie.watchedBy.includes(currentUser),
+          )}
+          onAddMemory={
+            currentUser
+              ? async (note) => {
+                  await actions.addMemory(
+                    selectedMovie.id,
+                    selectedMovie.title,
+                    currentUser,
+                    note,
+                  );
+                }
+              : undefined
+          }
+          onUpdateMemory={async (memoryId, note) => {
+            await actions.updateMemory(memoryId, { note });
+          }}
+          onDeleteMemory={async (memoryId) => {
+            await actions.deleteMemory(memoryId);
+          }}
+          onTogglePin={async (memoryId) => {
+            await actions.togglePin(memoryId);
+          }}
+          onClose={() => setSelectedMovie(null)}
+        />
       )}
     </div>
   );

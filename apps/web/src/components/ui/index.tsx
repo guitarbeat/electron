@@ -708,7 +708,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                 )}
                 {isActive && <span className="profile-switcher-indicator" />}
               </div>
-              <span className="profile-switcher-name">{profile}</span>
+              <span className="profile-switcher-name sr-only">{profile}</span>
             </button>
           );
         })}
@@ -3608,6 +3608,8 @@ const WATCHER_USER_PHOTOS: Record<string, string[]> = {
     "https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941",
   ],
   Electra: [
+    "/electra-button.png",
+    "/electra-avatar.png",
     "https://i.redd.it/vkmos70wqw641.jpg",
     "https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg",
     "https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941",

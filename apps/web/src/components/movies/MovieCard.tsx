@@ -54,6 +54,7 @@ interface MovieCardProps {
   isHighlighted?: boolean;
   isCompact?: boolean;
   priorityPoster?: boolean;
+  onOpenDetails?: (movie: Movie, origin?: MovieTransitionOrigin | null) => void;
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -71,6 +72,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   isHighlighted = false,
   isCompact = false,
   priorityPoster = false,
+  onOpenDetails,
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isTitleVisible, setIsTitleVisible] = React.useState(false);
@@ -83,24 +85,35 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   const isMobile = isCompact;
   const isGuest = !currentUser;
   const watchedByBoth = movie.watchedBy.length === 2;
-  const handleOpenDetails = () => {
+
+  const handleOpenDetails = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     const rect =
       posterRef.current?.getBoundingClientRect() ??
       cardRef.current?.getBoundingClientRect();
-    if (rect) {
-      setDetailsOrigin({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-      });
+    const origin = rect
+      ? {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        }
+      : null;
+    if (origin) {
+      setDetailsOrigin(origin);
     }
     setIsTitleVisible(true);
-    setIsDetailsOpen(true);
+    if (onOpenDetails) {
+      onOpenDetails(movie, origin);
+    } else {
+      setIsDetailsOpen(true);
+    }
   };
 
-  const handlePosterClick = () => {
-    handleOpenDetails();
+  const handlePosterClick = (e?: React.MouseEvent) => {
+    handleOpenDetails(e);
   };
 
   React.useEffect(() => {
