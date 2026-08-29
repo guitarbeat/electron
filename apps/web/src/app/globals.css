@@ -769,44 +769,6 @@ img {
   }
 }
 
-.movie-card,
-.places-item-card {
-  position: relative;
-  background: var(--color-surface-1);
-  border: 1px solid var(--color-border);
-  border-radius: 0.875rem;
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
-}
-
-.movie-card:hover,
-.places-item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-elevated);
-  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
-}
-
-/* Memory Lane Divider */
-.memory-lane-divider {
-  margin: 1.5rem 0;
-  border: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--color-border) 20%, var(--color-border) 80%, transparent 100%);
-  position: relative;
-}
-
-.memory-lane-divider::after {
-  content: '♥';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.75rem;
-  color: var(--color-accent);
-  background: var(--color-surface-0);
-  padding: 0 0.5rem;
-}
 
 /* Modal and popup body scroll locks */
 body.modal-open {

@@ -40,6 +40,7 @@
   position: relative;
   width: calc(var(--dw-tile-w) + var(--dw-gap));
   transform-style: preserve-3d;
+  contain: layout paint;
 }
 
 .drift-wall__track {

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@11.24.0",
   "workspaces": [
     "apps/*",
     "lib/*"
@@ -18,7 +18,7 @@
     "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
     "typecheck": "npm run typecheck:libs && npm run typecheck:api && npm run typecheck --prefix apps/web",
     "check-types": "npm run typecheck",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "test": "npm run test --prefix apps/web",
     "test:unit": "node scripts/run-node-tests.mjs",
     "test:smoke": "node scripts/smoke-test-deployment.mjs",

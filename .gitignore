@@ -36,6 +36,12 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+*.log
+*.bak
+*.bak.*
+eslint_report.json
+*_report.json
+package-lock.json
 
 # System Files
 .DS_Store
