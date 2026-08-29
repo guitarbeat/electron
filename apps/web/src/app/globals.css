@@ -114,7 +114,7 @@ img {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  box-shadow: inset 0 0 150px 20px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 60px 5px rgba(0, 0, 0, 0.35);
   z-index: 50; /* ensure it sits above most background elements but below active modals/menus */
 }
 

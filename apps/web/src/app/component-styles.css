@@ -3687,7 +3687,7 @@
   border: 0;
 }
 
-.library-workspace::before {
+.library-workspace.has-search::before {
   content: "";
   position: absolute;
   top: 0;
@@ -3714,11 +3714,23 @@
   transform: translate3d(-50%, 0, 0);
   opacity: 1;
   pointer-events: auto;
+  animation: searchBarSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   transition:
     transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
   background: transparent;
+}
+
+@keyframes searchBarSlideIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -18px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
 }
 
 

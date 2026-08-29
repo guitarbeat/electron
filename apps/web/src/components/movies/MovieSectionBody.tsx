@@ -68,8 +68,27 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onToggleError,
   actions,
   posterPlaceCards = [],
-  
 }) => {
+  const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1440,
+  );
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const dynamicColumns = React.useMemo(() => {
+    if (isMobile || viewportWidth < 640) return 4;
+    // Each column is tileWidth (120px) + gap (18px) = 138px.
+    // Bleed 35% past screen bounds so the -14deg 3D perspective turn covers both edges completely.
+    const targetCols = Math.ceil((viewportWidth * 1.35) / 138);
+    return Math.max(6, targetCols);
+  }, [isMobile, viewportWidth]);
+
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
     suggestionCount: sections.suggestions.length,
@@ -132,8 +151,8 @@ const allPosters = [...sections.queue, ...sections.completed];
   
   let unifiedCards: React.ReactNode[];
   if (collectionState === "loading") {
-    const skeletonCount = isMobile ? 15 : 40;
-unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
+    const skeletonCount = isMobile ? 16 : dynamicColumns * 4;
+    unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
       const isShort = i % 5 === 2;
       return (
         <div
@@ -142,8 +161,8 @@ unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
           data-height-ratio={isShort ? 0.55 : 1}
           style={
             {
-              "--loading-tile": Math.floor(i / (isMobile ? 3 : 8)),
-              "--loading-column": i % (isMobile ? 3 : 8),
+              "--loading-tile": Math.floor(i / dynamicColumns),
+              "--loading-column": i % dynamicColumns,
               width: "100%",
               height: "100%",
             } as React.CSSProperties
@@ -169,10 +188,10 @@ unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
       }}
     >
       {unifiedCards.length > 0 ? (
-        <div style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: isMobile ? 12 : 24 }}>
+        <div style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}>
           <DriftWall
             items={unifiedCards}
-            columns={isMobile ? 3 : 8}
+            columns={dynamicColumns}
             tileWidth={120}
             tileHeight={180}
             gap={isMobile ? 10 : 18}
@@ -186,10 +205,10 @@ unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
             variance={0.7}
             parallax={0.6}
             lift={64}
-            fade={0.4}
-            dim={0.85}
+            fade={0.12}
+            dim={0.92}
             overlayColor="#060010"
-            radius={isMobile ? 8 : 0}
+            radius={isMobile ? 8 : 10}
             pauseOnHover
             grayscale={false}
           />
