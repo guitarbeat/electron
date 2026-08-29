@@ -511,9 +511,7 @@ export const fetchOmdbMetadataCached = (
   return request;
 };
 
-export const _clearCache = () => {
-  metadataCache.clear();
-};
+
 
 // Metadata Aggregator / Autocomplete Service
 
