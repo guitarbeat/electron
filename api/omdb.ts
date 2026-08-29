@@ -11,9 +11,9 @@ import {
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 30;
-const MAX_RATE_LIMIT_ENTRIES = 10_000;
+export const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+export const MAX_REQUESTS_PER_WINDOW = 30;
+export const MAX_RATE_LIMIT_ENTRIES = 10_000;
 const OMDB_AUTH_FAILURE_CODE = "omdb_auth";
 const OMDB_CONFIG_FAILURE_CODE = "omdb_config";
 
@@ -21,7 +21,7 @@ const omdbCache = new BoundedResponseCache<CachedProxyResponse>({
   ttlMs: ONE_HOUR_MS,
   maxEntries: MAX_CACHE_ENTRIES,
 });
-const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
+export const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
 
 const getOmdbApiBaseUrl = (): string =>
   resolveConfig(
@@ -45,7 +45,7 @@ const forbiddenResponse = (message: string) =>
 const omdbAuthResponse = (message: string) =>
   jsonProxyResponse({ error: message, code: OMDB_AUTH_FAILURE_CODE }, 502);
 
-const isRateLimited = (ip: string): boolean => {
+export const isRateLimited = (ip: string): boolean => {
   const now = Date.now();
   const record = ipRequestCounts.get(ip);
 
