@@ -29,7 +29,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   openPanels,
   onTogglePanel,
 }) => {
-  const [, setTabConfigs] = useState<
+  const tabConfigsRef = React.useRef<
     Partial<Record<MainTab, RegisteredBentoSlotConfig>>
   >({});
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
@@ -37,7 +37,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   );
   const registerTabConfig = useCallback(
     (tab: MainTab, config: RegisteredBentoSlotConfig) => {
-      setTabConfigs((previous) => ({ ...previous, [tab]: config }));
+      tabConfigsRef.current[tab] = config;
     },
     [],
   );

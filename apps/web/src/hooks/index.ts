@@ -368,13 +368,11 @@ export function useAppTabNavigation({
   isMobile,
   onTabSwitch,
 }: UseAppTabNavigationOptions): UseAppTabNavigationResult {
-  const [activeTab, setActiveTab] = useState<MainTab>(() =>
-    initialTab === "memories" ? "movies" : initialTab,
-  );
+  const [activeTab, setActiveTab] = useState<MainTab>(initialTab);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
-      const nextTab = tab === "memories" ? "movies" : tab;
+      const nextTab = tab;
       if (nextTab === activeTab) {
         return;
       }

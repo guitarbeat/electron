@@ -6,14 +6,12 @@ import type {
   MovieSuggestion,
   Place,
   PlaceSuggestion,
-  SharedMemory,
   User,
 } from "../../shared/types.ts";
 
 export const STATE_SCOPES = [
   "movies",
   "messages",
-  "memories",
   "places",
   "suggestions",
   "placeSuggestions",
@@ -56,7 +54,6 @@ export interface DailySpinRecord {
 export interface StateScopeDataMap {
   movies: Movie[];
   messages: Message[];
-  memories: SharedMemory[];
   places: Place[];
   suggestions: MovieSuggestion[];
   placeSuggestions: PlaceSuggestion[];

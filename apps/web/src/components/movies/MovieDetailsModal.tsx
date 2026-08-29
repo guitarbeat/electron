@@ -6,42 +6,30 @@ import React from "react";
 import { createPortal } from "react-dom";
 import type {
   Movie,
-  SharedMemory,
   User,
 } from "@/shared/types";
-
 
 import {
   useModalBase,
 } from "@/components/ui";
-
 
 import { useFeatureFonts, mediaBreakpoints, useMediaQuery } from "@/hooks";
 import {
   formatMemoryTimestamp,
 } from "@/utils";
 
-
 import {
-  INITIAL_VISIBLE_COUNT,
-} from "@/components/memories/shared";
-
-import {
-MAX_MOVIE_NOTE_LENGTH,
-clampMovieTransitionOrigin,
-getMovieDialogMetrics,
-getMovieWatchStatus,
-isTvSeries,
-submitMemory,
-PosterHero,
-MetadataHeader,
-NotesAndMemoriesSection,
-MovieTransitionOrigin
+  clampMovieTransitionOrigin,
+  getMovieDialogMetrics,
+  getMovieWatchStatus,
+  isTvSeries,
+  PosterHero,
+  MetadataHeader,
+  MovieTransitionOrigin,
 } from "./shared";
 
 interface MovieDetailsModalProps {
   movie: Movie;
-  memories?: SharedMemory[];
   isOpen: boolean;
   origin?: MovieTransitionOrigin | null;
   currentUser?: User | null;
@@ -49,46 +37,26 @@ interface MovieDetailsModalProps {
   isWatchedByCurrentUser?: boolean;
   isUpdatingWatchStatus?: boolean;
   onEdit?: () => void;
-  onAddMemory?: (note: string) => Promise<void>;
-  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
-  onDeleteMemory?: (memoryId: string) => Promise<void>;
-  onTogglePin?: (memoryId: string) => Promise<void>;
   onClose: () => void;
 }
 
 export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   movie,
-  memories = [],
   isOpen,
   origin,
-  currentUser = null,
   onToggleWatched,
   isWatchedByCurrentUser = false,
   isUpdatingWatchStatus = false,
   onEdit,
-  onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
-  onTogglePin,
   onClose,
 }) => {
   const isMobile = useMediaQuery(mediaBreakpoints.sm);
   const [hasPosterError, setHasPosterError] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
   const [isEntering, setIsEntering] = React.useState(false);
-  const [isSubmittingMemory, setIsSubmittingMemory] = React.useState(false);
-  const [draftNote, setDraftNote] = React.useState("");
-  const [submitSuccess, setSubmitSuccess] = React.useState(false);
-  const [submitError, setSubmitError] = React.useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = React.useState(() =>
-    Math.min(INITIAL_VISIBLE_COUNT, memories.length),
-  );
   const closeTimeoutRef = React.useRef<number | null>(null);
-  const successTimeoutRef = React.useRef<number | null>(null);
   const previouslyFocusedRef = React.useRef<HTMLElement | null>(null);
   const onCloseRef = React.useRef(onClose);
-  const noteInputRef = React.useRef<HTMLTextAreaElement>(null);
-  const notesSectionRef = React.useRef<HTMLDivElement>(null);
   const { dialogRef, closeButtonRef, playPop } = useModalBase(
     isVisible,
     onClose,
@@ -103,19 +71,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   React.useEffect(() => {
     setHasPosterError(false);
   }, [movie.posterUrl, movie.customPosterUrl]);
-
-  React.useEffect(() => {
-    setVisibleCount(Math.min(INITIAL_VISIBLE_COUNT, memories.length));
-  }, [memories.length, movie.id]);
-
-  React.useEffect(() => {
-    setDraftNote("");
-    setSubmitSuccess(false);
-    if (successTimeoutRef.current !== null) {
-      window.clearTimeout(successTimeoutRef.current);
-      successTimeoutRef.current = null;
-    }
-  }, [movie.id, isOpen]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -187,15 +142,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     };
   }, [closeButtonRef, dialogRef, isOpen]);
 
-  React.useEffect(
-    () => () => {
-      if (successTimeoutRef.current !== null) {
-        window.clearTimeout(successTimeoutRef.current);
-      }
-    },
-    [],
-  );
-
   if (!isVisible) {
     return null;
   }
@@ -209,15 +155,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     movie.director ? `Dir. ${movie.director}` : null,
   ].filter(Boolean) as string[];
 
-  const canManageMemories = Boolean(
-    onUpdateMemory && onDeleteMemory && onTogglePin,
-  );
-  const watchStatus = getMovieWatchStatus(movie, memories.length);
+  const watchStatus = getMovieWatchStatus(movie);
   const source = clampMovieTransitionOrigin(origin ?? null);
   const { targetWidth, targetHeight } = getMovieDialogMetrics(isMobile);
-  const remainingChars = MAX_MOVIE_NOTE_LENGTH - draftNote.length;
-  const canSubmitNote =
-    !isSubmittingMemory && draftNote.trim().length > 0 && remainingChars >= 0;
 
   const scaleX =
     origin && targetWidth > 0
@@ -227,35 +167,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     origin && targetHeight > 0
       ? Math.min(Math.max(origin.height / targetHeight, 0.18), 1)
       : 0.32;
-
-  const handleMemorySubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!onAddMemory) return;
-
-    await submitMemory(draftNote, onAddMemory, {
-      setIsSubmittingMemory,
-      setDraftNote,
-      setSubmitSuccess,
-      setSubmitError,
-      clearSuccessTimeout: () => {
-        if (successTimeoutRef.current !== null) {
-          window.clearTimeout(successTimeoutRef.current);
-          successTimeoutRef.current = null;
-        }
-      },
-      setSuccessTimeout: (callback, delay) => {
-        successTimeoutRef.current = window.setTimeout(callback, delay);
-      },
-    });
-  };
-
-  const handleShowNotes = () => {
-    notesSectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-    window.requestAnimationFrame(() => noteInputRef.current?.focus());
-  };
 
   return createPortal(
     <div
@@ -302,7 +213,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
           {/* Poster Hero Side */}
           <PosterHero
             movie={movie}
-            memoriesCount={memories.length}
             watchStatusLabel={watchStatus.label}
             hasPosterError={hasPosterError}
             onPosterError={() => setHasPosterError(true)}
@@ -312,14 +222,12 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
           <div className="movie-details-modal__content">
             <MetadataHeader
               movie={movie}
-              memoriesCount={memories.length}
               metadataItems={metadataItems}
               watchStatus={watchStatus}
               isWatchedByCurrentUser={isWatchedByCurrentUser}
               isUpdatingWatchStatus={isUpdatingWatchStatus}
               onToggleWatched={onToggleWatched}
               onEdit={onEdit}
-              onShowNotes={handleShowNotes}
             />
 
             {/* Overview / Plot Section */}
@@ -337,42 +245,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 <p className="movie-details-modal__plot">{movie.plot}</p>
               </section>
             )}
-
-            {/* Notes & Memories Section */}
-            <NotesAndMemoriesSection
-              movie={movie}
-              memories={memories}
-              currentUser={currentUser}
-              canManageMemories={canManageMemories}
-              visibleCount={visibleCount}
-              isMobile={isMobile}
-              draftNote={draftNote}
-              isSubmittingMemory={isSubmittingMemory}
-              canSubmitNote={canSubmitNote}
-              remainingChars={remainingChars}
-              submitError={submitError}
-              submitSuccess={submitSuccess}
-              notesSectionRef={notesSectionRef}
-              noteInputRef={noteInputRef}
-              onNoteChange={(nextNote) =>
-                setDraftNote(nextNote.slice(0, MAX_MOVIE_NOTE_LENGTH))
-              }
-              onMemorySubmit={handleMemorySubmit}
-              onShowMore={() => {
-                setVisibleCount((current) =>
-                  Math.min(current + INITIAL_VISIBLE_COUNT, memories.length),
-                );
-              }}
-              onShowLess={() => {
-                setVisibleCount(
-                  Math.min(INITIAL_VISIBLE_COUNT, memories.length),
-                );
-              }}
-              onUpdateMemory={onUpdateMemory}
-              onDeleteMemory={onDeleteMemory}
-              onTogglePin={onTogglePin}
-              onAddMemory={onAddMemory}
-            />
 
             {/* Footer Status Metadata */}
             <footer className="movie-details-modal__footer">

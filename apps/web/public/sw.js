@@ -1,5 +1,5 @@
-/* Electron PWA service worker — app-shell, movie queue & saved memories offline caching strategy */
-const CACHE_VERSION = 'v7';
+/* Electron PWA service worker — app-shell, movie queue & offline caching strategy */
+const CACHE_VERSION = 'v8';
 const STATIC_CACHE = `electron-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `electron-runtime-${CACHE_VERSION}`;
 const DATA_CACHE = `electron-data-${CACHE_VERSION}`;
@@ -21,7 +21,6 @@ const SHELL_ASSETS = [
   '/aaron-avatar.png',
   '/electra-button.png',
   '/pwa-screenshot-queue.svg',
-  '/pwa-screenshot-memories.svg',
   '/opengraph.jpg',
 ];
 

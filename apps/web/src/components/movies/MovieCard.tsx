@@ -1,16 +1,11 @@
 import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 
-
-
-
 import React from "react";
 import type {
   Movie,
-  SharedMemory,
   User,
 } from "@/shared/types";
-
 
 import {
   MediaPoster,
@@ -22,15 +17,10 @@ import {
   Card,
 } from "@/components/ui";
 
-
 import {
   getErrorMessage,
   consoleError,
 } from "@/utils";
-
-
-
-
 
 import {
 MovieTransitionOrigin
@@ -46,11 +36,6 @@ interface MovieCardProps {
     title: string;
     customPosterUrl?: string;
   }) => Promise<void>;
-  memories?: SharedMemory[];
-  onAddMemory?: (note: string) => Promise<void>;
-  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
-  onDeleteMemory?: (memoryId: string) => Promise<void>;
-  onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
   isCompact?: boolean;
   priorityPoster?: boolean;
@@ -64,11 +49,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onToggleError,
   onDelete,
   onEditMetadata,
-  memories = [],
-  onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
-  onTogglePin,
   isHighlighted = false,
   isCompact = false,
   priorityPoster = false,
@@ -221,7 +201,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       <React.Suspense fallback={null}>
         <MovieDetailsModal
           movie={movie}
-          memories={memories}
           isOpen={isDetailsOpen}
           origin={detailsOrigin}
           currentUser={currentUser}
@@ -237,10 +216,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 }
               : undefined
           }
-          onAddMemory={onAddMemory}
-          onUpdateMemory={onUpdateMemory}
-          onDeleteMemory={onDeleteMemory}
-          onTogglePin={onTogglePin}
           onClose={() => setIsDetailsOpen(false)}
         />
       </React.Suspense>

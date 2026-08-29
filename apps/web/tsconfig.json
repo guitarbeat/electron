@@ -22,7 +22,6 @@
       "@/effects/*": ["./src/components/effects/*"],
       "@/hooks/*": ["./src/hooks/*"],
       "@/matchmaker/*": ["./src/components/matchmaker/*"],
-      "@/memories/*": ["./src/components/memories/*"],
       "@/quiz/*": ["./src/components/quiz/*"],
       "@/services/*": ["./src/services/*"],
       "@/shared/*": ["./src/shared/*"],

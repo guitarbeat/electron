@@ -14,7 +14,6 @@ import type {
   MovieSuggestion,
   Place,
   PlaceSuggestion,
-  SharedMemory,
 } from "../../shared/types.ts";
 import type { DailySpinRecord, SpinEntry } from "./stateTypes.ts";
 import {
@@ -149,46 +148,6 @@ export const parseMessagesContent = (
   const parsed = parseJsonContent(content, "messages");
   return normalizeRecordList(parsed, normalizeMessageRecord);
 };
-
-export const cloneMemories = (memories: SharedMemory[]): SharedMemory[] =>
-  memories.map((memory) => ({
-    ...memory,
-  }));
-
-export const normalizeSharedMemoryRecord = (
-  value: unknown,
-): SharedMemory | null => {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const memory = value as Partial<SharedMemory>;
-  const id = normalizeRequiredString(memory.id);
-  const movieTitle = normalizeRequiredString(memory.movieTitle);
-  const author = normalizeRequiredString(memory.author);
-  const note = normalizeRequiredString(memory.note);
-  const createdAt = normalizeRequiredDate(memory.createdAt);
-
-  if (!id || !movieTitle || !author || !note || !createdAt) {
-    return null;
-  }
-
-  return {
-    id,
-    movieId: normalizeOptionalString(memory.movieId),
-    movieTitle,
-    author,
-    note,
-    createdAt,
-    updatedAt: normalizeOptionalDate(memory.updatedAt),
-    isPinned:
-      typeof memory.isPinned === "boolean" ? memory.isPinned : undefined,
-    imageUrl: normalizeOptionalUrl(memory.imageUrl),
-  };
-};
-
-export const normalizeMemories = (value: unknown): SharedMemory[] =>
-  normalizeRecordList(value, normalizeSharedMemoryRecord);
 
 const isSuggestionStatus = (
   value: unknown,

@@ -20,7 +20,6 @@ import { verifyStoredPin } from "./session.js";
 
 import { movieScopeDefinition } from "./stateScopes/movies.js";
 import {
-  memoriesScopeDefinition,
   messagesScopeDefinition,
   placesScopeDefinition,
 } from "./stateScopes/content.js";
@@ -102,7 +101,6 @@ const scopes: {
 } = {
   movies: movieScopeDefinition,
   messages: messagesScopeDefinition,
-  memories: memoriesScopeDefinition,
   places: placesScopeDefinition,
   ...suggestionScopeDefinitions,
   quiz: quizScopeDefinition,

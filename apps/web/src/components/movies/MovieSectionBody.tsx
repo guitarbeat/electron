@@ -3,32 +3,22 @@ import { MovieCard } from "./MovieCard";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
-
-
-
 import React from "react";
 import type {
   Movie,
-  SharedMemory,
   User,
   MovieSuggestion,
 } from "@/shared/types";
-
 
 import {
   CollectionEmptyState,
   MoviesEmptyIllustration,
 } from "@/components/ui";
 
-
 import { spacing } from "@/theme/tokens";
 import {
   getWorkspaceCollectionState,
 } from "@/utils";
-
-
-
-
 
 import { MovieDetailsModal } from "./MovieDetailsModal";
 import {
@@ -45,14 +35,12 @@ interface Props_MovieSectionBody {
   isMobile: boolean;
   processingSuggestionId: string | null;
   successMovieId: string | null;
-  movieMemories: Map<string, SharedMemory[]>;
   onAcceptSuggestion: (s: MovieSuggestion) => void;
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
   posterPlaceCards?: React.ReactNode[];
-  
 }
 
 export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
@@ -63,7 +51,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   isMobile,
   processingSuggestionId,
   successMovieId,
-  movieMemories,
   onAcceptSuggestion,
   onRejectSuggestion,
   onDeleteRequest,
@@ -119,23 +106,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           }}
           onDelete={() => onDeleteRequest(movie)}
           isHighlighted={successMovieId === movie.id}
-          memories={movieMemories.get(movie.id) ?? []}
-          onAddMemory={
-            currentUser
-              ? async (note) => {
-                  await actions.addMemory(movie.id, movie.title, currentUser, note);
-                }
-              : undefined
-          }
-          onUpdateMemory={async (memoryId, note) => {
-            await actions.updateMemory(memoryId, { note });
-          }}
-          onDeleteMemory={async (memoryId) => {
-            await actions.deleteMemory(memoryId);
-          }}
-          onTogglePin={async (memoryId) => {
-            await actions.togglePin(memoryId);
-          }}
           onOpenDetails={(m, origin) => {
             setSelectedMovie(m);
             setSelectedOrigin(origin ?? null);
@@ -196,7 +166,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     currentUser,
     processingSuggestionId,
     successMovieId,
-    movieMemories,
     onAcceptSuggestion,
     onRejectSuggestion,
     posterPlaceCards,
@@ -265,7 +234,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       {selectedMovie && (
         <MovieDetailsModal
           movie={selectedMovie}
-          memories={movieMemories.get(selectedMovie.id) ?? []}
           isOpen={Boolean(selectedMovie)}
           origin={selectedOrigin}
           currentUser={currentUser}
@@ -279,27 +247,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           isWatchedByCurrentUser={Boolean(
             currentUser && selectedMovie.watchedBy.includes(currentUser),
           )}
-          onAddMemory={
-            currentUser
-              ? async (note) => {
-                  await actions.addMemory(
-                    selectedMovie.id,
-                    selectedMovie.title,
-                    currentUser,
-                    note,
-                  );
-                }
-              : undefined
-          }
-          onUpdateMemory={async (memoryId, note) => {
-            await actions.updateMemory(memoryId, { note });
-          }}
-          onDeleteMemory={async (memoryId) => {
-            await actions.deleteMemory(memoryId);
-          }}
-          onTogglePin={async (memoryId) => {
-            await actions.togglePin(memoryId);
-          }}
           onClose={() => setSelectedMovie(null)}
         />
       )}

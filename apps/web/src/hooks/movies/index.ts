@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { trackMetric } from "../../services/analytics/index.ts";
 import type { Movie, MovieSuggestion, User } from "@/shared/types";
 import {
@@ -7,13 +6,6 @@ import {
   MovieMetadata,
   type MovieAutocompleteResult,
 } from "@/services/metadata";
-import {
-  addMemory as addMemoryService,
-  deleteMemory as deleteMemoryService,
-  getMemories,
-  toggleMemoryPin as toggleMemoryPinService,
-  updateMemory as updateMemoryService,
-} from "@/services/content";
 import {
   buildCollectionSections,
   concurrentMap,
@@ -503,7 +495,6 @@ export const useMoviesWorkspace = (
     isPaused = legacyOptions?.isPaused ?? false;
   }
 
-  const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   const moviesState = useMovies(currentUser, isPaused);
@@ -525,23 +516,10 @@ export const useMoviesWorkspace = (
   // UI modal / deletion state
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [successMovieId, setSuccessMovieId] = useState<string | null>(null);
-  const [selectedMovieForNotes, setSelectedMovieForNotes] =
-    useState<Movie | null>(null);
   const [processingSuggestionId, setProcessingSuggestionId] = useState<
     string | null
   >(null);
   const previousMoviesRef = useRef<Movie[] | null>(null);
-
-  // Queries for memories
-  const memoriesQuery = useQuery({
-    queryKey: ["memories"],
-    queryFn: getMemories,
-    staleTime: 30000,
-  });
-  const memories = useMemo(
-    () => memoriesQuery.data ?? [],
-    [memoriesQuery.data],
-  );
 
   const resetRecommendationComposer = useCallback(() => {
     setIsRecommendationComposerOpen(false);
@@ -736,50 +714,6 @@ export const useMoviesWorkspace = (
     });
   }, [movieToDelete, moviesState, showToast]);
 
-  const handleAddMemory = useCallback(
-    async (
-      movieId: string | undefined,
-      movieTitle: string,
-      author: string,
-      note: string,
-    ) => {
-      await addMemoryService(movieId, movieTitle, author, note);
-      await queryClient.invalidateQueries({ queryKey: ["memories"] });
-      showToast({
-        message: `Added memory for "${movieTitle}"`,
-        type: "info",
-      });
-    },
-    [queryClient, showToast],
-  );
-
-  const handleUpdateMemory = useCallback(
-    async (
-      memoryId: string,
-      updates: { note?: string; movieId?: string; movieTitle?: string },
-    ) => {
-      await updateMemoryService(memoryId, updates);
-      await queryClient.invalidateQueries({ queryKey: ["memories"] });
-    },
-    [queryClient],
-  );
-
-  const handleDeleteMemoryRecord = useCallback(
-    async (memoryId: string) => {
-      await deleteMemoryService(memoryId);
-      await queryClient.invalidateQueries({ queryKey: ["memories"] });
-    },
-    [queryClient],
-  );
-
-  const handleToggleMemoryPin = useCallback(
-    async (memoryId: string) => {
-      await toggleMemoryPinService(memoryId);
-      await queryClient.invalidateQueries({ queryKey: ["memories"] });
-    },
-    [queryClient],
-  );
-
   const setToast = useCallback(
     (opts: { message: string; type?: "info" | "success" | "error" }) => {
       showToast({ message: opts.message, type: opts.type ?? "info" });
@@ -848,20 +782,13 @@ export const useMoviesWorkspace = (
     suggestions: suggestionsState.suggestions,
     pendingSuggestions: suggestionsState.pendingSuggestions,
     isSuggestionsLoading: suggestionsState.isLoading,
-    memories,
     isMoviesWorkspaceDegraded: moviesState.isDegraded,
     isMoviesWorkspaceSyncBlocked: moviesState.isSyncBlocked,
     moviesWorkspaceSyncWarning: moviesState.syncWarning,
     retryMoviesWorkspaceSync: moviesState.retrySync,
-    selectedMovieForNotes,
-    setSelectedMovieForNotes,
     handleAddMovie: handleAddAction,
     handleToggleWatched: moviesState.toggleWatched,
     handleDeleteMovie: moviesState.deleteMovie,
-    addMemory: handleAddMemory,
-    updateMemory: handleUpdateMemory,
-    deleteMemoryRecord: handleDeleteMemoryRecord,
-    toggleMemoryPin: handleToggleMemoryPin,
   };
 };
 

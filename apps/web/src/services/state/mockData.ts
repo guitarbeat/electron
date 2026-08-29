@@ -2,7 +2,6 @@ import type {
   Movie,
   MovieSuggestion,
   Message,
-  SharedMemory,
   Place,
   PlaceSuggestion,
   MatchmakerGame,
@@ -127,27 +126,6 @@ export const mockMessages: Message[] = [
     author: "Aaron",
     content: "How about Everything Everywhere? We haven't watched it yet.",
     createdAt: "2024-02-10T19:08:00Z",
-  },
-];
-
-// Mock memories
-export const mockMemories: SharedMemory[] = [
-  {
-    id: "mem-1",
-    movieId: "mock-3",
-    movieTitle: "Spirited Away",
-    author: "Electra",
-    note: "This was our first movie night together! The food in this movie always makes me hungry.",
-    createdAt: "2024-01-10T21:00:00Z",
-    isPinned: true,
-  },
-  {
-    id: "mem-2",
-    movieId: "mock-1",
-    movieTitle: "The Matrix",
-    author: "Aaron",
-    note: "Still can't believe how well this movie holds up after all these years.",
-    createdAt: "2024-01-15T23:00:00Z",
   },
 ];
 
