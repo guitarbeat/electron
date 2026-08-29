@@ -146,6 +146,16 @@ describe("isRateLimited", () => {
     assert.strictEqual(isRateLimited(ip), true, "31st request should be rate limited");
   });
 
+  it("should continue to return true for subsequent requests after rate limit threshold is reached", () => {
+    const ip = "192.0.2.2";
+    for (let i = 0; i < 30; i++) {
+      isRateLimited(ip);
+    }
+    assert.strictEqual(isRateLimited(ip), true, "31st request should be rate limited");
+    assert.strictEqual(isRateLimited(ip), true, "32nd request should also be rate limited");
+    assert.strictEqual(isRateLimited(ip), true, "33rd request should also be rate limited");
+  });
+
   it("should reset count after window expires", (t) => {
     t.mock.timers.enable({ apis: ["Date"] });
     const ip = "192.0.2.3";
@@ -171,6 +181,57 @@ describe("isRateLimited", () => {
     t.mock.timers.setTime(Date.now() + 60001);
 
     assert.strictEqual(isRateLimited("192.168.1.100"), false);
+  });
+
+  it("should stop cleaning expired entries early upon encountering a non-expired entry when capacity limit is reached", (t) => {
+    t.mock.timers.enable({ apis: ["Date"] });
+
+    // Fill first 5000 entries at t=0
+    for (let i = 0; i < 5000; i++) {
+      isRateLimited(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+    }
+
+    // Advance 30 seconds
+    t.mock.timers.setTime(Date.now() + 30000);
+
+    // Fill remaining 5000 entries at t=30000
+    for (let i = 5000; i < 10000; i++) {
+      isRateLimited(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+    }
+
+    // Advance 35 seconds (now t=65000)
+    // First 5000 entries expired (created at t=0, resetTime=60000 < 65000)
+    // Second 5000 entries not expired (created at t=30000, resetTime=90000 > 65000)
+    t.mock.timers.setTime(Date.now() + 35000);
+
+    assert.strictEqual(isRateLimited("192.168.1.50"), false);
+  });
+
+  it("should re-order entry to end of insertion order when an expired entry is accessed again", (t) => {
+    t.mock.timers.enable({ apis: ["Date"] });
+
+    // Insert first IP
+    const firstIp = "10.0.0.1";
+    isRateLimited(firstIp);
+
+    // Fill remaining entries to reach 10000
+    for (let i = 1; i < 10000; i++) {
+      isRateLimited(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+    }
+
+    // Advance time past expiration window (60001ms)
+    t.mock.timers.setTime(Date.now() + 60001);
+
+    // Re-access firstIp so it's reset and moved to the end of insertion order
+    assert.strictEqual(isRateLimited(firstIp), false);
+
+    // Now insert one more new IP without advancing time further
+    // Capacity cleanup should evict the oldest entry (which is now 10.0.0.1+1, not firstIp)
+    const newIp = "192.168.99.99";
+    assert.strictEqual(isRateLimited(newIp), false);
+
+    // Verify firstIp is still tracked and active (count=1, not rate limited)
+    assert.strictEqual(isRateLimited(firstIp), false);
   });
 
   it("should evict oldest entry when MAX_RATE_LIMIT_ENTRIES is reached and none are expired", () => {
