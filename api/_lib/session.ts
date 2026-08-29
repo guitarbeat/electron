@@ -235,8 +235,15 @@ export const requireAccessUser = (req: Request): User | null => {
 };
 
 export const hasAccessSession = (req?: Request): boolean => {
-  void req;
-  return true;
+  if (!req) {
+    return false;
+  }
+  const cookies = parseCookies(req);
+  const profile = verifyToken<ProfileSessionPayload>(
+    cookies[PROFILE_COOKIE],
+    "profile",
+  );
+  return Boolean(profile);
 };
 
 export const requireProfileUser = (req: Request): User | null =>
