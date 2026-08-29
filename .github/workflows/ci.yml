@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
 jobs:
   typecheck-and-lint:
@@ -76,5 +76,5 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build Application
-        run: pnpm run build
+        run: pnpm run build --prefix apps/web
 
