@@ -80,4 +80,25 @@ describe("validateSameOriginRequest", () => {
     const body = await res?.json();
     assert.strictEqual(body.error, "Invalid origin.");
   });
+
+  it("should skip malformed URLs in ALLOWED_ORIGINS and match valid allowed origins", () => {
+    process.env.ALLOWED_ORIGINS = "invalid-url, https://app.example.com";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { origin: "https://app.example.com" },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.strictEqual(res, null);
+  });
+
+  it("should reject requests when ALLOWED_ORIGINS contains only malformed URLs", async () => {
+    process.env.ALLOWED_ORIGINS = "invalid-url-1, invalid-url-2";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { origin: "https://app.example.com" },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.notStrictEqual(res, null);
+    assert.strictEqual(res?.status, 403);
+    const body = await res?.json();
+    assert.strictEqual(body.error, "Origin not allowed.");
+  });
 });
