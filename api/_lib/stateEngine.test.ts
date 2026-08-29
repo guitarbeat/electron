@@ -35,4 +35,32 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
       "Mutation requests must include baseVersion and op.",
     );
   });
+
+  it("returns 400 bad request when parseMutationRequest throws a non-Error value", async () => {
+    const throwingPayload = new Proxy(
+      {},
+      {
+        get(_target, prop) {
+          if (prop === "baseVersion") {
+            throw "Non-error exception string";
+          }
+          return undefined;
+        },
+      },
+    );
+
+    const request = new Request("http://localhost/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    request.json = async () => throwingPayload;
+
+    const handler = createMutateHandler("movies");
+    const response = await handler(request);
+    assert.strictEqual(response.status, 400);
+
+    const body = (await response.json()) as { error: string };
+    assert.strictEqual(body.error, "Invalid mutation request.");
+  });
 });
