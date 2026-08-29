@@ -27,7 +27,7 @@ const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = ({
   activeTab = "movies",
 }) => {
   return (
-    <div className="library-workspace library-workspace--ambient">
+    <div className="library-workspace">
       <LibrarySearch />
       <React.Suspense fallback={null}>
         {activeTab === "places" ? (

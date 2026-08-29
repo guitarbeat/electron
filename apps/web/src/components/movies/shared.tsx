@@ -1,5 +1,3 @@
-import DriftWall from "@/components/ui/DriftWall";
-import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 /* eslint-disable react-refresh/only-export-components */
 import type { GalleryPhoto } from "@/components/ui";
 import {
@@ -402,16 +400,7 @@ export const submitMemory = async (
 };
 
 /* eslint-disable react-refresh/only-export-components */
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { createPortal } from "react-dom";
+import React from "react";
 import type {
   Movie,
   SharedMemory,
@@ -419,83 +408,35 @@ import type {
   MovieSuggestion,
   MoviesViewProps,
 } from "@/shared/types";
+
+
 import {
-  useAutocompleteFocusBoundary,
-  useWorkspaceAutocompleteDismiss,
-  useWorkspaceAutocompleteNavigation,
-  useWorkspaceSearchInputHandle,
-} from "@/components/ui/lib/workspaceListAutocomplete";
-import {
-  SyncBanner,
   StremioButton,
   YoutubeButton,
-  ConfirmDialog,
-  Modal,
-  Input,
-  Textarea,
-  SuggestionCardBase,
-  WorkspaceSearchShell,
-  WorkspaceSearchActions,
-  WorkspaceSearchField,
-  WorkspaceAutocompleteCopy,
-  WorkspaceAutocompleteLoading,
-  WorkspaceAutocompleteOption,
-  WorkspaceAutocompletePanel,
-  WorkspaceAutocompletePoster,
-  WorkspaceAutocompleteStatus,
-  Button,
-  MediaPoster,
-  MediaCardPosterWrap,
-  MediaCardTitle,
-  MediaCardWatcherStack,
-  DriftWallLoading,
-  CollectionEmptyState,
-  MoviesEmptyIllustration,
-  useModalBase,
-  CardTiltShell,
-  CardTiltSheen,
-  MagicToggle,
   CardActionButton,
-  Card,
-  type BentoStatTileConfig,
   type BentoSortChipConfig,
-  type SortOrder,
 } from "@/components/ui";
 import {
   CheckIcon,
   FilmIcon,
   MessageIcon,
-  PlusIcon,
   BookmarkIcon,
   EditIcon,
   PlayIcon,
   StarIcon,
   TvIcon,
 } from "@/common/Icons";
-import { useViewport, useUser, useBentoSlot } from "@/app/providerContexts";
-import { useFeatureFonts, mediaBreakpoints, useMediaQuery } from "@/hooks";
-import { colors, radius, spacing, typography } from "@/theme/tokens";
 import {
   formatMemoryTimestamp,
-  getWorkspaceCollectionState,
-  MAX_MOVIE_TITLE_LENGTH,
-  sanitizeInput,
-  getErrorMessage,
-  consoleError,
   resolvePosterUrl,
 } from "@/utils";
 import {
-  searchMovieAutocomplete,
-  getCachedMovieAutocomplete,
   type MovieAutocompleteResult,
-  fetchOmdbMetadataCached,
 } from "@/services/metadata";
 import {
   MemoryComposer,
   MemoryList,
-  INITIAL_VISIBLE_COUNT,
 } from "@/components/memories/shared";
-import { useMoviesWorkspace } from "@/hooks/movies";
 
 export interface MoviesTopControlsProps {
   currentUser: User | null;

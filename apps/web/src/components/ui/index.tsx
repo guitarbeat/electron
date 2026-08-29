@@ -30,9 +30,6 @@ import {
 } from "./lib/syncBanner";
 import type {
   User,
-  Movie,
-  MovieSuggestion,
-  SharedMemory,
   MainTab,
 } from "@/shared/types";
 import { Spinner, CheckIcon, CrossIcon } from "@/common/Icons";
@@ -60,14 +57,12 @@ import {
   WORKSPACE_SKELETON_KEYS,
 } from "@/utils/workspaceConfig";
 import {
-  getWorkspaceCollectionState,
   consoleError,
   getErrorMessage,
 } from "@/utils";
 import { useViewport } from "@/app/providerContexts";
 import { MoviesEmptyIllustration } from "./EmptyStateIllustrations";
 export { MoviesEmptyIllustration };
-import { MovieCard, SuggestionCard } from "@/components/movies";
 import {
   getStremioUrls,
   type StremioMediaObject,
@@ -75,7 +70,6 @@ import {
   USER_OPTIONS,
   getCatPosterUrl,
 } from "@/utils";
-import type { MovieSections } from "@/components/movies";
 
 interface MediaPosterProps {
   title: string;
@@ -4102,29 +4096,29 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   return createPortal(
     <div
-      className="pin-dialog-overlay"
+      className="fixed inset-0 z-[10100] flex items-center justify-center bg-[#04070D]/78 backdrop-blur-[8px] p-4 animate-in fade-in duration-200"
       onClick={handleOverlayClick}
       role="presentation"
     >
       <section
-        className="pin-dialog-panel"
+        className="w-full max-w-[22rem] p-6 rounded-2xl border border-white/10 bg-[#0f172a] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)] animate-in zoom-in-95 duration-250 outline-none"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pin-dialog-title"
         aria-describedby="pin-dialog-desc"
       >
-        <form ref={formRef} className="pin-dialog-form" onSubmit={handleSubmit}>
+        <form ref={formRef} className="w-full flex flex-col gap-[1.1rem]" onSubmit={handleSubmit}>
           {/* Header */}
-          <div className="pin-dialog-header">
-            <div className="pin-dialog-identity">
-              <div className="pin-dialog-avatar">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="shrink-0 w-10 h-10 rounded-full border-2 border-indigo-500/40 overflow-hidden flex items-center justify-center bg-slate-800 shadow-md">
                 <UserAvatar user={user} />
               </div>
-              <div className="pin-dialog-titles">
-                <h2 id="pin-dialog-title" className="pin-dialog-title">
+              <div className="min-w-0 flex flex-col gap-[0.15rem]">
+                <h2 id="pin-dialog-title" className="m-0 text-[1.05rem] font-bold text-slate-50 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">
                   {title}
                 </h2>
-                <p id="pin-dialog-desc" className="pin-dialog-subtitle">
+                <p id="pin-dialog-desc" className="m-0 text-[0.78rem] text-slate-400 leading-snug">
                   {subtitle}
                 </p>
               </div>
@@ -4132,7 +4126,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
             <button
               type="button"
-              className="pin-dialog-close-btn"
+              className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-700/50 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-600/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
               onClick={onCancel}
               disabled={isLoading}
               aria-label={
@@ -4157,7 +4151,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
           {/* PIN slots */}
           <div
-            className={`pin-dialog-dots${flow.isShaking ? " pin-dialog-dots-shake" : ""}`}
+            className={`flex justify-center gap-3 my-1 ${flow.isShaking ? " animate-[pinShake_0.45s_cubic-bezier(0.36,0.07,0.19,0.97)_both]" : ""}`}
             aria-hidden="true"
           >
             {Array.from({ length: PIN_LENGTH }).map((_, index) => {
@@ -4167,16 +4161,16 @@ export const PinDialog: React.FC<PinDialogProps> = ({
                 <div
                   key={index}
                   className={[
-                    "pin-dialog-dot",
-                    filled ? "pin-dialog-dot-filled" : "",
-                    active ? "pin-dialog-dot-active" : "",
-                    flow.error ? "pin-dialog-dot-error" : "",
+                    "w-11 h-12 rounded-xl border-[1.5px] border-slate-700 bg-slate-800/60 flex items-center justify-center transition-all duration-200 shadow-inner",
+                    filled ? "border-indigo-500/65 bg-indigo-500/20" : "",
+                    active ? "border-indigo-500 bg-indigo-500/10 shadow-[0_0_0_3px_rgba(99,102,241,0.25)] -translate-y-[2px]" : "",
+                    flow.error ? "border-red-500 bg-red-500/15 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
                 >
                   {filled ? (
-                    <span className="pin-dialog-dot-indicator" />
+                    <span className="w-[0.85rem] h-[0.85rem] rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,1)] animate-in zoom-in duration-150" />
                   ) : null}
                 </div>
               );
@@ -4185,9 +4179,9 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
           {/* Error Message */}
           {flow.error ? (
-            <div className="pin-dialog-error-wrap">
+            <div className="flex items-center justify-center gap-[0.4rem] min-h-[1.25rem]">
               <svg
-                className="pin-dialog-error-icon"
+                className="text-red-500 shrink-0"
                 width="14"
                 height="14"
                 viewBox="0 0 24 24"
@@ -4201,16 +4195,16 @@ export const PinDialog: React.FC<PinDialogProps> = ({
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              <p className="pin-dialog-error" role="alert">
+              <p className="m-0 text-[0.8rem] font-medium text-red-500 text-center" role="alert">
                 {flow.error}
               </p>
             </div>
           ) : (
-            <div className="pin-dialog-error-placeholder" aria-hidden="true" />
+            <div className="h-[1.25rem]" aria-hidden="true" />
           )}
 
           {/* Keypad */}
-          <div className="pin-dialog-keypad" role="group" aria-label="Keypad">
+          <div className="grid grid-cols-3 gap-[0.55rem]" role="group" aria-label="Keypad">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, "cancel", 0, "del"].map(
               (num, _index) => {
                 if (num === "cancel") {
@@ -4218,7 +4212,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
                     <button
                       key="cancel"
                       type="button"
-                      className="pin-dialog-key pin-dialog-key-cancel"
+                      className="h-[3.25rem] rounded-xl border border-slate-700 bg-slate-800/75 text-slate-50 flex flex-col items-center justify-center cursor-pointer select-none transition-all duration-150 shadow-[0_2px_6px_rgba(0,0,0,0.2)] hover:bg-indigo-500/15 hover:border-indigo-500/40 hover:-translate-y-[1px] active:scale-95 active:bg-indigo-500/25 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-[0.8rem] font-medium text-slate-400 hover:text-slate-50 hover:bg-slate-600/50"
                       onClick={onCancel}
                       disabled={isLoading}
                       aria-label="Cancel"
@@ -4232,7 +4226,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
                     <button
                       key="del"
                       type="button"
-                      className="pin-dialog-key pin-dialog-key-del"
+                      className="h-[3.25rem] rounded-xl border border-slate-700 bg-slate-800/75 text-slate-50 flex flex-col items-center justify-center cursor-pointer select-none transition-all duration-150 shadow-[0_2px_6px_rgba(0,0,0,0.2)] hover:bg-indigo-500/15 hover:border-indigo-500/40 hover:-translate-y-[1px] active:scale-95 active:bg-indigo-500/25 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-400 hover:text-slate-50"
                       onClick={backspace}
                       aria-label="Delete last digit"
                       disabled={isLoading || flow.digits.length === 0}
@@ -4260,14 +4254,14 @@ export const PinDialog: React.FC<PinDialogProps> = ({
                   <button
                     key={digit}
                     type="button"
-                    className="pin-dialog-key"
+                    className="h-[3.25rem] rounded-xl border border-slate-700 bg-slate-800/75 text-slate-50 flex flex-col items-center justify-center cursor-pointer select-none transition-all duration-150 shadow-[0_2px_6px_rgba(0,0,0,0.2)] hover:bg-indigo-500/15 hover:border-indigo-500/40 hover:-translate-y-[1px] active:scale-95 active:bg-indigo-500/25 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={() => appendDigit(digit)}
                     disabled={isLoading || flow.digits.length >= PIN_LENGTH}
                     aria-label={`${digit} ${letters}`}
                   >
-                    <span className="pin-dialog-key-number">{digit}</span>
+                    <span className="text-[1.25rem] font-semibold leading-none">{digit}</span>
                     {letters ? (
-                      <span className="pin-dialog-key-letters">{letters}</span>
+                      <span className="text-[0.55rem] font-semibold tracking-[0.08em] text-slate-500 mt-[0.15rem] leading-none">{letters}</span>
                     ) : null}
                   </button>
                 );
@@ -4290,7 +4284,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
           />
 
           {needsPinSubmitButton(flow.mode) ? (
-            <div className="pin-dialog-actions">
+            <div className="mt-1">
               <Button
                 type="submit"
                 variant="primary"

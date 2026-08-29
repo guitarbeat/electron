@@ -47,6 +47,7 @@
   flex-direction: column;
   will-change: transform;
   transform-style: preserve-3d;
+  contain: layout paint;
 }
 
 .drift-wall__tile {

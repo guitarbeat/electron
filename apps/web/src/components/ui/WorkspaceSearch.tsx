@@ -117,8 +117,7 @@ export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
   return (
     <div className="workspace-search__stage">
       <form
-        className={cn(
-          "workspace-search__search-form",
+        className={cn("rounded-xl bg-slate-800/80 border border-slate-700/50 shadow-lg transition-all duration-150 hover:border-indigo-500/30 focus-within:border-indigo-500/70 focus-within:bg-slate-800 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.16)]",
           isAutocompleteActive && "is-autocomplete-active",
         )}
         onSubmit={onSubmit}
@@ -133,14 +132,14 @@ export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
           onFocusCapture={onShellFocusCapture}
           onBlurCapture={onShellBlurCapture}
         >
-          <div className="workspace-search__search-icon" aria-hidden="true">
+          <div className="bg-transparent shadow-none transform-none text-slate-400 focus-within:text-indigo-400" aria-hidden="true">
             {icon ?? <SearchFieldLensIcon size={18} />}
           </div>
 
-          <div className="workspace-search__search-input-wrap">{input}</div>
+          <div className="flex-1 min-w-0 relative h-full">{input}</div>
 
           {actions && (
-            <div className="workspace-search__search-actions">{actions}</div>
+            <div className="flex items-center gap-1.5 px-1.5 h-full">{actions}</div>
           )}
         </div>
 
@@ -163,7 +162,7 @@ export const WorkspaceSearchActions: React.FC<{
   children: ReactNode;
   className?: string;
 }> = ({ children, className }) => (
-  <div className={cn("workspace-search__search-actions-cluster", className)}>
+  <div className={cn("flex items-center gap-1.5", className)}>
     {children}
   </div>
 );
@@ -234,7 +233,7 @@ export const WorkspaceSearchField = forwardRef<
     const hasValue = Boolean(value && value.trim().length > 0);
 
     return (
-      <div className="workspace-search__field-container">
+      <div className="relative w-full h-11 flex items-center">
         <input
           ref={handleRef}
           type={type}
@@ -251,7 +250,7 @@ export const WorkspaceSearchField = forwardRef<
           aria-activedescendant={
             combobox ? combobox.activeDescendantId : undefined
           }
-          className={cn("workspace-search__search-field", className)}
+          className={cn("w-full h-full bg-transparent border-none text-slate-50 text-[0.95rem] px-3 focus:outline-none focus:ring-0 placeholder:text-slate-500", className)}
           autoComplete="off"
           spellCheck={false}
           {...rest}
@@ -261,7 +260,7 @@ export const WorkspaceSearchField = forwardRef<
           <button
             type="button"
             tabIndex={-1}
-            className="workspace-search__clear-btn"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 bg-transparent hover:bg-slate-700/50 hover:text-slate-200 transition-colors cursor-pointer"
             onClick={handleClearClick}
             aria-label={clearButtonAriaLabel}
             title={clearButtonAriaLabel}
@@ -307,10 +306,10 @@ export const WorkspaceAutocompletePanel = forwardRef<
         ref={ref}
         role="listbox"
         aria-label={ariaLabel || ariaLabelProp}
-        className={cn("workspace-search__autocomplete is-open", className)}
+        className={cn("absolute top-[calc(100%+0.5rem)] left-0 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-[100] transform transition-all duration-200 opacity-100 translate-y-0", className)}
         {...rest}
       >
-        <div className="workspace-search__autocomplete-inner">{children}</div>
+        <div className="max-h-[28rem] overflow-y-auto overscroll-contain flex flex-col p-1.5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">{children}</div>
       </div>
     );
   },
@@ -319,16 +318,16 @@ WorkspaceAutocompletePanel.displayName = "WorkspaceAutocompletePanel";
 
 export const WorkspaceAutocompleteLoading: React.FC = () => (
   <div
-    className="workspace-search__autocomplete-loading"
+    className="p-6 flex flex-col items-center justify-center gap-3 text-slate-400"
     role="status"
     aria-label="Searching catalog..."
   >
-    <div className="workspace-search__loading-dots">
-      <span className="workspace-search__autocomplete-loading-dot" />
-      <span className="workspace-search__autocomplete-loading-dot" />
-      <span className="workspace-search__autocomplete-loading-dot" />
+    <div className="flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
+      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
+      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
     </div>
-    <span className="workspace-search__loading-label">
+    <span className="text-xs font-medium tracking-wide uppercase text-slate-500">
       Searching catalog...
     </span>
   </div>
@@ -343,14 +342,13 @@ export const WorkspaceAutocompleteStatus: React.FC<
   WorkspaceAutocompleteStatusProps
 > = ({ children, role = "status" }) => (
   <div
-    className={cn(
-      "workspace-search__autocomplete-status",
+    className={cn("p-4 text-center text-sm text-slate-400",
       role === "alert" && "is-error",
     )}
     role={role}
   >
     {role === "alert" && (
-      <span className="workspace-search__status-dot" aria-hidden="true" />
+      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" aria-hidden="true" />
     )}
     <span>{children}</span>
   </div>
@@ -373,8 +371,8 @@ export const WorkspaceAutocompleteOption: React.FC<
     role="option"
     aria-selected={isActive}
     className={cn(
-      "workspace-search__autocomplete-option",
-      isActive && "is-active",
+      "w-full flex items-center gap-3 p-2 rounded-lg text-left cursor-pointer transition-all duration-150 select-none",
+      isActive && "bg-slate-800/80 shadow-sm border border-white/5",
     )}
     onPointerDown={(event) => {
       event.preventDefault();
@@ -394,10 +392,10 @@ export interface WorkspaceAutocompleteCopyProps {
 export const WorkspaceAutocompleteCopy: React.FC<
   WorkspaceAutocompleteCopyProps
 > = ({ title, meta }) => (
-  <span className="workspace-search__autocomplete-copy">
-    <span className="workspace-search__autocomplete-title">{title}</span>
+  <span className="flex flex-col min-w-0 flex-1 gap-0.5">
+    <span className="text-[0.925rem] font-medium text-slate-100 truncate">{title}</span>
     {meta ? (
-      <span className="workspace-search__autocomplete-meta">{meta}</span>
+      <span className="text-xs text-slate-400 truncate">{meta}</span>
     ) : null}
   </span>
 );
@@ -417,7 +415,7 @@ export const WorkspaceAutocompletePosterImage: React.FC<{
   if (failed) {
     return (
       <span
-        className="workspace-search__autocomplete-poster-fallback"
+        className="w-full h-full bg-slate-800 flex items-center justify-center text-[0.6rem] text-slate-500 uppercase font-semibold tracking-wider"
         aria-hidden
       >
         {fallbackLetter}
@@ -446,7 +444,7 @@ export const WorkspaceAutocompletePoster: React.FC<
 > = ({ src, fallbackLetter }) => {
   const activeSrc = resolvePosterUrl(src, fallbackLetter);
   return (
-    <span className="workspace-search__autocomplete-poster">
+    <span className="w-10 h-14 rounded-md overflow-hidden shrink-0 bg-slate-800 relative shadow-sm border border-white/5">
       <WorkspaceAutocompletePosterImage
         key={activeSrc}
         src={activeSrc}
@@ -463,8 +461,8 @@ export interface WorkspaceAutocompleteGroupProps {
 export const WorkspaceAutocompleteGroup: React.FC<
   WorkspaceAutocompleteGroupProps
 > = ({ children }) => (
-  <div className="workspace-search__autocomplete-group" role="presentation">
-    <span className="workspace-search__autocomplete-group-text">
+  <div className="px-2 pt-3 pb-1.5" role="presentation">
+    <span className="text-[0.65rem] font-bold tracking-wider text-slate-500 uppercase">
       {children}
     </span>
   </div>
@@ -477,9 +475,9 @@ export interface WorkspaceAutocompleteNoMatchPanelProps {
 export const WorkspaceAutocompleteNoMatchPanel: React.FC<
   WorkspaceAutocompleteNoMatchPanelProps
 > = ({ children }) => (
-  <div className="workspace-search__autocomplete is-open" role="status">
-    <div className="workspace-search__autocomplete-inner">
-      <p className="workspace-search__autocomplete-status">{children}</p>
+  <div className="absolute top-[calc(100%+0.5rem)] left-0 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-[100] transform transition-all duration-200 opacity-100 translate-y-0" role="status">
+    <div className="max-h-[28rem] overflow-y-auto overscroll-contain flex flex-col p-1.5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+      <p className="p-4 text-center text-sm text-slate-400">{children}</p>
     </div>
   </div>
 );

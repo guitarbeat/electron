@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import unusedImports from 'eslint-plugin-unused-imports';
 
 const [reactHooksRecommended] = reactHooks.configs['flat/recommended'];
 
@@ -35,6 +36,7 @@ export default tseslint.config(
     plugins: {
       ...reactHooksRecommended.plugins,
       'react-refresh': reactRefresh,
+      'unused-imports': unusedImports,
     },
     rules: {
       ...reactHooksRecommended.rules,
@@ -43,10 +45,9 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       'react/prop-types': 'off', // Not needed with TS
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'warn',
+      'unused-imports/no-unused-vars': ['warn', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },

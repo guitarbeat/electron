@@ -2,157 +2,37 @@ import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
-import type { GalleryPhoto } from "@/components/ui";
-import {
-  buildCollectionSections,
-  compareCreatedAtDesc,
-  compareStringsAlpha,
-  type CollectionSections,
-} from "@/utils/shared";
-import {
-  getListEnterSelectionIndex,
-  getNextListIndex,
-} from "@/components/ui/lib/workspaceListAutocomplete";
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { createPortal } from "react-dom";
+
+
+
+
+import React from "react";
 import type {
   Movie,
   SharedMemory,
   User,
   MovieSuggestion,
-  MoviesViewProps,
 } from "@/shared/types";
-import {
-  useAutocompleteFocusBoundary,
-  useWorkspaceAutocompleteDismiss,
-  useWorkspaceAutocompleteNavigation,
-  useWorkspaceSearchInputHandle,
-} from "@/components/ui/lib/workspaceListAutocomplete";
-import {
-  SyncBanner,
-  StremioButton,
-  YoutubeButton,
-  ConfirmDialog,
-  Modal,
-  Input,
-  Textarea,
-  SuggestionCardBase,
-  WorkspaceSearchShell,
-  WorkspaceSearchActions,
-  WorkspaceSearchField,
-  WorkspaceAutocompleteCopy,
-  WorkspaceAutocompleteLoading,
-  WorkspaceAutocompleteOption,
-  WorkspaceAutocompletePanel,
-  WorkspaceAutocompletePoster,
-  WorkspaceAutocompleteStatus,
-  Button,
-  MediaPoster,
-  MediaCardPosterWrap,
-  MediaCardTitle,
-  MediaCardWatcherStack,
-  DriftWallLoading,
-  CollectionEmptyState,
-  MoviesEmptyIllustration,
-  useModalBase,
-  CardTiltShell,
-  CardTiltSheen,
-  MagicToggle,
-  CardActionButton,
-  Card,
-  type BentoStatTileConfig,
-  type BentoSortChipConfig,
-  type SortOrder,
-} from "@/components/ui";
-import {
-  CheckIcon,
-  FilmIcon,
-  MessageIcon,
-  PlusIcon,
-  BookmarkIcon,
-  EditIcon,
-  PlayIcon,
-  StarIcon,
-  TvIcon,
-} from "@/common/Icons";
-import { useViewport, useUser, useBentoSlot } from "@/app/providerContexts";
-import { useFeatureFonts, mediaBreakpoints, useMediaQuery } from "@/hooks";
-import { colors, radius, spacing, typography } from "@/theme/tokens";
-import {
-  formatMemoryTimestamp,
-  getWorkspaceCollectionState,
-  MAX_MOVIE_TITLE_LENGTH,
-  sanitizeInput,
-  getErrorMessage,
-  consoleError,
-} from "@/utils";
-import {
-  searchMovieAutocomplete,
-  getCachedMovieAutocomplete,
-  type MovieAutocompleteResult,
-  fetchOmdbMetadataCached,
-} from "@/services/metadata";
-import {
-  MemoryComposer,
-  MemoryList,
-  INITIAL_VISIBLE_COUNT,
-} from "@/components/memories/shared";
-import { useMoviesWorkspace } from "@/hooks/movies";
+
 
 import {
-buildGalleryPhotos,
-MAX_MOVIE_NOTE_LENGTH,
-MAX_RECOMMENDATION_REASON_LENGTH,
-MAX_GUEST_SUGGESTER_NAME_LENGTH,
-MovieActionState,
-getMovieActionState,
-MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH,
-MOVIE_AUTOCOMPLETE_DEBOUNCE_MS,
-normalizeMovieAutocompleteQuery,
-shouldFetchMovieAutocomplete,
-shouldClearSelectedMovieResult,
-hasStoredMovieAutocompleteFeedback,
-getMovieAutocompleteEnterSelectionIndex,
-getNextMovieAutocompleteIndex,
-MovieBrowseLayout,
-MOVIE_SCROLL_DECK_MAX_DESKTOP,
-MOVIE_SCROLL_DECK_MAX_MOBILE,
-movieScrollDeckMax,
-shouldUseMovieScrollDeck,
-MOVIE_BROWSE_LAYOUTS,
-readMovieBrowseLayout,
-writeMovieBrowseLayout,
-clampMovieTransitionOrigin,
-getMovieDialogMetrics,
-getMovieWatchStatus,
-getMovieNotePreview,
-getSecondaryMovieMemories,
-MovieSortOrder,
+  CollectionEmptyState,
+  MoviesEmptyIllustration,
+} from "@/components/ui";
+
+
+import { spacing } from "@/theme/tokens";
+import {
+  getWorkspaceCollectionState,
+} from "@/utils";
+
+
+
+
+
+import {
 MovieSections,
-getAllMovies,
-buildMovieSections,
-MediaTypeFilter,
-isTvSeries,
-getMediaType,
-filterMoviesByMediaType,
-submitMemory,
-MOVIE_SECTION_IDS,
-MOVIE_SORTS,
-PosterHero,
-MetadataHeader,
-SummaryBand,
-NotesAndMemoriesSection,
-MovieTransitionOrigin,
-MovieBodyActions,
-MovieSectionIds
+MovieBodyActions
 } from "./shared";
 
 interface Props_MovieSectionBody {
@@ -170,7 +50,7 @@ interface Props_MovieSectionBody {
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
   posterPlaceCards?: React.ReactNode[];
-  isInteractionStatic?: boolean;
+  
 }
 
 export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
@@ -188,7 +68,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onToggleError,
   actions,
   posterPlaceCards = [],
-  isInteractionStatic = false,
+  
 }) => {
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
@@ -232,7 +112,7 @@ const renderMovie = (movie: Movie) => {
         }}
       />
     );
-    return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as any);
+    return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
   };
 
 

@@ -58,7 +58,7 @@ const DEFAULT_ITEMS: DriftWallItem[] = Array.from({ length: 15 }, (_, i) => {
   };
 });
 
-const GLOBAL_DRIFT_START = Date.now();
+
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
@@ -162,11 +162,11 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       col.forEach((item) => {
         let hr = 1;
         if (React.isValidElement(item)) {
-          if (item.props && 'data-height-ratio' in (item.props as any)) {
-            hr = Number((item.props as any)['data-height-ratio']) || 1;
+          if (item.props && 'data-height-ratio' in (item.props as Record<string, unknown>)) {
+            hr = Number((item.props as Record<string, unknown>)['data-height-ratio']) || 1;
           }
-        } else if (item && typeof item === "object" && 'heightRatio' in (item as any)) {
-          hr = Number((item as any).heightRatio) || 1;
+        } else if (item && typeof item === "object" && 'heightRatio' in (item as Record<string, unknown>)) {
+          hr = Number((item as Record<string, unknown>).heightRatio) || 1;
         }
         colHeight += (tileHeight * hr) + gap;
       });
@@ -542,11 +542,11 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         
       let hr = 1;
       if (React.isValidElement(item)) {
-        if (item.props && 'data-height-ratio' in (item.props as any)) {
-          hr = Number((item.props as any)['data-height-ratio']) || 1;
+        if (item.props && 'data-height-ratio' in (item.props as Record<string, unknown>)) {
+          hr = Number((item.props as Record<string, unknown>)['data-height-ratio']) || 1;
         }
-      } else if (item && typeof item === "object" && 'heightRatio' in (item as any)) {
-        hr = Number((item as any).heightRatio) || 1;
+      } else if (item && typeof item === "object" && 'heightRatio' in (item as Record<string, unknown>)) {
+        hr = Number((item as Record<string, unknown>).heightRatio) || 1;
       }
 
       return (
