@@ -83,7 +83,7 @@ const isRateLimited = (ip: string): boolean => {
   return false;
 };
 
-const validateSameOriginRequest = (req: Request): Response | null => {
+export const validateSameOriginRequest = (req: Request): Response | null => {
   const origin = req.headers.get("origin") || req.headers.get("referer");
   const secFetchSite = req.headers.get("sec-fetch-site");
 
