@@ -4097,12 +4097,12 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[10100] flex items-center justify-center bg-[#04070D]/78 backdrop-blur-[8px] p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[10100] flex items-end justify-end p-3 sm:p-5 bg-black/25 backdrop-blur-[3px] animate-in fade-in duration-200"
       onClick={handleOverlayClick}
       role="presentation"
     >
       <section
-        className="w-full max-w-[22rem] p-6 rounded-2xl border border-white/10 bg-[#0f172a] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)] animate-in zoom-in-95 duration-250 outline-none"
+        className="w-full max-w-[21.5rem] mb-16 sm:mb-20 mr-1 sm:mr-3 p-5 rounded-3xl border border-white/15 bg-slate-950/90 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-8 duration-250 outline-none"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pin-dialog-title"
@@ -4112,7 +4112,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="shrink-0 w-10 h-10 rounded-full border-2 border-indigo-500/40 overflow-hidden flex items-center justify-center bg-slate-800 shadow-md">
+              <div className="pin-dialog-avatar-wrap shrink-0 w-11 h-11 overflow-visible flex items-center justify-center bg-transparent">
                 <UserAvatar user={user} />
               </div>
               <div className="min-w-0 flex flex-col gap-[0.15rem]">
@@ -4127,7 +4127,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
             <button
               type="button"
-              className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-700/50 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-600/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-800/60 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-700/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
               onClick={onCancel}
               disabled={isLoading}
               aria-label={

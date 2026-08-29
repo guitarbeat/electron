@@ -144,7 +144,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           </section>
         ) : null}
 
-        {/* Floating Quick Controls Cluster (Profile Logins + Chat Bubble) */}
+        {/* Floating Quick Controls (Profile Logins + Chat Bubble) */}
         <div
           className="floating-dock-cluster"
           role="region"
@@ -153,7 +153,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           <div className="floating-dock-cluster__profiles">
             <ProfileMenu />
           </div>
-          <div className="floating-dock-cluster__divider" aria-hidden="true" />
           <button
             type="button"
             className={`chat-fab${isChatOpen ? " is-open" : ""}`}
