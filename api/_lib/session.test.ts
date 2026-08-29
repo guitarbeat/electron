@@ -74,6 +74,17 @@ describe("verifyStoredPin and hashPin", () => {
         false,
       );
     });
+
+    it("should return false when salt/hash are empty or hash length is mismatched", () => {
+      assert.strictEqual(verifyStoredPin("1234", "pbkdf2:100000::"), false);
+      assert.strictEqual(
+        verifyStoredPin(
+          "1234",
+          "pbkdf2:100000:00112233445566778899aabbccddeeff:00112233",
+        ),
+        false,
+      );
+    });
   });
 });
 
