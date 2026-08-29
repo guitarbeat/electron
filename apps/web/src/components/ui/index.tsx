@@ -4541,3 +4541,7 @@ export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({
     {children ?? label}
   </span>
 );
+
+export { PageFlip } from "./PageFlip";
+export type { PageFlipProps, PageFlipLeaf, PageFlipEase } from "./PageFlip";
+
