@@ -69,6 +69,8 @@
   flex: 0 0 auto;
   outline: none;
   transform-style: preserve-3d;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
   background: transparent;
   border: none;
   padding: 0;
@@ -149,6 +151,8 @@
   transform-style: preserve-3d;
   opacity: 1;
   contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.4s step-start;
   z-index: 1;
 }

@@ -123,23 +123,22 @@ test("percentage rounding always totals exactly 100", () => {
   );
 });
 
-test.skip("saves, reads, and clears in-progress quiz progress using local storage mock", () => {
-  const store = new Map<string, string>();
-  const mockStorage = {
+test("saves, reads, and clears in-progress quiz progress using local storage mock", () => {
+  const localStore = new Map<string, string>();
+  const sessionStore = new Map<string, string>();
+
+  const createMockStorage = (store: Map<string, string>) => ({
     getItem: (key: string) => store.get(key) ?? null,
     setItem: (key: string, value: string) => store.set(key, value),
-    removeItem: (key: string) => {
-      console.log("removeItem called with", key);
-      return store.delete(key);
-    },
+    removeItem: (key: string) => store.delete(key),
     clear: () => store.clear(),
-  };
+  });
 
   const originalWindow = globalThis.window;
-  // @ts-expecting-error mocking window in node test
+  // @ts-expect-error mocking window in node test
   globalThis.window = {
-    localStorage: mockStorage,
-    sessionStorage: mockStorage,
+    localStorage: createMockStorage(localStore),
+    sessionStorage: createMockStorage(sessionStore),
   };
 
   try {
@@ -158,10 +157,11 @@ test.skip("saves, reads, and clears in-progress quiz progress using local storag
 
     const invalidSig = readSavedQuizProgress(storageKey, "wrong-signature");
     assert.equal(invalidSig, null);
-    console.log("invalidSig", invalidSig);
 
     writeSavedQuizProgress(storageKey, sampleProgress);
     clearSavedQuizProgress(storageKey);
+    const cleared = readSavedQuizProgress(storageKey, signature);
+    assert.equal(cleared, null);
   } finally {
     globalThis.window = originalWindow;
   }

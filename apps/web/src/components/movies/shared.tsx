@@ -490,9 +490,9 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
           role="list"
           aria-label="Movie specs"
         >
-          {metadataItems.map((item) => (
+          {metadataItems.map((item, index) => (
             <span
-              key={item}
+              key={`${item}-${index}`}
               className="movie-details-modal__fact-pill"
               role="listitem"
             >
