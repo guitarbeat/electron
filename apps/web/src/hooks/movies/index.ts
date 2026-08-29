@@ -17,6 +17,7 @@ import {
 import {
   buildCollectionSections,
   concurrentMap,
+  findMovieByNormalizedTitle,
   getWorkspaceCollectionState,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
@@ -162,6 +163,10 @@ export const useMovies = (
       }
 
       const cleanTitle = validateMovieTitle(title);
+
+      if (findMovieByNormalizedTitle(movies, cleanTitle)) {
+        throw new Error(`"${cleanTitle}" is already in your movie list.`);
+      }
 
       const newMovie: Movie = {
         id: crypto.randomUUID(),

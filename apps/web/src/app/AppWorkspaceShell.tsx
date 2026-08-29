@@ -6,7 +6,7 @@ import {
   WorkspaceTabFallback,
   ProfileMenu,
 } from "@/components/ui";
-import { BentoSlotContext } from "@/app/providerContexts";
+import { BentoSlotContext, useUser } from "@/app/providerContexts";
 import type { RegisteredBentoSlotConfig } from "@/app/providerContexts";
 import { isLibraryWorkspaceTab } from "@/utils/workspaceConfig";
 
@@ -55,6 +55,10 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     <LibraryWorkspace activeTab={activeTab} />
   ) : (
     <MessageBoard />
+  );
+  const { currentUser, activeUsers } = useUser();
+  const isLoggedIn = Boolean(
+    currentUser || (activeUsers && activeUsers.length > 0),
   );
   const isChatOpen = openPanels.has("messages");
   const hasInlinePanels = openPanels.has("spin");
@@ -123,7 +127,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
 
         {/* Floating Chat Panel Dock */}
-        {isChatOpen ? (
+        {isLoggedIn && isChatOpen ? (
           <section
             id="floating-chat-panel"
             className="chat-dock"
@@ -153,18 +157,20 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           <div className="floating-dock-cluster__profiles">
             <ProfileMenu />
           </div>
-          <button
-            type="button"
-            className={`chat-fab${isChatOpen ? " is-open" : ""}`}
-            onPointerEnter={() => void import("@/components/messages")}
-            onFocus={() => void import("@/components/messages")}
-            onClick={() => onTogglePanel("messages")}
-            aria-label={isChatOpen ? "Close chat" : "Open chat"}
-            aria-expanded={isChatOpen}
-            aria-controls="floating-chat-panel"
-          >
-            <MessageIcon size={24} />
-          </button>
+          {isLoggedIn ? (
+            <button
+              type="button"
+              className={`chat-fab${isChatOpen ? " is-open" : ""}`}
+              onPointerEnter={() => void import("@/components/messages")}
+              onFocus={() => void import("@/components/messages")}
+              onClick={() => onTogglePanel("messages")}
+              aria-label={isChatOpen ? "Close chat" : "Open chat"}
+              aria-expanded={isChatOpen}
+              aria-controls="floating-chat-panel"
+            >
+              <MessageIcon size={24} />
+            </button>
+          ) : null}
         </div>
       </main>
     </BentoSlotContext.Provider>
