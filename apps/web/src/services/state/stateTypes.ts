@@ -111,6 +111,7 @@ export interface ScopeOutbox {
 export interface SessionState {
   hasAccess: boolean;
   currentUser: User | null;
+  activeUsers?: User[];
   pinProtectedUsers: User[];
   usersMissingPins: User[];
 }

@@ -22,11 +22,12 @@ interface LibraryWorkspaceProps {
 }
 
 const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = () => {
-  const { currentUser } = useUser();
+  const { currentUser, activeUsers } = useUser();
+  const hasLoggedInUser = Boolean(currentUser || (activeUsers && activeUsers.length > 0));
 
   return (
-    <div className={`library-workspace${currentUser ? " has-search" : ""}`}>
-      {currentUser && <LibrarySearch />}
+    <div className={`library-workspace${hasLoggedInUser ? " has-search" : ""}`}>
+      {hasLoggedInUser && <LibrarySearch />}
       <React.Suspense fallback={null}>
         <UnifiedLibrary isInteractionStatic={false} />
       </React.Suspense>

@@ -2888,35 +2888,43 @@
 .floating-dock-cluster .profiles-switcher-row {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.65rem;
 }
 
 .floating-dock-cluster .profile-switcher-btn {
-  width: 44px;
-  height: 44px;
-  min-height: 44px;
-  min-width: 44px;
-  padding: 2px;
-  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+}
+
+.floating-dock-cluster .profile-switcher-face-wrap,
+.floating-dock-cluster .profile-switcher-avatar-wrap {
+  position: relative;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.floating-dock-cluster .profile-switcher-avatar-wrap {
-  position: relative;
-  top: 0;
-  left: 0;
-  width: 38px;
-  height: 38px;
-}
-
 .floating-dock-cluster .profile-switcher-avatar,
 .floating-dock-cluster .profile-switcher-avatar .app-header__option-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 9999px;
-  overflow: hidden;
+  border-radius: 0;
+  overflow: visible;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .floating-dock-cluster .profile-switcher-name {
@@ -3091,31 +3099,27 @@
   }
 
   .floating-dock-cluster .profile-switcher-btn {
-    width: 38px;
-    height: 38px;
-    min-height: 38px;
-    min-width: 38px;
-    padding: 2px;
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
   }
 
+  .floating-dock-cluster .profile-switcher-face-wrap,
   .floating-dock-cluster .profile-switcher-avatar-wrap {
-    position: relative;
-    top: 0;
-    left: 0;
-    width: 34px;
-    height: 34px;
+    overflow: visible;
+    border-radius: 0;
+    background: transparent;
+    border: none;
   }
 
   .floating-dock-cluster .profile-switcher-avatar,
   .floating-dock-cluster .profile-switcher-avatar .app-header__option-avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 9999px;
-    overflow: hidden;
+    border-radius: 0;
+    overflow: visible;
+    border: none;
+    background: transparent;
   }
 
   .floating-dock-cluster .profile-switcher-name {
@@ -3921,89 +3925,124 @@
 
 .profile-switcher-btn {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 2px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1.5px solid var(--color-border);
-  border-radius: 9999px;
-  color: var(--color-text-secondary);
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0 4px;
   cursor: pointer;
   position: relative;
-  overflow: visible;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(8px);
+  overflow: visible !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease, opacity 0.3s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.profile-switcher-btn:hover:not(:disabled) {
-  background: rgba(30, 41, 59, 0.85);
-  border-color: color-mix(in srgb, var(--color-accent) 60%, var(--color-border));
-  color: var(--color-text-primary);
-  transform: translateY(-2px) scale(1.05);
-}
-
-.profile-switcher-btn.is-active {
-  background: color-mix(in srgb, var(--color-accent) 20%, rgba(15, 23, 42, 0.9));
-  border-color: var(--color-accent);
-  color: var(--color-text-primary);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 40%, transparent);
-}
-
+.profile-switcher-face-wrap,
 .profile-switcher-avatar-wrap {
   position: relative;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.profile-switcher-avatar {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 9999px;
-  overflow: hidden;
+.profile-switcher-face-wrap img,
+.profile-switcher-avatar-wrap img,
+.profile-switcher-avatar,
+.profile-switcher-avatar .app-header__option-avatar,
+.profile-switcher-face-wrap .app-header__avatar-image {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  object-fit: contain !important;
+  pointer-events: none;
+  transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease, opacity 0.3s ease;
 }
 
-.profile-switcher-avatar .app-header__option-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 9999px;
-  border-width: 1px;
+/* Specific pixel-art rendering for Aaron */
+.profile-switcher-btn--aaron img {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* SHRUNK STATE (Logged out) */
+.profile-switcher-btn.is-logged-out {
+  opacity: 0.55;
+  transform: scale(0.88);
+}
+
+.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap,
+.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap img,
+.profile-switcher-btn.is-logged-out .profile-switcher-avatar-wrap,
+.profile-switcher-btn.is-logged-out .app-header__avatar-image {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5)) grayscale(0.25);
+}
+
+.profile-switcher-btn.is-logged-out:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: scale(0.98) translateY(-2px);
+}
+
+.profile-switcher-btn.is-logged-out:hover:not(:disabled) img {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7)) grayscale(0);
+}
+
+/* EXPANDED STATE (Logged in) */
+.profile-switcher-btn.is-logged-in,
+.profile-switcher-btn.is-active {
+  opacity: 1;
+  transform: scale(1.22);
+  z-index: 10;
+}
+
+.profile-switcher-btn.is-logged-in .profile-switcher-face-wrap,
+.profile-switcher-btn.is-logged-in .profile-switcher-face-wrap img,
+.profile-switcher-btn.is-logged-in .profile-switcher-avatar-wrap,
+.profile-switcher-btn.is-logged-in .app-header__avatar-image,
+.profile-switcher-btn.is-active .profile-switcher-face-wrap,
+.profile-switcher-btn.is-active .profile-switcher-face-wrap img,
+.profile-switcher-btn.is-active .profile-switcher-avatar-wrap,
+.profile-switcher-btn.is-active .app-header__avatar-image {
+  width: 60px;
+  height: 60px;
+}
+
+/* Aaron Character Glow when Logged In */
+.profile-switcher-btn--aaron.is-logged-in img,
+.profile-switcher-btn--aaron.is-active img {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7))
+         drop-shadow(0 0 14px rgba(56, 189, 248, 0.65))
+         drop-shadow(0 0 24px rgba(14, 165, 233, 0.35));
+}
+
+/* Electra Character Glow when Logged In */
+.profile-switcher-btn--electra.is-logged-in img,
+.profile-switcher-btn--electra.is-active img {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7))
+         drop-shadow(0 0 14px rgba(244, 114, 182, 0.65))
+         drop-shadow(0 0 24px rgba(236, 72, 153, 0.35));
+}
+
+.profile-switcher-btn.is-logged-in:hover:not(:disabled),
+.profile-switcher-btn.is-active:hover:not(:disabled) {
+  transform: scale(1.28) translateY(-2px);
 }
 
 .profile-switcher-name {
   display: none !important;
-}
-
-.profile-switcher-lock {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-tertiary);
-}
-
-.profile-switcher-indicator {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 4px #10b981;
 }
 
 /* Settings trigger button & popover */

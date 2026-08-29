@@ -596,6 +596,7 @@ export const GearIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
 export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   const {
     currentUser,
+    activeUsers,
     isDisabled,
     isSavingPin,
     selectionError,
@@ -603,6 +604,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
     userNeedsPin,
     selectProfile,
     handleLogout,
+    handleLogoutUser,
     openPinSettings,
     clearSelectionError,
   } = useProfileSelection();
@@ -653,8 +655,10 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   }, [isSettingsOpen, toggleSettings]);
 
   const handleProfileClick = (profile: User) => {
-    if (currentUser === profile) {
-      toggleSettings(!isSettingsOpen);
+    const isProfileLoggedIn = (activeUsers || []).includes(profile);
+    if (isProfileLoggedIn) {
+      handleLogoutUser(profile);
+      toggleSettings(false);
       return;
     }
     selectProfile(profile);
@@ -671,6 +675,8 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
     toggleSettings(false);
   };
 
+  const activeProfile = currentUser || (activeUsers && activeUsers.length > 0 ? activeUsers[0] : null);
+
   return (
     <div className="inline-profiles-container">
       {/* Profiles Switcher Row */}
@@ -680,33 +686,25 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
         aria-label="Switch profile"
       >
         {([...USER_OPTIONS] as User[]).map((profile) => {
-          const isActive = currentUser === profile;
+          const isProfileLoggedIn = (activeUsers || []).includes(profile);
           const hasPin = userHasPin(profile);
           return (
             <button
               key={profile}
               type="button"
-              className={`profile-switcher-btn${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
+              className={`profile-switcher-btn profile-switcher-btn--${profile.toLowerCase()}${isProfileLoggedIn ? " is-active is-logged-in" : " is-logged-out"}`}
               onClick={() => handleProfileClick(profile)}
               disabled={isDisabled}
               aria-label={
-                isActive
-                  ? `${profile} (active profile)`
+                isProfileLoggedIn
+                  ? `${profile} (logged in, click to log out)`
                   : hasPin
-                    ? `Switch to ${profile} (PIN protected)`
-                    : `Switch to ${profile}`
+                    ? `Log in as ${profile} (PIN protected)`
+                    : `Log in as ${profile}`
               }
             >
-              <div className="profile-switcher-avatar-wrap">
-                <span className="profile-switcher-avatar">
-                  <UserAvatar user={profile} />
-                </span>
-                {hasPin && (
-                  <span className="profile-switcher-lock">
-                    <LockIcon size={10} />
-                  </span>
-                )}
-                {isActive && <span className="profile-switcher-indicator" />}
+              <div className="profile-switcher-face-wrap">
+                <UserAvatar user={profile} />
               </div>
               <span className="profile-switcher-name sr-only">{profile}</span>
             </button>
@@ -714,7 +712,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
         })}
 
         {/* Settings/Logout Cog Trigger (only when a user is logged in) */}
-        {currentUser && (
+        {activeProfile && (
           <div className="profile-settings-dropdown-wrap">
             <button
               ref={triggerRef}
@@ -743,7 +741,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                 >
                   <div className="profile-settings-header">
                     <span className="profile-settings-title">
-                      {currentUser}
+                      {activeProfile}
                     </span>
                     <span className="profile-settings-subtitle">
                       Profile Options
@@ -760,9 +758,9 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                     >
                       <LockIcon size={14} />
                       <span>
-                        {userNeedsPin(currentUser)
+                        {activeProfile && userNeedsPin(activeProfile)
                           ? "Finish PIN Setup"
-                          : userHasPin(currentUser)
+                          : activeProfile && userHasPin(activeProfile)
                             ? "Change Security PIN"
                             : "Set Security PIN"}
                       </span>
