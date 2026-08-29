@@ -24,15 +24,7 @@ import {
   type ToastInput,
 } from "./providerContexts";
 
-const debugSession = (...args: unknown[]) => {
-  if (
-    import.meta.env.DEV &&
-    typeof window !== "undefined" &&
-    window.localStorage.getItem("debugSession") === "true"
-  ) {
-    console.debug(...args);
-  }
-};
+const debugSession = (..._args: unknown[]) => {};
 
 // ============================================================================
 // Theme Context
