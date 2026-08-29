@@ -24,7 +24,6 @@ import {
   type ToastInput,
 } from "./providerContexts";
 
-const debugSession = (..._args: unknown[]) => {};
 
 // ============================================================================
 // Theme Context
@@ -186,12 +185,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const hasHydratedSessionRef = useRef(false);
 
   const applySessionState = useCallback((nextState: SessionState) => {
-    debugSession("[session] Applying state:", {
-      hasAccess: nextState.hasAccess,
-      currentUser: nextState.currentUser,
-      pinProtectedUsers: nextState.pinProtectedUsers,
-      usersMissingPins: nextState.usersMissingPins,
-    });
     setHasAccess(nextState.hasAccess);
     setCurrentUserState(nextState.currentUser);
     setPinProtectedUsers(nextState.pinProtectedUsers);
@@ -206,7 +199,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const refreshSession = useCallback(async () => {
-    debugSession("[session] Refreshing session…");
     const isInitialLoad = !hasHydratedSessionRef.current;
     if (isInitialLoad) {
       setIsSessionLoading(true);
@@ -219,24 +211,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
           credentials: "include",
           cache: "no-store",
         });
-      } catch (error) {
-        debugSession("[session] Refresh network error — clearing state", error);
+      } catch {
         clearSessionState();
         return;
       }
 
       if (!response.ok) {
-        debugSession(
-          "[session] Refresh failed — status",
-          response.status,
-          "— clearing state",
-        );
         clearSessionState();
         return;
       }
 
       const session = (await response.json()) as SessionState;
-      debugSession("[session] Refresh succeeded:", session);
       applySessionState(session);
     } finally {
       if (isInitialLoad) {
@@ -256,9 +241,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     const handleSessionInvalid = () => {
-      debugSession(
-        "[session] Session invalidation event received — refreshing",
-      );
       void refreshSession();
     };
 
@@ -278,11 +260,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       isSessionLoading,
       currentUser,
       setCurrentUser: async (user: User | null, pin?: string) => {
-        if (user) {
-          debugSession("[session] Logging in as:", user);
-        } else {
-          debugSession("[session] Logging out");
-        }
         try {
           const response = await fetch("/api/session/profile", {
             method: user ? "POST" : "DELETE",
@@ -299,11 +276,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
           });
 
           if (response.status === 401 || response.status === 403) {
-            debugSession(
-              "[session] Profile update rejected (status",
-              response.status,
-              ") — refreshing session",
-            );
             await refreshSession();
             return false;
           }
@@ -318,11 +290,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
           }
 
           const session = (await response.json()) as SessionState;
-          debugSession("[session] Profile update succeeded:", session);
           applySessionState(session);
           return true;
         } catch (error) {
-          debugSession("[session] Profile update error:", error);
           throw new Error(
             getErrorMessage(error, "Profile login is unavailable right now."),
             { cause: error },
