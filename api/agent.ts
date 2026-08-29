@@ -199,16 +199,69 @@ const paginate = (
   };
 };
 
+interface CatalogMovieItem {
+  id: string;
+  title: string;
+  posterUrl?: string;
+  year?: string;
+  plot?: string;
+  imdbRating?: string;
+  runtime?: string;
+  genre?: string;
+  director?: string;
+  category?: string;
+  mediaType?: "movie" | "series" | "youtube";
+}
+
+interface CatalogPlaceItem {
+  id: string;
+  name: string;
+  notes?: string;
+  lat?: number;
+  lng?: number;
+  category?: string;
+  rating?: string;
+  description?: string;
+  imageUrl?: string;
+  isVisited: boolean;
+}
+
+interface CatalogMovieSuggestionItem {
+  id: string;
+  kind: "movie";
+  title: string;
+  reason?: string;
+  type?: "movie" | "series" | "youtube";
+  status: "pending" | "accepted" | "rejected";
+}
+
+interface CatalogPlaceSuggestionItem {
+  id: string;
+  kind: "place";
+  name: string;
+  notes?: string;
+  category?: string;
+  description?: string;
+  status: "pending" | "accepted" | "rejected";
+}
+
+type CatalogItem =
+  | CatalogMovieItem
+  | CatalogPlaceItem
+  | CatalogMovieSuggestionItem
+  | CatalogPlaceSuggestionItem;
+
 const publicCatalog = async (
   resource: string,
   url: URL,
   requestId: string,
 ): Promise<Response> => {
-  let items: any[];
+  let items: CatalogItem[];
   if (resource === "movies") {
-    items = (await readScopeStoredData("movies", { bypassCache: true }))
-      .clientData as any[];
-    items = items.map(
+    const moviesData = (
+      await readScopeStoredData("movies", { bypassCache: true })
+    ).clientData;
+    items = moviesData.map(
       ({
         id,
         title,
@@ -221,7 +274,7 @@ const publicCatalog = async (
         director,
         category,
         mediaType,
-      }) => ({
+      }): CatalogMovieItem => ({
         id,
         title,
         posterUrl,
@@ -236,9 +289,10 @@ const publicCatalog = async (
       }),
     );
   } else if (resource === "places") {
-    items = (await readScopeStoredData("places", { bypassCache: true }))
-      .clientData as any[];
-    items = items.map(
+    const placesData = (
+      await readScopeStoredData("places", { bypassCache: true })
+    ).clientData;
+    items = placesData.map(
       ({
         id,
         name,
@@ -250,7 +304,7 @@ const publicCatalog = async (
         description,
         imageUrl,
         visitedAt,
-      }) => ({
+      }): CatalogPlaceItem => ({
         id,
         name,
         notes,
@@ -264,30 +318,34 @@ const publicCatalog = async (
       }),
     );
   } else if (resource === "suggestions") {
-    const movies = (
+    const moviesData = (
       await readScopeStoredData("suggestions", { bypassCache: true })
-    ).clientData as any[];
-    const places = (
+    ).clientData;
+    const placesData = (
       await readScopeStoredData("placeSuggestions", { bypassCache: true })
-    ).clientData as any[];
+    ).clientData;
     items = [
-      ...movies.map(({ id, title, reason, type, status }) => ({
-        id,
-        kind: "movie",
-        title,
-        reason,
-        type,
-        status,
-      })),
-      ...places.map(({ id, name, notes, category, description, status }) => ({
-        id,
-        kind: "place",
-        name,
-        notes,
-        category,
-        description,
-        status,
-      })),
+      ...moviesData.map(
+        ({ id, title, reason, type, status }): CatalogMovieSuggestionItem => ({
+          id,
+          kind: "movie",
+          title,
+          reason,
+          type,
+          status,
+        }),
+      ),
+      ...placesData.map(
+        ({ id, name, notes, category, description, status }): CatalogPlaceSuggestionItem => ({
+          id,
+          kind: "place",
+          name,
+          notes,
+          category,
+          description,
+          status,
+        }),
+      ),
     ];
   } else
     return errorResponse(
@@ -298,8 +356,13 @@ const publicCatalog = async (
     );
 
   items.sort((a, b) => {
-    const nameA = String(a.title || a.name || a.id || "");
-    const nameB = String(b.title || b.name || b.id || "");
+    const getName = (item: CatalogItem): string => {
+      if ("title" in item && item.title) return item.title;
+      if ("name" in item && item.name) return item.name;
+      return item.id;
+    };
+    const nameA = getName(a);
+    const nameB = getName(b);
     return nameA.localeCompare(nameB);
   });
 
@@ -376,20 +439,31 @@ const submitSuggestion = async (
       "Too many suggestions. Try again later.",
     );
 
-  const scope = kind === "movies" ? "suggestions" : "placeSuggestions";
-  const existing = (await readScopeStoredData(scope, { bypassCache: true }))
-    .clientData as any[];
   const candidate =
     kind === "movies"
       ? (parsed.data as { title: string }).title
       : (parsed.data as { name: string }).name;
-  const duplicate = existing.some((item) => {
-    const value = kind === "movies" ? item.title : item.name;
-    return (
-      typeof value === "string" &&
-      value.trim().toLocaleLowerCase() === candidate.trim().toLocaleLowerCase()
+
+  let duplicate = false;
+  if (kind === "movies") {
+    const existing = (
+      await readScopeStoredData("suggestions", { bypassCache: true })
+    ).clientData;
+    duplicate = existing.some(
+      (item) =>
+        item.title.trim().toLocaleLowerCase() ===
+        candidate.trim().toLocaleLowerCase(),
     );
-  });
+  } else {
+    const existing = (
+      await readScopeStoredData("placeSuggestions", { bypassCache: true })
+    ).clientData;
+    duplicate = existing.some(
+      (item) =>
+        item.name.trim().toLocaleLowerCase() ===
+        candidate.trim().toLocaleLowerCase(),
+    );
+  }
   if (duplicate)
     return errorResponse(
       requestId,
@@ -397,6 +471,8 @@ const submitSuggestion = async (
       "DUPLICATE",
       "A matching suggestion already exists.",
     );
+  const scope: StateScope =
+    kind === "movies" ? "suggestions" : "placeSuggestions";
   const input = { ...(parsed.data as object), id: `agent-${randomUUID()}` };
   const result = await mutate(
     scope,
