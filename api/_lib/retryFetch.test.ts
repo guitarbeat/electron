@@ -215,4 +215,73 @@ describe("fetchWithRetry", () => {
     await expectation;
     assert.equal(calls, 3);
   });
+
+  it("falls back to exponential backoff when Retry-After header is invalid or negative", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    for (const invalidHeader of ["invalid-header", "-10"]) {
+      let calls = 0;
+      globalThis.fetch = async () => {
+        calls++;
+        if (calls === 1) {
+          return new Response("rate limited", {
+            status: 429,
+            headers: { "Retry-After": invalidHeader },
+          });
+        }
+        return new Response("ok", { status: 200 });
+      };
+
+      const promise = fetchWithRetry("https://example.com", undefined, "test-ctx");
+      for (let i = 0; i < 20; i++) {
+        t.mock.timers.tick(1000);
+        await new Promise((r) => setImmediate(r));
+      }
+      const res = await promise;
+
+      assert.equal(calls, 2);
+      assert.equal(res.status, 200);
+    }
+  });
+
+  it("aborts and retries when fetch request exceeds custom timeoutMs option", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    let calls = 0;
+    globalThis.fetch = async (input, init) => {
+      calls++;
+      const signal = init?.signal;
+      return new Promise<Response>((resolve, reject) => {
+        if (signal) {
+          signal.addEventListener("abort", () => {
+            const err = new Error("The operation was aborted");
+            err.name = "AbortError";
+            reject(err);
+          });
+        }
+      });
+    };
+
+    const promise = fetchWithRetry("https://example.com", undefined, "timeout-ctx", {
+      timeoutMs: 50,
+    });
+
+    const expectation = assert.rejects(
+      async () => {
+        await promise;
+      },
+      (err: Error) => {
+        assert.equal(err.name, "AbortError");
+        return true;
+      },
+    );
+
+    for (let i = 0; i < 20; i++) {
+      t.mock.timers.tick(100);
+      await new Promise((r) => setImmediate(r));
+    }
+
+    await expectation;
+    assert.equal(calls, 3);
+  });
 });
