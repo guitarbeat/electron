@@ -18,6 +18,7 @@ const SHELL_ASSETS = [
   '/favicon-32x32.png',
   '/apple-touch-icon.png',
   '/electron-logo-mark.png',
+  '/aaron-avatar.png',
   '/pwa-screenshot-queue.svg',
   '/pwa-screenshot-memories.svg',
   '/opengraph.jpg',

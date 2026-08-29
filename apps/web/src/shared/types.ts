@@ -1,7 +1,7 @@
 export type User = "Aaron" | "Electra";
 
 export const USER_PHOTOS: Record<User, string> = {
-  Aaron: "https://cataas.com/cat/black?width=200&height=200",
+  Aaron: "/aaron-avatar.png",
   Electra: "https://cataas.com/cat/cute?width=200&height=200",
 };
 
