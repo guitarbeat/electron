@@ -225,7 +225,7 @@ export const getSessionState = (
   );
 
   return {
-    hasAccess: true,
+    hasAccess: Boolean(profile),
     currentUser: profile?.user ?? null,
   };
 };
@@ -235,8 +235,8 @@ export const requireAccessUser = (req: Request): User | null => {
 };
 
 export const hasAccessSession = (req?: Request): boolean => {
-  void req;
-  return true;
+  if (!req) return false;
+  return getSessionState(req).hasAccess;
 };
 
 export const requireProfileUser = (req: Request): User | null =>
