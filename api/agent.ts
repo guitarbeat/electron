@@ -446,6 +446,7 @@ const submitSuggestion = async (
     kind === "movies"
       ? (parsed.data as { title: string }).title
       : (parsed.data as { name: string }).name;
+  const normalizedCandidate = candidate.trim().toLocaleLowerCase();
 
   let duplicate = false;
   if (kind === "movies") {
@@ -454,8 +455,7 @@ const submitSuggestion = async (
     ).clientData;
     duplicate = existing.some(
       (item) =>
-        item.title.trim().toLocaleLowerCase() ===
-        candidate.trim().toLocaleLowerCase(),
+        item.title.trim().toLocaleLowerCase() === normalizedCandidate,
     );
   } else {
     const existing = (
@@ -463,8 +463,7 @@ const submitSuggestion = async (
     ).clientData;
     duplicate = existing.some(
       (item) =>
-        item.name.trim().toLocaleLowerCase() ===
-        candidate.trim().toLocaleLowerCase(),
+        item.name.trim().toLocaleLowerCase() === normalizedCandidate,
     );
   }
   if (duplicate)
