@@ -80,6 +80,8 @@ interface MediaPosterProps {
   priority?: boolean;
 }
 
+const CACHED_LOADED_POSTERS = new Set<string>();
+
 export const MediaPoster: React.FC<MediaPosterProps> = ({
   title,
   posterUrl,
@@ -88,17 +90,27 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   className = "",
   priority = false,
 }) => {
-  const [hasImageError, setHasImageError] = React.useState(false);
-  const [isLoaded, setIsLoaded] = React.useState(false);
-
   const fallbackCatUrl = React.useMemo(() => {
     return getCatPosterUrl(id || title);
   }, [id, title]);
 
+  const [hasImageError, setHasImageError] = React.useState(false);
+  const isCatFallback = !posterUrl || hasImageError;
+  const activeSrc = isCatFallback ? fallbackCatUrl : posterUrl;
+
+  const [isLoaded, setIsLoaded] = React.useState<boolean>(() => {
+    return Boolean(activeSrc && CACHED_LOADED_POSTERS.has(activeSrc));
+  });
+
   React.useEffect(() => {
+    if (activeSrc && CACHED_LOADED_POSTERS.has(activeSrc)) {
+      setIsLoaded(true);
+      setHasImageError(false);
+      return;
+    }
     setHasImageError(false);
     setIsLoaded(false);
-  }, [posterUrl]);
+  }, [activeSrc]);
 
   const handleImageError = () => {
     if (!hasImageError && posterUrl) {
@@ -110,21 +122,21 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   };
 
   const handleImageLoad = () => {
+    if (activeSrc) {
+      CACHED_LOADED_POSTERS.add(activeSrc);
+    }
     setIsLoaded(true);
   };
 
-  const isCatFallback = !posterUrl || hasImageError;
-  const activeSrc = isCatFallback ? fallbackCatUrl : posterUrl;
-
   return (
     <div className={`media-poster-wrap ${isCatFallback ? "is-cat-poster" : ""} ${className}`}>
-      <div className={`media-poster-skeleton ${isLoaded ? "loaded" : ""}`} />
+      {!isLoaded && <div className="media-poster-skeleton" />}
       <img
         src={activeSrc}
         alt={`${title} poster`}
-        loading={priority ? "eager" : "lazy"}
+        loading={priority ? "eager" : "eager"}
         decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
+        fetchPriority={priority ? "high" : "low"}
         className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
         onLoad={handleImageLoad}
         onError={handleImageError}

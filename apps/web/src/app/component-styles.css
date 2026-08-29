@@ -3014,19 +3014,6 @@
   animation: chatGenieIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.chat-dock::after {
-  content: "";
-  position: absolute;
-  right: 1.65rem;
-  bottom: -0.48rem;
-  width: 1.15rem;
-  height: 1.15rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.14);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  background: color-mix(in srgb, var(--color-surface-0) 94%, transparent);
-  transform: rotate(45deg);
-}
-
 .chat-dock__close {
   position: absolute;
   top: 0.8rem;

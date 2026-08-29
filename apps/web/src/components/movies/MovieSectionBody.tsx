@@ -102,91 +102,108 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     isLoadingSuggestions: false,
   });
 
-  const renderMovie = (movie: Movie) => {
-    const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
-    const element = (
-      <MovieCard
-        key={movie.id}
-        movie={movie}
-        currentUser={currentUser}
-        onToggle={() => {
-          actions.toggleWatched(movie.id);
-        }}
-        onToggleError={onToggleError}
-        onEditMetadata={async (updates) => {
-          await actions.editMovie(movie.id, updates);
-        }}
-        onDelete={() => onDeleteRequest(movie)}
-        isHighlighted={successMovieId === movie.id}
-        memories={movieMemories.get(movie.id) ?? []}
-        onAddMemory={
-          currentUser
-            ? async (note) => {
-                await actions.addMemory(movie.id, movie.title, currentUser, note);
-              }
-            : undefined
-        }
-        onUpdateMemory={async (memoryId, note) => {
-          await actions.updateMemory(memoryId, { note });
-        }}
-        onDeleteMemory={async (memoryId) => {
-          await actions.deleteMemory(memoryId);
-        }}
-        onTogglePin={async (memoryId) => {
-          await actions.togglePin(memoryId);
-        }}
-        onOpenDetails={(m, origin) => {
-          setSelectedMovie(m);
-          setSelectedOrigin(origin ?? null);
-        }}
-      />
-    );
-    return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
-  };
-
-
-const allPosters = [...sections.queue, ...sections.completed];
-  const suggestionCards = sections.suggestions.map((suggestion) => (
-    <SuggestionCard
-      key={`suggestion-${suggestion.id}`}
-      suggestion={suggestion}
-      onAccept={() => void onAcceptSuggestion(suggestion)}
-      onReject={() => void onRejectSuggestion(suggestion)}
-      canRespond={Boolean(currentUser)}
-      disableActions={!currentUser}
-      isProcessing={processingSuggestionId === suggestion.id}
-    />
-  ));
-  const movieCards = allPosters.map(renderMovie);
-  
-  let unifiedCards: React.ReactNode[];
-  if (collectionState === "loading") {
-    const skeletonCount = isMobile ? 16 : dynamicColumns * 4;
-    unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
-      const isShort = i % 5 === 2;
-      return (
-        <div
-          key={`loading-tile-${i}`}
-          className="drift-wall-loading__tile"
-          data-height-ratio={isShort ? 0.55 : 1}
-          style={
-            {
-              "--loading-tile": Math.floor(i / dynamicColumns),
-              "--loading-column": i % dynamicColumns,
-              width: "100%",
-              height: "100%",
-            } as React.CSSProperties
+  const unifiedCards = React.useMemo(() => {
+    const renderMovie = (movie: Movie) => {
+      const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
+      const element = (
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          currentUser={currentUser}
+          onToggle={() => {
+            actions.toggleWatched(movie.id);
+          }}
+          onToggleError={onToggleError}
+          onEditMetadata={async (updates) => {
+            await actions.editMovie(movie.id, updates);
+          }}
+          onDelete={() => onDeleteRequest(movie)}
+          isHighlighted={successMovieId === movie.id}
+          memories={movieMemories.get(movie.id) ?? []}
+          onAddMemory={
+            currentUser
+              ? async (note) => {
+                  await actions.addMemory(movie.id, movie.title, currentUser, note);
+                }
+              : undefined
           }
+          onUpdateMemory={async (memoryId, note) => {
+            await actions.updateMemory(memoryId, { note });
+          }}
+          onDeleteMemory={async (memoryId) => {
+            await actions.deleteMemory(memoryId);
+          }}
+          onTogglePin={async (memoryId) => {
+            await actions.togglePin(memoryId);
+          }}
+          onOpenDetails={(m, origin) => {
+            setSelectedMovie(m);
+            setSelectedOrigin(origin ?? null);
+          }}
         />
       );
-    });
-  } else {
-    unifiedCards = interleaveCollectionItems(
+      return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
+    };
+
+    if (collectionState === "loading") {
+      const skeletonCount = isMobile ? 16 : dynamicColumns * 4;
+      return Array.from({ length: skeletonCount }, (_, i) => {
+        const isShort = i % 5 === 2;
+        return (
+          <div
+            key={`loading-tile-${i}`}
+            className="drift-wall-loading__tile"
+            data-height-ratio={isShort ? 0.55 : 1}
+            style={
+              {
+                "--loading-tile": Math.floor(i / dynamicColumns),
+                "--loading-column": i % dynamicColumns,
+                width: "100%",
+                height: "100%",
+              } as React.CSSProperties
+            }
+          />
+        );
+      });
+    }
+
+    const allPosters = [...sections.queue, ...sections.completed];
+    const suggestionCards = sections.suggestions.map((suggestion) => (
+      <SuggestionCard
+        key={`suggestion-${suggestion.id}`}
+        suggestion={suggestion}
+        onAccept={() => void onAcceptSuggestion(suggestion)}
+        onReject={() => void onRejectSuggestion(suggestion)}
+        canRespond={Boolean(currentUser)}
+        disableActions={!currentUser}
+        isProcessing={processingSuggestionId === suggestion.id}
+      />
+    ));
+    const movieCards = allPosters.map(renderMovie);
+
+    return interleaveCollectionItems(
       suggestionCards,
       movieCards,
       posterPlaceCards,
     );
-  }
+  }, [
+    collectionState,
+    isMobile,
+    dynamicColumns,
+    sections.queue,
+    sections.completed,
+    sections.suggestions,
+    currentUser,
+    processingSuggestionId,
+    successMovieId,
+    movieMemories,
+    onAcceptSuggestion,
+    onRejectSuggestion,
+    posterPlaceCards,
+    actions,
+    onDeleteRequest,
+    onToggleError,
+  ]);
   const handleTileClick = (item: unknown) => {
     if (React.isValidElement(item) && item.props) {
       const props = item.props as Record<string, unknown>;

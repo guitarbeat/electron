@@ -42,10 +42,16 @@ const parseArrayScope = <T>(
       return defaultContent;
     }
 
-    return parsed.flatMap((entry) => {
+    const items = parsed.flatMap((entry) => {
       const next = normalizeRecord(entry);
       return next ? [next] : [];
     });
+
+    if (items.length === 0 && defaultContent.length > 0) {
+      return defaultContent;
+    }
+
+    return items;
   } catch (error) {
     console.error(
       `Failed to parse ${context}; defaulting to seed state.`,

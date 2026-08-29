@@ -208,12 +208,18 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     });
   }, [columnItems, speed, direction, variance]);
 
-  // Reset internal tracking values when layout/content changes
+  // Preserve and smooth internal tracking values when layout/content changes
   useEffect(() => {
-    offsetsRef.current = columnMeta.map(
-      (meta, c) => meta.copyHeight * ((c * 0.37) % 1),
-    );
-    velocitiesRef.current = columnItems.map(() => 0);
+    const prevOffsets = offsetsRef.current;
+    offsetsRef.current = columnMeta.map((meta, c) => {
+      if (prevOffsets && typeof prevOffsets[c] === "number" && meta.copyHeight > 0) {
+        return ((prevOffsets[c] % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
+      }
+      return meta.copyHeight * ((c * 0.37) % 1);
+    });
+    if (!velocitiesRef.current || velocitiesRef.current.length !== columnItems.length) {
+      velocitiesRef.current = columnItems.map(() => 0);
+    }
   }, [columnMeta, columnItems]);
 
   const applyPlaneTransform = useCallback(
@@ -368,11 +374,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
           // 4. Wrap around for infinite scrolling (modulo by the column's total repeated height)
           const el = trackRefs.current[c];
-          let actualCopyHeight = meta.copyHeight;
-          if (el && meta.copies > 0) {
-            actualCopyHeight = el.scrollHeight / meta.copies;
+          const copyH = meta.copyHeight;
+          if (copyH > 0) {
+            next = ((next % copyH) + copyH) % copyH;
           }
-          next = ((next % actualCopyHeight) + actualCopyHeight) % actualCopyHeight;
           offsetsRef.current[c] = next;
 
           // 5. Apply the transform

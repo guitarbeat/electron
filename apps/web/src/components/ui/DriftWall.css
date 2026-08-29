@@ -40,12 +40,15 @@
   cursor: pointer;
   transform-origin: 50% 50%;
   will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .drift-wall__col {
   position: relative;
   width: calc(var(--dw-tile-w) + var(--dw-gap));
   transform-style: preserve-3d;
+  contain: layout style;
 }
 
 .drift-wall__track {
@@ -53,6 +56,8 @@
   flex-direction: column;
   will-change: transform;
   transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .drift-wall__tile {
