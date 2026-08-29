@@ -171,6 +171,34 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
     );
   });
 
+  it("returns 400 bad request with error message when parseMutationRequest throws an Error", async () => {
+    const throwingPayload = new Proxy(
+      {},
+      {
+        get(_target, prop) {
+          if (prop === "baseVersion") {
+            throw new Error("Custom mutation parsing error message.");
+          }
+          return undefined;
+        },
+      },
+    );
+
+    const request = authedRequest("http://localhost/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    request.json = async () => throwingPayload;
+
+    const handler = createMutateHandler("movies");
+    const response = await handler(request);
+    assert.strictEqual(response.status, 400);
+
+    const body = (await response.json()) as { error: string };
+    assert.strictEqual(body.error, "Custom mutation parsing error message.");
+  });
+
   it("returns 400 bad request when parseMutationRequest throws a non-Error value", async () => {
     const throwingPayload = new Proxy(
       {},
