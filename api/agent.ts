@@ -164,14 +164,17 @@ const verifyConfirmation = (
   }
 };
 
-const requestIp = (request: Request): string =>
-  (
-    request.headers.get("x-forwarded-for")?.split(",").pop() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  )
-    .trim()
-    .slice(0, 128);
+export const requestIp = (request: Request): string => {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const ips = forwardedFor.split(",");
+    const rightMost = ips[ips.length - 1]?.trim();
+    if (rightMost) return rightMost.slice(0, 128);
+  }
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp.slice(0, 128);
+  return "unknown";
+};
 
 const paginate = (
   items: unknown[],
