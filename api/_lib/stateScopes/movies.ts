@@ -6,6 +6,7 @@ import {
   isUser,
   isValidUrl,
   MAX_MOVIE_TITLE_LENGTH,
+  normalizeMovieTitle,
   parseJsonContent,
   sanitizeInput,
 } from "../common.js";
@@ -229,14 +230,19 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
 
         const next = [...movies];
         const knownIds = new Set(movies.map((movie) => movie.id));
+        const knownNormalizedTitles = new Set(
+          movies.map((movie) => normalizeMovieTitle(movie.title)),
+        );
         for (const movie of parsed as Movie[]) {
           if (knownIds.has(movie.id)) {
             return { ok: false, conflict: "Movie already exists." };
           }
-          if (findMovieByNormalizedTitle(next, movie.title)) {
+          const normalizedTitle = normalizeMovieTitle(movie.title);
+          if (knownNormalizedTitles.has(normalizedTitle)) {
             continue;
           }
           knownIds.add(movie.id);
+          knownNormalizedTitles.add(normalizedTitle);
           next.push(movie);
         }
 
