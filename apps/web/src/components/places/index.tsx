@@ -18,25 +18,6 @@ import {
 } from "@/components/ui";
 import { PlacesEmptyIllustration } from "@/components/ui/EmptyStateIllustrations";
 import { PlaceEditModal } from "./PlaceEditModal";
-import DriftWall from "@/components/ui/DriftWall";
-
-const driftWallItems = [
-  {
-    image: "https://picsum.photos/id/1015/600/400",
-    title: "Peaks",
-    href: "https://example.com/one",
-  },
-  {
-    image: "https://picsum.photos/id/1025/600/400",
-    title: "Pup",
-    href: "https://example.com/two",
-  },
-  {
-    image: "https://picsum.photos/id/1039/600/400",
-    title: "Falls",
-    href: "https://example.com/three",
-  },
-];
 
 export const PlaceCard: React.FC<{
   place: Place;
@@ -260,39 +241,7 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({
           <span className="workspace-section-heading__label">Places</span>
         </span>
       </h2>
-      <div
-        style={{
-          height: 600,
-          width: "100%",
-          overflow: "hidden",
-          position: "relative",
-          marginBottom: "2rem",
-        }}
-      >
-        <DriftWall
-          items={driftWallItems}
-          columns={8}
-          tileWidth={120}
-          tileHeight={180}
-          gap={18}
-          tilt={0}
-          turn={-14}
-          roll={0}
-          perspective={2400}
-          depth={120}
-          speed={42}
-          direction="up"
-          variance={0.7}
-          parallax={0.6}
-          lift={64}
-          fade={0.4}
-          dim={0.85}
-          overlayColor="#060010"
-          radius={0}
-          pauseOnHover
-          grayscale={false}
-        />
-      </div>
+
       <div className="watchlist-container places-container">
         {isDegraded && (
           <SyncBanner

@@ -4,9 +4,6 @@ import { lazyWithRetry } from "@/utils/lazyWithRetry";
 const MoviesView = lazyWithRetry(() =>
   import("@/components/movies").then((m) => ({ default: m.MoviesView })),
 );
-const PlacesList = lazyWithRetry(() =>
-  import("@/components/places").then((m) => ({ default: m.PlacesList })),
-);
 import LibrarySearch from "./LibrarySearch";
 
 interface UnifiedLibraryProps {
@@ -23,18 +20,12 @@ interface LibraryWorkspaceProps {
   activeTab?: MainTab;
 }
 
-const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = ({
-  activeTab = "movies",
-}) => {
+const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = () => {
   return (
     <div className="library-workspace">
       <LibrarySearch />
       <React.Suspense fallback={null}>
-        {activeTab === "places" ? (
-          <PlacesList />
-        ) : (
-          <UnifiedLibrary isInteractionStatic={false} />
-        )}
+        <UnifiedLibrary isInteractionStatic={false} />
       </React.Suspense>
     </div>
   );

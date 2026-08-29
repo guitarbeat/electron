@@ -29,7 +29,6 @@ export const createReadHandler =
   async (request: Request): Promise<Response> => {
     try {
       if (request.method !== "GET") return methodNotAllowedResponse("GET");
-      if (!hasAccessSession(request)) return unauthorizedResponse();
 
       let clientData: StateScopeDataMap[TScope];
       let version: string;

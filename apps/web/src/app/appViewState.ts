@@ -15,9 +15,9 @@ export const parseMainTab = (
     return null;
   }
 
-  // Memories now live on each movie. Preserve old links without exposing a
-  // stranded top-level workspace.
-  if (value === "memories") {
+  // Memories and places now live in the unified library workspace. Preserve old links without
+  // exposing a stranded top-level workspace.
+  if (value === "memories" || value === "places") {
     return "movies";
   }
 

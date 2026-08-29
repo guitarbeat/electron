@@ -46,19 +46,7 @@ export interface DriftWallProps {
   onTileClick?: (item: DriftWallItem | ReactNode, index: number) => void;
 }
 
-const DEFAULT_ITEMS: DriftWallItem[] = Array.from({ length: 15 }, (_, i) => {
-  const ids = [
-    1015, 1025, 1039, 1043, 1044, 1050, 1062, 1069, 1074, 1080, 1084, 106, 110,
-    133, 164,
-  ];
-  return {
-    image: `https://picsum.photos/id/${ids[i % ids.length]}/600/400`,
-    title: `Tile ${i + 1}`,
-    href: undefined,
-  };
-});
-
-
+const EMPTY_ITEMS: (DriftWallItem | ReactNode)[] = [];
 
 const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
@@ -70,7 +58,7 @@ const columnFactor = (index: number, variance: number) => {
 };
 
 export const DriftWall: React.FC<DriftWallProps> = ({
-  items = DEFAULT_ITEMS,
+  items = EMPTY_ITEMS,
   columns = 5,
   tileWidth = 200,
   tileHeight = 300,
@@ -136,12 +124,14 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   }, []);
 
   const safeItems = useMemo(() => {
-    if (!items || items.length === 0) return DEFAULT_ITEMS;
-    return items;
+    return items ?? EMPTY_ITEMS;
   }, [items]);
 
   // Distribute items sequentially across the given number of columns
   const columnItems = useMemo(() => {
+    if (safeItems.length === 0) {
+      return Array.from({ length: columns }, () => []);
+    }
     const cols: (DriftWallItem | ReactNode)[][] = Array.from(
       { length: columns },
       () => [],
@@ -150,7 +140,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     // This ensures no column is too short and items are well interleaved.
     const totalToPlace = Math.max(safeItems.length, columns * 4);
     for (let i = 0; i < totalToPlace; i++) {
-        cols[i % columns].push(safeItems[i % safeItems.length]);
+      cols[i % columns].push(safeItems[i % safeItems.length]);
     }
     return cols;
   }, [safeItems, columns]);
