@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import * as sharedStateStore from "./sharedStateStore.js";
+import { buildProfileCookie } from "./session.js";
 import { createMutateHandler, createReadHandler } from "./stateEngine.js";
+
+function authedRequest(url: string, init: RequestInit = {}): Request {
+  const mockReq = new Request(url);
+  const cookie = buildProfileCookie(mockReq, "Aaron").split(";")[0];
+  const headers = new Headers(init.headers);
+  headers.set("cookie", cookie);
+  return new Request(url, { ...init, headers });
+}
 
 describe("createReadHandler - error handling and fallback data", () => {
   it("returns 405 method not allowed when request method is not GET", async () => {
@@ -21,7 +30,7 @@ describe("createReadHandler - error handling and fallback data", () => {
 
     try {
       const handler = createReadHandler("movies");
-      const request = new Request("http://localhost/api/state/movies", {
+      const request = authedRequest("http://localhost/api/state/movies", {
         method: "GET",
       });
 
@@ -60,7 +69,7 @@ describe("createReadHandler - error handling and fallback data", () => {
 
     try {
       const handler = createReadHandler("movies");
-      const request = new Request("http://localhost/api/state/movies", {
+      const request = authedRequest("http://localhost/api/state/movies", {
         method: "GET",
       });
 
@@ -104,7 +113,7 @@ describe("createReadHandler - error handling and fallback data", () => {
 
     try {
       const handler = createReadHandler("movies");
-      const request = new Request("http://localhost/api/state/movies", {
+      const request = authedRequest("http://localhost/api/state/movies", {
         method: "GET",
       });
 
@@ -131,7 +140,7 @@ describe("createReadHandler - error handling and fallback data", () => {
 describe("createMutateHandler - parseMutationRequest error handling", () => {
   it("returns 400 bad request when request body is invalid JSON", async () => {
     const handler = createMutateHandler("movies");
-    const request = new Request("http://localhost/api/state/movies", {
+    const request = authedRequest("http://localhost/api/state/movies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "{ invalid json",
@@ -146,7 +155,7 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
 
   it("returns 400 bad request when request payload is missing required mutation fields", async () => {
     const handler = createMutateHandler("movies");
-    const request = new Request("http://localhost/api/state/movies", {
+    const request = authedRequest("http://localhost/api/state/movies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ baseVersion: "1.0" }),
@@ -175,7 +184,7 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
       },
     );
 
-    const request = new Request("http://localhost/api/state/movies", {
+    const request = authedRequest("http://localhost/api/state/movies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),

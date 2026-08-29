@@ -107,9 +107,29 @@ describe("profile session signing and token verification", () => {
     assert.strictEqual(getSessionState(reqEmptyCookie).currentUser, null);
   });
 
-  it("should return true for hasAccessSession", () => {
-    assert.strictEqual(hasAccessSession(), true);
-    assert.strictEqual(hasAccessSession(new Request("http://localhost")), true);
+  it("should deny access without a valid profile cookie", () => {
+    assert.strictEqual(hasAccessSession(), false);
+    const req = new Request("http://localhost/api/state/movies");
+    assert.strictEqual(getSessionState(req).hasAccess, false);
+    assert.strictEqual(hasAccessSession(req), false);
+
+    const invalid = new Request("http://localhost/api/state/movies", {
+      headers: { cookie: "movie_watch_profile=invalid-token" },
+    });
+    assert.strictEqual(getSessionState(invalid).hasAccess, false);
+    assert.strictEqual(hasAccessSession(invalid), false);
+  });
+
+  it("should grant access when profile cookie is valid", () => {
+    const req = new Request("http://localhost/api/state/movies");
+    const cookieValue = buildProfileCookie(req, "Aaron").split(";")[0];
+    const reqWithCookie = new Request("http://localhost/api/state/movies", {
+      headers: { cookie: cookieValue },
+    });
+    const session = getSessionState(reqWithCookie);
+    assert.strictEqual(session.hasAccess, true);
+    assert.strictEqual(session.currentUser, "Aaron");
+    assert.strictEqual(hasAccessSession(reqWithCookie), true);
   });
 });
 
