@@ -1,6 +1,132 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createMutateHandler } from "./stateEngine.js";
+import * as sharedStateStore from "./sharedStateStore.js";
+import { createMutateHandler, createReadHandler } from "./stateEngine.js";
+
+describe("createReadHandler - error handling and fallback data", () => {
+  it("returns 405 method not allowed when request method is not GET", async () => {
+    const handler = createReadHandler("movies");
+    const request = new Request("http://localhost/api/state/movies", {
+      method: "POST",
+    });
+
+    const response = await handler(request);
+    assert.strictEqual(response.status, 405);
+  });
+
+  it("returns degraded 200 JSON response with fallback data when readScopeStoredData throws", async () => {
+    const originalDbUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = "postgres://invalid:invalid@127.0.0.1:5432/invalid";
+    sharedStateStore.invalidateSharedStateCache();
+
+    try {
+      const handler = createReadHandler("movies");
+      const request = new Request("http://localhost/api/state/movies", {
+        method: "GET",
+      });
+
+      const response = await handler(request);
+      assert.strictEqual(response.status, 200);
+
+      const body = (await response.json()) as {
+        data: unknown;
+        version: string;
+        degraded: boolean;
+        warning?: string;
+      };
+
+      assert.strictEqual(body.degraded, true);
+      assert.ok(Array.isArray(body.data));
+      assert.ok(typeof body.version === "string");
+      assert.ok(typeof body.warning === "string");
+      assert.strictEqual(
+        body.warning,
+        "Shared state could not be loaded. Check server logs and Neon connectivity.",
+      );
+    } finally {
+      if (originalDbUrl === undefined) {
+        delete process.env.DATABASE_URL;
+      } else {
+        process.env.DATABASE_URL = originalDbUrl;
+      }
+      sharedStateStore.invalidateSharedStateCache();
+    }
+  });
+
+  it("returns degraded 200 JSON response when usesFallbackStore is true", async () => {
+    const originalDbUrl = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
+    sharedStateStore.invalidateSharedStateCache();
+
+    try {
+      const handler = createReadHandler("movies");
+      const request = new Request("http://localhost/api/state/movies", {
+        method: "GET",
+      });
+
+      const response = await handler(request);
+      assert.strictEqual(response.status, 200);
+
+      const body = (await response.json()) as {
+        data: unknown;
+        version: string;
+        degraded: boolean;
+        warning?: string;
+      };
+
+      assert.strictEqual(body.degraded, true);
+      assert.ok(Array.isArray(body.data));
+      assert.ok(typeof body.version === "string");
+      assert.strictEqual(
+        body.warning,
+        "Shared sync is unavailable because the server is missing DATABASE_URL. Set DATABASE_URL in your environment variables, then restart the server.",
+      );
+    } finally {
+      if (originalDbUrl !== undefined) {
+        process.env.DATABASE_URL = originalDbUrl;
+      }
+      sharedStateStore.invalidateSharedStateCache();
+    }
+  });
+
+  it("returns 200 JSON response with non-degraded state when read succeeds", async () => {
+    const store = sharedStateStore.installSharedStateMemoryStoreForTests({
+      "movielist.json": JSON.stringify([
+        {
+          id: "m-1",
+          title: "The Matrix",
+          addedBy: "Aaron",
+          watchedBy: [],
+          createdAt: "2024-01-01T00:00:00Z",
+        },
+      ]),
+    });
+
+    try {
+      const handler = createReadHandler("movies");
+      const request = new Request("http://localhost/api/state/movies", {
+        method: "GET",
+      });
+
+      const response = await handler(request);
+      assert.strictEqual(response.status, 200);
+
+      const body = (await response.json()) as {
+        data: Array<{ id: string; title: string }>;
+        version: string;
+        degraded: boolean;
+        warning?: string;
+      };
+
+      assert.strictEqual(body.degraded, false);
+      assert.strictEqual(body.warning, undefined);
+      assert.strictEqual(body.data.length, 1);
+      assert.strictEqual(body.data[0].title, "The Matrix");
+    } finally {
+      store.dispose();
+    }
+  });
+});
 
 describe("createMutateHandler - parseMutationRequest error handling", () => {
   it("returns 400 bad request when request body is invalid JSON", async () => {
