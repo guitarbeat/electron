@@ -361,7 +361,7 @@ export interface PosterHeroProps {
   onPosterError: () => void;
   isMobile?: boolean;
   metadataItems: string[];
-  watchStatus: any;
+  watchStatus: ReturnType<typeof getMovieWatchStatus>;
   isWatchedByCurrentUser: boolean;
   isUpdatingWatchStatus: boolean;
   onToggleWatched?: () => void | Promise<void>;
@@ -393,7 +393,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
 
   const [isMobileBookletOpen, setIsMobileBookletOpen] = React.useState(false);
 
-  const pages = React.useMemo(() => {
+  const pages: PageFlipLeaf[] = React.useMemo(() => {
     return [
       {
         id: "cover",
@@ -488,40 +488,34 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     <figure
       className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
       aria-label={`Poster for ${movie.title}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose?.();
-        }
-      }}
     >
       {/* Desktop/Tablet inline booklet mode */}
       {!isMobile ? (
-        <div 
-          className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              onClose?.();
-            }
-          }}
-        >
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10">
           <motion.div layoutId={`book-${movie.id}`} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <PageFlip
-            pages={pages as any}
-            pageWidth={280}
-            pageHeight={420}
-            spineShift={130}
-            pageRadius={8}
-            turnAngle={180}
-            peekAngle={14}
-            shadow={0.4}
-            onBackgroundClick={onClose}
-            maxTurnCount={1}
-            forceClose={!isOpen}
-          />
+            <PageFlip
+              pages={pages}
+              pageWidth={280}
+              pageHeight={420}
+              spineShift={130}
+              pageRadius={8}
+              turnAngle={180}
+              peekAngle={14}
+              shadow={0.4}
+              onBackgroundClick={onClose}
+              maxTurnCount={1}
+              forceClose={!isOpen}
+            />
           </motion.div>
         </div>
       ) : (
-        <motion.img
+        <button
+          type="button"
+          className="w-full h-full p-0 border-0 bg-transparent cursor-pointer block text-left"
+          onClick={() => setIsMobileBookletOpen(true)}
+          aria-label={`Open 3D booklet for ${movie.title}`}
+        >
+          <motion.img
             layoutId={!isMobileBookletOpen ? `book-${movie.id}` : undefined}
             src={activePosterUrl}
             alt={`${movie.title} poster`}
@@ -530,8 +524,8 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             decoding="async"
             fetchPriority="high"
             onError={onPosterError}
-            onClick={() => setIsMobileBookletOpen(true)}
           />
+        </button>
       )}
 
       {/* Mobile dedicated 3D Flipbook overlay */}
@@ -551,29 +545,30 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             ✕
           </button>
           <motion.div layoutId={isMobileBookletOpen ? `book-${movie.id}` : undefined} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <PageFlip
-            pages={pages as any}
-            pageWidth={170}
-            pageHeight={255}
-            spineShift={80}
-            pageRadius={6}
-            turnAngle={180}
-            peekAngle={14}
-            shadow={0.5}
-            maxTurnCount={1}
-            forceClose={!isOpen}
-          />
+            <PageFlip
+              pages={pages}
+              pageWidth={170}
+              pageHeight={255}
+              spineShift={80}
+              pageRadius={6}
+              turnAngle={180}
+              peekAngle={14}
+              shadow={0.5}
+              maxTurnCount={1}
+              forceClose={!isOpen}
+              onBackgroundClick={() => setIsMobileBookletOpen(false)}
+            />
           </motion.div>
-          <div className="flex items-center gap-1.5 mt-6 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
-            <span className="text-[11px] text-white/90 font-medium">
-              Swipe to flip pages
+          <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
+            <span className="text-xs text-white/90 font-medium">
+              📖 Swipe or tap to flip pages
             </span>
           </div>
         </div>
       )}
     </figure>
   );
-}
+};
 
 /* -------------------------------------------------------------------------- */
 /* Sub-component: MetadataHeader                                               */

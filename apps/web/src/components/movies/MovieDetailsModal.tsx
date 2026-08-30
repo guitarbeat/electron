@@ -59,7 +59,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const previouslyFocusedRef = React.useRef<HTMLElement | null>(null);
   const onCloseRef = React.useRef(onClose);
   const dragControls = useDragControls();
-  const { dialogRef, closeButtonRef, playPop, close } = useModalBase(
+  const { dialogRef, close } = useModalBase(
     isVisible,
     onClose,
   );
@@ -148,7 +148,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       document.body.style.overflow = previousOverflow;
       previouslyFocusedRef.current?.focus();
     };
-  }, [closeButtonRef, dialogRef, isOpen]);
+  }, [dialogRef, isOpen]);
 
   if (!isVisible) {
     return null;
@@ -207,15 +207,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         ref={dialogRef}
         tabIndex={-1}
         className={`movie-details-modal__dialog${isMobile ? " movie-details-modal__dialog--mobile" : ""}`}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) close();
-        }}
       >
         <motion.div 
           className="movie-details-modal__surface"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) close();
-          }}
           drag={isMobile ? "y" : false}
           dragListener={false}
           dragControls={dragControls}
