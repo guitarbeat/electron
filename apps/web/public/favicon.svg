@@ -1,14 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="ring" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#38bdf8"/>
-      <stop offset="1" stop-color="#818cf8"/>
-    </linearGradient>
-  </defs>
-  <!-- Dark circle background -->
-  <circle cx="32" cy="32" r="30" fill="#0a0e1a"/>
-  <!-- Accent ring -->
-  <circle cx="32" cy="32" r="26" stroke="url(#ring)" stroke-width="3" fill="none"/>
-  <!-- Play triangle -->
-  <path d="M26 20L48 32L26 44Z" fill="url(#ring)"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 64 64"><defs><linearGradient id="ring" x1="12" x2="52" y1="12" y2="52" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0a0e1a"/><circle cx="32" cy="32" r="26" fill="none" stroke="url(#ring)" stroke-width="3"/><path fill="url(#ring)" d="M26 20L48 32L26 44Z"/></svg>
