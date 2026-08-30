@@ -85,8 +85,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
     suggestionCount: sections.suggestions.length,
-    isLoadingItems: isLoading && isSuggestionsLoading,
-    isLoadingSuggestions: false,
+    isLoadingItems: isLoading,
+    isLoadingSuggestions: isSuggestionsLoading,
   });
 
   const unifiedCards = React.useMemo(() => {

@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { motion } from "motion/react";
 import {
   buildCollectionSections,
   compareCreatedAtDesc,
@@ -366,6 +367,7 @@ export interface PosterHeroProps {
   onToggleWatched?: () => void | Promise<void>;
   onEdit?: () => void;
   onClose?: () => void;
+  isOpen?: boolean;
 }
 
 export const PosterHero: React.FC<PosterHeroProps> = ({
@@ -381,6 +383,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   onToggleWatched,
   onEdit,
   onClose,
+  isOpen = true,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
   const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
@@ -501,6 +504,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             }
           }}
         >
+          <motion.div layoutId={`book-${movie.id}`} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
           <PageFlip
             pages={pages as any}
             pageWidth={280}
@@ -511,11 +515,14 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             peekAngle={14}
             shadow={0.4}
             onBackgroundClick={onClose}
+            maxTurnCount={1}
+            forceClose={!isOpen}
           />
+          </motion.div>
         </div>
       ) : (
-        <>
-          <img
+        <motion.img
+            layoutId={!isMobileBookletOpen ? `book-${movie.id}` : undefined}
             src={activePosterUrl}
             alt={`${movie.title} poster`}
             className="movie-details-modal__poster"
@@ -525,7 +532,6 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             onError={onPosterError}
             onClick={() => setIsMobileBookletOpen(true)}
           />
-        </>
       )}
 
       {/* Mobile dedicated 3D Flipbook overlay */}
@@ -544,6 +550,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
           >
             ✕
           </button>
+          <motion.div layoutId={isMobileBookletOpen ? `book-${movie.id}` : undefined} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
           <PageFlip
             pages={pages as any}
             pageWidth={170}
@@ -553,7 +560,10 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             turnAngle={180}
             peekAngle={14}
             shadow={0.5}
+            maxTurnCount={1}
+            forceClose={!isOpen}
           />
+          </motion.div>
           <div className="flex items-center gap-1.5 mt-6 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
             <span className="text-[11px] text-white/90 font-medium">
               Swipe to flip pages

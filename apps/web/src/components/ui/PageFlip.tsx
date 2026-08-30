@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform, type PanInfo } from "motion/react";
 
 export interface PageFlipLeaf {
@@ -28,6 +28,9 @@ export interface PageFlipProps {
   trigger?: "click" | "hover";
   closeOnLeave?: boolean;
   interactive?: boolean;
+  maxTurnCount?: number;
+  forceClose?: boolean;
+  autoOpen?: boolean;
   className?: string;
   style?: React.CSSProperties;
   onPageChange?: (currentTurnedCount: number) => void;
@@ -112,6 +115,7 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       WebkitTransform: isBack
         ? "rotateY(180deg) translateZ(1px)"
         : "rotateY(0deg) translateZ(1px)",
+      willChange: "transform",
     };
 
     if (typeof content === "string") {
@@ -138,12 +142,9 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
 
   const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (!interactive) return;
-    // Horizontal drag threshold
     if (info.offset.x < -25) {
-      // Dragged left -> flip forward
       if (!turned) onSelect(index);
     } else if (info.offset.x > 25) {
-      // Dragged right -> flip back
       if (turned) onSelect(index);
     }
   };
@@ -163,9 +164,11 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
         cursor: interactive ? "pointer" : "default",
         boxShadow: shadowCss,
         touchAction: "pan-y",
+        willChange: "transform",
       }}
       animate={{
         rotateY: turned ? -turnAngle : peek ? -peekAngle : 0,
+        z: turned ? index * 0.1 : (total - index) * 0.1,
       }}
       transition={{
         duration,
@@ -175,7 +178,14 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       onPointerEnter={() => onReach(index)}
       onPointerLeave={onRelease}
       onPanEnd={handlePanEnd}
-      onClick={(e) => {
+      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+        const targetElement = e.target as HTMLElement;
+        const interactiveSelector = 'button, a, input, select, textarea, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"])';
+        
+        if (targetElement?.closest && targetElement.closest(interactiveSelector)) {
+          return;
+        }
+        
         e.stopPropagation();
         onSelect(index);
       }}
@@ -213,10 +223,13 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   trigger = "click",
   closeOnLeave = true,
   interactive = true,
+  maxTurnCount,
   className = "",
   style,
   onPageChange,
   onBackgroundClick,
+  forceClose,
+  autoOpen,
 }) => {
   const total = pages.length;
   const [turnedCount, setTurnedCount] = useState(0);
@@ -224,17 +237,51 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   const [isClosingAll, setIsClosingAll] = useState(false);
   const curve = EASINGS[ease] ?? EASINGS.easeInOut;
 
+  const prevTurnedCountRef = useRef(turnedCount);
+  const onPageChangeRef = useRef(onPageChange);
+
+  useEffect(() => {
+    onPageChangeRef.current = onPageChange;
+  }, [onPageChange]);
+
+  useEffect(() => {
+    if (prevTurnedCountRef.current !== turnedCount) {
+      prevTurnedCountRef.current = turnedCount;
+      onPageChangeRef.current?.(turnedCount);
+    }
+  }, [turnedCount]);
+
+  useEffect(() => {
+    if (forceClose && turnedCount > 0) {
+      setIsClosingAll(true);
+      setTurnedCount(0);
+    }
+  }, [forceClose, turnedCount]);
+
+  useEffect(() => {
+    if (autoOpen && turnedCount === 0 && !forceClose) {
+      const t = setTimeout(() => {
+        setIsClosingAll(false);
+        setTurnedCount(1);
+      }, 50);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [autoOpen, forceClose, turnedCount]);
+
   const handleSelect = useCallback(
     (index: number) => {
       if (!interactive) return;
       setIsClosingAll(false);
       setTurnedCount((prev) => {
-        const next = index < prev ? index : index + 1;
-        onPageChange?.(next);
+        let next = index < prev ? index : index + 1;
+        if (maxTurnCount !== undefined && next > maxTurnCount) {
+          next = 0;
+        }
         return next;
       });
     },
-    [interactive, onPageChange]
+    [interactive, maxTurnCount]
   );
 
   const handleReach = useCallback(
@@ -244,10 +291,9 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       if (trigger === "hover") {
         setIsClosingAll(false);
         setTurnedCount(index + 1);
-        onPageChange?.(index + 1);
       }
     },
-    [interactive, trigger, onPageChange]
+    [interactive, trigger]
   );
 
   const handleRelease = useCallback(() => {
@@ -258,8 +304,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     if (!interactive) return;
     setIsClosingAll(true);
     setTurnedCount(0);
-    onPageChange?.(0);
-  }, [interactive, onPageChange]);
+  }, [interactive]);
 
   const handleBackgroundClick = useCallback(() => {
     handleCloseAll();
@@ -271,21 +316,13 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       if (!interactive) return;
       if (e.key === "ArrowRight") {
         e.preventDefault();
-        setTurnedCount((prev) => {
-          const next = Math.min(prev + 1, total);
-          onPageChange?.(next);
-          return next;
-        });
+        setTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? total));
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        setTurnedCount((prev) => {
-          const next = Math.max(prev - 1, 0);
-          onPageChange?.(next);
-          return next;
-        });
+        setTurnedCount((prev) => Math.max(prev - 1, 0));
       }
     },
-    [interactive, total, onPageChange]
+    [interactive, maxTurnCount, total]
   );
 
   return (
@@ -309,7 +346,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         tabIndex={-1}
       />
       <motion.div
-        className="relative z-1"
+        className="relative z-[1]"
         style={{
           width: pageWidth,
           height: pageHeight,
@@ -365,3 +402,4 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     </div>
   );
 };
+

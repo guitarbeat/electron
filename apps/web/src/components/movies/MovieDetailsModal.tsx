@@ -4,6 +4,7 @@
 
 import React from "react";
 import { createPortal } from "react-dom";
+import { motion, useDragControls } from "motion/react";
 import type {
   Movie,
   User,
@@ -57,7 +58,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   const closeTimeoutRef = React.useRef<number | null>(null);
   const previouslyFocusedRef = React.useRef<HTMLElement | null>(null);
   const onCloseRef = React.useRef(onClose);
-  const { dialogRef, closeButtonRef, playPop } = useModalBase(
+  const dragControls = useDragControls();
+  const { dialogRef, closeButtonRef, playPop, close } = useModalBase(
     isVisible,
     onClose,
   );
@@ -78,10 +80,16 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         document.activeElement as HTMLElement | null;
       setIsVisible(true);
       setIsEntering(false);
+      let frame2: number | undefined;
       const frame = window.requestAnimationFrame(() => {
-        setIsEntering(true);
+        frame2 = window.requestAnimationFrame(() => {
+          setIsEntering(true);
+        });
       });
-      return () => window.cancelAnimationFrame(frame);
+      return () => {
+        window.cancelAnimationFrame(frame);
+        if (frame2) window.cancelAnimationFrame(frame2);
+      };
     }
 
     if (!isVisible) return undefined;
@@ -89,7 +97,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     setIsEntering(false);
     closeTimeoutRef.current = window.setTimeout(() => {
       setIsVisible(false);
-    }, 260);
+    }, 550);
 
     return () => {
       if (closeTimeoutRef.current !== null) {
@@ -110,7 +118,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onCloseRef.current();
+        close();
         return;
       }
 
@@ -184,11 +192,14 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="movie-details-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
     >
       <button
         type="button"
         className="movie-details-modal__backdrop"
-        onClick={onClose}
+        onClick={close}
         aria-label={`Close details for ${movie.title}`}
       />
 
@@ -197,15 +208,33 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         tabIndex={-1}
         className={`movie-details-modal__dialog${isMobile ? " movie-details-modal__dialog--mobile" : ""}`}
         onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
+          if (e.target === e.currentTarget) close();
         }}
       >
-        <div 
+        <motion.div 
           className="movie-details-modal__surface"
           onClick={(e) => {
-            if (e.target === e.currentTarget) onClose();
+            if (e.target === e.currentTarget) close();
+          }}
+          drag={isMobile ? "y" : false}
+          dragListener={false}
+          dragControls={dragControls}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.8 }}
+          onDragEnd={(e, info) => {
+            if (info.offset.y > 120 || info.velocity.y > 400) {
+              close();
+            }
           }}
         >
+          {isMobile && (
+            <div 
+              className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center z-50 touch-none cursor-grab active:cursor-grabbing"
+              onPointerDown={(e) => dragControls.start(e)}
+            >
+              <div className="w-10 h-1.5 bg-white/30 rounded-full" />
+            </div>
+          )}
           {/* Poster Hero Side */}
           <PosterHero
             movie={movie}
@@ -219,7 +248,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             isUpdatingWatchStatus={isUpdatingWatchStatus}
             onToggleWatched={onToggleWatched}
             onEdit={onEdit}
-            onClose={onClose}
+            onClose={close}
+            isOpen={isOpen}
           />
           {/* Main Details Body (Mobile Only) */}
           {isMobile && (
@@ -263,7 +293,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
               </footer>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>,
     document.body,
