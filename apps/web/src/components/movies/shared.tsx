@@ -503,7 +503,6 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               peekAngle={14}
               shadow={0.4}
               onBackgroundClick={onClose}
-              maxTurnCount={1}
               forceClose={!isOpen}
             />
           </motion.div>
@@ -554,7 +553,6 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               turnAngle={180}
               peekAngle={14}
               shadow={0.5}
-              maxTurnCount={1}
               forceClose={!isOpen}
               onBackgroundClick={() => setIsMobileBookletOpen(false)}
             />

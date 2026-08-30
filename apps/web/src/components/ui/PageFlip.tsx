@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo, useEffect, useRef } from "react";
-import { motion, useMotionValue, useTransform, type PanInfo } from "motion/react";
+import { motion, useMotionValue, useTransform, animate, type PanInfo } from "motion/react";
 
 export interface PageFlipLeaf {
   id?: string;
@@ -93,10 +93,20 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
   onReach,
   onRelease,
 }: InternalLeafProps) {
-  const rotationY = useMotionValue(0);
+  const rotationY = useMotionValue(turned ? -turnAngle : 0);
   const zIndex = useTransform(rotationY, (val) =>
     val < -turnAngle / 2 ? total + index + 1 : total - index
   );
+
+  useEffect(() => {
+    const target = turned ? -turnAngle : peek ? -peekAngle : 0;
+    const controls = animate(rotationY, target, {
+      duration,
+      delay,
+      ease: curve,
+    });
+    return () => controls.stop();
+  }, [turned, peek, turnAngle, peekAngle, duration, delay, curve, rotationY]);
 
   const shadowCss =
     shadow > 0
@@ -166,23 +176,16 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
         touchAction: "pan-y",
         willChange: "transform",
       }}
-      animate={{
-        rotateY: turned ? -turnAngle : peek ? -peekAngle : 0,
-        z: turned ? index * 0.1 : (total - index) * 0.1,
-      }}
-      transition={{
-        duration,
-        delay,
-        ease: curve,
-      }}
       onPointerEnter={() => onReach(index)}
       onPointerLeave={onRelease}
       onPanEnd={handlePanEnd}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-        const targetElement = e.target as HTMLElement;
-        const interactiveSelector = 'button, a, input, select, textarea, [role="button"], [role="switch"], [role="link"], [tabindex]:not([tabindex="-1"])';
+        const targetElement = e.target as HTMLElement | null;
+        const interactiveSelector = 'button, a, input, select, textarea, [role="button"], [role="switch"], [role="link"]';
+        const interactiveChild = targetElement?.closest ? targetElement.closest(interactiveSelector) : null;
         
-        if (targetElement?.closest && targetElement.closest(interactiveSelector)) {
+        // If clicking on an interactive element nested inside the page content, don't flip the page
+        if (interactiveChild && interactiveChild !== e.currentTarget) {
           return;
         }
         
