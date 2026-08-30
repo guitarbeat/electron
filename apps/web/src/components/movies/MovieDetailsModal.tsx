@@ -148,7 +148,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       document.body.style.overflow = previousOverflow;
       previouslyFocusedRef.current?.focus();
     };
-  }, [dialogRef, isOpen]);
+  }, [close, dialogRef, isOpen]);
 
   if (!isVisible) {
     return null;
@@ -192,9 +192,6 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="movie-details-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) close();
-      }}
     >
       <button
         type="button"
