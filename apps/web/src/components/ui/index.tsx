@@ -103,14 +103,14 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   });
 
   React.useEffect(() => {
-    if (activeSrc && CACHED_LOADED_POSTERS.has(activeSrc)) {
-      setIsLoaded(true);
-      setHasImageError(false);
-      return;
-    }
     setHasImageError(false);
-    setIsLoaded(false);
-  }, [activeSrc]);
+    const initialSrc = posterUrl ? posterUrl : fallbackCatUrl;
+    if (initialSrc && CACHED_LOADED_POSTERS.has(initialSrc)) {
+      setIsLoaded(true);
+    } else {
+      setIsLoaded(false);
+    }
+  }, [posterUrl, fallbackCatUrl]);
 
   const handleImageError = () => {
     if (!hasImageError && posterUrl) {

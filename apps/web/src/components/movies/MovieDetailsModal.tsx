@@ -217,50 +217,55 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             hasPosterError={hasPosterError}
             onPosterError={() => setHasPosterError(true)}
             isMobile={isMobile}
+            metadataItems={metadataItems}
+            watchStatus={watchStatus}
+            isWatchedByCurrentUser={isWatchedByCurrentUser}
+            isUpdatingWatchStatus={isUpdatingWatchStatus}
+            onToggleWatched={onToggleWatched}
+            onEdit={onEdit}
           />
-
-          {/* Main Details Body */}
-          <div className="movie-details-modal__content">
-            <MetadataHeader
-              movie={movie}
-              metadataItems={metadataItems}
-              watchStatus={watchStatus}
-              isWatchedByCurrentUser={isWatchedByCurrentUser}
-              isUpdatingWatchStatus={isUpdatingWatchStatus}
-              onToggleWatched={onToggleWatched}
-              onEdit={onEdit}
-            />
-
-            {/* Overview / Plot Section */}
-            {movie.plot && (
-              <section
-                className="movie-details-modal__section"
-                aria-labelledby="movie-overview-heading"
-              >
-                <h3
-                  id="movie-overview-heading"
-                  className="movie-details-modal__section-label"
+          {/* Main Details Body (Mobile Only) */}
+          {isMobile && (
+            <div className="movie-details-modal__content">
+              <MetadataHeader
+                movie={movie}
+                metadataItems={metadataItems}
+                watchStatus={watchStatus}
+                isWatchedByCurrentUser={isWatchedByCurrentUser}
+                isUpdatingWatchStatus={isUpdatingWatchStatus}
+                onToggleWatched={onToggleWatched}
+                onEdit={onEdit}
+              />
+              {/* Overview / Plot Section */}
+              {movie.plot && (
+                <section
+                  className="movie-details-modal__section"
+                  aria-labelledby="movie-overview-heading"
                 >
-                  Overview
-                </h3>
-                <p className="movie-details-modal__plot">{movie.plot}</p>
-              </section>
-            )}
-
-            {/* Footer Status Metadata */}
-            <footer className="movie-details-modal__footer">
-              <span>
-                Catalog item added {formatMemoryTimestamp(movie.createdAt)}
-              </span>
-              <span>
-                {movie.watchedBy.length === 2
-                  ? "Watched by Aaron & Electra"
-                  : movie.watchedBy.length === 1
-                    ? `Watched by ${movie.watchedBy[0]}`
-                    : "Not watched yet"}
-              </span>
-            </footer>
-          </div>
+                  <h3
+                    id="movie-overview-heading"
+                    className="movie-details-modal__section-label"
+                  >
+                    Overview
+                  </h3>
+                  <p className="movie-details-modal__plot">{movie.plot}</p>
+                </section>
+              )}
+              {/* Footer Status Metadata */}
+              <footer className="movie-details-modal__footer">
+                <span>
+                  Catalog item added {formatMemoryTimestamp(movie.createdAt)}
+                </span>
+                <span>
+                  {movie.watchedBy.length === 2
+                    ? "Watched by Aaron & Electra"
+                    : movie.watchedBy.length === 1
+                      ? `Watched by ${movie.watchedBy[0]}`
+                      : "Not watched yet"}
+                </span>
+              </footer>
+            </div>
+          )}
         </div>
       </div>
     </div>,

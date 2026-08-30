@@ -2,10 +2,11 @@ import React, { memo } from "react";
 import type { MainTab } from "@/shared/types";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { useUser } from "@/app/providerContexts";
+import LibrarySearch from "./LibrarySearch";
+
 const MoviesView = lazyWithRetry(() =>
   import("@/components/movies").then((m) => ({ default: m.MoviesView })),
 );
-import LibrarySearch from "./LibrarySearch";
 
 interface UnifiedLibraryProps {
   isInteractionStatic: boolean;

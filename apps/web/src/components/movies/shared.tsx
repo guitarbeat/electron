@@ -353,12 +353,18 @@ export type MoviesWorkspaceViewProps = MoviesViewProps & {
 /* Sub-component: PosterHero                                                   */
 /* -------------------------------------------------------------------------- */
 
-interface PosterHeroProps {
+export interface PosterHeroProps {
   movie: Movie;
   watchStatusLabel: string;
   hasPosterError: boolean;
   onPosterError: () => void;
   isMobile?: boolean;
+  metadataItems: string[];
+  watchStatus: any;
+  isWatchedByCurrentUser: boolean;
+  isUpdatingWatchStatus: boolean;
+  onToggleWatched?: () => void | Promise<void>;
+  onEdit?: () => void;
 }
 
 export const PosterHero: React.FC<PosterHeroProps> = ({
@@ -367,6 +373,12 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   hasPosterError,
   onPosterError,
   isMobile = false,
+  metadataItems,
+  watchStatus,
+  isWatchedByCurrentUser,
+  isUpdatingWatchStatus,
+  onToggleWatched,
+  onEdit,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
   const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
@@ -374,78 +386,58 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     ? (resolvedPosterUrl as string)
     : resolvePosterUrl(undefined, movie.id || movie.title);
 
-  const [isBookletMode, setIsBookletMode] = React.useState(!isMobile);
   const [isMobileBookletOpen, setIsMobileBookletOpen] = React.useState(false);
 
-  const pages: PageFlipLeaf[] = React.useMemo(() => {
+  const pages = React.useMemo(() => {
     return [
       {
         id: "cover",
         front: activePosterUrl,
         frontAlt: `${movie.title} cover`,
         back: (
-          <div className="flex h-full w-full flex-col justify-between p-4 bg-[#0b101b] text-white border-l border-white/10 select-none">
-            <div>
-              <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
-                <span className="text-[11px] font-bold text-amber-400 tracking-wider uppercase">
-                  Film Dossier
-                </span>
-                <span className="text-[11px] text-white/50">{movie.year || ""}</span>
-              </div>
-              <h4 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-2">
-                {movie.title}
-              </h4>
-              {movie.director && (
-                <div className="text-[11px] text-slate-300 mb-1">
-                  <span className="text-white/50">Director:</span> {movie.director}
-                </div>
-              )}
-              {movie.genre && (
-                <div className="text-[11px] text-slate-300 mb-1">
-                  <span className="text-white/50">Genre:</span> {movie.genre}
-                </div>
-              )}
-              {movie.runtime && (
-                <div className="text-[11px] text-slate-300 mb-1">
-                  <span className="text-white/50">Runtime:</span> {movie.runtime}
-                </div>
-              )}
-              {movie.imdbRating && movie.imdbRating !== "N/A" && (
-                <div className="mt-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-medium border border-amber-500/30">
-                  <StarIcon size={10} fill style={{ color: "#fbbf24" }} />
-                  <span>IMDb {movie.imdbRating}</span>
-                </div>
-              )}
-            </div>
-            <div className="text-[10px] text-white/40 border-t border-white/10 pt-2 flex justify-between">
-              <span>Page 1 of 2</span>
-              <span>Flip →</span>
-            </div>
+          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-l border-white/10 select-none overflow-y-auto custom-scrollbar relative z-10">
+            <MetadataHeader
+              movie={movie}
+              metadataItems={metadataItems}
+              watchStatus={watchStatus}
+              isWatchedByCurrentUser={isWatchedByCurrentUser}
+              isUpdatingWatchStatus={isUpdatingWatchStatus}
+              onToggleWatched={onToggleWatched}
+              onEdit={onEdit}
+            />
           </div>
         ),
       },
       {
         id: "details",
         front: (
-          <div className="flex h-full w-full flex-col justify-between p-4 bg-[#080d17] text-white border-r border-white/10 select-none">
-            <div>
-              <span className="text-[11px] font-bold text-sky-400 tracking-wider uppercase block mb-1.5">
-                Overview
+          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-r border-white/10 select-none overflow-y-auto custom-scrollbar">
+            {movie.plot ? (
+              <section aria-labelledby="movie-overview-heading" className="movie-details-modal__section" style={{ padding: 0 }}>
+                <h3 id="movie-overview-heading" className="movie-details-modal__section-label">
+                  Overview
+                </h3>
+                <p className="movie-details-modal__plot" style={{ marginBottom: 0 }}>
+                  {movie.plot}
+                </p>
+              </section>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
+                No overview recorded for this title.
+              </div>
+            )}
+            <footer className="movie-details-modal__footer mt-auto pt-4 border-t border-white/5" style={{ padding: '1rem 0 0' }}>
+              <span>
+                Catalog item added {new Date(movie.createdAt).toLocaleDateString()}
               </span>
-              <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-6">
-                {movie.plot || "No overview recorded for this title."}
-              </p>
-              {movie.category && (
-                <div className="mt-2 text-[11px] text-slate-400">
-                  <span className="text-white/60 font-semibold block text-[10px] uppercase">Mood / Category:</span>
-                  <span className="line-clamp-2">{movie.category}</span>
-                </div>
-              )}
-            </div>
-            <div className="text-[10px] text-white/40 border-t border-white/10 pt-2 flex justify-between">
-              <span>Page 2 of 2</span>
-              <span>← Flip</span>
-            </div>
+              <span>
+                {movie.watchedBy.length === 2
+                  ? "Watched by Aaron & Electra"
+                  : movie.watchedBy.length === 1
+                    ? `Watched by ${movie.watchedBy[0]}`
+                    : "Not watched yet"}
+              </span>
+            </footer>
           </div>
         ),
         back: (
@@ -454,16 +446,16 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               src={activePosterUrl}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-xs scale-110"
+              className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-xs scale-110 pointer-events-none"
             />
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col items-center justify-center h-full w-full">
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
                 Viewing Status
               </span>
-              <h4 className="text-sm font-bold text-white mb-1.5">
+              <h4 className="text-sm font-bold text-white mb-2">
                 {watchStatusLabel}
               </h4>
-              <p className="text-[11px] text-slate-300 max-w-[170px] mx-auto leading-tight">
+              <p className="text-[11px] text-slate-300 max-w-[170px] mx-auto leading-tight mb-6">
                 {movie.watchedBy.length === 2
                   ? "Watched together by Aaron & Electra ❤️"
                   : movie.watchedBy.length === 1
@@ -475,11 +467,21 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         ),
       },
     ];
-  }, [movie, activePosterUrl, watchStatusLabel]);
+  }, [
+    movie,
+    activePosterUrl,
+    watchStatusLabel,
+    metadataItems,
+    watchStatus,
+    isWatchedByCurrentUser,
+    isUpdatingWatchStatus,
+    onToggleWatched,
+    onEdit,
+  ]);
 
   return (
     <figure
-      className="movie-details-modal__poster-shell"
+      className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
       aria-label={`Poster for ${movie.title}`}
     >
       <img
@@ -492,19 +494,19 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       />
 
       {/* Desktop/Tablet inline booklet mode */}
-      {!isMobile && isBookletMode ? (
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-14">
+      {!isMobile ? (
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10">
           <PageFlip
-            pages={pages}
-            pageWidth={200}
-            pageHeight={300}
-            spineShift={95}
+            pages={pages as any}
+            pageWidth={280}
+            pageHeight={420}
+            spineShift={130}
             pageRadius={8}
             turnAngle={180}
             peekAngle={14}
             shadow={0.4}
           />
-          <div className="flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
+          <div className="flex items-center gap-1.5 mt-5 px-3 py-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
             <span className="text-[11px] text-white/80 font-medium">
               📖 Drag or click to flip pages
             </span>
@@ -520,6 +522,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             decoding="async"
             fetchPriority="high"
             onError={onPosterError}
+            onClick={() => setIsMobileBookletOpen(true)}
           />
           <div
             className="movie-details-modal__poster-gradient"
@@ -531,7 +534,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       {/* Mobile dedicated 3D Flipbook overlay */}
       {isMobile && isMobileBookletOpen && (
         <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#070b14]/95 backdrop-blur-xl p-4 select-none"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070b14]/95 backdrop-blur-xl p-4 select-none"
           role="dialog"
           aria-modal="true"
           aria-label={`${movie.title} 3D Flipbook`}
@@ -545,79 +548,25 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             ✕
           </button>
           <PageFlip
-            pages={pages}
+            pages={pages as any}
             pageWidth={170}
             pageHeight={255}
-            spineShift={75}
-            pageRadius={8}
+            spineShift={80}
+            pageRadius={6}
             turnAngle={180}
             peekAngle={14}
-            shadow={0.45}
+            shadow={0.5}
           />
-          <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
-            <span className="text-xs text-white/90 font-medium">
-              📖 Swipe or tap to flip pages
+          <div className="flex items-center gap-1.5 mt-6 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
+            <span className="text-[11px] text-white/90 font-medium">
+              Swipe to flip pages
             </span>
           </div>
         </div>
       )}
-
-      {/* Badges Overlay */}
-      <div className="movie-details-modal__poster-badges z-20" role="status">
-        <span
-          className={`movie-details-modal__poster-pill ${movie.watchedBy.length > 0 ? "movie-details-modal__poster-pill--status" : ""}`}
-        >
-          {movie.watchedBy.length > 0 && (
-            <CheckIcon size={12} style={{ marginRight: "0.25rem" }} />
-          )}
-          {watchStatusLabel}
-        </span>
-        {movie.imdbRating && movie.imdbRating !== "N/A" && (
-          <span className="movie-details-modal__poster-pill movie-details-modal__poster-pill--rating">
-            <StarIcon
-              size={11}
-              fill
-              style={{ color: "#fbbf24", marginRight: "0.2rem" }}
-            />
-            {movie.imdbRating}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={() => {
-            if (isMobile) {
-              setIsMobileBookletOpen(true);
-            } else {
-              setIsBookletMode((prev) => !prev);
-            }
-          }}
-          className="movie-details-modal__poster-pill cursor-pointer transition hover:bg-white/30"
-          aria-label={
-            isMobile
-              ? "Open 3D page flip booklet"
-              : isBookletMode
-                ? "Switch to standard poster view"
-                : "Switch to 3D page flip booklet"
-          }
-        >
-          {isMobile ? "📖 3D Flip" : isBookletMode ? "🖼️ Poster" : "📖 3D Flip"}
-        </button>
-      </div>
-
-      {/* Footer Details */}
-      <figcaption className="movie-details-modal__poster-footer">
-        <span className="movie-details-modal__poster-caption">
-          Queued by <strong>{movie.addedBy}</strong>
-        </span>
-        {movie.watchedBy.length > 0 && (
-          <span className="movie-details-modal__poster-caption">
-            Watched by <strong>{movie.watchedBy.join(" & ")}</strong>
-          </span>
-        )}
-      </figcaption>
     </figure>
   );
-};
+}
 
 /* -------------------------------------------------------------------------- */
 /* Sub-component: MetadataHeader                                               */
