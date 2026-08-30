@@ -216,6 +216,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             watchStatusLabel={watchStatus.label}
             hasPosterError={hasPosterError}
             onPosterError={() => setHasPosterError(true)}
+            isMobile={isMobile}
           />
 
           {/* Main Details Body */}

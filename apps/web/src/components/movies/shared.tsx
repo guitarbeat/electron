@@ -358,6 +358,7 @@ interface PosterHeroProps {
   watchStatusLabel: string;
   hasPosterError: boolean;
   onPosterError: () => void;
+  isMobile?: boolean;
 }
 
 export const PosterHero: React.FC<PosterHeroProps> = ({
@@ -365,6 +366,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   watchStatusLabel,
   hasPosterError,
   onPosterError,
+  isMobile = false,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
   const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
@@ -372,7 +374,8 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     ? (resolvedPosterUrl as string)
     : resolvePosterUrl(undefined, movie.id || movie.title);
 
-  const [isBookletMode, setIsBookletMode] = React.useState(true);
+  const [isBookletMode, setIsBookletMode] = React.useState(!isMobile);
+  const [isMobileBookletOpen, setIsMobileBookletOpen] = React.useState(false);
 
   const pages: PageFlipLeaf[] = React.useMemo(() => {
     return [
@@ -488,12 +491,14 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         decoding="async"
       />
 
-      {isBookletMode ? (
+      {/* Desktop/Tablet inline booklet mode */}
+      {!isMobile && isBookletMode ? (
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-14">
           <PageFlip
             pages={pages}
-            pageWidth={220}
-            pageHeight={330}
+            pageWidth={200}
+            pageHeight={300}
+            spineShift={95}
             pageRadius={8}
             turnAngle={180}
             peekAngle={14}
@@ -523,6 +528,40 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         </>
       )}
 
+      {/* Mobile dedicated 3D Flipbook overlay */}
+      {isMobile && isMobileBookletOpen && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#070b14]/95 backdrop-blur-xl p-4 select-none"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${movie.title} 3D Flipbook`}
+        >
+          <button
+            type="button"
+            onClick={() => setIsMobileBookletOpen(false)}
+            className="absolute top-4 right-4 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 text-lg transition cursor-pointer"
+            aria-label="Close 3D booklet"
+          >
+            ✕
+          </button>
+          <PageFlip
+            pages={pages}
+            pageWidth={170}
+            pageHeight={255}
+            spineShift={75}
+            pageRadius={8}
+            turnAngle={180}
+            peekAngle={14}
+            shadow={0.45}
+          />
+          <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
+            <span className="text-xs text-white/90 font-medium">
+              📖 Swipe or tap to flip pages
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Badges Overlay */}
       <div className="movie-details-modal__poster-badges z-20" role="status">
         <span
@@ -545,11 +584,23 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         )}
         <button
           type="button"
-          onClick={() => setIsBookletMode((prev) => !prev)}
+          onClick={() => {
+            if (isMobile) {
+              setIsMobileBookletOpen(true);
+            } else {
+              setIsBookletMode((prev) => !prev);
+            }
+          }}
           className="movie-details-modal__poster-pill cursor-pointer transition hover:bg-white/30"
-          aria-label={isBookletMode ? "Switch to standard poster view" : "Switch to 3D page flip booklet"}
+          aria-label={
+            isMobile
+              ? "Open 3D page flip booklet"
+              : isBookletMode
+                ? "Switch to standard poster view"
+                : "Switch to 3D page flip booklet"
+          }
         >
-          {isBookletMode ? "🖼️ Poster" : "📖 3D Flip"}
+          {isMobile ? "📖 3D Flip" : isBookletMode ? "🖼️ Poster" : "📖 3D Flip"}
         </button>
       </div>
 

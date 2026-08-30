@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo } from "react";
-import { motion, useMotionValue, useTransform } from "motion/react";
+import { motion, useMotionValue, useTransform, type PanInfo } from "motion/react";
 
 export interface PageFlipLeaf {
   id?: string;
@@ -105,7 +105,12 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       borderRadius: radius,
       backfaceVisibility: "hidden",
       WebkitBackfaceVisibility: "hidden",
-      ...(isBack ? { transform: "rotateY(180deg) translateZ(1px)" } : {}),
+      transform: isBack
+        ? "rotateY(180deg) translateZ(1px)"
+        : "rotateY(0deg) translateZ(1px)",
+      WebkitTransform: isBack
+        ? "rotateY(180deg) translateZ(1px)"
+        : "rotateY(0deg) translateZ(1px)",
     };
 
     if (typeof content === "string") {
@@ -130,9 +135,21 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
     );
   };
 
+  const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!interactive) return;
+    // Horizontal drag threshold
+    if (info.offset.x < -25) {
+      // Dragged left -> flip forward
+      if (!turned) onSelect(index);
+    } else if (info.offset.x > 25) {
+      // Dragged right -> flip back
+      if (turned) onSelect(index);
+    }
+  };
+
   return (
     <motion.div
-      className="absolute top-0 left-0"
+      className="absolute top-0 left-0 select-none"
       style={{
         width,
         height,
@@ -140,9 +157,11 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
         zIndex,
         transformOrigin: "left center",
         transformStyle: "preserve-3d",
+        WebkitTransformStyle: "preserve-3d",
         borderRadius: radius,
         cursor: interactive ? "pointer" : "default",
         boxShadow: shadowCss,
+        touchAction: "pan-y",
       }}
       animate={{
         rotateY: turned ? -turnAngle : peek ? -peekAngle : 0,
@@ -154,6 +173,7 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       }}
       onPointerEnter={() => onReach(index)}
       onPointerLeave={onRelease}
+      onPanEnd={handlePanEnd}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(index);
@@ -287,7 +307,9 @@ export const PageFlip: React.FC<PageFlipProps> = ({
           width: pageWidth,
           height: pageHeight,
           perspective: `${perspective}px`,
+          WebkitPerspective: `${perspective}px`,
           transformStyle: "preserve-3d",
+          WebkitTransformStyle: "preserve-3d",
         }}
         animate={{ x: turnedCount > 0 ? spineShift : 0 }}
         transition={{
