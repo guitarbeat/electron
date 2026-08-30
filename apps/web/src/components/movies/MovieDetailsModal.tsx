@@ -104,7 +104,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const focusFrame = window.requestAnimationFrame(() => {
-      closeButtonRef.current?.focus();
+      dialogRef.current?.focus();
     });
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -194,22 +194,18 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
       <div
         ref={dialogRef}
+        tabIndex={-1}
         className={`movie-details-modal__dialog${isMobile ? " movie-details-modal__dialog--mobile" : ""}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
-        <div className="movie-details-modal__surface">
-          <button
-            ref={closeButtonRef}
-            type="button"
-            className="movie-details-modal__close"
-            onClick={() => {
-              playPop();
-              onClose();
-            }}
-            aria-label="Close movie details"
-          >
-            ×
-          </button>
-
+        <div 
+          className="movie-details-modal__surface"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
           {/* Poster Hero Side */}
           <PosterHero
             movie={movie}
@@ -223,6 +219,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             isUpdatingWatchStatus={isUpdatingWatchStatus}
             onToggleWatched={onToggleWatched}
             onEdit={onEdit}
+            onClose={onClose}
           />
           {/* Main Details Body (Mobile Only) */}
           {isMobile && (

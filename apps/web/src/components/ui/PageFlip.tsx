@@ -31,6 +31,7 @@ export interface PageFlipProps {
   className?: string;
   style?: React.CSSProperties;
   onPageChange?: (currentTurnedCount: number) => void;
+  onBackgroundClick?: () => void;
 }
 
 const EASINGS: Record<PageFlipEase, [number, number, number, number]> = {
@@ -215,6 +216,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   className = "",
   style,
   onPageChange,
+  onBackgroundClick,
 }) => {
   const total = pages.length;
   const [turnedCount, setTurnedCount] = useState(0);
@@ -259,6 +261,11 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     onPageChange?.(0);
   }, [interactive, onPageChange]);
 
+  const handleBackgroundClick = useCallback(() => {
+    handleCloseAll();
+    onBackgroundClick?.();
+  }, [handleCloseAll, onBackgroundClick]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!interactive) return;
@@ -296,7 +303,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       <button
         type="button"
         className="absolute inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
-        onClick={handleCloseAll}
+        onClick={handleBackgroundClick}
         onKeyDown={handleKeyDown}
         aria-label="Reset flipbook to cover"
         tabIndex={-1}

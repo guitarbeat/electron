@@ -365,6 +365,7 @@ export interface PosterHeroProps {
   isUpdatingWatchStatus: boolean;
   onToggleWatched?: () => void | Promise<void>;
   onEdit?: () => void;
+  onClose?: () => void;
 }
 
 export const PosterHero: React.FC<PosterHeroProps> = ({
@@ -379,6 +380,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   isUpdatingWatchStatus,
   onToggleWatched,
   onEdit,
+  onClose,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
   const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
@@ -483,19 +485,22 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     <figure
       className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
       aria-label={`Poster for ${movie.title}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose?.();
+        }
+      }}
     >
-      <img
-        src={activePosterUrl}
-        alt=""
-        aria-hidden="true"
-        className="movie-details-modal__poster-bg"
-        loading="lazy"
-        decoding="async"
-      />
-
       {/* Desktop/Tablet inline booklet mode */}
       {!isMobile ? (
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10">
+        <div 
+          className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              onClose?.();
+            }
+          }}
+        >
           <PageFlip
             pages={pages as any}
             pageWidth={280}
@@ -505,12 +510,8 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             turnAngle={180}
             peekAngle={14}
             shadow={0.4}
+            onBackgroundClick={onClose}
           />
-          <div className="flex items-center gap-1.5 mt-5 px-3 py-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
-            <span className="text-[11px] text-white/80 font-medium">
-              📖 Drag or click to flip pages
-            </span>
-          </div>
         </div>
       ) : (
         <>
@@ -523,10 +524,6 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             fetchPriority="high"
             onError={onPosterError}
             onClick={() => setIsMobileBookletOpen(true)}
-          />
-          <div
-            className="movie-details-modal__poster-gradient"
-            aria-hidden="true"
           />
         </>
       )}
