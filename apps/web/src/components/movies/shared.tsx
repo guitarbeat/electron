@@ -372,7 +372,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     ? (resolvedPosterUrl as string)
     : resolvePosterUrl(undefined, movie.id || movie.title);
 
-  const [isBookletMode, setIsBookletMode] = React.useState(false);
+  const [isBookletMode, setIsBookletMode] = React.useState(true);
 
   const pages: PageFlipLeaf[] = React.useMemo(() => {
     return [
@@ -492,16 +492,18 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-14">
           <PageFlip
             pages={pages}
-            pageWidth={210}
-            pageHeight={315}
+            pageWidth={220}
+            pageHeight={330}
             pageRadius={8}
             turnAngle={180}
-            peekAngle={12}
-            shadow={0.35}
+            peekAngle={14}
+            shadow={0.4}
           />
-          <span className="text-[11px] text-white/60 mt-3 tracking-wide">
-            Click or drag to flip pages
-          </span>
+          <div className="flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
+            <span className="text-[11px] text-white/80 font-medium">
+              📖 Drag or click to flip pages
+            </span>
+          </div>
         </div>
       ) : (
         <>
@@ -522,7 +524,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       )}
 
       {/* Badges Overlay */}
-      <div className="movie-details-modal__poster-badges" role="status">
+      <div className="movie-details-modal__poster-badges z-20" role="status">
         <span
           className={`movie-details-modal__poster-pill ${movie.watchedBy.length > 0 ? "movie-details-modal__poster-pill--status" : ""}`}
         >
