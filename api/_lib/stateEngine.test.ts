@@ -268,7 +268,7 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
       {
         get(_target, prop) {
           if (prop === "baseVersion") {
-            throw new Error("Custom mutation parsing error");
+            throw new Error("Custom mutation parsing error message.");
           }
           return undefined;
         },
@@ -287,7 +287,7 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
     assert.strictEqual(response.status, 400);
 
     const body = (await response.json()) as { error: string };
-    assert.strictEqual(body.error, "Custom mutation parsing error");
+    assert.strictEqual(body.error, "Custom mutation parsing error message.");
   });
 
   it("returns 400 bad request when parseMutationRequest throws a non-Error value", async () => {
