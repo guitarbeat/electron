@@ -1,3 +1,5 @@
+import { MovieDetailsModal } from "./MovieDetailsModal";
+import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
 import DriftWall from "@/components/ui/DriftWall";
@@ -59,9 +61,25 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   actions,
   posterPlaceCards = [],
 }) => {
-  const [_selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
-  const [_selectedOrigin, setSelectedOrigin] =
+  const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
+  const [selectedOrigin, setSelectedOrigin] =
     React.useState<MovieTransitionOrigin | null>(null);
+  const [isUpdatingWatchStatus, setIsUpdatingWatchStatus] =
+    React.useState(false);
+  const [editMovie, setEditMovie] = React.useState<Movie | null>(null);
+
+  const openMovieDetails = React.useCallback(
+    (movie: Movie, origin?: MovieTransitionOrigin | null) => {
+      setSelectedMovie(movie);
+      setSelectedOrigin(origin ?? null);
+    },
+    [],
+  );
+
+  const closeMovieDetails = React.useCallback(() => {
+    setSelectedMovie(null);
+    setSelectedOrigin(null);
+  }, []);
 
   const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
     typeof window !== "undefined" ? window.innerWidth : 1440,
@@ -90,6 +108,18 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     isLoadingSuggestions: isSuggestionsLoading,
   });
 
+  const resolvedSelectedMovie = React.useMemo(() => {
+    if (!selectedMovie) {
+      return null;
+    }
+
+    return (
+      [...sections.queue, ...sections.completed].find(
+        (movie) => movie.id === selectedMovie.id,
+      ) ?? selectedMovie
+    );
+  }, [selectedMovie, sections.queue, sections.completed]);
+
   const unifiedCards = React.useMemo(() => {
     const renderMovie = (movie: Movie) => {
       const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
@@ -108,10 +138,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           }}
           onDelete={() => onDeleteRequest(movie)}
           isHighlighted={successMovieId === movie.id}
-          onOpenDetails={(m, origin) => {
-            setSelectedMovie(m);
-            setSelectedOrigin(origin ?? null);
-          }}
+          onOpenDetails={openMovieDetails}
         />
       );
       return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
@@ -175,15 +202,31 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     actions,
     onDeleteRequest,
     onToggleError,
+    openMovieDetails,
   ]);
   const handleTileClick = (item: unknown) => {
-    if (React.isValidElement(item) && item.props) {
-      const props = item.props as Record<string, unknown>;
-      const movie = props.movie as Movie | undefined;
-      if (movie) {
-        setSelectedMovie(movie);
-      }
+    if (!React.isValidElement(item) || !item.props) {
+      return;
     }
+
+    const movie = (item.props as { movie?: Movie }).movie;
+    if (!movie) {
+      return;
+    }
+
+    const container = document.querySelector(`[data-movie-id="${movie.id}"]`);
+    const poster = container?.querySelector(".movie-item-poster-wrap");
+    const rect = poster?.getBoundingClientRect();
+    const origin = rect
+      ? {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        }
+      : null;
+
+    openMovieDetails(movie, origin);
   };
 
   // ── Full section body ─────────────────────────────────────────────────────
@@ -234,6 +277,75 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           <span>Add a movie, suggestion, or place to fill this wall.</span>
         </CollectionEmptyState>
       )}
+
+      {resolvedSelectedMovie ? (
+        <React.Suspense fallback={null}>
+          <MovieDetailsModal
+            movie={resolvedSelectedMovie}
+            isOpen={Boolean(resolvedSelectedMovie)}
+            origin={selectedOrigin}
+            currentUser={currentUser}
+            activeUsers={activeUsers}
+            isWatchedByCurrentUser={Boolean(
+              currentUser &&
+                resolvedSelectedMovie.watchedBy.includes(currentUser),
+            )}
+            isUpdatingWatchStatus={isUpdatingWatchStatus}
+            onToggleWatched={
+              currentUser
+                ? async () => {
+                    setIsUpdatingWatchStatus(true);
+                    try {
+                      await actions.toggleWatched(resolvedSelectedMovie.id);
+                    } finally {
+                      setIsUpdatingWatchStatus(false);
+                    }
+                  }
+                : undefined
+            }
+            onToggleUserWatched={
+              activeUsers.length > 0
+                ? async (user) => {
+                    setIsUpdatingWatchStatus(true);
+                    try {
+                      await actions.toggleWatched(
+                        resolvedSelectedMovie.id,
+                        user,
+                      );
+                    } finally {
+                      setIsUpdatingWatchStatus(false);
+                    }
+                  }
+                : undefined
+            }
+            onEdit={
+              currentUser
+                ? () => {
+                    setEditMovie(resolvedSelectedMovie);
+                  }
+                : undefined
+            }
+            onClose={closeMovieDetails}
+          />
+        </React.Suspense>
+      ) : null}
+
+      {editMovie ? (
+        <MovieEditModal
+          movie={editMovie}
+          isOpen={Boolean(editMovie)}
+          isMobile={isMobile}
+          onClose={() => setEditMovie(null)}
+          onSubmit={async (updates) => {
+            await actions.editMovie(editMovie.id, updates);
+            setEditMovie(null);
+          }}
+          onDelete={() => {
+            onDeleteRequest(editMovie);
+            setEditMovie(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 };
