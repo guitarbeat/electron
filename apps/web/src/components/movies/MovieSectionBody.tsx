@@ -32,6 +32,7 @@ interface Props_MovieSectionBody {
   isLoading: boolean;
   isSuggestionsLoading: boolean;
   currentUser: User | null;
+  activeUsers?: User[];
   isMobile: boolean;
   processingSuggestionId: string | null;
   successMovieId: string | null;
@@ -48,6 +49,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   isLoading,
   isSuggestionsLoading,
   currentUser,
+  activeUsers = [],
   isMobile,
   processingSuggestionId,
   successMovieId,
@@ -97,8 +99,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           key={movie.id}
           movie={movie}
           currentUser={currentUser}
-          onToggle={() => {
-            actions.toggleWatched(movie.id);
+          activeUsers={activeUsers}
+          onToggle={(user) => {
+            actions.toggleWatched(movie.id, user);
           }}
           onToggleError={onToggleError}
           onEditMetadata={async (updates) => {
@@ -229,26 +232,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           <strong>No cards yet</strong>
           <span>Add a movie, suggestion, or place to fill this wall.</span>
         </CollectionEmptyState>
-      )}
-
-      {selectedMovie && (
-        <MovieDetailsModal
-          movie={selectedMovie}
-          isOpen={Boolean(selectedMovie)}
-          origin={selectedOrigin}
-          currentUser={currentUser}
-          onToggleWatched={
-            currentUser
-              ? async () => {
-                  await actions.toggleWatched(selectedMovie.id);
-                }
-              : undefined
-          }
-          isWatchedByCurrentUser={Boolean(
-            currentUser && selectedMovie.watchedBy.includes(currentUser),
-          )}
-          onClose={() => setSelectedMovie(null)}
-        />
       )}
     </div>
   );

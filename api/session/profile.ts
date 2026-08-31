@@ -168,7 +168,8 @@ async function handler(req: Request): Promise<Response> {
     } catch (error) {
       logger.error("Failed to read PIN coverage during profile update.", error);
     }
-    const requiresPin = pinProtectedUsers.includes(user);
+    const currentSession = getSessionState(req);
+    const requiresPin = pinProtectedUsers.includes(user) && !currentSession.activeUsers.includes(user);
 
     if (requiresPin) {
       const now = Date.now();
@@ -248,7 +249,6 @@ async function handler(req: Request): Promise<Response> {
       await clearPinAttempts(user);
     }
 
-    const currentSession = getSessionState(req);
     const nextActiveUsers = Array.from(
       new Set([...(currentSession.activeUsers || []), user]),
     );

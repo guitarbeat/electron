@@ -5,7 +5,7 @@ import { useMovies } from "@/hooks/movies";
 import { useUser, useViewport } from "@/app/providerContexts";
 import { colors, spacing } from "@/theme/tokens";
 import { resolvePosterUrl } from "@/utils";
-import type { Movie } from "@/shared/types";
+import type { Movie, User } from "@/shared/types";
 const MovieDetailsModal = React.lazy(() =>
   import("@/components/movies").then((m) => ({ default: m.MovieDetailsModal })),
 );
@@ -33,7 +33,7 @@ interface SpinWheelGameProps {
 }
 
 const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
-  const { currentUser } = useUser();
+  const { currentUser, activeUsers = [] } = useUser();
   const { isTv } = useViewport();
   const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
 
@@ -141,11 +141,11 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
     });
   };
 
-  const toggleWatchedForCurrentUser = async () => {
-    if (!selectedMovie || !currentUser || isTogglingWatched) return;
+  const toggleWatchedForUser = async (user: User) => {
+    if (!selectedMovie || isTogglingWatched) return;
     setIsTogglingWatched(true);
     try {
-      await toggleWatched(selectedMovie.id);
+      await toggleWatched(selectedMovie.id, user);
     } finally {
       setIsTogglingWatched(false);
     }
@@ -386,14 +386,37 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                       {selectedMovie.plot}
                     </p>
                   ) : null}
-                  {currentUser ? (
+                  {activeUsers.length > 1 ? (
+                    <div className="flex gap-2 w-full mt-2">
+                      {activeUsers.map((user) => {
+                        const isWatched = selectedMovie.watchedBy.includes(user);
+                        return (
+                          <Button
+                            key={user}
+                            variant={isWatched ? "danger" : "primary"}
+                            size="sm"
+                            isLoading={isTogglingWatched}
+                            disabled={isTogglingWatched}
+                            onClick={() => void toggleWatchedForUser(user)}
+                            className={`spin-result-action flex-1 ${
+                              isWatched
+                                ? "spin-result-action--undo"
+                                : "spin-result-action--mark"
+                            }`}
+                          >
+                            {isWatched ? `${user} Watched` : `Mark ${user}`}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  ) : currentUser ? (
                     <Button
                       variant={isWatchedByCurrentUser ? "danger" : "primary"}
                       size="sm"
                       isLoading={isTogglingWatched}
                       disabled={isTogglingWatched}
-                      onClick={toggleWatchedForCurrentUser}
-                      className={`spin-result-action ${
+                      onClick={() => void toggleWatchedForUser(currentUser)}
+                      className={`spin-result-action mt-2 ${
                         isWatchedByCurrentUser
                           ? "spin-result-action--undo"
                           : "spin-result-action--mark"
@@ -512,6 +535,13 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           <MovieDetailsModal
             movie={modalMovie}
             isOpen={!!modalMovie}
+            currentUser={currentUser}
+            activeUsers={activeUsers}
+            onToggleWatched={currentUser ? () => toggleWatchedForUser(currentUser) : undefined}
+            onToggleUserWatched={activeUsers.length > 0 ? toggleWatchedForUser : undefined}
+            isWatchedByCurrentUser={Boolean(
+              currentUser && modalMovie.watchedBy.includes(currentUser),
+            )}
             onClose={() => setModalMovie(null)}
           />
         </React.Suspense>

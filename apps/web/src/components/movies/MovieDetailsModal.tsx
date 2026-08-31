@@ -34,7 +34,9 @@ interface MovieDetailsModalProps {
   isOpen: boolean;
   origin?: MovieTransitionOrigin | null;
   currentUser?: User | null;
+  activeUsers?: User[];
   onToggleWatched?: () => void | Promise<void>;
+  onToggleUserWatched?: (user: User) => void | Promise<void>;
   isWatchedByCurrentUser?: boolean;
   isUpdatingWatchStatus?: boolean;
   onEdit?: () => void;
@@ -45,7 +47,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   movie,
   isOpen,
   origin,
+  activeUsers = [],
   onToggleWatched,
+  onToggleUserWatched,
   isWatchedByCurrentUser = false,
   isUpdatingWatchStatus = false,
   onEdit,
@@ -238,6 +242,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
             isWatchedByCurrentUser={isWatchedByCurrentUser}
             isUpdatingWatchStatus={isUpdatingWatchStatus}
             onToggleWatched={onToggleWatched}
+            onToggleUserWatched={onToggleUserWatched}
+            activeUsers={activeUsers}
             onEdit={onEdit}
             onClose={close}
             isOpen={isOpen}
@@ -252,6 +258,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                 isWatchedByCurrentUser={isWatchedByCurrentUser}
                 isUpdatingWatchStatus={isUpdatingWatchStatus}
                 onToggleWatched={onToggleWatched}
+                onToggleUserWatched={onToggleUserWatched}
+                activeUsers={activeUsers}
                 onEdit={onEdit}
               />
               {/* Overview / Plot Section */}

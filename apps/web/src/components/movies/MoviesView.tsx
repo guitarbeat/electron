@@ -42,7 +42,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   posterPlaceCards = [],
   
 }) => {
-  const { currentUser } = useUser();
+  const { currentUser, activeUsers } = useUser();
   const { registerTabConfig } = useBentoSlot();
   const { isMobile } = useViewport();
   const setConfig = React.useCallback(
@@ -161,6 +161,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           isLoading={isLoading}
           isSuggestionsLoading={isSuggestionsLoading}
           currentUser={currentUser}
+          activeUsers={activeUsers}
           isMobile={isMobile}
           processingSuggestionId={processingSuggestionId}
           successMovieId={successMovieId}

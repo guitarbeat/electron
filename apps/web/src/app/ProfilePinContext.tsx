@@ -122,7 +122,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     (profile: User) => {
       if (isLoading || isVerifying) return;
       setSelectionError(null);
-      if (userHasPin(profile)) {
+      if (userHasPin(profile) && !activeUsers.includes(profile)) {
         setPendingUser(profile);
         return;
       }
@@ -145,6 +145,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       setCurrentUser,
       userHasPin,
       userNeedsPin,
+      activeUsers,
     ],
   );
 

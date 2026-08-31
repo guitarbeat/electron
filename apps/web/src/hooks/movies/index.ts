@@ -291,14 +291,16 @@ export const useMovies = (
   );
 
   const toggleWatched = useCallback(
-    async (movieId: string) => {
-      if (!currentUser) {
+    async (movieId: string, targetUser?: User) => {
+      if (!currentUser && !targetUser) {
         throw new Error("Profile required");
       }
+      
+      const userToToggle = targetUser || currentUser!;
 
       await performMutation(
         "toggle_watched",
-        { movieId },
+        { movieId, targetUser: userToToggle },
         movies.map((movie: Movie) => {
           if (movie.id !== movieId) {
             return movie;
@@ -306,9 +308,9 @@ export const useMovies = (
 
           return {
             ...movie,
-            watchedBy: movie.watchedBy.includes(currentUser)
-              ? movie.watchedBy.filter((user: User) => user !== currentUser)
-              : [...movie.watchedBy, currentUser],
+            watchedBy: movie.watchedBy.includes(userToToggle)
+              ? movie.watchedBy.filter((user: User) => user !== userToToggle)
+              : [...movie.watchedBy, userToToggle],
           };
         }),
       );

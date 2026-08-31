@@ -365,6 +365,8 @@ export interface PosterHeroProps {
   isWatchedByCurrentUser: boolean;
   isUpdatingWatchStatus: boolean;
   onToggleWatched?: () => void | Promise<void>;
+  onToggleUserWatched?: (user: User) => void | Promise<void>;
+  activeUsers?: User[];
   onEdit?: () => void;
   onClose?: () => void;
   isOpen?: boolean;
@@ -381,6 +383,8 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   isWatchedByCurrentUser,
   isUpdatingWatchStatus,
   onToggleWatched,
+  onToggleUserWatched,
+  activeUsers = [],
   onEdit,
   onClose,
   isOpen = true,
@@ -408,6 +412,8 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               isWatchedByCurrentUser={isWatchedByCurrentUser}
               isUpdatingWatchStatus={isUpdatingWatchStatus}
               onToggleWatched={onToggleWatched}
+              onToggleUserWatched={onToggleUserWatched}
+              activeUsers={activeUsers}
               onEdit={onEdit}
             />
           </div>
@@ -506,6 +512,11 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               forceClose={!isOpen}
             />
           </motion.div>
+          <div className="flex items-center gap-1.5 mt-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm pointer-events-none">
+            <span className="text-xs text-white/60 font-medium">
+              📖 Click, drag, or use arrow keys to flip pages
+            </span>
+          </div>
         </div>
       ) : (
         <button
@@ -559,7 +570,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
           </motion.div>
           <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
             <span className="text-xs text-white/90 font-medium">
-              📖 Swipe or tap to flip pages
+              📖 Swipe, tap, or arrow keys to flip
             </span>
           </div>
         </div>
@@ -579,6 +590,8 @@ interface MetadataHeaderProps {
   isWatchedByCurrentUser: boolean;
   isUpdatingWatchStatus: boolean;
   onToggleWatched?: () => void | Promise<void>;
+  onToggleUserWatched?: (user: User) => void | Promise<void>;
+  activeUsers?: User[];
   onEdit?: () => void;
 }
 
@@ -588,6 +601,8 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
   isWatchedByCurrentUser,
   isUpdatingWatchStatus,
   onToggleWatched,
+  onToggleUserWatched,
+  activeUsers = [],
   onEdit,
 }) => {
   const isSeries = isTvSeries(movie);
@@ -654,13 +669,32 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         className="movie-details-modal__actions"
         role="toolbar"
         aria-label="Movie actions"
+        style={{ flexWrap: "wrap" }}
       >
         {movie.mediaType === "youtube" && movie.youtubeUrl ? (
           <YoutubeButton url={movie.youtubeUrl} movieTitle={movie.title} variant="full" />
         ) : (
           <StremioButton movie={movie} variant="full" />
         )}
-        {onToggleWatched && (
+        
+        {activeUsers.length > 1 && onToggleUserWatched ? (
+          activeUsers.map((user) => {
+            const isWatched = movie.watchedBy.includes(user);
+            return (
+              <CardActionButton
+                key={user}
+                variant={isWatched ? "primary" : "outline"}
+                onClick={() => void onToggleUserWatched(user)}
+                aria-pressed={isWatched}
+                disabled={isUpdatingWatchStatus}
+                leftIcon={isWatched ? <CheckIcon /> : <PlayIcon />}
+                style={{ flex: 1, minWidth: "140px", whiteSpace: "nowrap" }}
+              >
+                {isWatched ? `${user} Watched` : `Mark ${user}`}
+              </CardActionButton>
+            );
+          })
+        ) : onToggleWatched ? (
           <CardActionButton
             variant={isWatchedByCurrentUser ? "primary" : "outline"}
             onClick={() => void onToggleWatched()}
@@ -670,7 +704,8 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
           >
             {isWatchedByCurrentUser ? "Watched" : "Mark as Watched"}
           </CardActionButton>
-        )}
+        ) : null}
+
         {onEdit && (
           <CardActionButton
             variant="outline"
@@ -732,7 +767,7 @@ export interface MovieTransitionOrigin {
 }
 
 export interface MovieBodyActions {
-  toggleWatched: (id: string) => void | unknown;
+  toggleWatched: (id: string, targetUser?: User) => void | unknown;
   editMovie: (
     id: string,
     updates: { title: string; customPosterUrl?: string },

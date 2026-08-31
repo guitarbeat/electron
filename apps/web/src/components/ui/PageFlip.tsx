@@ -114,6 +114,7 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       : "none";
 
   const renderFace = (content: React.ReactNode, altText: string, isBack = false) => {
+    const isFrontPeeking = !isBack && peek;
     const faceStyle: React.CSSProperties = {
       background: paper,
       borderRadius: radius,
@@ -126,6 +127,13 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
         ? "rotateY(180deg) translateZ(1px)"
         : "rotateY(0deg) translateZ(1px)",
       willChange: "transform",
+      clipPath: isFrontPeeking
+        ? "polygon(0% 0%, calc(100% - 32px) 0%, 100% 32px, 100% 100%, 0% 100%)"
+        : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+      WebkitClipPath: isFrontPeeking
+        ? "polygon(0% 0%, calc(100% - 32px) 0%, 100% 32px, 100% 100%, 0% 100%)"
+        : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+      transition: "clip-path 0.3s ease-in-out, -webkit-clip-path 0.3s ease-in-out",
     };
 
     if (typeof content === "string") {
@@ -147,6 +155,25 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       >
         {content}
       </div>
+    );
+  };
+
+  const renderDogEar = () => {
+    return (
+      <div
+        className="absolute top-0 right-0 pointer-events-none transition-opacity duration-300 ease-in-out"
+        style={{
+          width: 32,
+          height: 32,
+          opacity: peek ? 1 : 0,
+          background: "linear-gradient(225deg, transparent 50%, rgba(255,255,255,0.95) 50%, #e2e8f0 100%)",
+          boxShadow: "-3px 3px 6px rgba(0,0,0,0.15)",
+          borderBottomLeftRadius: radius,
+          transform: "translateZ(2px)",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+        }}
+      />
     );
   };
 
@@ -205,6 +232,7 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
     >
       {renderFace(front, frontAlt, false)}
       {renderFace(back, backAlt, true)}
+      {renderDogEar()}
     </motion.div>
   );
 });
@@ -317,11 +345,25 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!interactive) return;
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
       if (e.key === "ArrowRight") {
         e.preventDefault();
+        setIsClosingAll(false);
         setTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? total));
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
+        setIsClosingAll(false);
         setTurnedCount((prev) => Math.max(prev - 1, 0));
       }
     },
@@ -330,11 +372,13 @@ export const PageFlip: React.FC<PageFlipProps> = ({
 
   return (
     <div
-      className={`page-flip-container relative flex h-full w-full items-center justify-center select-none ${className}`}
+      className={`page-flip-container relative flex h-full w-full items-center justify-center select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-xl ${className}`}
       style={{
         perspective: `${perspective}px`,
         ...style,
       }}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
       onPointerLeave={() => {
         setHoveredIndex(-1);
         if (closeOnLeave) handleCloseAll();
@@ -344,7 +388,6 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         type="button"
         className="absolute inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
         onClick={handleBackgroundClick}
-        onKeyDown={handleKeyDown}
         aria-label="Reset flipbook to cover"
         tabIndex={-1}
       />

@@ -30,7 +30,8 @@ MovieTransitionOrigin
 interface MovieCardProps {
   movie: Movie;
   currentUser: User | null;
-  onToggle: () => void | Promise<void>;
+  activeUsers?: User[];
+  onToggle: (user?: User) => void | Promise<void>;
   onToggleError?: (message: string) => void;
   onDelete: () => void;
   onEditMetadata?: (updates: {
@@ -46,6 +47,7 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({
   movie,
   currentUser,
+  activeUsers = [],
   onToggle,
   onToggleError,
   onDelete,
@@ -120,6 +122,24 @@ export const MovieCard: React.FC<MovieCardProps> = ({
     setIsUpdating(true);
     try {
       await onToggle();
+    } catch (error) {
+      consoleError("Failed to toggle watched status", error);
+      onToggleError?.(
+        getErrorMessage(error, "Failed to update watched status."),
+      );
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleToggleUser = async (user: User) => {
+    if (isGuest) {
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await onToggle(user);
     } catch (error) {
       consoleError("Failed to toggle watched status", error);
       onToggleError?.(
@@ -207,7 +227,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           isOpen={isDetailsOpen}
           origin={detailsOrigin}
           currentUser={currentUser}
+          activeUsers={activeUsers}
           onToggleWatched={currentUser ? handleToggle : undefined}
+          onToggleUserWatched={activeUsers.length > 0 ? handleToggleUser : undefined}
           isWatchedByCurrentUser={Boolean(
             currentUser && movie.watchedBy.includes(currentUser),
           )}
