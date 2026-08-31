@@ -36,6 +36,8 @@ export const isValidUrl = (url: string): boolean => {
 export const normalizeMovieTitle = (title: string): string =>
   title.trim().toLowerCase().replace(/\s+/g, " ");
 
+const movieTitleCache = new WeakMap<object, string>();
+
 export const findMovieByNormalizedTitle = <T extends { title: string }>(
   movies: readonly T[],
   title: string,
