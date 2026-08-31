@@ -233,7 +233,7 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
     const handler = createMutateHandler("movies");
     const request = authedRequest("http://localhost/api/state/movies", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", cookie: cookieHeader },
       body: "{ invalid json",
     });
 
@@ -248,7 +248,7 @@ describe("createMutateHandler - parseMutationRequest error handling", () => {
     const handler = createMutateHandler("movies");
     const request = authedRequest("http://localhost/api/state/movies", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", cookie: cookieHeader },
       body: JSON.stringify({ baseVersion: "1.0" }),
     });
 
