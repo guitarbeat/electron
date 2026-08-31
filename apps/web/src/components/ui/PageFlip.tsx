@@ -133,7 +133,7 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
       WebkitClipPath: isFrontPeeking
         ? "polygon(0% 0%, calc(100% - 32px) 0%, 100% 32px, 100% 100%, 0% 100%)"
         : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      transition: "clip-path 0.3s ease-in-out, -webkit-clip-path 0.3s ease-in-out",
+  transition: "clip-path 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), -webkit-clip-path 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))",
     };
 
     if (typeof content === "string") {
@@ -161,7 +161,7 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
   const renderDogEar = () => {
     return (
       <div
-        className="absolute top-0 right-0 pointer-events-none transition-opacity duration-300 ease-in-out"
+        className="absolute top-0 right-0 pointer-events-none transition-opacity duration-200 ease-out"
         style={{
           width: 32,
           height: 32,

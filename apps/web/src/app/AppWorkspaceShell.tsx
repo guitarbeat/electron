@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { prefersReducedMotion } from "@/utils";
 
 import type { MainTab } from "@/shared/types";
 import {
@@ -23,6 +24,8 @@ type AppWorkspaceShellProps = {
   openPanels: Set<TogglePanel>;
   onTogglePanel: (panel: TogglePanel) => void;
 };
+
+const CHAT_EXIT_MS = 160;
 
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
@@ -62,6 +65,30 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   );
   const isChatOpen = openPanels.has("messages");
   const hasInlinePanels = openPanels.has("spin");
+  const [chatRendered, setChatRendered] = useState(isChatOpen);
+  const [chatClosing, setChatClosing] = useState(false);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      setChatRendered(true);
+      setChatClosing(false);
+      return;
+    }
+    if (!chatRendered) {
+      return;
+    }
+    if (prefersReducedMotion()) {
+      setChatRendered(false);
+      setChatClosing(false);
+      return;
+    }
+    setChatClosing(true);
+    const timeoutId = window.setTimeout(() => {
+      setChatRendered(false);
+      setChatClosing(false);
+    }, CHAT_EXIT_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [chatRendered, isChatOpen]);
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
@@ -127,12 +154,13 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
 
         {/* Floating Chat Panel Dock */}
-        {isLoggedIn && isChatOpen ? (
+        {isLoggedIn && chatRendered ? (
           <section
             id="floating-chat-panel"
-            className="chat-dock"
+            className={`chat-dock${chatClosing ? " is-closing" : ""}`}
             aria-label="Messages"
             aria-live="polite"
+            aria-hidden={chatClosing}
           >
             <button
               type="button"

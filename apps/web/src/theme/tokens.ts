@@ -521,7 +521,7 @@ export const motion = {
   easing: {
     ease: "cubic-bezier(0.16, 1, 0.3, 1)",
     easeIn: "cubic-bezier(0.4, 0, 1, 1)",
-    easeOut: "cubic-bezier(0, 0, 0.2, 1)",
+    easeOut: "cubic-bezier(0.23, 1, 0.32, 1)",
     easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
     spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
     linear: "linear",

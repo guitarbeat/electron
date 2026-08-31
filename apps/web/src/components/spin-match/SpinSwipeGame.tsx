@@ -346,7 +346,7 @@ function SpinWheel({
           cursor: isSpinning ? "not-allowed" : "pointer",
           fontSize: "1rem",
           letterSpacing: "0.04em",
-          transition: "all 0.2s ease",
+          transition: "background-color 200ms ease, opacity 200ms ease, transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))",
         }}
       >
         {isSpinning ? "🌀 Spinning…" : "🎰 Spin!"}
@@ -464,7 +464,7 @@ function ResultScreen({
           fontWeight: 700,
           cursor: "pointer",
           fontSize: "0.85rem",
-          transition: "all 0.18s ease",
+          transition: "color 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 180ms ease, border-color 180ms ease",
         }}
       >
         Play Again
@@ -805,10 +805,12 @@ function ProgressBar({
         <div
           style={{
             height: "100%",
-            width: `${pct}%`,
+            width: "100%",
+            transform: `scaleX(${pct / 100})`,
+            transformOrigin: "left center",
             background: "var(--color-accent)",
             borderRadius: 999,
-            transition: "width 0.3s ease",
+            transition: "transform 250ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))",
           }}
         />
       </div>

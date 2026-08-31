@@ -101,7 +101,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     setIsEntering(false);
     closeTimeoutRef.current = window.setTimeout(() => {
       setIsVisible(false);
-    }, 550);
+    }, 180);
 
     return () => {
       if (closeTimeoutRef.current !== null) {

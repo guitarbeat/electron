@@ -44,7 +44,7 @@
   position: fixed;
   pointer-events: none;
   z-index: var(--vignette-z-index);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 .vignette-top {
@@ -62,8 +62,6 @@
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
   mask-image: linear-gradient(to top, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-top-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to top, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-top-gradient-stop), var(--vignette-gradient-dark-end));
-  animation: vignette-slide-down 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: 0.3s;
   opacity: var(--vignette-top-opacity);
 }
 
@@ -82,8 +80,6 @@
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
   mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
-  animation: vignette-slide-up 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: 0.3s;
   opacity: var(--vignette-bottom-opacity);
 }
 
@@ -102,8 +98,6 @@
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
   mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
-  animation: vignette-slide-right 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: 0.3s;
   opacity: var(--vignette-left-opacity);
 }
 
@@ -122,8 +116,6 @@
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
   mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
-  animation: vignette-slide-left 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: 0.3s;
   opacity: var(--vignette-right-opacity);
 }
 

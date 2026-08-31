@@ -1,6 +1,5 @@
 import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
-import { motion } from "motion/react";
 
 import React from "react";
 import type {
@@ -168,7 +167,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             }}
           >
             <CardTiltSheen />
-            <motion.div layoutId={`book-${movie.id}`} style={{ width: "100%", height: "100%", borderRadius: "inherit" }} className="movie-item-poster-wrap-motion">
             <MediaCardPosterWrap
               ref={posterRef}
               className="movie-item-poster-wrap"
@@ -205,7 +203,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 aria-label={`View details for "${movie.title}"`}
               />
             </MediaCardPosterWrap>
-            </motion.div>
           </Card>
         </CardTiltShell>
       </div>

@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import { motion } from "motion/react";
 import {
   buildCollectionSections,
   compareCreatedAtDesc,
@@ -500,7 +499,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       {/* Desktop/Tablet inline booklet mode */}
       {!isMobile ? (
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10">
-          <motion.div layoutId={`book-${movie.id}`} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
             <PageFlip
               pages={pages}
               pageWidth={280}
@@ -513,7 +512,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               onBackgroundClick={onClose}
               forceClose={!isOpen}
             />
-          </motion.div>
+          </div>
           <div className="flex items-center gap-1.5 mt-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm pointer-events-none">
             <span className="text-xs text-white/60 font-medium">
               📖 Click, drag, or use arrow keys to flip pages
@@ -527,8 +526,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
           onClick={() => setIsMobileBookletOpen(true)}
           aria-label={`Open 3D booklet for ${movie.title}`}
         >
-          <motion.img
-            layoutId={!isMobileBookletOpen ? `book-${movie.id}` : undefined}
+          <img
             src={activePosterUrl}
             alt={`${movie.title} poster`}
             className="movie-details-modal__poster"
@@ -556,7 +554,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
           >
             ✕
           </button>
-          <motion.div layoutId={isMobileBookletOpen ? `book-${movie.id}` : undefined} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
             <PageFlip
               pages={pages}
               pageWidth={170}
@@ -569,7 +567,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               forceClose={!isOpen}
               onBackgroundClick={() => setIsMobileBookletOpen(false)}
             />
-          </motion.div>
+          </div>
           <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
             <span className="text-xs text-white/90 font-medium">
               📖 Swipe, tap, or arrow keys to flip

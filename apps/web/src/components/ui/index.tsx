@@ -414,7 +414,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             lineHeight: typography.lineHeight.normal,
             outline: "none",
             resize: "vertical",
-            transition: `all ${motionToken.duration.fast} ${motionToken.easing.ease}`,
+              transition: `border-color ${motionToken.duration.fast} ${motionToken.easing.ease}, background-color ${motionToken.duration.fast} ${motionToken.easing.ease}, box-shadow ${motionToken.duration.fast} ${motionToken.easing.ease}`,
             boxShadow: isFocused
               ? shadows.buttonActive
               : "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 14px rgba(0,0,0,0.18)",
@@ -2231,7 +2231,7 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
                 alignItems: "center",
                 justifyContent: "center",
                 boxShadow: shadows.button,
-                transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+                transition: `transform ${motionToken.duration.button} ${motionToken.easing.ease}, border-color ${motionToken.duration.button} ${motionToken.easing.ease}, background-color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) => {
                 if (!closeDisabled) {
@@ -2298,7 +2298,7 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
               alignItems: "center",
               justifyContent: "center",
               boxShadow: shadows.button,
-              transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+              transition: `background-color ${motionToken.duration.button} ${motionToken.easing.ease}, color ${motionToken.duration.button} ${motionToken.easing.ease}`,
             }}
             onMouseEnter={(e) => {
               if (!closeDisabled) {
@@ -2838,7 +2838,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+            transition: `background-color ${motionToken.duration.button} ${motionToken.easing.ease}, color ${motionToken.duration.button} ${motionToken.easing.ease}`,
             opacity: closeDisabled ? 0.45 : 1,
             cursor: closeDisabled ? "not-allowed" : "pointer",
             padding: "12px",
@@ -3133,7 +3133,7 @@ export const Toast: React.FC<ToastProps> = ({
                 fontWeight: typography.fontWeight.semibold,
                 letterSpacing: typography.letterSpacing.wide,
                 whiteSpace: "nowrap",
-                transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+                transition: `transform ${motionToken.duration.button} ${motionToken.easing.ease}, border-color ${motionToken.duration.button} ${motionToken.easing.ease}, background-color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
@@ -3161,7 +3161,7 @@ export const Toast: React.FC<ToastProps> = ({
                 fontSize: "1.05rem",
                 lineHeight: 1,
                 borderRadius: radius.sm,
-                transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+                transition: `color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.color = colors.textPrimary)
@@ -3537,7 +3537,7 @@ export function MagicToggle<T extends string>({
   ariaLabel,
 }: MagicToggleProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [indicatorClip, setIndicatorClip] = useState("inset(0 100% 0 0)");
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -3547,12 +3547,13 @@ export function MagicToggle<T extends string>({
 
     const buttons = containerRef.current.querySelectorAll(`.magic-toggle-btn`);
     const activeButton = buttons[activeIndex] as HTMLButtonElement | undefined;
+    const containerWidth = containerRef.current.offsetWidth;
 
-    if (activeButton) {
-      setIndicatorStyle({
-        left: activeButton.offsetLeft,
-        width: activeButton.offsetWidth,
-      });
+    if (activeButton && containerWidth > 0) {
+      const left = activeButton.offsetLeft;
+      const width = activeButton.offsetWidth;
+      const right = Math.max(containerWidth - left - width, 0);
+      setIndicatorClip(`inset(0 ${right}px 0 ${left}px)`);
     }
   }, [activeValue, options]);
 
@@ -3568,10 +3569,7 @@ export function MagicToggle<T extends string>({
     >
       <div
         className={`magic-toggle-indicator${isLogout ? ` is-logout` : ""}`}
-        style={{
-          transform: `translateX(${indicatorStyle.left}px)`,
-          width: `${indicatorStyle.width}px`,
-        }}
+        style={{ clipPath: indicatorClip }}
         aria-hidden="true"
       />
       {options.map((option) => {

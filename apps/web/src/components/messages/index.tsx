@@ -882,7 +882,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 !isSubmitting
                   ? "pointer"
                   : "default",
-              transition: "all 0.2s ease",
+              transition: "transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 200ms ease, opacity 200ms ease, color 200ms ease",
               flexShrink: 0,
               opacity: showSendButton && currentUser ? 1 : 0.5,
               transform:
