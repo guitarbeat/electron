@@ -1,5 +1,5 @@
 /* Electron PWA service worker — app-shell, movie queue & offline caching strategy */
-const CACHE_VERSION = 'v12';
+const CACHE_VERSION = 'v13';
 const STATIC_CACHE = `electron-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `electron-runtime-${CACHE_VERSION}`;
 const DATA_CACHE = `electron-data-${CACHE_VERSION}`;
@@ -120,7 +120,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Bypass dev server internal and hot-reload paths
+  // Let Vercel Speed Insights and other platform routes bypass the SW
+  if (url.pathname.startsWith('/_vercel/')) return;
   if (url.pathname.startsWith('/src/')) return;
   if (url.pathname.startsWith('/@vite/')) return;
   if (url.pathname.startsWith('/@react-refresh')) return;

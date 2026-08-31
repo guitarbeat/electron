@@ -59,7 +59,7 @@
       ]
     },
     {
-      "source": "/(.*\\.js)",
+      "source": "/((?!_vercel/).*)\\.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -100,7 +100,7 @@
       "destination": "/api/state/[scope]?scope=:scope"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|_vercel/).*)",
       "destination": "/index.html"
     }
   ],

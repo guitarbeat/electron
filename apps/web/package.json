@@ -32,5 +32,8 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.3"
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
   }
 }

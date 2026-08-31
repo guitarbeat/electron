@@ -33,7 +33,7 @@ The repository includes a production-ready `vercel.json` configuration file hand
   "rewrites": [
     { "source": "/api/state/:scope/mutate", "destination": "/api/state/[scope]/mutate" },
     { "source": "/api/state/:scope", "destination": "/api/state/[scope]" },
-    { "source": "/((?!api/|public/|assets/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|_vercel/).*)", "destination": "/index.html" }
   ]
 }
 ```
