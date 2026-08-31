@@ -95,43 +95,6 @@ export const AGENT_ACTIONS = {
       "Delete a message owned by the declared actor. Requires confirmation.",
     inputExample: { messageId: "message-123" },
   },
-  addMemory: {
-    scope: "memories",
-    op: "add_memory",
-    description: "Add a shared movie memory.",
-    inputExample: { movieTitle: "Arrival", note: "Our first watch." },
-  },
-  updateMemory: {
-    scope: "memories",
-    op: "update_memory",
-    description: "Update a memory owned by the declared actor.",
-    inputExample: {
-      memoryId: "memory-123",
-      updates: { note: "Updated note." },
-    },
-  },
-  updateMemoriesBatch: {
-    scope: "memories",
-    op: "update_memories_batch",
-    description: "Update multiple memories owned by the declared actor.",
-    inputExample: {
-      updates: [{ memoryId: "memory-123", updates: { note: "Updated note." } }],
-    },
-  },
-  deleteMemory: {
-    scope: "memories",
-    op: "delete_memory",
-    requiresConfirmation: true,
-    description:
-      "Delete a memory owned by the declared actor. Requires confirmation.",
-    inputExample: { memoryId: "memory-123" },
-  },
-  toggleMemoryPin: {
-    scope: "memories",
-    op: "toggle_memory_pin",
-    description: "Toggle whether a memory is pinned.",
-    inputExample: { memoryId: "memory-123" },
-  },
   addPlace: {
     scope: "places",
     op: "add_place",
@@ -282,7 +245,6 @@ export const agentActionRequestSchema = z
 export const PRIVATE_SCOPES = [
   "movies",
   "messages",
-  "memories",
   "places",
   "suggestions",
   "placeSuggestions",

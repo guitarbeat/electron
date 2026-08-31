@@ -10,21 +10,14 @@ import React, {
 } from "react";
 import type {
   Movie,
-  SharedMemory,
 } from "@/shared/types";
 
 
 import {
   SyncBanner,
   ConfirmDialog,
-  type BentoStatTileConfig,
   type SortOrder,
 } from "@/components/ui";
-import {
-  CheckIcon,
-  FilmIcon,
-  MessageIcon,
-} from "@/common/Icons";
 import { useViewport, useUser, useBentoSlot } from "@/app/providerContexts";
 
 
@@ -37,7 +30,6 @@ import { useMoviesWorkspace } from "@/hooks/movies";
 import {
 MovieSortOrder,
 buildMovieSections,
-MOVIE_SECTION_IDS,
 MOVIE_SORTS,
   MoviesWorkspaceViewProps,
 } from "./shared";
@@ -50,7 +42,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   posterPlaceCards = [],
   
 }) => {
-  const { currentUser } = useUser();
+  const { currentUser, activeUsers } = useUser();
   const { registerTabConfig } = useBentoSlot();
   const { isMobile } = useViewport();
   const setConfig = React.useCallback(
@@ -82,90 +74,16 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
     isLoading,
     pendingSuggestions,
     isSuggestionsLoading,
-    memories,
     isMoviesWorkspaceDegraded,
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
     retryMoviesWorkspaceSync,
     toggleWatched,
     editMovie,
-    addMemory,
-    updateMemory,
-    deleteMemoryRecord,
-    toggleMemoryPin,
   } = useMoviesWorkspace({ currentUser, isPaused, focusSearchInput });
-  const movieMemories = useMemo(() => {
-    const memoriesByMovieId = new Map<string, SharedMemory[]>();
-    const movieLookupByTitle = new Map<string, string>(); // lowercase title -> movieId
-
-    const safeMovies = Array.isArray(movies) ? movies : [];
-    const safeMemories = Array.isArray(memories) ? memories : [];
-
-    safeMovies.forEach((movie) => {
-      if (movie && movie.title) {
-        movieLookupByTitle.set(movie.title.trim().toLowerCase(), movie.id);
-      }
-    });
-    safeMemories.forEach((memory) => {
-      if (!memory) return;
-      let targetMovieId: string | undefined;
-
-      if (memory.movieId) {
-        targetMovieId = memory.movieId;
-      } else if (memory.movieTitle) {
-        targetMovieId = movieLookupByTitle.get(
-          memory.movieTitle.trim().toLowerCase(),
-        );
-      }
-
-      if (targetMovieId) {
-        let movieGroup = memoriesByMovieId.get(targetMovieId);
-        if (!movieGroup) {
-          movieGroup = [];
-          memoriesByMovieId.set(targetMovieId, movieGroup);
-        }
-        movieGroup.push(memory);
-      }
-    });
-    return memoriesByMovieId;
-  }, [memories, movies]);
   const sections = useMemo(
     () => buildMovieSections(movies, pendingSuggestions, sortOrder),
     [movies, pendingSuggestions, sortOrder],
-  );
-
-  const movieStats = useMemo(
-    (): BentoStatTileConfig[] => [
-      {
-        id: "incoming",
-        label: "Incoming",
-        count: sections.suggestions.length,
-        icon: <MessageIcon size={14} />,
-        sectionId: MOVIE_SECTION_IDS.incoming,
-        tone: "incoming",
-      },
-      {
-        id: "queue",
-        label: "Up Next",
-        count: sections.queue.length,
-        icon: <FilmIcon size={14} />,
-        sectionId: MOVIE_SECTION_IDS.queue,
-        tone: "default",
-      },
-      {
-        id: "watched",
-        label: "Watched",
-        count: sections.completed.length,
-        icon: <CheckIcon size={14} />,
-        sectionId: MOVIE_SECTION_IDS.completed,
-        tone: "completed",
-      },
-    ],
-    [
-      sections.suggestions.length,
-      sections.queue.length,
-      sections.completed.length,
-    ],
   );
 
   const handleMovieSortChange = useCallback((order: SortOrder) => {
@@ -180,7 +98,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
       onSortChange: handleMovieSortChange,
       ariaLabel: "Movies workspace controls",
     });
-  }, [setConfig, movieStats, sortOrder, handleMovieSortChange]);
+  }, [setConfig, sortOrder, handleMovieSortChange]);
 
   useEffect(() => {
     if (!movies || !previousMoviesRef.current) {
@@ -243,10 +161,10 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           isLoading={isLoading}
           isSuggestionsLoading={isSuggestionsLoading}
           currentUser={currentUser}
+          activeUsers={activeUsers}
           isMobile={isMobile}
           processingSuggestionId={processingSuggestionId}
           successMovieId={successMovieId}
-          movieMemories={movieMemories}
           onAcceptSuggestion={handleAcceptSuggestion}
           onRejectSuggestion={handleRejectSuggestion}
           onDeleteRequest={setMovieToDelete}
@@ -254,13 +172,8 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           actions={{
             toggleWatched,
             editMovie,
-            addMemory,
-            updateMemory,
-            deleteMemory: deleteMemoryRecord,
-            togglePin: toggleMemoryPin,
           }}
           posterPlaceCards={posterPlaceCards}
-          
         />
         {movieToDelete && (
           <ConfirmDialog

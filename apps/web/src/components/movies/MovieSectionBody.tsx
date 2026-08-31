@@ -1,36 +1,27 @@
+import { MovieDetailsModal } from "./MovieDetailsModal";
+import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
-
-
-
 import React from "react";
 import type {
   Movie,
-  SharedMemory,
   User,
   MovieSuggestion,
 } from "@/shared/types";
-
 
 import {
   CollectionEmptyState,
   MoviesEmptyIllustration,
 } from "@/components/ui";
 
-
 import { spacing } from "@/theme/tokens";
 import {
   getWorkspaceCollectionState,
 } from "@/utils";
 
-
-
-
-
-import { MovieDetailsModal } from "./MovieDetailsModal";
 import {
 MovieSections,
 MovieBodyActions,
@@ -42,17 +33,16 @@ interface Props_MovieSectionBody {
   isLoading: boolean;
   isSuggestionsLoading: boolean;
   currentUser: User | null;
+  activeUsers?: User[];
   isMobile: boolean;
   processingSuggestionId: string | null;
   successMovieId: string | null;
-  movieMemories: Map<string, SharedMemory[]>;
   onAcceptSuggestion: (s: MovieSuggestion) => void;
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   actions: MovieBodyActions;
   posterPlaceCards?: React.ReactNode[];
-  
 }
 
 export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
@@ -60,10 +50,10 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   isLoading,
   isSuggestionsLoading,
   currentUser,
+  activeUsers = [],
   isMobile,
   processingSuggestionId,
   successMovieId,
-  movieMemories,
   onAcceptSuggestion,
   onRejectSuggestion,
   onDeleteRequest,
@@ -74,6 +64,22 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [selectedOrigin, setSelectedOrigin] =
     React.useState<MovieTransitionOrigin | null>(null);
+  const [isUpdatingWatchStatus, setIsUpdatingWatchStatus] =
+    React.useState(false);
+  const [editMovie, setEditMovie] = React.useState<Movie | null>(null);
+
+  const openMovieDetails = React.useCallback(
+    (movie: Movie, origin?: MovieTransitionOrigin | null) => {
+      setSelectedMovie(movie);
+      setSelectedOrigin(origin ?? null);
+    },
+    [],
+  );
+
+  const closeMovieDetails = React.useCallback(() => {
+    setSelectedMovie(null);
+    setSelectedOrigin(null);
+  }, []);
 
   const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
     typeof window !== "undefined" ? window.innerWidth : 1440,
@@ -98,103 +104,129 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   const collectionState = getWorkspaceCollectionState({
     itemCount: sections.queue.length + sections.completed.length,
     suggestionCount: sections.suggestions.length,
-    isLoadingItems: isLoading && isSuggestionsLoading,
-    isLoadingSuggestions: false,
+    isLoadingItems: isLoading,
+    isLoadingSuggestions: isSuggestionsLoading,
   });
 
-  const renderMovie = (movie: Movie) => {
-    const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
-    const element = (
-      <MovieCard
-        key={movie.id}
-        movie={movie}
-        currentUser={currentUser}
-        onToggle={() => {
-          actions.toggleWatched(movie.id);
-        }}
-        onToggleError={onToggleError}
-        onEditMetadata={async (updates) => {
-          await actions.editMovie(movie.id, updates);
-        }}
-        onDelete={() => onDeleteRequest(movie)}
-        isHighlighted={successMovieId === movie.id}
-        memories={movieMemories.get(movie.id) ?? []}
-        onAddMemory={
-          currentUser
-            ? async (note) => {
-                await actions.addMemory(movie.id, movie.title, currentUser, note);
-              }
-            : undefined
-        }
-        onUpdateMemory={async (memoryId, note) => {
-          await actions.updateMemory(memoryId, { note });
-        }}
-        onDeleteMemory={async (memoryId) => {
-          await actions.deleteMemory(memoryId);
-        }}
-        onTogglePin={async (memoryId) => {
-          await actions.togglePin(memoryId);
-        }}
-        onOpenDetails={(m, origin) => {
-          setSelectedMovie(m);
-          setSelectedOrigin(origin ?? null);
-        }}
-      />
+  const resolvedSelectedMovie = React.useMemo(() => {
+    if (!selectedMovie) {
+      return null;
+    }
+
+    return (
+      [...sections.queue, ...sections.completed].find(
+        (movie) => movie.id === selectedMovie.id,
+      ) ?? selectedMovie
     );
-    return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
-  };
+  }, [selectedMovie, sections.queue, sections.completed]);
 
-
-const allPosters = [...sections.queue, ...sections.completed];
-  const suggestionCards = sections.suggestions.map((suggestion) => (
-    <SuggestionCard
-      key={`suggestion-${suggestion.id}`}
-      suggestion={suggestion}
-      onAccept={() => void onAcceptSuggestion(suggestion)}
-      onReject={() => void onRejectSuggestion(suggestion)}
-      canRespond={Boolean(currentUser)}
-      disableActions={!currentUser}
-      isProcessing={processingSuggestionId === suggestion.id}
-    />
-  ));
-  const movieCards = allPosters.map(renderMovie);
-  
-  let unifiedCards: React.ReactNode[];
-  if (collectionState === "loading") {
-    const skeletonCount = isMobile ? 16 : dynamicColumns * 4;
-    unifiedCards = Array.from({ length: skeletonCount }, (_, i) => {
-      const isShort = i % 5 === 2;
-      return (
-        <div
-          key={`loading-tile-${i}`}
-          className="drift-wall-loading__tile"
-          data-height-ratio={isShort ? 0.55 : 1}
-          style={
-            {
-              "--loading-tile": Math.floor(i / dynamicColumns),
-              "--loading-column": i % dynamicColumns,
-              width: "100%",
-              height: "100%",
-            } as React.CSSProperties
-          }
+  const unifiedCards = React.useMemo(() => {
+    const renderMovie = (movie: Movie) => {
+      const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
+      const element = (
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          currentUser={currentUser}
+          activeUsers={activeUsers}
+          onToggle={(user) => {
+            actions.toggleWatched(movie.id, user);
+          }}
+          onToggleError={onToggleError}
+          onEditMetadata={async (updates) => {
+            await actions.editMovie(movie.id, updates);
+          }}
+          onDelete={() => onDeleteRequest(movie)}
+          isHighlighted={successMovieId === movie.id}
+          onOpenDetails={openMovieDetails}
         />
       );
-    });
-  } else {
-    unifiedCards = interleaveCollectionItems(
+      return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
+    };
+
+    if (collectionState === "loading") {
+      const skeletonCount = isMobile ? 16 : dynamicColumns * 4;
+      return Array.from({ length: skeletonCount }, (_, i) => {
+        const isShort = i % 5 === 2;
+        return (
+          <div
+            key={`loading-tile-${i}`}
+            className="drift-wall-loading__tile"
+            data-height-ratio={isShort ? 0.55 : 1}
+            style={
+              {
+                "--loading-tile": Math.floor(i / dynamicColumns),
+                "--loading-column": i % dynamicColumns,
+                width: "100%",
+                height: "100%",
+              } as React.CSSProperties
+            }
+          />
+        );
+      });
+    }
+
+    const allPosters = [...sections.queue, ...sections.completed];
+    const suggestionCards = sections.suggestions.map((suggestion) => (
+      <SuggestionCard
+        key={`suggestion-${suggestion.id}`}
+        suggestion={suggestion}
+        onAccept={() => void onAcceptSuggestion(suggestion)}
+        onReject={() => void onRejectSuggestion(suggestion)}
+        canRespond={Boolean(currentUser)}
+        disableActions={!currentUser}
+        isProcessing={processingSuggestionId === suggestion.id}
+      />
+    ));
+    const movieCards = allPosters.map(renderMovie);
+
+    return interleaveCollectionItems(
       suggestionCards,
       movieCards,
       posterPlaceCards,
     );
-  }
+  }, [
+    collectionState,
+    isMobile,
+    dynamicColumns,
+    sections.queue,
+    sections.completed,
+    sections.suggestions,
+    currentUser,
+    activeUsers,
+    processingSuggestionId,
+    successMovieId,
+    onAcceptSuggestion,
+    onRejectSuggestion,
+    posterPlaceCards,
+    actions,
+    onDeleteRequest,
+    onToggleError,
+    openMovieDetails,
+  ]);
   const handleTileClick = (item: unknown) => {
-    if (React.isValidElement(item) && item.props) {
-      const props = item.props as Record<string, unknown>;
-      const movie = props.movie as Movie | undefined;
-      if (movie) {
-        setSelectedMovie(movie);
-      }
+    if (!React.isValidElement(item) || !item.props) {
+      return;
     }
+
+    const movie = (item.props as { movie?: Movie }).movie;
+    if (!movie) {
+      return;
+    }
+
+    const container = document.querySelector(`[data-movie-id="${movie.id}"]`);
+    const poster = container?.querySelector(".movie-item-poster-wrap");
+    const rect = poster?.getBoundingClientRect();
+    const origin = rect
+      ? {
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        }
+      : null;
+
+    openMovieDetails(movie, origin);
   };
 
   // ── Full section body ─────────────────────────────────────────────────────
@@ -232,6 +264,7 @@ const allPosters = [...sections.queue, ...sections.completed];
             pauseOnHover
             grayscale={false}
             onTileClick={handleTileClick}
+            scrollStorageKey="movies-workspace-wall"
           />
         </div>
       ) : (
@@ -245,47 +278,74 @@ const allPosters = [...sections.queue, ...sections.completed];
         </CollectionEmptyState>
       )}
 
-      {selectedMovie && (
-        <MovieDetailsModal
-          movie={selectedMovie}
-          memories={movieMemories.get(selectedMovie.id) ?? []}
-          isOpen={Boolean(selectedMovie)}
-          origin={selectedOrigin}
-          currentUser={currentUser}
-          onToggleWatched={
-            currentUser
-              ? async () => {
-                  await actions.toggleWatched(selectedMovie.id);
-                }
-              : undefined
-          }
-          isWatchedByCurrentUser={Boolean(
-            currentUser && selectedMovie.watchedBy.includes(currentUser),
-          )}
-          onAddMemory={
-            currentUser
-              ? async (note) => {
-                  await actions.addMemory(
-                    selectedMovie.id,
-                    selectedMovie.title,
-                    currentUser,
-                    note,
-                  );
-                }
-              : undefined
-          }
-          onUpdateMemory={async (memoryId, note) => {
-            await actions.updateMemory(memoryId, { note });
+      {resolvedSelectedMovie ? (
+        <React.Suspense fallback={null}>
+          <MovieDetailsModal
+            movie={resolvedSelectedMovie}
+            isOpen={Boolean(resolvedSelectedMovie)}
+            origin={selectedOrigin}
+            currentUser={currentUser}
+            activeUsers={activeUsers}
+            isWatchedByCurrentUser={Boolean(
+              currentUser &&
+                resolvedSelectedMovie.watchedBy.includes(currentUser),
+            )}
+            isUpdatingWatchStatus={isUpdatingWatchStatus}
+            onToggleWatched={
+              currentUser
+                ? async () => {
+                    setIsUpdatingWatchStatus(true);
+                    try {
+                      await actions.toggleWatched(resolvedSelectedMovie.id);
+                    } finally {
+                      setIsUpdatingWatchStatus(false);
+                    }
+                  }
+                : undefined
+            }
+            onToggleUserWatched={
+              activeUsers.length > 0
+                ? async (user) => {
+                    setIsUpdatingWatchStatus(true);
+                    try {
+                      await actions.toggleWatched(
+                        resolvedSelectedMovie.id,
+                        user,
+                      );
+                    } finally {
+                      setIsUpdatingWatchStatus(false);
+                    }
+                  }
+                : undefined
+            }
+            onEdit={
+              currentUser
+                ? () => {
+                    setEditMovie(resolvedSelectedMovie);
+                  }
+                : undefined
+            }
+            onClose={closeMovieDetails}
+          />
+        </React.Suspense>
+      ) : null}
+
+      {editMovie ? (
+        <MovieEditModal
+          movie={editMovie}
+          isOpen={Boolean(editMovie)}
+          isMobile={isMobile}
+          onClose={() => setEditMovie(null)}
+          onSubmit={async (updates) => {
+            await actions.editMovie(editMovie.id, updates);
+            setEditMovie(null);
           }}
-          onDeleteMemory={async (memoryId) => {
-            await actions.deleteMemory(memoryId);
+          onDelete={() => {
+            onDeleteRequest(editMovie);
+            setEditMovie(null);
           }}
-          onTogglePin={async (memoryId) => {
-            await actions.togglePin(memoryId);
-          }}
-          onClose={() => setSelectedMovie(null)}
         />
-      )}
+      ) : null}
     </div>
   );
 };

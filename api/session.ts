@@ -16,6 +16,7 @@ async function handler(req: Request): Promise<Response> {
     return jsonResponse({
       hasAccess: session.hasAccess,
       currentUser: session.currentUser,
+      activeUsers: session.activeUsers,
       pinProtectedUsers,
       usersMissingPins,
     });

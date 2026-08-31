@@ -15,6 +15,7 @@ import { consoleError, getErrorMessage } from "@/utils";
 
 interface ProfileSelectionContextValue {
   currentUser: User | null;
+  activeUsers: User[];
   isDisabled: boolean;
   isSavingPin: boolean;
   selectionError: string | null;
@@ -22,6 +23,7 @@ interface ProfileSelectionContextValue {
   userNeedsPin: (user: User) => boolean;
   selectProfile: (profile: User) => void;
   handleLogout: () => void;
+  handleLogoutUser: (user: User) => void;
   openPinSettings: () => void;
   clearSelectionError: () => void;
 }
@@ -64,7 +66,7 @@ export const usePinPanel = (): PinPanelContextValue => {
 export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { currentUser, setCurrentUser } = useUser();
+  const { currentUser, activeUsers, setCurrentUser, logoutUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } =
     usePins();
   const [pendingUser, setPendingUser] = useState<User | null>(null);
@@ -82,8 +84,8 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
 
   const handleLogout = useCallback(async () => {
     setSelectionError(null);
-    await setCurrentUser(null);
-  }, [setCurrentUser]);
+    await logoutUser(null);
+  }, [logoutUser]);
 
   const handleLogoutGuarded = useCallback(() => {
     if (isLoading || isVerifying) return;
@@ -99,14 +101,28 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     })();
   }, [handleLogout, isLoading, isVerifying]);
 
+  const handleLogoutUserGuarded = useCallback(
+    (user: User) => {
+      if (isLoading || isVerifying) return;
+      setSelectionError(null);
+      void (async () => {
+        try {
+          await logoutUser(user);
+        } catch (err) {
+          setSelectionError(
+            getErrorMessage(err, "Unable to update the profile session."),
+          );
+        }
+      })();
+    },
+    [isLoading, isVerifying, logoutUser],
+  );
+
   const selectProfile = useCallback(
     (profile: User) => {
       if (isLoading || isVerifying) return;
-      if (profile === currentUser) {
-        return;
-      }
       setSelectionError(null);
-      if (userHasPin(profile)) {
+      if (userHasPin(profile) && !activeUsers.includes(profile)) {
         setPendingUser(profile);
         return;
       }
@@ -124,12 +140,12 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       })();
     },
     [
-      currentUser,
       isLoading,
       isVerifying,
       setCurrentUser,
       userHasPin,
       userNeedsPin,
+      activeUsers,
     ],
   );
 
@@ -195,6 +211,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
   const selectionValue = useMemo(
     () => ({
       currentUser,
+      activeUsers,
       isDisabled: isLoading || isVerifying,
       isSavingPin,
       selectionError,
@@ -202,12 +219,15 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       userNeedsPin,
       selectProfile,
       handleLogout: handleLogoutGuarded,
+      handleLogoutUser: handleLogoutUserGuarded,
       openPinSettings,
       clearSelectionError,
     }),
     [
       currentUser,
+      activeUsers,
       handleLogoutGuarded,
+      handleLogoutUserGuarded,
       isLoading,
       isSavingPin,
       isVerifying,

@@ -19,8 +19,9 @@
     "typecheck": "npm run typecheck:libs && npm run typecheck:api && npm run typecheck --prefix apps/web",
     "check-types": "npm run typecheck",
     "lint": "eslint . --max-warnings 0",
-    "test": "npm run test --prefix apps/web",
+    "test": "npm run test:unit && npm run test:web",
     "test:unit": "node scripts/run-node-tests.mjs",
+    "test:web": "npm run test --prefix apps/web",
     "test:smoke": "node scripts/smoke-test-deployment.mjs",
     "test:serverless-output": "node scripts/verify-vercel-output.mjs"
   },

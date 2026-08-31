@@ -79,7 +79,9 @@ export interface UserContextType {
   usersMissingPins: User[];
   isSessionLoading: boolean;
   currentUser: User | null;
+  activeUsers: User[];
   setCurrentUser: (user: User | null, pin?: string) => Promise<boolean>;
+  logoutUser: (user?: User | null) => Promise<boolean>;
   refreshSession: () => Promise<void>;
 }
 

@@ -5,7 +5,7 @@ export const USER_PHOTOS: Record<User, string> = {
   Electra: "/electra-button.png",
 };
 
-export const MAIN_TABS = ["movies", "places", "memories", "messages"] as const;
+export const MAIN_TABS = ["movies", "places", "messages"] as const;
 
 export type MainTab = (typeof MAIN_TABS)[number];
 
@@ -80,18 +80,6 @@ export interface Message {
   author: string;
   content: string;
   createdAt: string;
-}
-
-export interface SharedMemory {
-  id: string;
-  movieId?: string;
-  movieTitle: string;
-  author: string;
-  note: string;
-  createdAt: string;
-  updatedAt?: string;
-  isPinned?: boolean;
-  imageUrl?: string;
 }
 
 export interface MatchmakerGame {

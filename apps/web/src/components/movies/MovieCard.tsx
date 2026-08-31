@@ -1,16 +1,11 @@
 import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 
-
-
-
 import React from "react";
 import type {
   Movie,
-  SharedMemory,
   User,
 } from "@/shared/types";
-
 
 import {
   MediaPoster,
@@ -22,15 +17,10 @@ import {
   Card,
 } from "@/components/ui";
 
-
 import {
   getErrorMessage,
   consoleError,
 } from "@/utils";
-
-
-
-
 
 import {
 MovieTransitionOrigin
@@ -39,18 +29,14 @@ MovieTransitionOrigin
 interface MovieCardProps {
   movie: Movie;
   currentUser: User | null;
-  onToggle: () => void | Promise<void>;
+  activeUsers?: User[];
+  onToggle: (user?: User) => void | Promise<void>;
   onToggleError?: (message: string) => void;
   onDelete: () => void;
   onEditMetadata?: (updates: {
     title: string;
     customPosterUrl?: string;
   }) => Promise<void>;
-  memories?: SharedMemory[];
-  onAddMemory?: (note: string) => Promise<void>;
-  onUpdateMemory?: (memoryId: string, note: string) => Promise<void>;
-  onDeleteMemory?: (memoryId: string) => Promise<void>;
-  onTogglePin?: (memoryId: string) => Promise<void>;
   isHighlighted?: boolean;
   isCompact?: boolean;
   priorityPoster?: boolean;
@@ -60,15 +46,11 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({
   movie,
   currentUser,
+  activeUsers = [],
   onToggle,
   onToggleError,
   onDelete,
   onEditMetadata,
-  memories = [],
-  onAddMemory,
-  onUpdateMemory,
-  onDeleteMemory,
-  onTogglePin,
   isHighlighted = false,
   isCompact = false,
   priorityPoster = false,
@@ -139,6 +121,24 @@ export const MovieCard: React.FC<MovieCardProps> = ({
     setIsUpdating(true);
     try {
       await onToggle();
+    } catch (error) {
+      consoleError("Failed to toggle watched status", error);
+      onToggleError?.(
+        getErrorMessage(error, "Failed to update watched status."),
+      );
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleToggleUser = async (user: User) => {
+    if (isGuest) {
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await onToggle(user);
     } catch (error) {
       consoleError("Failed to toggle watched status", error);
       onToggleError?.(
@@ -221,11 +221,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       <React.Suspense fallback={null}>
         <MovieDetailsModal
           movie={movie}
-          memories={memories}
           isOpen={isDetailsOpen}
           origin={detailsOrigin}
           currentUser={currentUser}
+          activeUsers={activeUsers}
           onToggleWatched={currentUser ? handleToggle : undefined}
+          onToggleUserWatched={activeUsers.length > 0 ? handleToggleUser : undefined}
           isWatchedByCurrentUser={Boolean(
             currentUser && movie.watchedBy.includes(currentUser),
           )}
@@ -237,10 +238,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 }
               : undefined
           }
-          onAddMemory={onAddMemory}
-          onUpdateMemory={onUpdateMemory}
-          onDeleteMemory={onDeleteMemory}
-          onTogglePin={onTogglePin}
           onClose={() => setIsDetailsOpen(false)}
         />
       </React.Suspense>

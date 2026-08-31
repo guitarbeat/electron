@@ -815,7 +815,9 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
                 style={{
                   left: `${markerLeft}%`,
                   top: `${markerTop}%`,
-                  transition: isDragging ? "none" : "all 0.15s ease-out",
+                  transition: isDragging
+                    ? "none"
+                    : "left 150ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), top 150ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))",
                 }}
               />
             )}
@@ -1223,7 +1225,7 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
           <div className="quiz-retro-progress-track">
             <div
               className="quiz-retro-progress-fill"
-              style={{ width: `${progress}%` }}
+              style={{ transform: `scaleX(${progress / 100})` }}
             />
             <div className="quiz-retro-progress-text">{progress}% COMPLETE</div>
           </div>
@@ -1387,7 +1389,7 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
                     <div
                       className="quiz-retro-results-bar-fill"
                       style={{
-                        width: `${pct}%`,
+                        transform: `scaleX(${pct / 100})`,
                         background: color,
                       }}
                     />

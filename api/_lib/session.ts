@@ -16,6 +16,7 @@ const PIN_ATTEMPT_TTL_SECONDS = 60 * 10;
 interface ProfileSessionPayload {
   type: "profile";
   user: User;
+  users?: User[];
   exp: number;
 }
 
@@ -173,17 +174,28 @@ const buildCookie = (
   return parts.join("; ");
 };
 
-export const buildProfileCookie = (req: Request, user: User): string =>
-  buildCookie(
+export const buildProfileCookie = (
+  req: Request,
+  user: User,
+  users?: User[],
+): string => {
+  const safeUsers =
+    Array.isArray(users) && users.length > 0
+      ? Array.from(new Set(users.filter(isUser)))
+      : [user];
+
+  return buildCookie(
     req,
     PROFILE_COOKIE,
     encodeToken({
       type: "profile",
       user,
+      users: safeUsers,
       exp: Math.floor(Date.now() / 1000) + PROFILE_TTL_SECONDS,
     }),
     PROFILE_TTL_SECONDS,
   );
+};
 
 export const buildClearProfileCookie = (req: Request): string =>
   buildCookie(req, PROFILE_COOKIE, "", 0);
@@ -217,6 +229,7 @@ export const getSessionState = (
 ): {
   hasAccess: boolean;
   currentUser: User | null;
+  activeUsers: User[];
 } => {
   const cookies = parseCookies(req);
   const profile = verifyToken<ProfileSessionPayload>(
@@ -224,9 +237,18 @@ export const getSessionState = (
     "profile",
   );
 
+  const rawUsers = profile?.users?.filter(isUser);
+  const activeUsers: User[] =
+    rawUsers && rawUsers.length > 0
+      ? Array.from(new Set(rawUsers))
+      : profile?.user
+        ? [profile.user]
+        : [];
+
   return {
-    hasAccess: Boolean(profile),
-    currentUser: profile?.user ?? null,
+    hasAccess: Boolean(profile && activeUsers.length > 0),
+    currentUser: profile?.user ?? activeUsers[0] ?? null,
+    activeUsers,
   };
 };
 

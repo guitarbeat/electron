@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { prefersReducedMotion } from "@/utils";
 
 import type { MainTab } from "@/shared/types";
 import {
@@ -6,7 +7,7 @@ import {
   WorkspaceTabFallback,
   ProfileMenu,
 } from "@/components/ui";
-import { BentoSlotContext } from "@/app/providerContexts";
+import { BentoSlotContext, useUser } from "@/app/providerContexts";
 import type { RegisteredBentoSlotConfig } from "@/app/providerContexts";
 import { isLibraryWorkspaceTab } from "@/utils/workspaceConfig";
 
@@ -24,12 +25,14 @@ type AppWorkspaceShellProps = {
   onTogglePanel: (panel: TogglePanel) => void;
 };
 
+const CHAT_EXIT_MS = 160;
+
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
   openPanels,
   onTogglePanel,
 }) => {
-  const [, setTabConfigs] = useState<
+  const tabConfigsRef = React.useRef<
     Partial<Record<MainTab, RegisteredBentoSlotConfig>>
   >({});
   const [searchPortalEl, setSearchPortalEl] = useState<HTMLDivElement | null>(
@@ -37,7 +40,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   );
   const registerTabConfig = useCallback(
     (tab: MainTab, config: RegisteredBentoSlotConfig) => {
-      setTabConfigs((previous) => ({ ...previous, [tab]: config }));
+      tabConfigsRef.current[tab] = config;
     },
     [],
   );
@@ -56,8 +59,36 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   ) : (
     <MessageBoard />
   );
+  const { currentUser, activeUsers } = useUser();
+  const isLoggedIn = Boolean(
+    currentUser || (activeUsers && activeUsers.length > 0),
+  );
   const isChatOpen = openPanels.has("messages");
   const hasInlinePanels = openPanels.has("spin");
+  const [chatRendered, setChatRendered] = useState(isChatOpen);
+  const [chatClosing, setChatClosing] = useState(false);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      setChatRendered(true);
+      setChatClosing(false);
+      return;
+    }
+    if (!chatRendered) {
+      return;
+    }
+    if (prefersReducedMotion()) {
+      setChatRendered(false);
+      setChatClosing(false);
+      return;
+    }
+    setChatClosing(true);
+    const timeoutId = window.setTimeout(() => {
+      setChatRendered(false);
+      setChatClosing(false);
+    }, CHAT_EXIT_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [chatRendered, isChatOpen]);
 
   return (
     <BentoSlotContext.Provider value={contextValue}>
@@ -123,12 +154,13 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
 
         {/* Floating Chat Panel Dock */}
-        {isChatOpen ? (
+        {isLoggedIn && chatRendered ? (
           <section
             id="floating-chat-panel"
-            className="chat-dock"
+            className={`chat-dock${chatClosing ? " is-closing" : ""}`}
             aria-label="Messages"
             aria-live="polite"
+            aria-hidden={chatClosing}
           >
             <button
               type="button"
@@ -144,7 +176,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           </section>
         ) : null}
 
-        {/* Floating Quick Controls Cluster (Profile Logins + Chat Bubble) */}
+        {/* Floating Quick Controls (Profile Logins + Chat Bubble) */}
         <div
           className="floating-dock-cluster"
           role="region"
@@ -153,19 +185,20 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           <div className="floating-dock-cluster__profiles">
             <ProfileMenu />
           </div>
-          <div className="floating-dock-cluster__divider" aria-hidden="true" />
-          <button
-            type="button"
-            className={`chat-fab${isChatOpen ? " is-open" : ""}`}
-            onPointerEnter={() => void import("@/components/messages")}
-            onFocus={() => void import("@/components/messages")}
-            onClick={() => onTogglePanel("messages")}
-            aria-label={isChatOpen ? "Close chat" : "Open chat"}
-            aria-expanded={isChatOpen}
-            aria-controls="floating-chat-panel"
-          >
-            <MessageIcon size={24} />
-          </button>
+          {isLoggedIn ? (
+            <button
+              type="button"
+              className={`chat-fab${isChatOpen ? " is-open" : ""}`}
+              onPointerEnter={() => void import("@/components/messages")}
+              onFocus={() => void import("@/components/messages")}
+              onClick={() => onTogglePanel("messages")}
+              aria-label={isChatOpen ? "Close chat" : "Open chat"}
+              aria-expanded={isChatOpen}
+              aria-controls="floating-chat-panel"
+            >
+              <MessageIcon size={24} />
+            </button>
+          ) : null}
         </div>
       </main>
     </BentoSlotContext.Provider>

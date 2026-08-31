@@ -286,6 +286,10 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         const movieId = extractString(
           (payload as { movieId?: unknown }).movieId,
         );
+        const rawTargetUser = extractString(
+          (payload as { targetUser?: unknown }).targetUser,
+        );
+        const targetUser = rawTargetUser && isUser(rawTargetUser) ? rawTargetUser : context.currentUser!;
 
         const target = movies.find((movie) => movie.id === movieId);
         if (!target) {
@@ -299,11 +303,11 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
               return movie;
             }
 
-            const watchedBy = movie.watchedBy.includes(context.currentUser!)
+            const watchedBy = movie.watchedBy.includes(targetUser)
               ? movie.watchedBy.filter(
-                  (user: User) => user !== context.currentUser!,
+                  (user: User) => user !== targetUser,
                 )
-              : [...movie.watchedBy, context.currentUser!];
+              : [...movie.watchedBy, targetUser];
 
             return {
               ...movie,

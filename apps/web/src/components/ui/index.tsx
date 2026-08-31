@@ -80,6 +80,8 @@ interface MediaPosterProps {
   priority?: boolean;
 }
 
+const CACHED_LOADED_POSTERS = new Set<string>();
+
 export const MediaPoster: React.FC<MediaPosterProps> = ({
   title,
   posterUrl,
@@ -88,17 +90,27 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   className = "",
   priority = false,
 }) => {
-  const [hasImageError, setHasImageError] = React.useState(false);
-  const [isLoaded, setIsLoaded] = React.useState(false);
-
   const fallbackCatUrl = React.useMemo(() => {
     return getCatPosterUrl(id || title);
   }, [id, title]);
 
+  const [hasImageError, setHasImageError] = React.useState(false);
+  const isCatFallback = !posterUrl || hasImageError;
+  const activeSrc = isCatFallback ? fallbackCatUrl : posterUrl;
+
+  const [isLoaded, setIsLoaded] = React.useState<boolean>(() => {
+    return Boolean(activeSrc && CACHED_LOADED_POSTERS.has(activeSrc));
+  });
+
   React.useEffect(() => {
     setHasImageError(false);
-    setIsLoaded(false);
-  }, [posterUrl]);
+    const initialSrc = posterUrl ? posterUrl : fallbackCatUrl;
+    if (initialSrc && CACHED_LOADED_POSTERS.has(initialSrc)) {
+      setIsLoaded(true);
+    } else {
+      setIsLoaded(false);
+    }
+  }, [posterUrl, fallbackCatUrl]);
 
   const handleImageError = () => {
     if (!hasImageError && posterUrl) {
@@ -110,21 +122,23 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   };
 
   const handleImageLoad = () => {
+    if (activeSrc) {
+      CACHED_LOADED_POSTERS.add(activeSrc);
+    }
     setIsLoaded(true);
   };
 
-  const isCatFallback = !posterUrl || hasImageError;
-  const activeSrc = isCatFallback ? fallbackCatUrl : posterUrl;
-
   return (
     <div className={`media-poster-wrap ${isCatFallback ? "is-cat-poster" : ""} ${className}`}>
-      <div className={`media-poster-skeleton ${isLoaded ? "loaded" : ""}`} />
+      {!isLoaded && <div className="media-poster-skeleton" />}
       <img
         src={activeSrc}
         alt={`${title} poster`}
-        loading={priority ? "eager" : "lazy"}
+        width={300}
+        height={450}
+        loading="eager"
         decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
+        fetchPriority={priority ? "high" : undefined}
         className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
         onLoad={handleImageLoad}
         onError={handleImageError}
@@ -400,7 +414,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             lineHeight: typography.lineHeight.normal,
             outline: "none",
             resize: "vertical",
-            transition: `all ${motionToken.duration.fast} ${motionToken.easing.ease}`,
+              transition: `border-color ${motionToken.duration.fast} ${motionToken.easing.ease}, background-color ${motionToken.duration.fast} ${motionToken.easing.ease}, box-shadow ${motionToken.duration.fast} ${motionToken.easing.ease}`,
             boxShadow: isFocused
               ? shadows.buttonActive
               : "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 14px rgba(0,0,0,0.18)",
@@ -596,6 +610,7 @@ export const GearIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
 export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   const {
     currentUser,
+    activeUsers,
     isDisabled,
     isSavingPin,
     selectionError,
@@ -603,6 +618,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
     userNeedsPin,
     selectProfile,
     handleLogout,
+    handleLogoutUser,
     openPinSettings,
     clearSelectionError,
   } = useProfileSelection();
@@ -653,8 +669,10 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   }, [isSettingsOpen, toggleSettings]);
 
   const handleProfileClick = (profile: User) => {
-    if (currentUser === profile) {
-      toggleSettings(!isSettingsOpen);
+    const isProfileLoggedIn = (activeUsers || []).includes(profile);
+    if (isProfileLoggedIn) {
+      handleLogoutUser(profile);
+      toggleSettings(false);
       return;
     }
     selectProfile(profile);
@@ -671,6 +689,8 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
     toggleSettings(false);
   };
 
+  const activeProfile = currentUser || (activeUsers && activeUsers.length > 0 ? activeUsers[0] : null);
+
   return (
     <div className="inline-profiles-container">
       {/* Profiles Switcher Row */}
@@ -680,33 +700,25 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
         aria-label="Switch profile"
       >
         {([...USER_OPTIONS] as User[]).map((profile) => {
-          const isActive = currentUser === profile;
+          const isProfileLoggedIn = (activeUsers || []).includes(profile);
           const hasPin = userHasPin(profile);
           return (
             <button
               key={profile}
               type="button"
-              className={`profile-switcher-btn${isActive ? " is-active" : ""}${hasPin ? " has-pin" : ""}`}
+              className={`profile-switcher-btn profile-switcher-btn--${profile.toLowerCase()}${isProfileLoggedIn ? " is-active is-logged-in" : " is-logged-out"}`}
               onClick={() => handleProfileClick(profile)}
               disabled={isDisabled}
               aria-label={
-                isActive
-                  ? `${profile} (active profile)`
+                isProfileLoggedIn
+                  ? `${profile} (logged in, click to log out)`
                   : hasPin
-                    ? `Switch to ${profile} (PIN protected)`
-                    : `Switch to ${profile}`
+                    ? `Log in as ${profile} (PIN protected)`
+                    : `Log in as ${profile}`
               }
             >
-              <div className="profile-switcher-avatar-wrap">
-                <span className="profile-switcher-avatar">
-                  <UserAvatar user={profile} />
-                </span>
-                {hasPin && (
-                  <span className="profile-switcher-lock">
-                    <LockIcon size={10} />
-                  </span>
-                )}
-                {isActive && <span className="profile-switcher-indicator" />}
+              <div className="profile-switcher-face-wrap">
+                <UserAvatar user={profile} />
               </div>
               <span className="profile-switcher-name sr-only">{profile}</span>
             </button>
@@ -714,7 +726,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
         })}
 
         {/* Settings/Logout Cog Trigger (only when a user is logged in) */}
-        {currentUser && (
+        {activeProfile && (
           <div className="profile-settings-dropdown-wrap">
             <button
               ref={triggerRef}
@@ -743,7 +755,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                 >
                   <div className="profile-settings-header">
                     <span className="profile-settings-title">
-                      {currentUser}
+                      {activeProfile}
                     </span>
                     <span className="profile-settings-subtitle">
                       Profile Options
@@ -760,9 +772,9 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                     >
                       <LockIcon size={14} />
                       <span>
-                        {userNeedsPin(currentUser)
+                        {activeProfile && userNeedsPin(activeProfile)
                           ? "Finish PIN Setup"
-                          : userHasPin(currentUser)
+                          : activeProfile && userHasPin(activeProfile)
                             ? "Change Security PIN"
                             : "Set Security PIN"}
                       </span>
@@ -2219,7 +2231,7 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
                 alignItems: "center",
                 justifyContent: "center",
                 boxShadow: shadows.button,
-                transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+                transition: `transform ${motionToken.duration.button} ${motionToken.easing.ease}, border-color ${motionToken.duration.button} ${motionToken.easing.ease}, background-color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) => {
                 if (!closeDisabled) {
@@ -2286,7 +2298,7 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
               alignItems: "center",
               justifyContent: "center",
               boxShadow: shadows.button,
-              transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+              transition: `background-color ${motionToken.duration.button} ${motionToken.easing.ease}, color ${motionToken.duration.button} ${motionToken.easing.ease}`,
             }}
             onMouseEnter={(e) => {
               if (!closeDisabled) {
@@ -2826,7 +2838,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+            transition: `background-color ${motionToken.duration.button} ${motionToken.easing.ease}, color ${motionToken.duration.button} ${motionToken.easing.ease}`,
             opacity: closeDisabled ? 0.45 : 1,
             cursor: closeDisabled ? "not-allowed" : "pointer",
             padding: "12px",
@@ -3121,7 +3133,7 @@ export const Toast: React.FC<ToastProps> = ({
                 fontWeight: typography.fontWeight.semibold,
                 letterSpacing: typography.letterSpacing.wide,
                 whiteSpace: "nowrap",
-                transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+                transition: `transform ${motionToken.duration.button} ${motionToken.easing.ease}, border-color ${motionToken.duration.button} ${motionToken.easing.ease}, background-color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
@@ -3149,7 +3161,7 @@ export const Toast: React.FC<ToastProps> = ({
                 fontSize: "1.05rem",
                 lineHeight: 1,
                 borderRadius: radius.sm,
-                transition: `all ${motionToken.duration.button} ${motionToken.easing.ease}`,
+                transition: `color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.color = colors.textPrimary)
@@ -3525,7 +3537,7 @@ export function MagicToggle<T extends string>({
   ariaLabel,
 }: MagicToggleProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [indicatorClip, setIndicatorClip] = useState("inset(0 100% 0 0)");
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -3535,12 +3547,13 @@ export function MagicToggle<T extends string>({
 
     const buttons = containerRef.current.querySelectorAll(`.magic-toggle-btn`);
     const activeButton = buttons[activeIndex] as HTMLButtonElement | undefined;
+    const containerWidth = containerRef.current.offsetWidth;
 
-    if (activeButton) {
-      setIndicatorStyle({
-        left: activeButton.offsetLeft,
-        width: activeButton.offsetWidth,
-      });
+    if (activeButton && containerWidth > 0) {
+      const left = activeButton.offsetLeft;
+      const width = activeButton.offsetWidth;
+      const right = Math.max(containerWidth - left - width, 0);
+      setIndicatorClip(`inset(0 ${right}px 0 ${left}px)`);
     }
   }, [activeValue, options]);
 
@@ -3556,10 +3569,7 @@ export function MagicToggle<T extends string>({
     >
       <div
         className={`magic-toggle-indicator${isLogout ? ` is-logout` : ""}`}
-        style={{
-          transform: `translateX(${indicatorStyle.left}px)`,
-          width: `${indicatorStyle.width}px`,
-        }}
+        style={{ clipPath: indicatorClip }}
         aria-hidden="true"
       />
       {options.map((option) => {
@@ -4099,12 +4109,12 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[10100] flex items-center justify-center bg-[#04070D]/78 backdrop-blur-[8px] p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[10100] flex items-end justify-end p-3 sm:p-5 bg-black/25 backdrop-blur-[3px] animate-in fade-in duration-200"
       onClick={handleOverlayClick}
       role="presentation"
     >
       <section
-        className="w-full max-w-[22rem] p-6 rounded-2xl border border-white/10 bg-[#0f172a] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)] animate-in zoom-in-95 duration-250 outline-none"
+        className="w-full max-w-[21.5rem] mb-16 sm:mb-20 mr-1 sm:mr-3 p-5 rounded-3xl border border-white/15 bg-slate-950/90 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-8 duration-250 outline-none"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pin-dialog-title"
@@ -4114,7 +4124,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="shrink-0 w-10 h-10 rounded-full border-2 border-indigo-500/40 overflow-hidden flex items-center justify-center bg-slate-800 shadow-md">
+              <div className="pin-dialog-avatar-wrap shrink-0 w-11 h-11 overflow-visible flex items-center justify-center bg-transparent">
                 <UserAvatar user={user} />
               </div>
               <div className="min-w-0 flex flex-col gap-[0.15rem]">
@@ -4129,7 +4139,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
             <button
               type="button"
-              className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-700/50 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-600/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-800/60 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-700/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
               onClick={onCancel}
               disabled={isLoading}
               aria-label={
@@ -4366,7 +4376,25 @@ export const Modal: FC<ModalProps> = ({
   variant: _variant,
   maxWidth = 520,
   maxHeight,
-}) => {  if (!isOpen) return null;
+}) => {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !closeDisabled) {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen, closeDisabled, onClose]);
+
+  if (!isOpen) return null;
 
   return createPortal(
     <div
@@ -4375,8 +4403,16 @@ export const Modal: FC<ModalProps> = ({
       aria-label={ariaLabel || (typeof title === "string" ? title : "Dialog")}
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
     >
+      <button
+        type="button"
+        className="fixed inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
+        onClick={closeDisabled ? undefined : onClose}
+        disabled={closeDisabled}
+        aria-label={closeDisabled ? closeDisabledLabel : "Close dialog backdrop"}
+        tabIndex={-1}
+      />
       <div
-        className="relative w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6"
+        className="relative z-10 w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6 overscroll-contain"
         style={{
           maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth,
           maxHeight:
@@ -4503,3 +4539,7 @@ export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({
     {children ?? label}
   </span>
 );
+
+export { PageFlip } from "./PageFlip";
+export type { PageFlipProps, PageFlipLeaf, PageFlipEase } from "./PageFlip";
+

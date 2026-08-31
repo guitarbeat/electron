@@ -30,7 +30,12 @@ if (files.length === 0) {
 }
 
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
-const result = spawnSync(process.execPath, [tsxCli, '--test', ...files], {
-  stdio: 'inherit',
-});
+const result = spawnSync(
+  process.execPath,
+  ['--no-warnings', tsxCli, '--test', ...files],
+  {
+    stdio: 'inherit',
+    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+  },
+);
 process.exit(result.status ?? 1);

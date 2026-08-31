@@ -26,12 +26,6 @@ docs/
 │   ├── README.md                  # ADR index, status glossary & template
 │   └── ADR-001-...md              # ADR-001: Serverless isolation, Neon SSL & TV UX
 │
-├── audits/                        # Formal Technical & Performance Audits
-│   ├── README.md                  # Audit index, scoring rubrics & methodology
-│   ├── DRIFTWALL_AUDIT.md         # 3D DriftWall kinetic canvas & GPU performance
-│   ├── CSS_AUDIT.md               # CSS architecture, bundle footprint & specificity
-│   └── LINTING_AUDIT.md           # ESLint 9 & TypeScript static analysis audit
-│
 └── history/                       # Evolutionary Records & References
     ├── HISTORY.md                 # Project timeline, milestones & regression log
     └── YOUWARE.md                 # Technical architecture & stack snapshot
@@ -59,12 +53,11 @@ docs/
 | :--- | :--- | :--- |
 | **[`api/AGENT_API.md`](api/AGENT_API.md)** | Machine-to-machine Agent API v1, OpenAPI 3.0.3 specification, authentication, public catalog, and 2-phase confirmation workflow. | LLM Tool Developers & API Consumers |
 
-### 4. 📋 Decisions & Audits (`docs/decisions/` & `docs/audits/`)
+### 4. 📋 Decisions (`docs/decisions/`)
 | Document | Primary Scope | Target Audience |
 | :--- | :--- | :--- |
 | **[`decisions/README.md`](decisions/README.md)** | ADR process, status definitions, and index of active Architecture Decision Records. | Engineering Leads & Maintainers |
 | **[`decisions/ADR-001`](decisions/ADR-001-serverless-isolation-neon-and-tv-ux.md)** | Record on serverless dependency isolation, Neon connection string normalization, and Smart TV spatial UX. | Systems Architects |
-| **[`audits/README.md`](audits/README.md)** | Methodology, scoring criteria, and index of technical audits for DriftWall, CSS, and Linting. | QA & Performance Engineers |
 
 ### 5. 📜 Evolution & References (`docs/history/`)
 | Document | Primary Scope | Target Audience |
@@ -82,7 +75,6 @@ docs/
 - **Frontend / UI Engineer**:
   1. [`architecture/DESIGN.md`](architecture/DESIGN.md) ➔ Learn color tokens, typography scales, and 3D stage specs.
   2. [`architecture/SITE_LAYOUT.md`](architecture/SITE_LAYOUT.md) ➔ Explore shell and workspace layouts.
-  3. [`audits/DRIFTWALL_AUDIT.md`](audits/DRIFTWALL_AUDIT.md) ➔ Review kinetic 3D math and GPU compositing.
 - **DevOps / Infrastructure Engineer**:
   1. [`operations/DEPLOYMENT.md`](operations/DEPLOYMENT.md) ➔ Deploy to Vercel and configure Neon Postgres.
   2. [`decisions/ADR-001`](decisions/ADR-001-serverless-isolation-neon-and-tv-ux.md) ➔ Review connection pooling & SSL configuration.

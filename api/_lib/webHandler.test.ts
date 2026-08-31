@@ -304,4 +304,39 @@ describe("withWebHandler", () => {
     const body = JSON.parse(bodyString) as { success: boolean };
     assert.strictEqual(body.success, true);
   });
+  it("should return a 500 Response when handler throws a non-Error value in Web Request mode", async () => {
+    const failingHandler = withWebHandler(async () => {
+      throw "String error message";
+    });
+
+    const request = new Request("https://example.com/api/test", {
+      method: "GET",
+    });
+
+    const response = await failingHandler(request);
+
+    assert.ok(response instanceof Response);
+    assert.strictEqual(response.status, 500);
+
+    const body = (await response.json()) as { error: string };
+    assert.strictEqual(body.error, "Internal Server Error");
+  });
+
+  it("should return a 500 Response when handler throws synchronously in Web Request mode", async () => {
+    const failingHandler = withWebHandler(() => {
+      throw new Error("Sync handler error");
+    });
+
+    const request = new Request("https://example.com/api/test", {
+      method: "GET",
+    });
+
+    const response = await failingHandler(request);
+
+    assert.ok(response instanceof Response);
+    assert.strictEqual(response.status, 500);
+
+    const body = (await response.json()) as { error: string };
+    assert.strictEqual(body.error, "Internal Server Error");
+  });
 });

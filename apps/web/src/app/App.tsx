@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import {
   APP_VIEW_STATE_KEY,
   readInitialAppViewState,
@@ -239,6 +240,7 @@ const App: React.FC = () => {
 const AppWithProviders: React.FC = () => (
   <AppProviders>
     <App />
+    <SpeedInsights />
   </AppProviders>
 );
 

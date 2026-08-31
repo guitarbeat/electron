@@ -61,6 +61,19 @@ const movieSuggestions: ScopeDefinition<"suggestions", unknown> = {
       if (suggestions.some((suggestion) => suggestion.id === id)) {
         return { ok: false, conflict: "Suggestion already exists." };
       }
+      const normalizedTitle = title.trim().toLowerCase();
+      if (
+        suggestions.some(
+          (s) =>
+            s.status === "pending" &&
+            s.title.trim().toLowerCase() === normalizedTitle,
+        )
+      ) {
+        return {
+          ok: false,
+          conflict: "A suggestion with this title is already pending.",
+        };
+      }
       return {
         ok: true,
         data: [
@@ -135,6 +148,19 @@ const placeSuggestions: ScopeDefinition<"placeSuggestions", unknown> = {
       }
       if (suggestions.some((suggestion) => suggestion.id === id)) {
         return { ok: false, conflict: "Suggestion already exists." };
+      }
+      const normalizedName = name.trim().toLowerCase();
+      if (
+        suggestions.some(
+          (s) =>
+            s.status === "pending" &&
+            s.name.trim().toLowerCase() === normalizedName,
+        )
+      ) {
+        return {
+          ok: false,
+          conflict: "A place suggestion with this name is already pending.",
+        };
       }
       return {
         ok: true,

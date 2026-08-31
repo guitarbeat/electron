@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 export const IOS_BLUE = "#007aff";
-export const IOS_GRAY = "#e5e5ea";
-export const IOS_TIMESTAMP = "#8e8e93";
+export const IOS_GRAY = "#2c2c2e";
+export const IOS_TIMESTAMP = "#94a3b8";
 
 const AARON_BUBBLE_COLOR = "#c07842";
 export const ELECTRA_BUBBLE_COLOR = "#5e8a78";
@@ -12,9 +12,8 @@ export const getBubbleColor = (author: string): string => {
   return IOS_GRAY;
 };
 
-export const getBubbleTextColor = (author: string): string => {
-  if (author === "Aaron" || author === "Electra") return "#ffffff";
-  return "#000000";
+export const getBubbleTextColor = (_author: string): string => {
+  return "#ffffff";
 };
 
 export const isMessageFromCurrentUser = (
@@ -488,7 +487,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           overflowX: "hidden",
           padding: spacing.md,
           minHeight: 0,
-          backgroundColor: "#ffffff",
+          backgroundColor: "transparent",
           WebkitOverflowScrolling: "touch",
         }}
         className="ios-message-list"
@@ -533,7 +532,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                   style={{
                     padding: `${spacing.sm} ${spacing.md}`,
                     height: "40px",
-                    background: "#e5e5ea",
+                    background: "rgba(255, 255, 255, 0.08)",
                     borderRadius: "18px",
                     opacity: 0.45,
                     maxWidth: "60%",
@@ -602,7 +601,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                   fontFamily: typography.fontFamily.heading.join(", "),
                   fontSize: typography.fontSize.lg,
                   margin: 0,
-                  color: "#000000",
+                  color: "rgba(255, 255, 255, 0.95)",
                 }}
               >
                 No messages yet
@@ -883,7 +882,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 !isSubmitting
                   ? "pointer"
                   : "default",
-              transition: "all 0.2s ease",
+              transition: "transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 200ms ease, opacity 200ms ease, color 200ms ease",
               flexShrink: 0,
               opacity: showSendButton && currentUser ? 1 : 0.5,
               transform:

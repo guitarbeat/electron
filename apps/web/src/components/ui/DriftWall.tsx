@@ -9,6 +9,7 @@ import React, {
   ReactNode,
 } from "react";
 import { isScrollBlockedElement } from "@/hooks";
+import { scrollStorage } from "@/utils/scrollStorage";
 import "./DriftWall.css";
 
 export interface DriftWallItem {
@@ -44,6 +45,7 @@ export interface DriftWallProps {
   className?: string;
   style?: CSSProperties;
   onTileClick?: (item: DriftWallItem | ReactNode, index: number) => void;
+  scrollStorageKey?: string;
 }
 
 const EMPTY_ITEMS: (DriftWallItem | ReactNode)[] = [];
@@ -82,6 +84,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   className = "",
   style,
   onTileClick,
+  scrollStorageKey,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLDivElement>(null);
@@ -90,6 +93,35 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
   const offsetsRef = useRef<number[]>([]);
   const velocitiesRef = useRef<number[]>([]);
+  
+  // Load initial offsets if a storage key is provided
+  useEffect(() => {
+    if (scrollStorageKey) {
+      const saved = scrollStorage.load<{ offsets: number[] }>(scrollStorageKey);
+      if (saved?.offsets) {
+        offsetsRef.current = saved.offsets;
+      }
+    }
+  }, [scrollStorageKey]);
+
+  // Save offsets periodically or on unmount
+  useEffect(() => {
+    if (!scrollStorageKey) return;
+    
+    const interval = setInterval(() => {
+      if (offsetsRef.current.length > 0) {
+        scrollStorage.save(scrollStorageKey, { offsets: offsetsRef.current });
+      }
+    }, 1000);
+    
+    return () => {
+      clearInterval(interval);
+      if (offsetsRef.current.length > 0) {
+        scrollStorage.save(scrollStorageKey, { offsets: offsetsRef.current });
+      }
+    };
+  }, [scrollStorageKey]);
+
   const scrollVelocityRef = useRef<number>(0);
   const isDraggingTouchRef = useRef<boolean>(false);
   const touchLastYRef = useRef<number>(0);
@@ -208,12 +240,18 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     });
   }, [columnItems, speed, direction, variance]);
 
-  // Reset internal tracking values when layout/content changes
+  // Preserve and smooth internal tracking values when layout/content changes
   useEffect(() => {
-    offsetsRef.current = columnMeta.map(
-      (meta, c) => meta.copyHeight * ((c * 0.37) % 1),
-    );
-    velocitiesRef.current = columnItems.map(() => 0);
+    const prevOffsets = offsetsRef.current;
+    offsetsRef.current = columnMeta.map((meta, c) => {
+      if (prevOffsets && typeof prevOffsets[c] === "number" && meta.copyHeight > 0) {
+        return ((prevOffsets[c] % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
+      }
+      return meta.copyHeight * ((c * 0.37) % 1);
+    });
+    if (!velocitiesRef.current || velocitiesRef.current.length !== columnItems.length) {
+      velocitiesRef.current = columnItems.map(() => 0);
+    }
   }, [columnMeta, columnItems]);
 
   const applyPlaneTransform = useCallback(
@@ -368,11 +406,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
           // 4. Wrap around for infinite scrolling (modulo by the column's total repeated height)
           const el = trackRefs.current[c];
-          let actualCopyHeight = meta.copyHeight;
-          if (el && meta.copies > 0) {
-            actualCopyHeight = el.scrollHeight / meta.copies;
+          const copyH = meta.copyHeight;
+          if (copyH > 0) {
+            next = ((next % copyH) + copyH) % copyH;
           }
-          next = ((next % actualCopyHeight) + actualCopyHeight) % actualCopyHeight;
           offsetsRef.current[c] = next;
 
           // 5. Apply the transform

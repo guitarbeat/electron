@@ -1,19 +1,16 @@
 import { randomUUID } from "node:crypto";
 import {
-  mockMemories,
   mockMessages,
   mockPlaces,
 } from "../../../apps/web/src/services/state/mockData.js";
 import {
   normalizeMessageRecord,
   normalizePlaceRecord,
-  normalizeSharedMemoryRecord,
 } from "../../../apps/web/src/services/state/stateSchemas.js";
 import type { StateScopeDataMap } from "../../../apps/web/src/services/state/stateTypes.js";
 import type {
   Message,
   Place,
-  SharedMemory,
 } from "../../../apps/web/src/shared/types.js";
 import {
   MAX_MESSAGE_LENGTH,
@@ -42,10 +39,16 @@ const parseArrayScope = <T>(
       return defaultContent;
     }
 
-    return parsed.flatMap((entry) => {
+    const items = parsed.flatMap((entry) => {
       const next = normalizeRecord(entry);
       return next ? [next] : [];
     });
+
+    if (items.length === 0 && defaultContent.length > 0) {
+      return defaultContent;
+    }
+
+    return items;
   } catch (error) {
     console.error(
       `Failed to parse ${context}; defaulting to seed state.`,
@@ -121,217 +124,6 @@ export const messagesScopeDefinition: ScopeDefinition<"messages", unknown> = {
       }
       default:
         return { ok: false, conflict: `Unsupported messages operation: ${op}` };
-    }
-  },
-};
-
-export const memoriesScopeDefinition: ScopeDefinition<"memories", unknown> = {
-  filename: "memories.json",
-  parse: (content) =>
-    parseArrayScope<SharedMemory>(
-      content,
-      "memories",
-      normalizeSharedMemoryRecord,
-      mockMemories,
-    ),
-  serialize: (value) => JSON.stringify(value, null, 2),
-  toClient: (value) => value as StateScopeDataMap["memories"],
-  mutate: (current, op, payload, context) => {
-    const memories = current as SharedMemory[];
-
-    switch (op) {
-      case "add_memory": {
-        const nextPayload = payload as {
-          id?: unknown;
-          movieId?: unknown;
-          movieTitle?: unknown;
-          note?: unknown;
-          imageUrl?: unknown;
-        };
-        const rawId = extractString(nextPayload.id);
-        const id = rawId || `memory-${randomUUID()}`;
-        const movieTitle = extractString(nextPayload.movieTitle);
-        const note = extractString(nextPayload.note);
-
-        if (!movieTitle || !note) {
-          return { ok: false, conflict: "Invalid memory payload." };
-        }
-
-        if (memories.some((memory) => memory.id === id)) {
-          return { ok: false, conflict: "Memory already exists." };
-        }
-
-        const movieId = extractString(nextPayload.movieId) || undefined;
-        const imageUrl = extractString(nextPayload.imageUrl) || undefined;
-
-        return {
-          ok: true,
-          data: [
-            {
-              id,
-              movieId,
-              movieTitle,
-              author: context.currentUser!,
-              note,
-              createdAt: context.now,
-              imageUrl,
-            },
-            ...memories,
-          ],
-        };
-      }
-      case "update_memory": {
-        const nextPayload = payload as {
-          memoryId?: unknown;
-          updates?: { note?: unknown; movieId?: unknown; movieTitle?: unknown };
-        };
-        const memoryId = extractString(nextPayload.memoryId);
-
-        const index = memories.findIndex((memory) => memory.id === memoryId);
-        if (index < 0) {
-          return { ok: false, conflict: "Memory not found." };
-        }
-
-        const currentMemory = memories[index];
-        if (currentMemory.author !== context.currentUser!) {
-          return {
-            ok: false,
-            conflict: "Only the author can edit this memory.",
-          };
-        }
-
-        const upd = nextPayload.updates ?? {};
-        const updatedMemory: SharedMemory = {
-          ...currentMemory,
-          note:
-            typeof upd.note === "string"
-              ? extractString(upd.note)
-              : currentMemory.note,
-          movieId:
-            typeof upd.movieId === "string"
-              ? extractString(upd.movieId)
-              : currentMemory.movieId,
-          movieTitle:
-            typeof upd.movieTitle === "string"
-              ? extractString(upd.movieTitle)
-              : currentMemory.movieTitle,
-          updatedAt: context.now,
-        };
-
-        return {
-          ok: true,
-          data: memories.map((memory) =>
-            memory.id === memoryId ? updatedMemory : memory,
-          ),
-        };
-      }
-      case "update_memories_batch": {
-        const nextPayload = payload as {
-          updates?: Array<{
-            memoryId?: unknown;
-            updates?: {
-              note?: unknown;
-              movieId?: unknown;
-              movieTitle?: unknown;
-            };
-          }>;
-        };
-        if (!Array.isArray(nextPayload.updates)) {
-          return { ok: false, conflict: "Invalid batch payload." };
-        }
-
-        const updatesMap = new Map(
-          nextPayload.updates.map((u) => [
-            extractString(u.memoryId),
-            u.updates,
-          ]),
-        );
-
-        for (const memory of memories) {
-          if (
-            updatesMap.has(memory.id) &&
-            memory.author !== context.currentUser!
-          ) {
-            return {
-              ok: false,
-              conflict: "Only the author can edit this memory.",
-            };
-          }
-        }
-
-        const nextData = memories.map((memory) => {
-          const upd = updatesMap.get(memory.id);
-          if (!upd) return memory;
-
-          return {
-            ...memory,
-            note:
-              typeof upd.note === "string"
-                ? extractString(upd.note)
-                : memory.note,
-            movieId:
-              typeof upd.movieId === "string"
-                ? extractString(upd.movieId)
-                : memory.movieId,
-            movieTitle:
-              typeof upd.movieTitle === "string"
-                ? extractString(upd.movieTitle)
-                : memory.movieTitle,
-            updatedAt: context.now,
-          };
-        });
-
-        return {
-          ok: true,
-          data: nextData,
-        };
-      }
-      case "delete_memory": {
-        const memoryId = extractString(
-          (payload as { memoryId?: unknown }).memoryId,
-        );
-
-        const memory = memories.find((entry) => entry.id === memoryId);
-        if (!memory) {
-          return { ok: false, conflict: "Memory not found." };
-        }
-        if (memory.author !== context.currentUser!) {
-          return {
-            ok: false,
-            conflict: "Only the author can delete this memory.",
-          };
-        }
-
-        return {
-          ok: true,
-          data: memories.filter((memory) => memory.id !== memoryId),
-        };
-      }
-      case "toggle_memory_pin": {
-        const memoryId = extractString(
-          (payload as { memoryId?: unknown }).memoryId,
-        );
-
-        const existing = memories.find((memory) => memory.id === memoryId);
-        if (!existing) {
-          return { ok: false, conflict: "Memory not found." };
-        }
-
-        return {
-          ok: true,
-          data: memories.map((memory) =>
-            memory.id === memoryId
-              ? {
-                  ...memory,
-                  isPinned: !memory.isPinned,
-                  updatedAt: context.now,
-                }
-              : memory,
-          ),
-        };
-      }
-      default:
-        return { ok: false, conflict: `Unsupported memories operation: ${op}` };
     }
   },
 };
@@ -483,3 +275,4 @@ export const placesScopeDefinition: ScopeDefinition<"places", unknown> = {
     }
   },
 };
+

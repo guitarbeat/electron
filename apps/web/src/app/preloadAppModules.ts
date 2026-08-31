@@ -5,7 +5,6 @@ let criticalPreloadPromise: Promise<void> | null = null;
 
 /** Warm the active workspace tab chunk. */
 export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
-  if (tab === "memories") return import("@/components/memories/MemoriesView");
   if (tab === "messages") return import("@/components/messages");
   return Promise.all([
     import("@/components/library/LibraryWorkspace"),

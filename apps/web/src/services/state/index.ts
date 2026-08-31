@@ -21,7 +21,6 @@ import type {
   Movie,
   MovieSuggestion,
   Message,
-  SharedMemory,
   Place,
   PlaceSuggestion,
   MatchmakerGame,
@@ -152,27 +151,6 @@ export const mockMessages: Message[] = [
   },
 ];
 
-// Mock memories
-export const mockMemories: SharedMemory[] = [
-  {
-    id: "mem-1",
-    movieId: "mock-3",
-    movieTitle: "Spirited Away",
-    author: "Electra",
-    note: "This was our first movie night together! The food in this movie always makes me hungry.",
-    createdAt: "2024-01-10T21:00:00Z",
-    isPinned: true,
-  },
-  {
-    id: "mem-2",
-    movieId: "mock-1",
-    movieTitle: "The Matrix",
-    author: "Aaron",
-    note: "Still can't believe how well this movie holds up after all these years.",
-    createdAt: "2024-01-15T23:00:00Z",
-  },
-];
-
 // Mock places
 export const mockPlaces: Place[] = [
   {
@@ -298,7 +276,6 @@ export const isMockMode = (): boolean => {
 export const STATE_SCOPES = [
   "movies",
   "messages",
-  "memories",
   "places",
   "suggestions",
   "placeSuggestions",
@@ -341,7 +318,6 @@ export interface DailySpinRecord {
 export interface StateScopeDataMap {
   movies: Movie[];
   messages: Message[];
-  memories: SharedMemory[];
   places: Place[];
   suggestions: MovieSuggestion[];
   placeSuggestions: PlaceSuggestion[];
@@ -396,6 +372,7 @@ export interface ScopeOutbox {
 export interface SessionState {
   hasAccess: boolean;
   currentUser: User | null;
+  activeUsers?: User[];
   pinProtectedUsers: User[];
   usersMissingPins: User[];
 }
@@ -431,7 +408,6 @@ export type {
   MovieSuggestion,
   Place,
   PlaceSuggestion,
-  SharedMemory,
 };
 
 // Zod schemas for scope validation and rehydration
@@ -480,20 +456,6 @@ export const MessageSchema = z
     author: z.string().min(1),
     content: z.string(),
     createdAt: z.string(),
-  })
-  .passthrough();
-
-export const SharedMemorySchema = z
-  .object({
-    id: z.string().min(1),
-    movieId: z.string().optional(),
-    movieTitle: z.string().min(1),
-    author: z.string().min(1),
-    note: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string().optional(),
-    isPinned: z.boolean().optional(),
-    imageUrl: z.string().optional(),
   })
   .passthrough();
 
@@ -585,7 +547,6 @@ export const DailySpinRecordSchema = z
 export const StateScopeSchemas = {
   movies: z.array(MovieSchema),
   messages: z.array(MessageSchema),
-  memories: z.array(SharedMemorySchema),
   places: z.array(PlaceSchema),
   suggestions: z.array(MovieSuggestionSchema),
   placeSuggestions: z.array(PlaceSuggestionSchema),
@@ -714,46 +675,6 @@ export const parseMessagesContent = (
   const parsed = parseJsonContent(content, "messages");
   return normalizeRecordList(parsed, normalizeMessageRecord);
 };
-
-export const cloneMemories = (memories: SharedMemory[]): SharedMemory[] =>
-  memories.map((memory) => ({
-    ...memory,
-  }));
-
-export const normalizeSharedMemoryRecord = (
-  value: unknown,
-): SharedMemory | null => {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const memory = value as Partial<SharedMemory>;
-  const id = normalizeRequiredString(memory.id);
-  const movieTitle = normalizeRequiredString(memory.movieTitle);
-  const author = normalizeRequiredString(memory.author);
-  const note = normalizeRequiredString(memory.note);
-  const createdAt = normalizeRequiredDate(memory.createdAt);
-
-  if (!id || !movieTitle || !author || !note || !createdAt) {
-    return null;
-  }
-
-  return {
-    id,
-    movieId: normalizeOptionalString(memory.movieId),
-    movieTitle,
-    author,
-    note,
-    createdAt,
-    updatedAt: normalizeOptionalDate(memory.updatedAt),
-    isPinned:
-      typeof memory.isPinned === "boolean" ? memory.isPinned : undefined,
-    imageUrl: normalizeOptionalUrl(memory.imageUrl),
-  };
-};
-
-export const normalizeMemories = (value: unknown): SharedMemory[] =>
-  normalizeRecordList(value, normalizeSharedMemoryRecord);
 
 const isSuggestionStatus = (
   value: unknown,
@@ -1169,7 +1090,6 @@ const getDefaultScopeData = <TScope extends StateScope>(
   switch (scope) {
     case "movies":
     case "messages":
-    case "memories":
     case "places":
     case "suggestions":
     case "placeSuggestions":
@@ -1200,8 +1120,6 @@ const getMockScopeData = <TScope extends StateScope>(
       return deepClone(mockMovies) as StateScopeDataMap[TScope];
     case "messages":
       return deepClone(mockMessages) as StateScopeDataMap[TScope];
-    case "memories":
-      return deepClone(mockMemories) as StateScopeDataMap[TScope];
     case "places":
       return deepClone(mockPlaces) as StateScopeDataMap[TScope];
     case "suggestions":

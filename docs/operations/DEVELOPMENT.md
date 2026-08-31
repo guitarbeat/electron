@@ -3,8 +3,8 @@
 ## 1. Local Environment Setup
 
 ### 1.1. Prerequisites & Toolchain
-- **Node.js**: >= 20.x (`22.x LTS` strongly recommended; see `package.json` engines).
-- **Package Manager**: `pnpm` (version 9.x / 10.x). The root `pnpm-lock.yaml` is the canonical lockfile.
+- **Node.js**: >= 20.x (`22.x LTS` strongly recommended).
+- **Package Manager**: `pnpm@11.24.0` (see root `package.json` `packageManager`). The root `pnpm-lock.yaml` is the canonical lockfile.
 - **Git**: Configured for standard Git workflows.
 
 ### 1.2. Initial Repository Setup

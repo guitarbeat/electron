@@ -74,6 +74,17 @@ describe("verifyStoredPin and hashPin", () => {
         false,
       );
     });
+
+    it("should return false when salt/hash are empty or hash length is mismatched", () => {
+      assert.strictEqual(verifyStoredPin("1234", "pbkdf2:100000::"), false);
+      assert.strictEqual(
+        verifyStoredPin(
+          "1234",
+          "pbkdf2:100000:00112233445566778899aabbccddeeff:00112233",
+        ),
+        false,
+      );
+    });
   });
 });
 
@@ -93,6 +104,43 @@ describe("profile session signing and token verification", () => {
     assert.strictEqual(sessionState.currentUser, "Aaron");
     assert.strictEqual(requireAccessUser(authedReq), "Aaron");
     assert.strictEqual(requireProfileUser(authedReq), "Aaron");
+  });
+
+  it("should support SESSION_SIGNING_SECRET, SESSION_SECRET fallback, and clean quoted strings", () => {
+    const origSigningSecret = process.env.SESSION_SIGNING_SECRET;
+    const origSecret = process.env.SESSION_SECRET;
+
+    try {
+      delete process.env.SESSION_SIGNING_SECRET;
+      process.env.SESSION_SECRET = '"custom-secret-from-env"';
+
+      const req = new Request("http://localhost/api/test");
+      const cookieHeader = buildProfileCookie(req, "Aaron");
+      const cookieVal = cookieHeader.split(";")[0].split("=")[1];
+
+      // Verifying with custom-secret-from-env directly should match
+      const [payload, sig] = cookieVal.split(".");
+      const expectedSig = signValue(payload, "custom-secret-from-env");
+      assert.strictEqual(sig, expectedSig);
+
+      process.env.SESSION_SIGNING_SECRET = "'primary-signing-secret'";
+      const cookieHeader2 = buildProfileCookie(req, "Electra");
+      const cookieVal2 = cookieHeader2.split(";")[0].split("=")[1];
+      const [payload2, sig2] = cookieVal2.split(".");
+      const expectedSig2 = signValue(payload2, "primary-signing-secret");
+      assert.strictEqual(sig2, expectedSig2);
+    } finally {
+      if (origSigningSecret !== undefined) {
+        process.env.SESSION_SIGNING_SECRET = origSigningSecret;
+      } else {
+        delete process.env.SESSION_SIGNING_SECRET;
+      }
+      if (origSecret !== undefined) {
+        process.env.SESSION_SECRET = origSecret;
+      } else {
+        delete process.env.SESSION_SECRET;
+      }
+    }
   });
 
   it("should return null currentUser when cookie is missing or empty", () => {
@@ -184,6 +232,22 @@ describe("pin attempt session signing and token verification", () => {
 });
 
 describe("token verification edge cases and error handling", () => {
+  it("should reject token with multiple dots / extra split parts", () => {
+    const payload = base64urlEncode(
+      JSON.stringify({
+        type: "profile",
+        user: "Aaron",
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      }),
+    );
+    const sig = signValue(payload);
+
+    const reqExtraDot = new Request("http://localhost/api/test", {
+      headers: { cookie: `movie_watch_profile=${payload}.${sig}.extra` },
+    });
+    assert.strictEqual(getSessionState(reqExtraDot).currentUser, null);
+  });
+
   it("should reject token with missing or multiple dots", () => {
     const reqNoDot = new Request("http://localhost/api/test", {
       headers: { cookie: "movie_watch_profile=nodottoken" },
@@ -335,6 +399,47 @@ describe("token verification edge cases and error handling", () => {
       headers: { cookie: `movie_watch_pin_attempt=${token3}` },
     });
     assert.strictEqual(getPinAttemptState(req3), null);
+    const invalidFailuresPayload = {
+      type: "pin_attempt",
+      user: "Aaron",
+      failures: 1.5, // non-integer / non-finite failures
+      lockUntil: null,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    };
+    const enc4 = base64urlEncode(JSON.stringify(invalidFailuresPayload));
+    const token4 = `${enc4}.${signValue(enc4)}`;
+    const req4 = new Request("http://localhost/api/test", {
+      headers: { cookie: `movie_watch_pin_attempt=${token4}` },
+    });
+    assert.strictEqual(getPinAttemptState(req4), null);
+
+    const zeroLockUntilPayload = {
+      type: "pin_attempt",
+      user: "Aaron",
+      failures: 2,
+      lockUntil: 0, // lockUntil <= 0 is invalid
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    };
+    const enc5 = base64urlEncode(JSON.stringify(zeroLockUntilPayload));
+    const token5 = `${enc5}.${signValue(enc5)}`;
+    const req5 = new Request("http://localhost/api/test", {
+      headers: { cookie: `movie_watch_pin_attempt=${token5}` },
+    });
+    assert.strictEqual(getPinAttemptState(req5), null);
+
+    const invalidPinUserPayload = {
+      type: "pin_attempt",
+      user: "InvalidUser",
+      failures: 1,
+      lockUntil: null,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    };
+    const enc6 = base64urlEncode(JSON.stringify(invalidPinUserPayload));
+    const token6 = `${enc6}.${signValue(enc6)}`;
+    const req6 = new Request("http://localhost/api/test", {
+      headers: { cookie: `movie_watch_pin_attempt=${token6}` },
+    });
+    assert.strictEqual(getPinAttemptState(req6), null);
   });
 
   it("should reject non-JSON or malformed base64url payloads", () => {

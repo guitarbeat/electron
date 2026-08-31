@@ -31,7 +31,7 @@ export const buildAgentOpenApiDocument = (
       get: {
         operationId: "listPublicCatalog",
         description:
-          "List sanitized public movies, places, or suggestions. Use this for discovery and recommendations; it never returns messages, memories, profile activity, or PIN data.",
+          "List sanitized public movies, places, or suggestions. Use this for discovery and recommendations; it never returns messages, profile activity, or PIN data.",
         parameters: [
           {
             name: "resource",

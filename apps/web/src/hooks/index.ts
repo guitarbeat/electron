@@ -2,6 +2,7 @@ import {
   useRef,
   useMemo,
   type RefObject,
+  type MouseEvent,
   startTransition,
   useSyncExternalStore,
   useCallback,
@@ -16,7 +17,7 @@ import {
   syncOutboxStatusEvent,
   flushPendingSync,
 } from "@/services/state";
-import { stagger, animate } from "motion/react";
+import { stagger, animate, useMotionValue, useSpring } from "motion/react";
 import {
   readApiErrorMessage,
   compareCreatedAtAsc,
@@ -43,6 +44,7 @@ import {
   mutateScope,
   retryScopeSync,
   normalizeQuizData,
+  mockMessages,
 } from "../services/state";
 import { areDeeplyEqual } from "../utils";
 import { User } from "../shared/types";
@@ -367,13 +369,11 @@ export function useAppTabNavigation({
   isMobile,
   onTabSwitch,
 }: UseAppTabNavigationOptions): UseAppTabNavigationResult {
-  const [activeTab, setActiveTab] = useState<MainTab>(() =>
-    initialTab === "memories" ? "movies" : initialTab,
-  );
+  const [activeTab, setActiveTab] = useState<MainTab>(initialTab);
 
   const handleTabChange = useCallback(
     (tab: MainTab) => {
-      const nextTab = tab === "memories" ? "movies" : tab;
+      const nextTab = tab;
       if (nextTab === activeTab) {
         return;
       }
@@ -435,10 +435,13 @@ export const useMessages = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const messages = useMemo(
-    () => [...(remoteMessages ?? [])].sort(compareCreatedAtAsc),
-    [remoteMessages],
-  );
+  const messages = useMemo(() => {
+    const list =
+      remoteMessages && remoteMessages.length > 0
+        ? remoteMessages
+        : mockMessages;
+    return [...list].sort(compareCreatedAtAsc);
+  }, [remoteMessages]);
 
   const addMessage = useCallback(
     async (content: string) => {
@@ -501,8 +504,7 @@ export const useMessages = () => {
   };
 };
 
-const TILT_MAX_DEG = 8;
-const SCALE_ON_HOVER = 1.025;
+const TILT_MAX_DEG = 4;
 
 export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
   disabled = false,
@@ -510,18 +512,29 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
   const ref = useRef<T | null>(null);
   const raf = useRef<number>(0);
   const coordsRef = useRef<{ clientX: number; clientY: number } | null>(null);
-  const rectRef = useRef<{
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  } | null>(null);
   const prefersReduced = useRef(false);
   const isDisabled = useRef(disabled);
+  const sheenX = useMotionValue(50);
+  const sheenY = useMotionValue(50);
+  const springSheenX = useSpring(sheenX, { stiffness: 100, damping: 14 });
+  const springSheenY = useSpring(sheenY, { stiffness: 100, damping: 14 });
 
   useEffect(() => {
     isDisabled.current = disabled;
   }, [disabled]);
+
+  useEffect(() => {
+    const unsubX = springSheenX.on("change", (value) => {
+      ref.current?.style.setProperty("--sheen-x", `${value}%`);
+    });
+    const unsubY = springSheenY.on("change", (value) => {
+      ref.current?.style.setProperty("--sheen-y", `${value}%`);
+    });
+    return () => {
+      unsubX();
+      unsubY();
+    };
+  }, [springSheenX, springSheenY]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -540,22 +553,19 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
   }, []);
 
   const onMouseEnter = useCallback(() => {
-    if (prefersReduced.current || isDisabled.current) return;
+    if (prefersReduced.current || isDisabled.current || !hasHoverCapability()) {
+      return;
+    }
     const el = ref.current;
     if (!el) return;
-    const domRect = el.getBoundingClientRect();
-    rectRef.current = {
-      left: domRect.left,
-      top: domRect.top,
-      width: domRect.width || 1,
-      height: domRect.height || 1,
-    };
     el.style.willChange = "transform";
-    el.style.transition = "transform 0.08s ease-out";
+    el.style.transition = "transform 80ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))";
   }, []);
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (prefersReduced.current || isDisabled.current) return;
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    if (prefersReduced.current || isDisabled.current || !hasHoverCapability()) {
+      return;
+    }
     coordsRef.current = { clientX: e.clientX, clientY: e.clientY };
 
     if (raf.current !== 0) return;
@@ -566,32 +576,22 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
       const coords = coordsRef.current;
       if (!el || !coords) return;
 
-      const domRect = el.getBoundingClientRect();
-      const r = {
-        left: domRect.left,
-        top: domRect.top,
-        width: domRect.width || 1,
-        height: domRect.height || 1,
-      };
-
+      const r = el.getBoundingClientRect();
+      const width = r.width || 1;
+      const height = r.height || 1;
       const x = coords.clientX - r.left;
       const y = coords.clientY - r.top;
-      const dx = Math.max(-1, Math.min(1, (x / r.width - 0.5) * 2));
-      const dy = Math.max(-1, Math.min(1, (y / r.height - 0.5) * 2));
+      const dx = Math.max(-1, Math.min(1, (x / width - 0.5) * 2));
+      const dy = Math.max(-1, Math.min(1, (y / height - 0.5) * 2));
       const rotY = dx * TILT_MAX_DEG;
       const rotX = -dy * TILT_MAX_DEG;
 
-      // Instant 1:1 cursor response without transition latency
       el.style.transition = "none";
-      el.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(${SCALE_ON_HOVER}, ${SCALE_ON_HOVER}, ${SCALE_ON_HOVER})`;
-      const sheenX = ((dx + 1) * 0.5 * 100).toFixed(1);
-      const sheenY = ((dy + 1) * 0.5 * 100).toFixed(1);
-      el.style.setProperty("--sheen-x", `${sheenX}%`);
-      el.style.setProperty("--sheen-y", `${sheenY}%`);
-      el.style.setProperty("--mouse-x", `${x.toFixed(1)}px`);
-      el.style.setProperty("--mouse-y", `${y.toFixed(1)}px`);
+      el.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg)`;
+      sheenX.set(((dx + 1) * 0.5 * 100));
+      sheenY.set(((dy + 1) * 0.5 * 100));
     });
-  }, []);
+  }, [sheenX, sheenY]);
 
   const onMouseLeave = useCallback(() => {
     if (raf.current) {
@@ -599,18 +599,16 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
       raf.current = 0;
     }
     coordsRef.current = null;
-    rectRef.current = null;
     const el = ref.current;
     if (!el) return;
-    el.style.transition = "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+    el.style.transition =
+      "transform 150ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))";
     el.style.transform =
-      "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+      "perspective(1000px) rotateX(0deg) rotateY(0deg)";
     el.style.willChange = "auto";
-    el.style.removeProperty("--sheen-x");
-    el.style.removeProperty("--sheen-y");
-    el.style.removeProperty("--mouse-x");
-    el.style.removeProperty("--mouse-y");
-  }, []);
+    sheenX.set(50);
+    sheenY.set(50);
+  }, [sheenX, sheenY]);
 
   return { ref, onMouseEnter, onMouseMove, onMouseLeave };
 }

@@ -40,12 +40,15 @@
   cursor: pointer;
   transform-origin: 50% 50%;
   will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .drift-wall__col {
   position: relative;
   width: calc(var(--dw-tile-w) + var(--dw-gap));
   transform-style: preserve-3d;
+  contain: layout style;
 }
 
 .drift-wall__track {
@@ -53,6 +56,9 @@
   flex-direction: column;
   will-change: transform;
   transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  contain: layout style;
 }
 
 .drift-wall__tile {
@@ -63,6 +69,8 @@
   flex: 0 0 auto;
   outline: none;
   transform-style: preserve-3d;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
   background: transparent;
   border: none;
   padding: 0;
@@ -83,9 +91,9 @@
   transform: translateZ(0);
   pointer-events: auto;
   transition:
-    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    opacity 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    box-shadow 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 .drift-wall__tile img {
@@ -94,7 +102,7 @@
   object-fit: cover;
   display: block;
   filter: grayscale(var(--dw-gray)) saturate(0.92);
-  transition: filter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: filter 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -105,7 +113,7 @@
   background: var(--dw-overlay);
   opacity: 0.42;
   pointer-events: none;
-  transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 .drift-wall__tile.is-active .drift-wall__inner,
@@ -143,7 +151,9 @@
   transform-style: preserve-3d;
   opacity: 1;
   contain: layout style;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.4s step-start;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
+  transition: transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), z-index 0s step-start;
   z-index: 1;
 }
 
@@ -151,7 +161,7 @@
 .drift-wall__tile-custom:focus-within {
   transform: translateZ(1px);
   z-index: 50;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), z-index 0s step-start;
+  transition: transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), z-index 0s step-start;
 }
 
 @media (prefers-reduced-motion: reduce) {

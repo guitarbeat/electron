@@ -37,10 +37,6 @@ const TAB_SECTION_LABELS = {
     queue: { desktop: "To Try", mobile: "Try" },
     completed: { desktop: "Visited", mobile: "Done" },
   },
-  memories: {
-    queue: { desktop: "Memories", mobile: "All" },
-    completed: { desktop: "Pinned", mobile: "Pinned" },
-  },
   messages: {
     queue: { desktop: "Messages", mobile: "All" },
     completed: { desktop: "Archived", mobile: "Done" },
@@ -89,11 +85,6 @@ const SECTION_IDS: Record<MainTab, WorkspaceSectionIds> = {
     queue: "places-section-queue",
     completed: "places-section-visited",
   },
-  memories: {
-    incoming: "memories-section-incoming",
-    queue: "memories-section-queue",
-    completed: "memories-section-pinned",
-  },
   messages: {
     incoming: "messages-section-incoming",
     queue: "messages-section-queue",
@@ -129,11 +120,6 @@ export const WORKSPACE_GLOBAL_EMPTY: Record<MainTab, WorkspaceEmptyCopy> = {
     copy: "Add a restaurant, café, park, or anywhere else you'd like to visit together.",
     actionLabel: "Add a place",
   },
-  memories: {
-    icon: "camera",
-    title: "No memories yet",
-    copy: "Your shared memories from movies will appear here.",
-  },
   messages: {
     icon: "message",
     title: "No messages yet",
@@ -154,10 +140,6 @@ export const WORKSPACE_SECTION_EMPTY: Record<
     completed: "No visited places yet",
     queue: "Search above to add your first spot",
   },
-  memories: {
-    completed: "No pinned memories yet",
-    queue: "No memories yet",
-  },
   messages: {
     completed: "No archived messages",
     queue: "No messages yet",
@@ -170,14 +152,12 @@ export const WORKSPACE_LOADING_COPY: Record<
 > = {
   movies: { label: "Loading your movies…" },
   places: { label: "Loading your places…" },
-  memories: { label: "Loading your memories…" },
   messages: { label: "Loading your messages…" },
 };
 
 export const WORKSPACE_TAB_CONTAINER: Record<MainTab, string> = {
   movies: "workspace-container",
   places: "workspace-container places-container",
-  memories: "workspace-container memories-container",
   messages: "workspace-container messages-container",
 };
 
@@ -191,11 +171,6 @@ const WORKSPACE_META: Record<MainTab, WorkspaceMeta> = {
     eyebrow: "Dates",
     title: "Date Ideas",
     icon: "map-pin",
-  },
-  memories: {
-    eyebrow: "Memories",
-    title: "Memories",
-    icon: "camera",
   },
   messages: {
     eyebrow: "Messages",
@@ -215,10 +190,6 @@ export const WORKSPACE_SKELETON_KEYS = {
   places: {
     mobile: ["p1", "p2", "p3", "p4"],
     desktop: ["p1", "p2", "p3", "p4", "p5", "p6"],
-  },
-  memories: {
-    mobile: ["r1", "r2", "r3"],
-    desktop: ["r1", "r2", "r3", "r4", "r5", "r6"],
   },
   messages: {
     mobile: ["g1", "g2", "g3"],

@@ -71,10 +71,57 @@ async function handler(req: Request): Promise<Response> {
         logger.error("Failed to read PIN coverage during logout.", error);
       }
 
+      const currentSession = getSessionState(req);
+      const url = new URL(req.url, "http://localhost");
+      let logoutUser: string | null = url.searchParams.get("user");
+      if (!logoutUser) {
+        try {
+          const body = (await req.json()) as { user?: unknown };
+          if (typeof body?.user === "string") {
+            logoutUser = body.user;
+          }
+        } catch {
+          // No body, standard DELETE
+        }
+      }
+
+      const remainingUsers =
+        logoutUser && isUser(logoutUser)
+          ? currentSession.activeUsers.filter((u) => u !== logoutUser)
+          : [];
+
+      if (remainingUsers.length > 0) {
+        const nextCurrentUser = remainingUsers[0];
+        return jsonResponse(
+          {
+            hasAccess: true,
+            currentUser: nextCurrentUser,
+            activeUsers: remainingUsers,
+            pinProtectedUsers,
+            usersMissingPins,
+          },
+          {
+            headers: mergeHeaders(
+              {
+                "Set-Cookie": buildProfileCookie(
+                  req,
+                  nextCurrentUser,
+                  remainingUsers,
+                ),
+              },
+              {
+                "Set-Cookie": buildClearPinAttemptCookie(req),
+              },
+            ),
+          },
+        );
+      }
+
       return jsonResponse(
         {
-          hasAccess: true,
+          hasAccess: false,
           currentUser: null,
+          activeUsers: [],
           pinProtectedUsers,
           usersMissingPins,
         },
@@ -121,7 +168,8 @@ async function handler(req: Request): Promise<Response> {
     } catch (error) {
       logger.error("Failed to read PIN coverage during profile update.", error);
     }
-    const requiresPin = pinProtectedUsers.includes(user);
+    const currentSession = getSessionState(req);
+    const requiresPin = pinProtectedUsers.includes(user) && !currentSession.activeUsers.includes(user);
 
     if (requiresPin) {
       const now = Date.now();
@@ -201,19 +249,22 @@ async function handler(req: Request): Promise<Response> {
       await clearPinAttempts(user);
     }
 
-    const currentSession = getSessionState(req);
+    const nextActiveUsers = Array.from(
+      new Set([...(currentSession.activeUsers || []), user]),
+    );
 
     return jsonResponse(
       {
-        hasAccess: currentSession.hasAccess,
+        hasAccess: true,
         currentUser: user,
+        activeUsers: nextActiveUsers,
         pinProtectedUsers,
         usersMissingPins,
       },
       {
         headers: mergeHeaders(
           {
-            "Set-Cookie": buildProfileCookie(req, user),
+            "Set-Cookie": buildProfileCookie(req, user, nextActiveUsers),
           },
           {
             "Set-Cookie": buildClearPinAttemptCookie(req),

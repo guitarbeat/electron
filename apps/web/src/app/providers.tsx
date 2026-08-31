@@ -178,6 +178,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [activeUsers, setActiveUsersState] = useState<User[]>([]);
   const [hasAccess, setHasAccess] = useState(false);
   const [pinProtectedUsers, setPinProtectedUsers] = useState<User[]>([]);
   const [usersMissingPins, setUsersMissingPins] = useState<User[]>([]);
@@ -187,6 +188,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const applySessionState = useCallback((nextState: SessionState) => {
     setHasAccess(nextState.hasAccess);
     setCurrentUserState(nextState.currentUser);
+    setActiveUsersState(
+      nextState.activeUsers && nextState.activeUsers.length > 0
+        ? nextState.activeUsers
+        : nextState.currentUser
+          ? [nextState.currentUser]
+          : [],
+    );
     setPinProtectedUsers(nextState.pinProtectedUsers);
     setUsersMissingPins(nextState.usersMissingPins);
   }, []);
@@ -194,6 +202,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const clearSessionState = useCallback(() => {
     setHasAccess(false);
     setCurrentUserState(null);
+    setActiveUsersState([]);
     setPinProtectedUsers([]);
     setUsersMissingPins([]);
   }, []);
@@ -231,6 +240,40 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [applySessionState, clearSessionState]);
 
+  const logoutUser = useCallback(
+    async (user?: User | null) => {
+      try {
+        const url = user
+          ? `/api/session/profile?user=${encodeURIComponent(user)}`
+          : "/api/session/profile";
+        const response = await fetch(url, {
+          method: "DELETE",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            await readApiErrorMessage(
+              response,
+              "Failed to log out profile.",
+            ),
+          );
+        }
+
+        const session = (await response.json()) as SessionState;
+        applySessionState(session);
+        return true;
+      } catch (error) {
+        throw new Error(
+          getErrorMessage(error, "Profile logout is unavailable right now."),
+          { cause: error },
+        );
+      }
+    },
+    [applySessionState],
+  );
+
   useEffect(() => {
     void refreshSession();
   }, [refreshSession]);
@@ -259,20 +302,21 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       usersMissingPins,
       isSessionLoading,
       currentUser,
+      activeUsers,
+      logoutUser,
       setCurrentUser: async (user: User | null, pin?: string) => {
+        if (!user) {
+          return logoutUser(null);
+        }
         try {
           const response = await fetch("/api/session/profile", {
-            method: user ? "POST" : "DELETE",
+            method: "POST",
             credentials: "include",
             cache: "no-store",
-            headers: user
-              ? {
-                  "Content-Type": "application/json",
-                }
-              : undefined,
-            body: user
-              ? JSON.stringify({ user, ...(pin ? { pin } : {}) })
-              : undefined,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user, ...(pin ? { pin } : {}) }),
           });
 
           if (response.status === 401 || response.status === 403) {
@@ -302,10 +346,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       refreshSession,
     }),
     [
+      activeUsers,
       applySessionState,
       currentUser,
       hasAccess,
       isSessionLoading,
+      logoutUser,
       pinProtectedUsers,
       usersMissingPins,
       refreshSession,
