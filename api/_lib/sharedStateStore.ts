@@ -159,6 +159,42 @@ export const readSharedStateFileRecord = async (
   return record;
 };
 
+
+export const preloadSharedStateFiles = async (filenames: string[]): Promise<void> => {
+  if (!isSharedStateConfigured()) {
+    throw new Error('DATABASE_URL is not configured.');
+  }
+
+  if (testStore) {
+    return;
+  }
+
+  await ensureSchema();
+  const rows = await query<{ filename: string; content: string }>(
+    'SELECT filename, content FROM shared_state_files WHERE filename = ANY($1)',
+    [filenames]
+  );
+
+  const rowMap = new Map(rows.map((row) => [row.filename, row.content]));
+  const now = Date.now();
+
+  for (const filename of filenames) {
+    if (rowMap.has(filename)) {
+      fileCache.set(filename, {
+        expiresAt: now + CACHE_TTL_MS,
+        exists: true,
+        content: rowMap.get(filename)!,
+      });
+    } else {
+      fileCache.set(filename, {
+        expiresAt: now + CACHE_TTL_MS,
+        exists: false,
+        content: null,
+      });
+    }
+  }
+};
+
 export const listSharedStateFilenames = async (): Promise<string[]> => {
   if (!isSharedStateConfigured()) {
     throw new Error("DATABASE_URL is not configured.");

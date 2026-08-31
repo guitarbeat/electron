@@ -14,6 +14,7 @@ import {
   isSharedStateWriteConfigured,
   listSharedStateFilenames,
   patchSharedStateFile,
+  preloadSharedStateFiles,
   readSharedStateFileRecord,
 } from "./sharedStateStore.js";
 import { verifyStoredPin } from "./session.js";
