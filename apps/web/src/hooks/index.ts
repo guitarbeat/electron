@@ -503,8 +503,7 @@ export const useMessages = () => {
   };
 };
 
-const TILT_MAX_DEG = 8;
-const SCALE_ON_HOVER = 1.025;
+const TILT_MAX_DEG = 4;
 
 export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
   disabled = false,
@@ -585,7 +584,7 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
 
       // Instant 1:1 cursor response without transition latency
       el.style.transition = "none";
-      el.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale3d(${SCALE_ON_HOVER}, ${SCALE_ON_HOVER}, ${SCALE_ON_HOVER})`;
+      el.style.transform = `perspective(1000px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg)`;
       const sheenX = ((dx + 1) * 0.5 * 100).toFixed(1);
       const sheenY = ((dy + 1) * 0.5 * 100).toFixed(1);
       el.style.setProperty("--sheen-x", `${sheenX}%`);
