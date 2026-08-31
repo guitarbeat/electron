@@ -487,6 +487,8 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     isWatchedByCurrentUser,
     isUpdatingWatchStatus,
     onToggleWatched,
+    onToggleUserWatched,
+    activeUsers,
     onEdit,
   ]);
 

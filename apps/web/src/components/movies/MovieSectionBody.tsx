@@ -20,7 +20,6 @@ import {
   getWorkspaceCollectionState,
 } from "@/utils";
 
-import { MovieDetailsModal } from "./MovieDetailsModal";
 import {
 MovieSections,
 MovieBodyActions,
@@ -60,8 +59,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   actions,
   posterPlaceCards = [],
 }) => {
-  const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
-  const [selectedOrigin, setSelectedOrigin] =
+  const [_selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
+  const [_selectedOrigin, setSelectedOrigin] =
     React.useState<MovieTransitionOrigin | null>(null);
 
   const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
@@ -167,6 +166,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     sections.completed,
     sections.suggestions,
     currentUser,
+    activeUsers,
     processingSuggestionId,
     successMovieId,
     onAcceptSuggestion,
@@ -221,6 +221,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             pauseOnHover
             grayscale={false}
             onTileClick={handleTileClick}
+            scrollStorageKey="movies-workspace-wall"
           />
         </div>
       ) : (

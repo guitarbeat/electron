@@ -377,8 +377,6 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         perspective: `${perspective}px`,
         ...style,
       }}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
       onPointerLeave={() => {
         setHoveredIndex(-1);
         if (closeOnLeave) handleCloseAll();
@@ -389,7 +387,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         className="absolute inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
         onClick={handleBackgroundClick}
         aria-label="Reset flipbook to cover"
-        tabIndex={-1}
+        onKeyDown={handleKeyDown}
       />
       <motion.div
         className="relative z-[1]"
