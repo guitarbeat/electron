@@ -45,10 +45,16 @@ export const needsSsl = (url: string): boolean => {
   }
 };
 
+const ALIAS_SSL_MODES = new Set(["prefer", "require", "verify-ca"]);
+
 export const cleanDatabaseUrl = (url: string): string => {
   try {
     const u = new URL(url);
     u.searchParams.delete("channel_binding");
+    const sslmode = u.searchParams.get("sslmode");
+    if (sslmode && ALIAS_SSL_MODES.has(sslmode)) {
+      u.searchParams.set("sslmode", "verify-full");
+    }
     return u.toString();
   } catch {
     return url;

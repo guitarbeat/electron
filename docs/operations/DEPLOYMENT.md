@@ -43,7 +43,7 @@ Navigate to **Project Settings > Environment Variables** and configure the follo
 
 | Environment Variable | Recommended Value / Format | Purpose |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `postgresql://user:pass@ep-xyz-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require` | Pooled connection string to Neon PostgreSQL. |
+| `DATABASE_URL` | `postgresql://user:pass@ep-xyz-pooler.us-east-1.aws.neon.tech/neondb?sslmode=verify-full` | Pooled connection string to Neon PostgreSQL. |
 | `SESSION_SIGNING_SECRET` | 64-char random hex string (`openssl rand -hex 32`) | Used to sign session cookies and PIN tokens. |
 | `AGENT_API_TOKEN` | 64-char base64 string (`openssl rand -base64 48`) | Authorizes private Agent API catalog and action tools. |
 | `OMDB_API_KEY` | Hexadecimal API key from omdbapi.com | Enables server-side movie metadata caching. |
