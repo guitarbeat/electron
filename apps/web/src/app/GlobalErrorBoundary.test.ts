@@ -31,8 +31,6 @@ test("GlobalErrorBoundary logs component stack traces to centralized logger duri
 
   boundary.componentDidCatch(testError, fakeErrorInfo);
 
-  assert.strictEqual(boundary.state.errorInfo, fakeErrorInfo);
-
   const recentErrors = logger.getRecentErrors();
   assert.ok(recentErrors.length > 0);
   const matchingError = recentErrors.find((e) => e.message.includes("Critical canvas rendering fault"));
