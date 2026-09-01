@@ -3,3 +3,6 @@ When addressing code health tasks on UI copy, prefer platform-agnostic verbs lik
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts`)
 Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but the file currently contains only `export {};`. Documented the discrepancy with no code changes to `lib/db/src/schema/index.ts`.
+
+## 2026-09-01 - Stale Prompt Discrepancy (Add test for fetchWithRetry in retryFetch.ts)
+Task requested adding unit tests for `fetchWithRetry` in `api/_lib/retryFetch.ts:43`, but comprehensive unit tests covering 429, 500, 200 responses, network errors, timeouts, abort signals, and retry delays are already fully implemented and passing in `api/_lib/retryFetch.test.ts`. Documented the discrepancy with no unnecessary code changes.
