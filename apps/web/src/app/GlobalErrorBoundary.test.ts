@@ -25,6 +25,11 @@ test("GlobalErrorBoundary logs component stack traces to centralized logger duri
   });
 
   const testError = new Error("Critical canvas rendering fault");
+  boundary.setState = (updater: any) => {
+    const nextState = typeof updater === "function" ? updater(boundary.state, boundary.props) : updater;
+    boundary.state = { ...boundary.state, ...nextState };
+  };
+
   const fakeErrorInfo: React.ErrorInfo = {
     componentStack: "\n    in SpinSwipeGame\n    in GlobalErrorBoundary\n    in AppWorkspaceShell",
   };
