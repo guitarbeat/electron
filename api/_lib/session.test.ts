@@ -102,8 +102,60 @@ describe("profile session signing and token verification", () => {
     const sessionState = getSessionState(authedReq);
     assert.strictEqual(sessionState.hasAccess, true);
     assert.strictEqual(sessionState.currentUser, "Aaron");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Aaron"]);
     assert.strictEqual(requireAccessUser(authedReq), "Aaron");
     assert.strictEqual(requireProfileUser(authedReq), "Aaron");
+  });
+
+  it("should support multiple active users in profile session cookie", () => {
+    const req = new Request("http://localhost/api/test");
+    const cookieHeader = buildProfileCookie(req, "Aaron", ["Aaron", "Electra"]);
+    const cookieValue = cookieHeader.split(";")[0];
+    const authedReq = new Request("http://localhost/api/test", {
+      headers: { cookie: cookieValue },
+    });
+
+    const sessionState = getSessionState(authedReq);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Aaron");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Aaron", "Electra"]);
+  });
+
+  it("should fallback to ephemeral secret generation when SESSION_SECRET/SESSION_SIGNING_SECRET is unset and NODE_ENV is not test", () => {
+    const origEnv = process.env.NODE_ENV;
+    const origSigningSecret = process.env.SESSION_SIGNING_SECRET;
+    const origSecret = process.env.SESSION_SECRET;
+
+    try {
+      delete process.env.SESSION_SIGNING_SECRET;
+      delete process.env.SESSION_SECRET;
+      // @ts-expecting process.env mutation
+      process.env.NODE_ENV = "production";
+
+      const req = new Request("http://localhost/api/test");
+      const cookieHeader = buildProfileCookie(req, "Aaron");
+      const cookieValue = cookieHeader.split(";")[0];
+
+      const authedReq = new Request("http://localhost/api/test", {
+        headers: { cookie: cookieValue },
+      });
+
+      const sessionState = getSessionState(authedReq);
+      assert.strictEqual(sessionState.hasAccess, true);
+      assert.strictEqual(sessionState.currentUser, "Aaron");
+    } finally {
+      process.env.NODE_ENV = origEnv;
+      if (origSigningSecret !== undefined) {
+        process.env.SESSION_SIGNING_SECRET = origSigningSecret;
+      } else {
+        delete process.env.SESSION_SIGNING_SECRET;
+      }
+      if (origSecret !== undefined) {
+        process.env.SESSION_SECRET = origSecret;
+      } else {
+        delete process.env.SESSION_SECRET;
+      }
+    }
   });
 
   it("should support SESSION_SIGNING_SECRET, SESSION_SECRET fallback, and clean quoted strings", () => {
