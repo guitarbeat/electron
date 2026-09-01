@@ -284,4 +284,29 @@ describe("fetchWithRetry", () => {
     await expectation;
     assert.equal(calls, 3);
   });
+
+  it("passes request options such as method and custom headers to fetch", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    let receivedInit: RequestInit | undefined;
+    globalThis.fetch = async (input, init) => {
+      receivedInit = init;
+      return new Response("ok", { status: 200 });
+    };
+
+    const promise = fetchWithRetry(
+      "https://example.com/api",
+      { method: "POST", headers: { "X-Custom-Header": "test-value" } },
+      "options-ctx",
+    );
+    t.mock.timers.tick(1000);
+    const res = await promise;
+
+    assert.equal(res.status, 200);
+    assert.equal(receivedInit?.method, "POST");
+    assert.equal(
+      (receivedInit?.headers as Record<string, string>)["X-Custom-Header"],
+      "test-value",
+    );
+  });
 });
