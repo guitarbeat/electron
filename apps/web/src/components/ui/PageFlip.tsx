@@ -1,11 +1,20 @@
-import React, { useState, useCallback, memo, useEffect, useRef } from "react";
+import React, { useState, useCallback, memo, useEffect, useRef, useMemo } from "react";
 import { motion, useMotionValue, useTransform, animate, type PanInfo } from "motion/react";
 
+/* -------------------------------------------------------------------------- */
+/*                                Types & Config                              */
+/* -------------------------------------------------------------------------- */
+
 export interface PageFlipLeaf {
+  /** Optional unique identifier */
   id?: string;
+  /** Front face content (visible before turning) */
   front: React.ReactNode;
+  /** Back face content (visible after turning) */
   back: React.ReactNode;
+  /** Accessible label/alt text for front */
   frontAlt?: string;
+  /** Accessible label/alt text for back */
   backAlt?: string;
 }
 
@@ -37,27 +46,106 @@ export interface PageFlipProps {
   onBackgroundClick?: () => void;
 }
 
-const EASINGS: Record<PageFlipEase, [number, number, number, number]> = {
+const EASING_CURVES: Record<PageFlipEase, [number, number, number, number]> = {
   easeInOut: [0.65, 0, 0.35, 1],
   easeOut: [0.16, 1, 0.3, 1],
   circOut: [0, 0.55, 0.45, 1],
   backOut: [0.34, 1.56, 0.64, 1],
 };
 
-interface InternalLeafProps {
+const INTERACTIVE_ELEMENTS_SELECTOR =
+  'button, a, input, select, textarea, [role="button"], [role="switch"], [role="link"]';
+
+/* -------------------------------------------------------------------------- */
+/*                               Helper Functions                             */
+/* -------------------------------------------------------------------------- */
+
+/** Builds the CSS box-shadow string scaled by intensity */
+function getShadowStyle(intensity: number): string {
+  if (intensity <= 0) return "none";
+  const x = Math.round(4 * intensity);
+  const y = Math.round(6 * intensity);
+  const blur = Math.round(34 * intensity);
+  const alpha = Math.min(0.75 * intensity, 1);
+  return `${x}px ${y}px ${blur}px rgba(0, 0, 0, ${alpha})`;
+}
+
+/** Checks whether a keyboard event originated from a form control */
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                           Subcomponent: Leaf Face                          */
+/* -------------------------------------------------------------------------- */
+
+interface LeafFaceProps {
+  content: React.ReactNode;
+  altText: string;
+  isBack?: boolean;
+  paperColor: string;
+  borderRadius: number;
+}
+
+const LeafFace: React.FC<LeafFaceProps> = ({
+  content,
+  altText,
+  isBack = false,
+  paperColor,
+  borderRadius,
+}) => {
+  const transform = isBack ? "rotateY(180deg) translateZ(1px)" : "rotateY(0deg) translateZ(1px)";
+
+  const style: React.CSSProperties = {
+    background: paperColor,
+    borderRadius,
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden",
+    transform,
+    WebkitTransform: transform,
+    willChange: "transform",
+  };
+
+  if (typeof content === "string") {
+    return (
+      <img
+        src={content}
+        alt={altText}
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
+        style={style}
+      />
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 h-full w-full overflow-hidden select-none" style={style}>
+      {content}
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*                          Subcomponent: Single Leaf                         */
+/* -------------------------------------------------------------------------- */
+
+interface LeafProps {
   index: number;
   total: number;
-  front: React.ReactNode;
-  back: React.ReactNode;
-  frontAlt?: string;
-  backAlt?: string;
-  turned: boolean;
-  peek: boolean;
-  delay: number;
+  leaf: PageFlipLeaf;
+  isTurned: boolean;
+  isPeeking: boolean;
+  animationDelay: number;
   width: number;
   height: number;
   radius: number;
-  paper: string;
+  paperColor: string;
   turnAngle: number;
   peekAngle: number;
   duration: number;
@@ -65,24 +153,21 @@ interface InternalLeafProps {
   shadow: number;
   interactive: boolean;
   onSelect: (index: number) => void;
-  onReach: (index: number) => void;
-  onRelease: () => void;
+  onHoverStart: (index: number) => void;
+  onHoverEnd: () => void;
 }
 
-const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
+const PageFlipLeaf = memo(function PageFlipLeaf({
   index,
   total,
-  front,
-  back,
-  frontAlt = "",
-  backAlt = "",
-  turned,
-  peek,
-  delay,
+  leaf,
+  isTurned,
+  isPeeking,
+  animationDelay,
   width,
   height,
   radius,
-  paper,
+  paperColor,
   turnAngle,
   peekAngle,
   duration,
@@ -90,105 +175,69 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
   shadow,
   interactive,
   onSelect,
-  onReach,
-  onRelease,
-}: InternalLeafProps) {
-  const rotationY = useMotionValue(turned ? -turnAngle : 0);
-  const zIndex = useTransform(rotationY, (val) =>
-    val < -turnAngle / 2 ? total + index + 1 : total - index
+  onHoverStart,
+  onHoverEnd,
+}: LeafProps) {
+  const rotationY = useMotionValue(isTurned ? -turnAngle : 0);
+
+  // Switch z-index at the 90-degree spine midpoint
+  const zIndex = useTransform(rotationY, (angle) =>
+    angle < -turnAngle / 2 ? total + index + 1 : total - index
   );
 
   useEffect(() => {
-    const target = turned ? -turnAngle : peek ? -peekAngle : 0;
-    const controls = animate(rotationY, target, {
+    const targetAngle = isTurned ? -turnAngle : isPeeking ? -peekAngle : 0;
+    const animation = animate(rotationY, targetAngle, {
       duration,
-      delay,
+      delay: animationDelay,
       ease: curve,
     });
-    return () => controls.stop();
-  }, [turned, peek, turnAngle, peekAngle, duration, delay, curve, rotationY]);
+    return () => animation.stop();
+  }, [isTurned, isPeeking, turnAngle, peekAngle, duration, animationDelay, curve, rotationY]);
 
-  const shadowCss =
-    shadow > 0
-      ? `${Math.round(4 * shadow)}px ${Math.round(6 * shadow)}px ${Math.round(34 * shadow)}px rgba(0,0,0,${Math.min(0.75 * shadow, 1)})`
-      : "none";
+  const shadowStyle = useMemo(() => getShadowStyle(shadow), [shadow]);
 
-  const renderFace = (content: React.ReactNode, altText: string, isBack = false) => {
-    const isFrontPeeking = !isBack && peek;
-    const faceStyle: React.CSSProperties = {
-      background: paper,
-      borderRadius: radius,
-      backfaceVisibility: "hidden",
-      WebkitBackfaceVisibility: "hidden",
-      transform: isBack
-        ? "rotateY(180deg) translateZ(1px)"
-        : "rotateY(0deg) translateZ(1px)",
-      WebkitTransform: isBack
-        ? "rotateY(180deg) translateZ(1px)"
-        : "rotateY(0deg) translateZ(1px)",
-      willChange: "transform",
-      clipPath: isFrontPeeking
-        ? "polygon(0% 0%, calc(100% - 32px) 0%, 100% 32px, 100% 100%, 0% 100%)"
-        : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      WebkitClipPath: isFrontPeeking
-        ? "polygon(0% 0%, calc(100% - 32px) 0%, 100% 32px, 100% 100%, 0% 100%)"
-        : "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-  transition: "clip-path 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), -webkit-clip-path 0.2s var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))",
-    };
+  const handlePanEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (!interactive) return;
+      if (info.offset.x < -25 && !isTurned) {
+        onSelect(index);
+      } else if (info.offset.x > 25 && isTurned) {
+        onSelect(index);
+      }
+    },
+    [interactive, isTurned, onSelect, index]
+  );
 
-    if (typeof content === "string") {
-      return (
-        <img
-          src={content}
-          alt={altText}
-          draggable={false}
-          className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
-          style={faceStyle}
-        />
-      );
-    }
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const clickedTarget = event.target as HTMLElement | null;
+      const interactiveChild = clickedTarget?.closest?.(INTERACTIVE_ELEMENTS_SELECTOR);
 
-    return (
-      <div
-        className="absolute inset-0 h-full w-full overflow-hidden select-none"
-        style={faceStyle}
-      >
-        {content}
-      </div>
-    );
-  };
+      // Do not flip if an interactive child element (button, link) was clicked
+      if (interactiveChild && interactiveChild !== event.currentTarget) {
+        return;
+      }
 
-  const renderDogEar = () => {
-    return (
-      <div
-        className="absolute top-0 right-0 pointer-events-none transition-opacity duration-200 ease-out"
-        style={{
-          width: 32,
-          height: 32,
-          opacity: peek ? 1 : 0,
-          background: "linear-gradient(225deg, transparent 50%, rgba(255,255,255,0.95) 50%, #e2e8f0 100%)",
-          boxShadow: "-3px 3px 6px rgba(0,0,0,0.15)",
-          borderBottomLeftRadius: radius,
-          transform: "translateZ(2px)",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-        }}
-      />
-    );
-  };
+      event.stopPropagation();
+      onSelect(index);
+    },
+    [onSelect, index]
+  );
 
-  const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!interactive) return;
-    if (info.offset.x < -25) {
-      if (!turned) onSelect(index);
-    } else if (info.offset.x > 25) {
-      if (turned) onSelect(index);
-    }
-  };
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onSelect(index);
+      }
+    },
+    [onSelect, index]
+  );
 
   return (
     <motion.div
-      className="absolute top-0 left-0 select-none"
+      className="absolute top-0 left-0 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       style={{
         width,
         height,
@@ -199,43 +248,41 @@ const PageFlipLeafComponent = memo(function PageFlipLeafComponent({
         WebkitTransformStyle: "preserve-3d",
         borderRadius: radius,
         cursor: interactive ? "pointer" : "default",
-        boxShadow: shadowCss,
+        boxShadow: shadowStyle,
         touchAction: "pan-y",
         willChange: "transform",
       }}
-      onPointerEnter={() => onReach(index)}
-      onPointerLeave={onRelease}
+      onPointerEnter={() => onHoverStart(index)}
+      onPointerLeave={onHoverEnd}
       onPanEnd={handlePanEnd}
-      onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-        const targetElement = e.target as HTMLElement | null;
-        const interactiveSelector = 'button, a, input, select, textarea, [role="button"], [role="switch"], [role="link"]';
-        const interactiveChild = targetElement?.closest ? targetElement.closest(interactiveSelector) : null;
-        
-        // If clicking on an interactive element nested inside the page content, don't flip the page
-        if (interactiveChild && interactiveChild !== e.currentTarget) {
-          return;
-        }
-        
-        e.stopPropagation();
-        onSelect(index);
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect(index);
-        }
-      }}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       role={interactive ? "button" : undefined}
-      aria-pressed={interactive ? turned : undefined}
-      aria-label={`Page ${index + 1} of ${total}`}
+      aria-pressed={interactive ? isTurned : undefined}
+      aria-label={`Page ${index + 1} of ${total} (${isTurned ? "turned" : "unturned"})`}
       tabIndex={interactive ? 0 : -1}
     >
-      {renderFace(front, frontAlt, false)}
-      {renderFace(back, backAlt, true)}
-      {renderDogEar()}
+      <LeafFace
+        content={leaf.front}
+        altText={leaf.frontAlt ?? ""}
+        isBack={false}
+        paperColor={paperColor}
+        borderRadius={radius}
+      />
+      <LeafFace
+        content={leaf.back}
+        altText={leaf.backAlt ?? ""}
+        isBack={true}
+        paperColor={paperColor}
+        borderRadius={radius}
+      />
     </motion.div>
   );
 });
+
+/* -------------------------------------------------------------------------- */
+/*                           Main Component: PageFlip                         */
+/* -------------------------------------------------------------------------- */
 
 export const PageFlip: React.FC<PageFlipProps> = ({
   pages,
@@ -255,120 +302,129 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   closeOnLeave = true,
   interactive = true,
   maxTurnCount,
+  forceClose,
+  autoOpen,
   className = "",
   style,
   onPageChange,
   onBackgroundClick,
-  forceClose,
-  autoOpen,
 }) => {
-  const total = pages.length;
+  const totalPages = pages.length;
   const [turnedCount, setTurnedCount] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState(-1);
-  const [isClosingAll, setIsClosingAll] = useState(false);
-  const curve = EASINGS[ease] ?? EASINGS.easeInOut;
+  const [isCascadingClose, setIsCascadingClose] = useState(false);
 
+  const activeCurve = useMemo(() => EASING_CURVES[ease] ?? EASING_CURVES.easeInOut, [ease]);
+
+  // Sync page change notification
   const prevTurnedCountRef = useRef(turnedCount);
-  const onPageChangeRef = useRef(onPageChange);
-
-  useEffect(() => {
-    onPageChangeRef.current = onPageChange;
-  }, [onPageChange]);
-
   useEffect(() => {
     if (prevTurnedCountRef.current !== turnedCount) {
       prevTurnedCountRef.current = turnedCount;
-      onPageChangeRef.current?.(turnedCount);
+      onPageChange?.(turnedCount);
     }
-  }, [turnedCount]);
+  }, [turnedCount, onPageChange]);
 
+  // Handle programmatic forceClose
   useEffect(() => {
     if (forceClose && turnedCount > 0) {
-      setIsClosingAll(true);
+      setIsCascadingClose(true);
       setTurnedCount(0);
     }
   }, [forceClose, turnedCount]);
 
+  // Handle autoOpen
   useEffect(() => {
     if (autoOpen && turnedCount === 0 && !forceClose) {
-      const t = setTimeout(() => {
-        setIsClosingAll(false);
+      const timer = setTimeout(() => {
+        setIsCascadingClose(false);
         setTurnedCount(1);
       }, 50);
-      return () => clearTimeout(t);
+      return () => clearTimeout(timer);
     }
     return undefined;
   }, [autoOpen, forceClose, turnedCount]);
 
-  const handleSelect = useCallback(
-    (index: number) => {
+  /* -------------------------- Navigation Actions -------------------------- */
+
+  const flipToPage = useCallback(
+    (targetIndex: number) => {
       if (!interactive) return;
-      setIsClosingAll(false);
-      setTurnedCount((prev) => {
-        let next = index < prev ? index : index + 1;
-        if (maxTurnCount !== undefined && next > maxTurnCount) {
-          next = 0;
-        }
+      setIsCascadingClose(false);
+      setTurnedCount((current) => {
+        const next = targetIndex < current ? targetIndex : targetIndex + 1;
+        if (maxTurnCount !== undefined && next > maxTurnCount) return 0;
         return next;
       });
     },
     [interactive, maxTurnCount]
   );
 
-  const handleReach = useCallback(
+  const closeAllPages = useCallback(() => {
+    if (!interactive) return;
+    setIsCascadingClose(true);
+    setTurnedCount(0);
+  }, [interactive]);
+
+  const handleHoverStart = useCallback(
     (index: number) => {
       if (!interactive) return;
       setHoveredIndex(index);
       if (trigger === "hover") {
-        setIsClosingAll(false);
+        setIsCascadingClose(false);
         setTurnedCount(index + 1);
       }
     },
     [interactive, trigger]
   );
 
-  const handleRelease = useCallback(() => {
+  const handleHoverEnd = useCallback(() => {
     setHoveredIndex(-1);
   }, []);
 
-  const handleCloseAll = useCallback(() => {
-    if (!interactive) return;
-    setIsClosingAll(true);
-    setTurnedCount(0);
-  }, [interactive]);
-
   const handleBackgroundClick = useCallback(() => {
-    handleCloseAll();
+    closeAllPages();
     onBackgroundClick?.();
-  }, [handleCloseAll, onBackgroundClick]);
+  }, [closeAllPages, onBackgroundClick]);
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!interactive) return;
+    (event: React.KeyboardEvent) => {
+      if (!interactive || isEditableTarget(event.target)) return;
 
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
+      switch (event.key) {
+        case "ArrowRight":
+          event.preventDefault();
+          setIsCascadingClose(false);
+          setTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? totalPages));
+          break;
 
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        setIsClosingAll(false);
-        setTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? total));
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        setIsClosingAll(false);
-        setTurnedCount((prev) => Math.max(prev - 1, 0));
+        case "ArrowLeft":
+          event.preventDefault();
+          setIsCascadingClose(false);
+          setTurnedCount((prev) => Math.max(prev - 1, 0));
+          break;
+
+        case "Home":
+          event.preventDefault();
+          closeAllPages();
+          break;
+
+        case "End":
+          event.preventDefault();
+          setIsCascadingClose(false);
+          setTurnedCount(maxTurnCount !== undefined ? Math.min(maxTurnCount, totalPages) : totalPages);
+          break;
+
+        case "Escape":
+          event.preventDefault();
+          handleBackgroundClick();
+          break;
       }
     },
-    [interactive, maxTurnCount, total]
+    [interactive, maxTurnCount, totalPages, closeAllPages, handleBackgroundClick]
   );
+
+  /* ------------------------------- Render --------------------------------- */
 
   return (
     <div
@@ -379,9 +435,10 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       }}
       onPointerLeave={() => {
         setHoveredIndex(-1);
-        if (closeOnLeave) handleCloseAll();
+        if (closeOnLeave) closeAllPages();
       }}
     >
+      {/* Background click reset button */}
       <button
         type="button"
         className="absolute inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
@@ -389,6 +446,8 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         aria-label="Reset flipbook to cover"
         onKeyDown={handleKeyDown}
       />
+
+      {/* 3D Book Stage */}
       <motion.div
         className="relative z-[1]"
         style={{
@@ -406,39 +465,34 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         }}
       >
         {pages.map((leaf, index) => {
-          const turned = index < turnedCount;
+          const isTurned = index < turnedCount;
+          const isPeeking =
+            interactive && !isTurned && hoveredIndex === index && index === turnedCount;
+          const animationDelay =
+            isCascadingClose && !isTurned ? (totalPages - 1 - index) * stagger : 0;
+
           return (
-            <PageFlipLeafComponent
+            <PageFlipLeaf
               key={leaf.id ?? `leaf-${index}`}
               index={index}
-              total={total}
-              front={leaf.front}
-              back={leaf.back}
-              frontAlt={leaf.frontAlt ?? ""}
-              backAlt={leaf.backAlt ?? ""}
-              turned={turned}
-              peek={
-                interactive &&
-                !turned &&
-                hoveredIndex === index &&
-                index === turnedCount
-              }
-              delay={
-                isClosingAll && !turned ? (total - 1 - index) * stagger : 0
-              }
+              total={totalPages}
+              leaf={leaf}
+              isTurned={isTurned}
+              isPeeking={isPeeking}
+              animationDelay={animationDelay}
               width={pageWidth}
               height={pageHeight}
               radius={pageRadius}
-              paper={pageColor}
+              paperColor={pageColor}
               turnAngle={turnAngle}
               peekAngle={peekAngle}
               duration={duration}
-              curve={curve}
+              curve={activeCurve}
               shadow={shadow}
               interactive={interactive}
-              onSelect={handleSelect}
-              onReach={handleReach}
-              onRelease={handleRelease}
+              onSelect={flipToPage}
+              onHoverStart={handleHoverStart}
+              onHoverEnd={handleHoverEnd}
             />
           );
         })}
@@ -446,4 +500,3 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     </div>
   );
 };
-

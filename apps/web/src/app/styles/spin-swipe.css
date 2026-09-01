@@ -1,0 +1,182 @@
+/* Merged from SpinSwipeGame.module.css */
+.spin-swipe-wrapper {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-0, #1a1310);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+
+/* ── Y2K Empty State Animations ────────────────────────────────────────── */
+.y2k-illustration {
+  width: 140px;
+  height: 140px;
+  display: block;
+  margin: 0 auto 1.5rem;
+  overflow: visible;
+}
+
+.y2k-disc {
+  animation: y2k-spin 8s linear infinite;
+  transform-origin: 100px 90px;
+}
+
+.y2k-globe {
+  animation: y2k-pulse 4s ease-in-out infinite;
+  transform-origin: 100px 85px;
+}
+
+.y2k-sparkle {
+  animation: y2k-blink 2s ease-in-out infinite;
+}
+
+.y2k-window {
+  animation: y2k-float 6s ease-in-out infinite;
+}
+
+@keyframes y2k-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes y2k-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.05); filter: brightness(1.2); }
+}
+
+@keyframes y2k-blink {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes y2k-float {
+  0%, 100% { transform: translate(120px, 100px); }
+  50% { transform: translate(120px, 90px); }
+}
+
+/* ============================================================================
+   Watcher Avatars & Stack Overlays (Improved "Who Watched What")
+   ============================================================================ */
+
+.media-card-watchers-stack {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 3px;
+  background: rgba(12, 17, 29, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: background-color 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), box-shadow 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.media-card-watchers-stack:hover {
+  background: rgba(12, 17, 29, 0.7);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .media-card-watchers-stack:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Overlapping avatars logic */
+.media-card-watchers-stack .watcher-badge:not(:first-child) {
+  margin-left: -0.5rem;
+}
+
+.watcher-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+.watcher-badge:hover {
+  z-index: 30 !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .watcher-badge:hover {
+    transform: translateY(-2px) scale(1.15);
+  }
+}
+
+.watcher-badge__avatar {
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: #1e293b;
+  border: 2px solid #0c111d; /* Solid border to define overlaps */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.2s ease;
+}
+
+.watcher-badge:hover .watcher-badge__avatar {
+  border-color: var(--color-accent, #6366f1);
+}
+
+/* Avatar photo */
+.watcher-badge__avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  background-color: #1e293b;
+}
+
+/* Initial fallback background styling */
+.watcher-badge__avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  color: #ffffff;
+  user-select: none;
+}
+
+/* Individual User Gradient Theme Colors */
+
+/* Size specifications */
+
+/* Label styling */
+.watcher-badge__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #ffffff);
+  margin-left: 0.35rem;
+  padding-right: 0.25rem;
+  white-space: nowrap;
+}
+
+/* For watched movies, add an extra nice indicator to make the watched list distinct */
+.movie-item-container--watched .movie-item-poster-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Product-wide restraint pass ────────────────────────────────────────────
+   Shared chrome stays quiet so posters, memories, messages, and games carry
+   the personality. Bespoke experiences such as the retro quiz remain intact. */
+
+.app-shell {
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-elevated: 0 12px 28px rgba(0, 0, 0, 0.28);
+  --shadow-floating: 0 20px 48px rgba(0, 0, 0, 0.38);
+  --chrome-radius-sm: 0.625rem;
+}

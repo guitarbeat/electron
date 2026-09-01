@@ -1,0 +1,297 @@
+/* --- FUSED FRAGMENTED UI MODULES (Physics Enhanced) --- */
+
+
+
+/* Merged from ChromaGrid.module.css */
+.chroma-grid-root {
+  position: relative;
+  width: 100%;
+  --x: 50%;
+  --y: 50%;
+  --r: 280px;
+  --chroma-enabled: 1;
+}
+
+.chroma-grid-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.chroma-grid-overlay,
+.chroma-grid-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: calc(var(--chroma-enabled, 1) * 1);
+  border-radius: inherit;
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .chroma-grid-overlay,
+  .chroma-grid-fade {
+    display: none;
+  }
+}
+
+.chroma-grid-overlay,
+.chroma-grid-fade {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .chroma-grid-overlay,
+  .chroma-grid-fade {
+    display: none;
+  }
+}
+
+
+/* Merged from MessageBubble.module.css */
+.msg-bubble {
+  position: relative;
+  border-radius: 18px;
+  padding: 8px 14px;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.msg-bubble-me {
+  background-color: var(--bubble-color);
+  border-bottom-right-radius: 4px;
+  transform-origin: bottom right;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.msg-bubble-them {
+  background-color: var(--bubble-color);
+  border-bottom-left-radius: 4px;
+  transform-origin: bottom left;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+@starting-style {
+  .msg-bubble-me {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  .msg-bubble-them {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.msg-bubble-me::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: -6px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 12px 10px;
+  border-color: transparent transparent var(--bubble-color) transparent;
+}
+
+.msg-bubble-them::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 10px 12px 0;
+  border-color: transparent var(--bubble-color) transparent transparent;
+}
+
+.msg-actions {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.msg-bubble:hover .msg-actions,
+.msg-bubble:focus-within .msg-actions {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes slideRightSpring {
+  from { opacity: 0; transform: translateX(20px) scale(0.85); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes slideRightOld {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideLeftSpring {
+  from { opacity: 0; transform: translateX(-20px) scale(0.85); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes slideLeftOld {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+
+/* Merged from MessageBoard.module.css */
+/* MessageBoard Component Styles */
+.msg-board {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  height: min(680px, calc(100dvh - 9rem));
+  min-height: min(520px, calc(100dvh - 9rem));
+  display: flex;
+  flex-direction: column;
+}
+
+.msg-board-surface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: color-mix(in srgb, var(--color-surface-0, #0f172a) 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border, #334155) 75%, rgba(255, 255, 255, 0.08));
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow:
+    0 20px 45px -10px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 35px -8px color-mix(in srgb, var(--color-accent, #6366f1) 12%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Header bar */
+.msg-board-header {
+  background: color-mix(in srgb, var(--color-surface-1, #1e293b) 80%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-subtle, #334155) 80%, transparent);
+  gap: 0.75rem;
+}
+
+.msg-board-side {
+  min-width: 4rem;
+  display: flex;
+  align-items: center;
+}
+
+.msg-board-side-right {
+  justify-content: flex-end;
+}
+
+.msg-board-center {
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.msg-board-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-text-primary, #f8fafc);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.msg-board-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #94a3b8);
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-surface-2, #334155) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border, #334155) 50%, transparent);
+}
+
+.msg-board-user-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-accent, #6366f1);
+  box-shadow: 0 0 6px var(--color-accent, #6366f1);
+}
+
+.msg-board-user-dot-guest {
+  background: var(--color-text-tertiary, #64748b);
+  box-shadow: none;
+}
+
+.msg-board-count-pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #94a3b8);
+  background: color-mix(in srgb, var(--color-surface-2, #334155) 45%, transparent);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+/* Degraded banner wrap */
+.msg-board-banner-wrap {
+  padding: 0.5rem 1rem 0;
+}
+
+/* Guest prompt footer */
+.msg-board-guest-prompt {
+  background: color-mix(in srgb, var(--color-surface-1, #1e293b) 75%, transparent);
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border-subtle, #334155) 75%, transparent);
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.msg-board-guest-icon {
+  color: var(--color-accent, #6366f1);
+}
+
+@media (max-width: 640px) {
+  .msg-board {
+    padding: 0.5rem;
+    height: calc(100dvh - 6rem);
+    min-height: calc(100dvh - 6rem);
+  }
+
+  .msg-board-header {
+    padding: 0.6rem 0.9rem;
+    min-height: 3rem;
+  }
+}

@@ -1,0 +1,236 @@
+/* Curved unified library input */
+.curved-library-search__boundary {
+  position: relative;
+  padding-bottom: 0.35rem;
+}
+
+.curved-library-search__row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.curved-library-search__input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.curved-input {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.curved-input__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  cursor: text;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.42));
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.curved-input__surface {
+  fill: color-mix(in srgb, var(--color-surface-1) 94%, black);
+  stroke: color-mix(in srgb, var(--color-border) 86%, transparent);
+  stroke-width: 1.5px;
+  transition: fill 160ms ease, stroke 160ms ease;
+}
+
+.curved-input__focus-ring {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 8px;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.curved-input.is-focused .curved-input__surface,
+.curved-library-search__boundary.is-autocomplete-active .curved-input__surface {
+  fill: color-mix(in srgb, var(--color-surface-1) 97%, black);
+  stroke: var(--color-accent);
+}
+
+.curved-input.is-focused .curved-input__focus-ring,
+.curved-library-search__boundary.is-autocomplete-active .curved-input__focus-ring {
+  opacity: 0.18;
+}
+
+.curved-input__text,
+.curved-input__placeholder,
+.curved-input__button-label {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.94rem;
+  font-weight: 520;
+}
+
+.curved-input__text {
+  fill: var(--color-text-primary);
+}
+
+.curved-input__placeholder {
+  fill: var(--color-text-tertiary);
+}
+
+.curved-input__icon-chip,
+.curved-input__button-bg {
+  fill: var(--color-accent);
+}
+
+.curved-input__lens {
+  fill: none;
+  stroke: var(--color-surface-0);
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+.curved-input__caret {
+  stroke: var(--color-text-primary);
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  animation: curvedInputCaret 1.05s steps(1) infinite;
+}
+
+.curved-input__button {
+  cursor: pointer;
+}
+
+.curved-input__button-bg {
+  transition: filter 160ms ease, opacity 160ms ease;
+}
+
+.curved-input__button:hover .curved-input__button-bg {
+  filter: brightness(1.12);
+}
+
+.curved-input__button.is-disabled {
+  cursor: default;
+}
+
+.curved-input__button.is-disabled .curved-input__button-bg {
+  opacity: 0.42;
+}
+
+.curved-input__button-label {
+  fill: var(--color-surface-0);
+  font-weight: 680;
+  pointer-events: none;
+}
+
+.curved-input__button--secondary .curved-input__button-bg {
+  fill: rgba(255, 255, 255, 0.12);
+}
+
+.curved-input__button--secondary .curved-input__button-label { fill: #f1f5f9; font-weight: 600; }
+
+
+.curved-input__button--spin .curved-input__button-bg {
+  fill: rgba(245, 158, 11, 0.24);
+}
+
+.curved-input__button--spin .curved-input__button-label {
+  fill: #fef08a;
+  font-weight: 680;
+}
+
+.curved-input__button--secondary:hover .curved-input__button-bg {
+  fill: rgba(255, 255, 255, 0.22);
+}
+
+.curved-input__button--spin:hover .curved-input__button-bg {
+  fill: rgba(245, 158, 11, 0.38);
+  filter: brightness(1.25);
+}
+
+.curved-input__native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  opacity: 0;
+  color: transparent;
+  caret-color: transparent;
+  background: transparent;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.curved-library-search__secondary-actions {
+  position: absolute;
+  top: calc(100% - 0.1rem);
+  right: 0.5rem;
+  justify-content: flex-end;
+  padding: 0.35rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--color-surface-1) 95%, black);
+  box-shadow: var(--shadow-card);
+}
+
+@keyframes curvedInputCaret {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .curved-input__text,
+  .curved-input__placeholder,
+  .curved-input__button-label {
+    font-size: 0.8rem;
+  }
+
+  .curved-library-search__secondary-actions {
+    left: 0.5rem;
+    right: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+
+
+
+.magic-toggle {
+  padding: 0.2rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.625rem;
+  background: var(--color-surface-1);
+  box-shadow: none;
+}
+
+.magic-toggle-indicator,
+.magic-toggle-indicator.is-logout {
+  top: 0.2rem;
+  bottom: 0.2rem;
+  left: 0;
+  right: 0;
+  width: auto;
+  border-radius: 0.45rem;
+  background: var(--color-surface-3);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+.magic-toggle-btn {
+  min-height: 2.15rem;
+  border-radius: 0.45rem;
+  font-weight: 500;
+}
+
+.magic-toggle-btn.is-active {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.confirm-dialog-content {
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-floating);
+}

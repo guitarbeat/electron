@@ -1,0 +1,763 @@
+/* ============================================================================
+   Profile Menu & Header Components (Clean, Modern, Interactive Dropdown)
+   ============================================================================ */
+
+/* Trigger Button */
+
+/* UserAvatar inside header context */
+.app-header__option-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--color-surface-3);
+  border: 2px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.app-header__avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--color-surface-2), var(--color-surface-3));
+}
+
+.app-header__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.app-header__avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+/* Chevron indicator */
+.app-header__chevron {
+  color: var(--color-text-secondary);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+/* Outside Click Overlay */
+.app-header__profile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: transparent;
+  cursor: default;
+}
+
+/* Dropdown Menu Panel */
+
+@keyframes profileMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Menu Topbar Header */
+
+/* Sections inside Dropdown */
+
+/* Profile list items */
+
+/* Individual Profile Option Button */
+
+/* Badges & Lock indicators */
+
+/* Actions Section */
+
+/* Error Notice */
+
+/* ============================================================================
+   Inline Profiles & Switching Header Bar Styles
+   ============================================================================ */
+
+.inline-profiles-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.profiles-switcher-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.profile-switcher-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: visible !important;
+  transition: transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), filter 200ms ease, opacity 200ms ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-switcher-face-wrap,
+.profile-switcher-avatar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  transition: transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.profile-switcher-face-wrap img,
+.profile-switcher-avatar-wrap img,
+.profile-switcher-avatar,
+.profile-switcher-avatar .app-header__option-avatar,
+.profile-switcher-face-wrap .app-header__avatar-image {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  object-fit: contain !important;
+  pointer-events: none;
+  width: 56px;
+  height: 56px;
+  transition: filter 200ms ease, opacity 200ms ease;
+}
+
+/* Specific pixel-art rendering for Aaron */
+.profile-switcher-btn--aaron img {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* SHRUNK STATE (Logged out) */
+.profile-switcher-btn.is-logged-out {
+  opacity: 0.55;
+  transform: scale(0.82);
+}
+
+.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap,
+.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap img,
+.profile-switcher-btn.is-logged-out .profile-switcher-avatar-wrap,
+.profile-switcher-btn.is-logged-out .app-header__avatar-image {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5)) grayscale(0.25);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profile-switcher-btn.is-logged-out:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: scale(0.92) translateY(-2px);
+  }
+}
+
+.profile-switcher-btn.is-logged-out:hover:not(:disabled) img {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7)) grayscale(0);
+}
+
+/* EXPANDED STATE (Logged in) */
+.profile-switcher-btn.is-logged-in,
+.profile-switcher-btn.is-active {
+  opacity: 1;
+  transform: scale(1.08);
+  z-index: 10;
+}
+
+.profile-switcher-btn.is-logged-in .profile-switcher-face-wrap,
+.profile-switcher-btn.is-logged-in .profile-switcher-face-wrap img,
+.profile-switcher-btn.is-logged-in .profile-switcher-avatar-wrap,
+.profile-switcher-btn.is-logged-in .app-header__avatar-image,
+.profile-switcher-btn.is-active .profile-switcher-face-wrap,
+.profile-switcher-btn.is-active .profile-switcher-face-wrap img,
+.profile-switcher-btn.is-active .profile-switcher-avatar-wrap,
+.profile-switcher-btn.is-active .app-header__avatar-image {
+  width: 56px;
+  height: 56px;
+}
+
+/* Aaron Character Glow when Logged In */
+.profile-switcher-btn--aaron.is-logged-in img,
+.profile-switcher-btn--aaron.is-active img {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7))
+         drop-shadow(0 0 14px rgba(56, 189, 248, 0.65))
+         drop-shadow(0 0 24px rgba(14, 165, 233, 0.35));
+}
+
+/* Electra Character Glow when Logged In */
+.profile-switcher-btn--electra.is-logged-in img,
+.profile-switcher-btn--electra.is-active img {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7))
+         drop-shadow(0 0 14px rgba(244, 114, 182, 0.65))
+         drop-shadow(0 0 24px rgba(236, 72, 153, 0.35));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profile-switcher-btn.is-logged-in:hover:not(:disabled),
+  .profile-switcher-btn.is-active:hover:not(:disabled) {
+    transform: scale(1.14) translateY(-2px);
+  }
+}
+
+.profile-switcher-name {
+  display: none !important;
+}
+
+.pin-dialog-avatar-wrap img {
+  border-radius: 0 !important;
+  object-fit: contain !important;
+  overflow: visible !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+/* Settings trigger button & popover */
+.profile-settings-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-settings-trigger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), color 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.profile-settings-trigger-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+.profile-settings-trigger-btn:active {
+  transform: scale(0.97);
+}
+
+.profile-settings-trigger-btn.is-open {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.profile-settings-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  z-index: 1010;
+  background: color-mix(in srgb, var(--color-surface-1) 96%, black);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-floating, 0 12px 30px rgba(0, 0, 0, 0.4));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transform-origin: var(--transform-origin, top right);
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+@starting-style {
+  .profile-settings-menu {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.profile-settings-header {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.profile-settings-title {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.profile-settings-subtitle {
+  font-size: 0.68rem;
+  color: var(--color-text-tertiary);
+}
+
+.profile-settings-section {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-settings-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 550;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.profile-settings-action-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+}
+
+.profile-settings-action-btn.is-logout {
+  color: var(--color-error);
+}
+
+.profile-settings-action-btn.is-logout:hover {
+  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  color: var(--color-error);
+}
+
+.inline-profiles-error {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--color-error);
+  padding: 0 0.5rem;
+}
+
+/* ============================================================================
+   Spin Wheel Game Styles
+   ============================================================================ */
+
+.spin-wheel-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 54rem;
+  margin: 0 auto;
+}
+
+.spin-wheel-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  background: var(--color-surface-1, rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+}
+
+.spin-wheel-summary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.spin-wheel-summary__label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.spin-wheel-summary__value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.spin-wheel-mode-bar {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--color-surface-1, rgba(255, 255, 255, 0.04));
+  padding: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: fit-content;
+}
+
+.spin-wheel-mode-pill {
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), background-color 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.spin-wheel-mode-pill:hover:not(:disabled) {
+  color: var(--color-text-primary, #ffffff);
+}
+
+.spin-wheel-mode-pill--active {
+  background: var(--color-accent, #6366f1);
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.spin-wheel-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .spin-wheel-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spin-wheel-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+.spin-marker {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 26px solid var(--color-accent, #ff4081);
+  z-index: 25;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+
+.spin-wheel-container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 4px rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 480px) {
+  .spin-wheel-container {
+    width: 270px;
+    height: 270px;
+  }
+}
+
+.spin-wheel-rotor {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.spin-wheel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.spin-wheel-gloss {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.25) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.spin-wheel-segment {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotate(var(--segment-angle));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.spin-wheel-segment__content {
+  position: absolute;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transform: translateX(0);
+}
+
+.spin-wheel-segment__content--flipped {
+  transform: rotate(180deg);
+}
+
+.spin-wheel-segment__poster {
+  width: 26px;
+  height: 38px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.spin-wheel-segment__title {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  max-width: 68px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.spin-wheel-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.spin-hub {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-surface-0, #0c111d);
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.spin-wheel-trigger {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-accent, #6366f1);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.spin-wheel-trigger:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .spin-wheel-trigger:hover:not(:disabled) {
+    transform: scale(1.08);
+  }
+}
+
+.spin-wheel-trigger:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.spin-wheel-trigger:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.spin-wheel-trigger__label {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.spin-wheel-trigger__subtext {
+  font-size: 0.5625rem;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.spin-wheel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.spin-wheel-panel__card {
+  background: var(--color-surface-1, rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spin-wheel-panel__card--result {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.spin-wheel-panel__eyebrow {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-accent, #6366f1);
+  font-weight: 700;
+  margin: 0;
+}
+
+.spin-wheel-panel__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.spin-wheel-panel__meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  margin: 0;
+}
+
+.spin-wheel-panel__status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent, #6366f1);
+  margin: 0;
+}
+
+.spin-wheel-panel__poster {
+  width: 90px;
+  height: 130px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.spin-wheel-panel__copy {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  margin: 0;
+}
+
+.spin-wheel-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .y2k-disc,
+  .y2k-globe,
+  .y2k-sparkle,
+  .y2k-window,
+  .stat-tile-count,
+  .floating-dock-cluster,
+  .chat-dock,
+  .chat-fab,
+  .msg-bubble-me,
+  .msg-bubble-them,
+  .media-poster-skeleton::before,
+  .app-suspense-fallback-bar,
+  .drift-wall-loading__tile,
+  .drift-wall-loading__tile::after,
+  .drift-wall-loading__status span,
+  .quiz-retro-question-stage,
+  .quiz-retro-results-win {
+    animation: none !important;
+  }
+
+  .movie-item-container,
+  .tilted-poster-wall .movie-item-container,
+  .card-tilt-wrap,
+  .chat-fab,
+  .stremio-btn,
+  .stat-tile,
+  .workspace-card-action,
+  .profile-switcher-btn,
+  .movie-details-modal__dialog,
+  .movie-details-modal__backdrop,
+  .chat-dock,
+  .msg-bubble-me,
+  .msg-bubble-them {
+    transition-property: opacity, color, background-color, border-color, box-shadow, filter !important;
+  }
+
+  .movie-item-container:hover,
+  .movie-item-container:focus-within,
+  .tilted-poster-wall .movie-item-container:hover,
+  .tilted-poster-wall .movie-item-container:focus-within,
+  .chat-fab:hover,
+  .chat-fab:active,
+  .stremio-btn:hover,
+  .stat-tile:hover,
+  .workspace-card-action:hover,
+  .workspace-card-action:active,
+  .profile-switcher-btn:hover {
+    transform: none;
+  }
+}

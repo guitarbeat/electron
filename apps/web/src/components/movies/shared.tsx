@@ -513,11 +513,6 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
               forceClose={!isOpen}
             />
           </div>
-          <div className="flex items-center gap-1.5 mt-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm pointer-events-none">
-            <span className="text-xs text-white/60 font-medium">
-              📖 Click, drag, or use arrow keys to flip pages
-            </span>
-          </div>
         </div>
       ) : (
         <button
