@@ -1,5 +1,24 @@
 {
   "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/app/*": ["./apps/web/src/app/*"],
+      "@/branding/*": ["./apps/web/src/branding/*"],
+      "@/common/*": ["./apps/web/src/components/common/*"],
+      "@/components/*": ["./apps/web/src/components/*"],
+      "@/effects/*": ["./apps/web/src/components/effects/*"],
+      "@/hooks/*": ["./apps/web/src/hooks/*"],
+      "@/matchmaker/*": ["./apps/web/src/components/matchmaker/*"],
+      "@/quiz/*": ["./apps/web/src/components/quiz/*"],
+      "@/services/*": ["./apps/web/src/services/*"],
+      "@/shared/*": ["./apps/web/src/shared/*"],
+      "@/theme/*": ["./apps/web/src/theme/*"],
+      "@/ui/*": ["./apps/web/src/components/ui/*"],
+      "@/utils/*": ["./apps/web/src/utils/*"],
+      "@/*": ["./apps/web/src/*"]
+    }
+  },
   "compileOnSave": false,
   "files": [],
   "references": [
@@ -11,3 +30,5 @@
     }
   ]
 }
+
+

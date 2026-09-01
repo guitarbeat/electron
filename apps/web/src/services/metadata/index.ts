@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isValidUrl, sanitizeInput } from "../../utils/shared.ts";
+import { isValidUrl, sanitizeInput } from "../../utils/shared.js";
 
 // Types
 

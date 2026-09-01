@@ -1,4 +1,4 @@
-import { encodeStorageData, decodeStorageData } from "../utils/shared.ts";
+import { encodeStorageData, decodeStorageData } from "../utils/shared.js";
 
 export interface StoredJsonReadOptions<T> {
   storageKey: string;
