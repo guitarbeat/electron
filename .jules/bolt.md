@@ -3,3 +3,6 @@ When addressing code health tasks on UI copy, prefer platform-agnostic verbs lik
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts`)
 Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but the file currently contains only `export {};`. Documented the discrepancy with no code changes to `lib/db/src/schema/index.ts`.
+
+## 2026-09-01 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx:33`)
+Task requested removing a leftover `console.debug` logging statement checking `debugSession` in `apps/web/src/app/providers.tsx:33`, but the file currently does not contain any `console.debug` or `debugSession` code. Documented the discrepancy with no code changes to `apps/web/src/app/providers.tsx`.
