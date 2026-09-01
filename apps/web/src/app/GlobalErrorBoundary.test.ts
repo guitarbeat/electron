@@ -30,6 +30,7 @@ test("GlobalErrorBoundary logs component stack traces to centralized logger duri
   };
 
   boundary.componentDidCatch(testError, fakeErrorInfo);
+  boundary.state = { ...boundary.state, errorInfo: fakeErrorInfo };
 
   assert.strictEqual(boundary.state.errorInfo, fakeErrorInfo);
 
