@@ -70,9 +70,37 @@ describe("verifyStoredPin and hashPin", () => {
         false,
       );
       assert.strictEqual(
+        verifyStoredPin("1234", "PBKDF2:100000:abcd:ef01"),
+        false,
+      );
+      assert.strictEqual(
         verifyStoredPin("1234", "invalid:100000:abcd:ef01"),
         false,
       );
+    });
+
+    it("should handle empty or special character input pins correctly", () => {
+      const emptyHash = hashPin("");
+      assert.strictEqual(verifyStoredPin("", emptyHash), true);
+      assert.strictEqual(verifyStoredPin("1234", emptyHash), false);
+
+      const specialPin = "p@s$w0rd!#%^&*";
+      const specialHash = hashPin(specialPin);
+      assert.strictEqual(verifyStoredPin(specialPin, specialHash), true);
+      assert.strictEqual(verifyStoredPin("p@s$w0rd", specialHash), false);
+    });
+
+    it("should return false when iteration count or salt/hash hex data is corrupted", () => {
+      const validHash = hashPin("1234");
+      const parts = validHash.split(":");
+
+      const invalidIterHash = [parts[0], "invalid", parts[2], parts[3]].join(":");
+      assert.strictEqual(verifyStoredPin("1234", invalidIterHash), false);
+
+      const altSuffix = parts[3].endsWith("ff") ? "00" : "ff";
+      const corruptedHashBytes = parts[3].substring(0, parts[3].length - 2) + altSuffix;
+      const corruptedHash = [parts[0], parts[1], parts[2], corruptedHashBytes].join(":");
+      assert.strictEqual(verifyStoredPin("1234", corruptedHash), false);
     });
 
     it("should return false when salt/hash are empty or hash length is mismatched", () => {
