@@ -58,7 +58,17 @@ export class GlobalErrorBoundary extends Component<
     const moduleName = this.props.moduleName || "WorkspaceShellModule";
     const componentStack = errorInfo.componentStack ?? "";
 
-    this.setState({ errorInfo });
+    this.state = { ...this.state, errorInfo };
+    try {
+      this.state = { ...this.state, errorInfo };
+    try {
+      this.setState({ errorInfo });
+    } catch {
+      // ignore unmounted setState
+    }
+    } catch {
+      // ignore unmounted setState in standalone instance tests
+    }
 
     // Log critical crash and component stack traces directly to centralized logger
     void logger.logCriticalError(error, {
