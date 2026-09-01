@@ -116,6 +116,39 @@ describe("validateSameOriginRequest", () => {
     assert.strictEqual(res, null);
   });
 
+  it("should reject cross-site requests with 403 even if origin is allowed", async () => {
+    process.env.ALLOWED_ORIGINS = "https://app.example.com";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: {
+        "sec-fetch-site": "cross-site",
+        origin: "https://app.example.com",
+      },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.notStrictEqual(res, null);
+    assert.strictEqual(res?.status, 403);
+    const body = await res?.json();
+    assert.strictEqual(body.error, "Cross-site requests not allowed.");
+  });
+
+  it("should handle leading and trailing whitespace around entries in ALLOWED_ORIGINS", () => {
+    process.env.ALLOWED_ORIGINS = "  https://app.example.com  ,   https://other.example.com  ";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { origin: "https://app.example.com" },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.strictEqual(res, null);
+  });
+
+  it("should match origins case-insensitively for protocol and hostname", () => {
+    process.env.ALLOWED_ORIGINS = "HTTPS://APP.EXAMPLE.COM";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { origin: "https://app.example.com" },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.strictEqual(res, null);
+  });
+
   it("should reject requests when ALLOWED_ORIGINS contains only malformed URLs", async () => {
     process.env.ALLOWED_ORIGINS = "invalid-url-1, invalid-url-2";
     const req = new Request("http://localhost/api/omdb", {
