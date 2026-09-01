@@ -106,6 +106,50 @@ describe("profile session signing and token verification", () => {
     assert.strictEqual(requireProfileUser(authedReq), "Aaron");
   });
 
+
+  it("should generate and reuse an ephemeral secret when no env secrets are configured and NODE_ENV is development", () => {
+    const origSigningSecret = process.env.SESSION_SIGNING_SECRET;
+    const origSecret = process.env.SESSION_SECRET;
+    const origNodeEnv = process.env.NODE_ENV;
+
+    try {
+      delete process.env.SESSION_SIGNING_SECRET;
+      delete process.env.SESSION_SECRET;
+      process.env.NODE_ENV = "development";
+
+      const req = new Request("http://localhost/api/test");
+      const cookieHeader1 = buildProfileCookie(req, "Aaron");
+      const cookieHeader2 = buildProfileCookie(req, "Electra");
+
+      // Both tokens should successfully verify using the dynamically generated ephemeral secret
+      const req1 = new Request("http://localhost/api/test", {
+        headers: { cookie: cookieHeader1.split(";")[0] },
+      });
+      const req2 = new Request("http://localhost/api/test", {
+        headers: { cookie: cookieHeader2.split(";")[0] },
+      });
+
+      assert.strictEqual(getSessionState(req1).currentUser, "Aaron");
+      assert.strictEqual(getSessionState(req2).currentUser, "Electra");
+    } finally {
+      if (origSigningSecret !== undefined) {
+        process.env.SESSION_SIGNING_SECRET = origSigningSecret;
+      } else {
+        delete process.env.SESSION_SIGNING_SECRET;
+      }
+      if (origSecret !== undefined) {
+        process.env.SESSION_SECRET = origSecret;
+      } else {
+        delete process.env.SESSION_SECRET;
+      }
+      if (origNodeEnv !== undefined) {
+        process.env.NODE_ENV = origNodeEnv;
+      } else {
+        delete process.env.NODE_ENV;
+      }
+    }
+  });
+
   it("should support SESSION_SIGNING_SECRET, SESSION_SECRET fallback, and clean quoted strings", () => {
     const origSigningSecret = process.env.SESSION_SIGNING_SECRET;
     const origSecret = process.env.SESSION_SECRET;
@@ -166,6 +210,24 @@ describe("profile session signing and token verification", () => {
     });
     assert.strictEqual(getSessionState(invalid).hasAccess, false);
     assert.strictEqual(hasAccessSession(invalid), false);
+  });
+
+
+  it("should support multiple users, filter out invalid users, and deduplicate users in profile cookie", () => {
+    const req = new Request("http://localhost/api/test");
+    // Pass users array with duplicates and an invalid user string
+    const usersList = ["Aaron", "Electra", "Aaron", "InvalidUser" as any];
+    const cookieHeader = buildProfileCookie(req, "Aaron", usersList);
+    const cookieValue = cookieHeader.split(";")[0];
+
+    const authedReq = new Request("http://localhost/api/test", {
+      headers: { cookie: cookieValue },
+    });
+
+    const sessionState = getSessionState(authedReq);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Aaron");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Aaron", "Electra"]);
   });
 
   it("should grant access when profile cookie is valid", () => {
@@ -232,6 +294,27 @@ describe("pin attempt session signing and token verification", () => {
 });
 
 describe("token verification edge cases and error handling", () => {
+
+  it("should reject tokens with empty payload or empty signature segments", () => {
+    for (const emptyToken of [".", "payload.", ".signature"]) {
+      const req = new Request("http://localhost/api/test", {
+        headers: { cookie: `movie_watch_profile=${emptyToken}` },
+      });
+      assert.strictEqual(getSessionState(req).currentUser, null);
+    }
+  });
+
+  it("should reject non-object JSON payloads like null, numbers, or booleans", () => {
+    for (const rawValue of [null, 123, true, "just a string"]) {
+      const enc = base64urlEncode(JSON.stringify(rawValue));
+      const sig = signValue(enc);
+      const req = new Request("http://localhost/api/test", {
+        headers: { cookie: `movie_watch_profile=${enc}.${sig}` },
+      });
+      assert.strictEqual(getSessionState(req).currentUser, null);
+    }
+  });
+
   it("should reject token with multiple dots / extra split parts", () => {
     const payload = base64urlEncode(
       JSON.stringify({
@@ -306,6 +389,25 @@ describe("token verification edge cases and error handling", () => {
     });
 
     assert.strictEqual(getSessionState(reqTamperedPayload).currentUser, null);
+  });
+
+
+  it("should reject tokens where exp equals current epoch timestamp (boundary condition)", () => {
+    const currentSeconds = Math.floor(Date.now() / 1000);
+    const boundaryPayload = {
+      type: "profile",
+      user: "Aaron",
+      exp: currentSeconds,
+    };
+    const enc = base64urlEncode(JSON.stringify(boundaryPayload));
+    const sig = signValue(enc);
+    const token = `${enc}.${sig}`;
+
+    const req = new Request("http://localhost/api/test", {
+      headers: { cookie: `movie_watch_profile=${token}` },
+    });
+
+    assert.strictEqual(getSessionState(req).currentUser, null);
   });
 
   it("should reject expired tokens", () => {
