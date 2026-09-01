@@ -29,6 +29,7 @@ describe("syncBanner", () => {
       assert.equal(content.title, "Sync conflict");
       assert.equal(content.badge, "Action needed");
       assert.equal(content.tone, "assertive");
+      assert.ok(content.recommendedAction);
       assert.ok(content.debugHints.length > 0);
       assert.ok(content.copyPayload.includes("sync conflict"));
       assert.ok(content.occurredAt);

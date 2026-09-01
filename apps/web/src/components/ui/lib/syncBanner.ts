@@ -8,7 +8,7 @@ export interface SyncBannerContent {
   title: string;
   description: string;
   whatItMeans: string;
-  whatToDo: string;
+  recommendedAction: string;
   debugHints: string[];
   copyPayload: string;
   accent: string;
@@ -152,33 +152,33 @@ const DEBUG_HINTS: Record<SyncBannerIssue, string[]> = {
 
 const FRIENDLY_CONTENT: Record<
   SyncBannerIssue,
-  Pick<SyncBannerContent, "title" | "description" | "whatItMeans" | "whatToDo">
+  Pick<SyncBannerContent, "title" | "description" | "whatItMeans" | "recommendedAction">
 > = {
   blocked: {
     title: "Sync conflict",
     description: "A change from another device clashed with a local change.",
     whatItMeans: "Nothing is lost — your local changes are still here.",
-    whatToDo: "Refresh the page, then select Retry sync to resolve the conflict.",
+    recommendedAction: "Refresh the page, then select Retry sync to resolve the conflict.",
   },
   outbox: {
     title: "Saving in background…",
     description: "A recent change is still waiting to reach the shared backup.",
     whatItMeans: "Everything is safe on this device right now.",
-    whatToDo:
+    recommendedAction:
       "Stay connected and it will sync automatically, or select Retry sync to push it now.",
   },
   network: {
     title: "Saved on this device",
     description: "You're offline — changes stay here until you're back online.",
     whatItMeans: "Your watchlist and notes are safe locally.",
-    whatToDo: "When you're online again, select Retry sync.",
+    recommendedAction: "When you're online again, select Retry sync.",
   },
   missing_database: {
     title: "Shared backup not set up",
     description: "The app is running without a shared storage backend.",
     whatItMeans:
       "Changes only save on this device and won't appear for the other person.",
-    whatToDo: "Add DATABASE_URL to the environment to enable sharing.",
+    recommendedAction: "Add DATABASE_URL to the environment to enable sharing.",
   },
   database_failure: {
     title: "Shared backup unavailable",
@@ -186,20 +186,20 @@ const FRIENDLY_CONTENT: Record<
       "The sync service declined the connection — possibly credentials or permissions.",
     whatItMeans:
       "Your changes are safe locally. The other person may not see updates yet.",
-    whatToDo:
+    recommendedAction:
       "Select Retry sync to try again. If it keeps failing, check the Neon database URL.",
   },
   shared_state_load: {
     title: "Sync unavailable",
     description: "The shared backup couldn't be reached right now.",
     whatItMeans: "Your changes are safe on this device for now.",
-    whatToDo: "Select Retry sync to try again.",
+    recommendedAction: "Select Retry sync to try again.",
   },
   generic: {
     title: "Sync unavailable",
     description: "The shared backup couldn't be reached right now.",
     whatItMeans: "Your changes are safe on this device for now.",
-    whatToDo: "Select Retry sync to try again.",
+    recommendedAction: "Select Retry sync to try again.",
   },
 };
 
