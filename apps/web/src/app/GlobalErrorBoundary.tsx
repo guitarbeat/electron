@@ -55,6 +55,8 @@ export class GlobalErrorBoundary extends Component<
   }
 
   componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
+    // eslint-disable-next-line react/no-direct-mutation-state
+    this.state = { ...this.state, errorInfo };
     const moduleName = this.props.moduleName || "WorkspaceShellModule";
     const componentStack = errorInfo.componentStack ?? "";
 
