@@ -127,7 +127,77 @@ describe("validateSameOriginRequest", () => {
     const body = await res?.json();
     assert.strictEqual(body.error, "Origin not allowed.");
   });
+
+  it("should prefer origin header over referer header when both are provided", async () => {
+    process.env.ALLOWED_ORIGINS = "https://allowed.example.com";
+    const req1 = new Request("http://localhost/api/omdb", {
+      headers: {
+        origin: "https://disallowed.example.com",
+        referer: "https://allowed.example.com/page",
+      },
+    });
+    const res1 = validateSameOriginRequest(req1);
+    assert.notStrictEqual(res1, null);
+    assert.strictEqual(res1?.status, 403);
+    const body1 = await res1?.json();
+    assert.strictEqual(body1.error, "Origin not allowed.");
+
+    const req2 = new Request("http://localhost/api/omdb", {
+      headers: {
+        origin: "https://allowed.example.com",
+        referer: "https://disallowed.example.com/page",
+      },
+    });
+    assert.strictEqual(validateSameOriginRequest(req2), null);
+  });
+
+  it("should reject cross-site sec-fetch-site requests even if ALLOWED_ORIGINS matches origin", async () => {
+    process.env.ALLOWED_ORIGINS = "https://app.example.com";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: {
+        origin: "https://app.example.com",
+        "sec-fetch-site": "cross-site",
+      },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.notStrictEqual(res, null);
+    assert.strictEqual(res?.status, 403);
+    const body = await res?.json();
+    assert.strictEqual(body.error, "Cross-site requests not allowed.");
+  });
+
+  it("should reject requests when origin scheme differs from ALLOWED_ORIGINS scheme", async () => {
+    process.env.ALLOWED_ORIGINS = "https://app.example.com";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { origin: "http://app.example.com" },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.notStrictEqual(res, null);
+    assert.strictEqual(res?.status, 403);
+    const body = await res?.json();
+    assert.strictEqual(body.error, "Origin not allowed.");
+  });
+
+  it("should parse referer URLs containing paths, query parameters, and fragments", () => {
+    process.env.ALLOWED_ORIGINS = "https://app.example.com";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { referer: "https://app.example.com/movies/123?sort=asc#trailer" },
+    });
+    assert.strictEqual(validateSameOriginRequest(req), null);
+  });
+
+  it("should return 403 response with application/json content-type header for rejected requests", () => {
+    process.env.ALLOWED_ORIGINS = "https://app.example.com";
+    const req = new Request("http://localhost/api/omdb", {
+      headers: { origin: "https://unauthorized.com" },
+    });
+    const res = validateSameOriginRequest(req);
+    assert.notStrictEqual(res, null);
+    assert.strictEqual(res?.status, 403);
+    assert.strictEqual(res?.headers.get("content-type"), "application/json");
+  });
 });
+
 
 describe("isRateLimited", () => {
   beforeEach(() => {
