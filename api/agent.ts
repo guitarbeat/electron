@@ -5,10 +5,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 
-import type {
-  StateScope,
-  StateScopeDataMap,
-} from "../apps/web/src/services/state/stateTypes.js";
+import type { StateScope } from "../apps/web/src/services/state/stateTypes.js";
 import type { User } from "../apps/web/src/shared/types.js";
 import {
   AGENT_ACTIONS,
@@ -385,12 +382,12 @@ const publicCatalog = async (
       );
 };
 
-const mutate = async <TScope extends StateScope>(
-  scope: TScope,
+const mutate = async (
+  scope: StateScope,
   op: string,
   input: unknown,
   actor: User | null,
-): Promise<{ data: StateScopeDataMap[TScope]; version: string }> => {
+): Promise<{ data: unknown; version: string }> => {
   const definition = getScopeDefinition(scope);
   if (!definition.mutate) throw new Error("UNSUPPORTED_ACTION");
   const latest = await readScopeStoredData(scope, { bypassCache: true });
@@ -399,7 +396,7 @@ const mutate = async <TScope extends StateScope>(
     now: new Date().toISOString(),
   });
   if (!result.ok) throw new Error(`CONFLICT:${result.conflict}`);
-  const data = definition.toClient(result.data) as StateScopeDataMap[TScope];
+  const data = definition.toClient(result.data);
   await patchSharedStateFile(
     definition.filename,
     definition.serialize(result.data),
@@ -414,108 +411,85 @@ const submitSuggestion = async (
 ): Promise<Response> => {
   if (request.method !== "POST")
     return errorResponse(requestId, 404, "NOT_FOUND", "Route not found.");
-  if (kind !== "movies" && kind !== "places")
+  const raw = await readJsonBody(request);
+  const schema =
+    kind === "movies"
+      ? movieSuggestionSchema
+      : kind === "places"
+        ? placeSuggestionSchema
+        : null;
+  if (!schema)
     return errorResponse(
       requestId,
       404,
       "NOT_FOUND",
       "Suggestion kind not found.",
     );
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success)
+    return errorResponse(
+      requestId,
+      422,
+      "VALIDATION_ERROR",
+      "Invalid suggestion.",
+      parsed.error.flatten(),
+    );
+  if (!(await consumeAnonymousRateLimit(requestIp(request))))
+    return errorResponse(
+      requestId,
+      429,
+      "RATE_LIMITED",
+      "Too many suggestions. Try again later.",
+    );
 
-  const raw = await readJsonBody(request);
+  const candidate =
+    kind === "movies"
+      ? (parsed.data as { title: string }).title
+      : (parsed.data as { name: string }).name;
+  const normalizedCandidate = candidate.trim().toLocaleLowerCase();
 
+  let duplicate = false;
   if (kind === "movies") {
-    const parsed = movieSuggestionSchema.safeParse(raw);
-    if (!parsed.success)
-      return errorResponse(
-        requestId,
-        422,
-        "VALIDATION_ERROR",
-        "Invalid suggestion.",
-        parsed.error.flatten(),
-      );
-    if (!(await consumeAnonymousRateLimit(requestIp(request))))
-      return errorResponse(
-        requestId,
-        429,
-        "RATE_LIMITED",
-        "Too many suggestions. Try again later.",
-      );
-
-    const normalizedCandidate = parsed.data.title.trim().toLocaleLowerCase();
     const existing = (
       await readScopeStoredData("suggestions", { bypassCache: true })
     ).clientData;
-    const duplicate = existing.some(
-      (item) => item.title.trim().toLocaleLowerCase() === normalizedCandidate,
+    duplicate = existing.some(
+      (item) =>
+        item.title.trim().toLocaleLowerCase() === normalizedCandidate,
     );
-    if (duplicate)
-      return errorResponse(
-        requestId,
-        409,
-        "DUPLICATE",
-        "A matching suggestion already exists.",
-      );
-
-    const input = { ...parsed.data, id: `agent-${randomUUID()}` };
-    const result = await mutate("suggestions", "add_suggestion", input, null);
-    await recordAgentAudit({
-      requestId,
-      actor: null,
-      operation: "submit_movies_suggestion",
-      outcome: "applied",
-    });
-    const created = result.data.at(-1);
-    return responseJson({ data: created, requestId }, 201);
   } else {
-    const parsed = placeSuggestionSchema.safeParse(raw);
-    if (!parsed.success)
-      return errorResponse(
-        requestId,
-        422,
-        "VALIDATION_ERROR",
-        "Invalid suggestion.",
-        parsed.error.flatten(),
-      );
-    if (!(await consumeAnonymousRateLimit(requestIp(request))))
-      return errorResponse(
-        requestId,
-        429,
-        "RATE_LIMITED",
-        "Too many suggestions. Try again later.",
-      );
-
-    const normalizedCandidate = parsed.data.name.trim().toLocaleLowerCase();
     const existing = (
       await readScopeStoredData("placeSuggestions", { bypassCache: true })
     ).clientData;
-    const duplicate = existing.some(
-      (item) => item.name.trim().toLocaleLowerCase() === normalizedCandidate,
+    duplicate = existing.some(
+      (item) =>
+        item.name.trim().toLocaleLowerCase() === normalizedCandidate,
     );
-    if (duplicate)
-      return errorResponse(
-        requestId,
-        409,
-        "DUPLICATE",
-        "A matching suggestion already exists.",
-      );
-
-    const input = { ...parsed.data, id: `agent-${randomUUID()}` };
-    const result = await mutate(
-      "placeSuggestions",
-      "add_place_suggestion",
-      input,
-      null,
-    );
-    await recordAgentAudit({
-      requestId,
-      actor: null,
-      operation: "submit_places_suggestion",
-      outcome: "applied",
-    });
-    const created = result.data.at(-1);
-    return responseJson({ data: created, requestId }, 201);
   }
+  if (duplicate)
+    return errorResponse(
+      requestId,
+      409,
+      "DUPLICATE",
+      "A matching suggestion already exists.",
+    );
+  const scope: StateScope =
+    kind === "movies" ? "suggestions" : "placeSuggestions";
+  const input = { ...(parsed.data as object), id: `agent-${randomUUID()}` };
+  const result = await mutate(
+    scope,
+    kind === "movies" ? "add_suggestion" : "add_place_suggestion",
+    input,
+    null,
+  );
+  await recordAgentAudit({
+    requestId,
+    actor: null,
+    operation: `submit_${kind}_suggestion`,
+    outcome: "applied",
+  });
+  const created = (result.data as unknown[]).at(-1);
+  return responseJson({ data: created, requestId }, 201);
 };
 
 const performAction = async (
