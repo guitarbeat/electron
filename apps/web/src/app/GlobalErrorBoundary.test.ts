@@ -32,6 +32,13 @@ test("GlobalErrorBoundary logs component stack traces to centralized logger duri
     boundary.state = { ...boundary.state, ...nextState };
   };
 
+  boundary.setState = (updater) => {
+    boundary.state =
+      typeof updater === "function"
+        ? updater(boundary.state, boundary.props)
+        : { ...boundary.state, ...updater };
+  };
+
   const testError = new Error("Critical canvas rendering fault");
   boundary.setState = (updater: any) => {
     const nextState = typeof updater === "function" ? updater(boundary.state, boundary.props) : updater;
