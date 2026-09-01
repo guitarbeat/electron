@@ -29,6 +29,7 @@ test("GlobalErrorBoundary logs component stack traces to centralized logger duri
     componentStack: "\n    in SpinSwipeGame\n    in GlobalErrorBoundary\n    in AppWorkspaceShell",
   };
 
+  boundary.setState = (updater) => { boundary.state = typeof updater === "function" ? updater(boundary.state, boundary.props) : { ...boundary.state, ...updater }; };
   boundary.componentDidCatch(testError, fakeErrorInfo);
 
   assert.strictEqual(boundary.state.errorInfo, fakeErrorInfo);
