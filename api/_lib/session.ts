@@ -299,11 +299,16 @@ export const verifyStoredPin = (pin: string, storedHash: string): boolean => {
     return false;
   }
 
-  const [, iterations, saltHex, hashHex] = parts;
+  const [, iterationsStr, saltHex, hashHex] = parts;
+  const iterations = Number.parseInt(iterationsStr, 10);
+  if (Number.isNaN(iterations) || iterations <= 0) {
+    return false;
+  }
+
   const computed = pbkdf2Sync(
     pin,
     Buffer.from(saltHex, "hex"),
-    Number.parseInt(iterations, 10),
+    iterations,
     32,
     "sha256",
   );
