@@ -322,6 +322,24 @@ describe("withWebHandler", () => {
     assert.strictEqual(body.error, "Internal Server Error");
   });
 
+  it("should return a 500 Response when a failing mock handler is passed in Web Request mode", async () => {
+    const failingMockHandler = withWebHandler(async () => {
+      throw new Error("Handler failure");
+    });
+
+    const request = new Request("https://example.com/api/test", {
+      method: "POST",
+    });
+
+    const response = await failingMockHandler(request);
+
+    assert.ok(response instanceof Response);
+    assert.strictEqual(response.status, 500);
+
+    const body = (await response.json()) as { error: string };
+    assert.strictEqual(body.error, "Internal Server Error");
+  });
+
   it("should return a 500 Response when handler throws synchronously in Web Request mode", async () => {
     const failingHandler = withWebHandler(() => {
       throw new Error("Sync handler error");
