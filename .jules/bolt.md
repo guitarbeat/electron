@@ -3,3 +3,5 @@ When addressing code health tasks on UI copy, prefer platform-agnostic verbs lik
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts`)
 Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but the file currently contains only `export {};`. Documented the discrepancy with no code changes to `lib/db/src/schema/index.ts`.
+## 2026-09-01 - Stale Prompt Discrepancy (O(N^2) string normalization in movie batch import)
+Task requested optimizing movie batch import in `api/_lib/stateScopes/movies.ts:234`, but the loop using `findMovieByNormalizedTitle(next, movie.title)` was already previously refactored to pre-populate `knownNormalizedTitles` set before the loop. Documented discrepancy with no code changes.
