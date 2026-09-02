@@ -33,6 +33,8 @@ interface MovieDetailsModalProps {
   movie: Movie;
   isOpen: boolean;
   origin?: MovieTransitionOrigin | null;
+  container?: HTMLElement | null;
+  contained?: boolean;
   currentUser?: User | null;
   activeUsers?: User[];
   onToggleWatched?: () => void | Promise<void>;
@@ -47,6 +49,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
   movie,
   isOpen,
   origin,
+  container,
+  contained = false,
   activeUsers = [],
   onToggleWatched,
   onToggleUserWatched,
@@ -114,7 +118,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     if (!isOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!contained && !container) {
+      document.body.style.overflow = "hidden";
+    }
     const focusFrame = window.requestAnimationFrame(() => {
       dialogRef.current?.focus();
     });
@@ -149,10 +155,12 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     return () => {
       window.cancelAnimationFrame(focusFrame);
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
+      if (!contained && !container) {
+        document.body.style.overflow = previousOverflow;
+      }
       previouslyFocusedRef.current?.focus();
     };
-  }, [close, dialogRef, isOpen]);
+  }, [close, dialogRef, isOpen, contained, container]);
 
   const originDelta = React.useMemo(() => {
     if (!origin || typeof window === "undefined") {
@@ -160,16 +168,24 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     }
     const originCenterX = origin.left + origin.width / 2;
     const originCenterY = origin.top + origin.height / 2;
-    const viewportCenterX = window.innerWidth / 2;
-    const viewportCenterY = window.innerHeight / 2;
+    
+    let targetCenterX = window.innerWidth / 2;
+    let targetCenterY = window.innerHeight / 2;
+
+    if (container) {
+      const containerRect = container.getBoundingClientRect();
+      targetCenterX = containerRect.left + containerRect.width / 2;
+      targetCenterY = containerRect.top + containerRect.height / 2;
+    }
+
     const bookWidth = isMobile ? 180 : 280;
     const scale = Math.min(Math.max(origin.width / bookWidth, 0.35), 0.95);
     return {
-      dx: Math.round(originCenterX - viewportCenterX),
-      dy: Math.round(originCenterY - viewportCenterY),
+      dx: Math.round(originCenterX - targetCenterX),
+      dy: Math.round(originCenterY - targetCenterY),
       scale,
     };
-  }, [origin, isMobile]);
+  }, [origin, isMobile, container]);
 
   if (!isVisible) {
     return null;
@@ -186,7 +202,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
   const watchStatus = getMovieWatchStatus(movie);
   const source = clampMovieTransitionOrigin(origin ?? null);
-  const { targetWidth, targetHeight } = getMovieDialogMetrics(isMobile);
+  const { targetWidth, targetHeight } = getMovieDialogMetrics(isMobile, container);
 
   const scaleX =
     origin && targetWidth > 0
@@ -197,9 +213,11 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       ? Math.min(Math.max(origin.height / targetHeight, 0.18), 1)
       : 0.32;
 
-  return createPortal(
+  const isContainedMode = contained || Boolean(container);
+
+  const modalContent = (
     <div
-      className={`movie-details-modal${isEntering ? " is-open" : ""}`}
+      className={`movie-details-modal${isEntering ? " is-open" : ""}${isContainedMode ? " movie-details-modal--contained" : ""}`}
       style={
         {
           "--movie-origin-top": source.top,
@@ -244,7 +262,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
           dragControls={dragControls}
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={{ top: 0, bottom: 0.8 }}
-          onDragEnd={(e, info) => {
+          onDragEnd={(_e, info) => {
             if (info.offset.y > 120 || info.velocity.y > 400) {
               close();
             }
@@ -322,8 +340,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
           )}
         </motion.div>
       </div>
-    </div>,
-    document.body,
+    </div>
   );
+
+  return container ? createPortal(modalContent, container) : createPortal(modalContent, document.body);
 };
 

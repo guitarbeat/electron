@@ -125,7 +125,10 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/src/')) return;
   if (url.pathname.startsWith('/@vite/')) return;
   if (url.pathname.startsWith('/@react-refresh')) return;
+  if (url.pathname.startsWith('/@fs/')) return;
+  if (url.pathname.startsWith('/@id/')) return;
   if (url.pathname.startsWith('/node_modules/')) return;
+  if (url.search.includes('import')) return;
 
   // 1. Navigation requests (PWA shortcuts, page reload, routing) -> Network-first with static cache fallback
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {

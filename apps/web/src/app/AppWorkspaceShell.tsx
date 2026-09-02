@@ -16,7 +16,6 @@ import {
 import { logger } from "../services/logger";
 import type { MainTab } from "../shared/types";
 import {
-  MessageIcon,
   WorkspaceTabFallback,
   ProfileMenu,
 } from "../components/ui";
@@ -703,29 +702,15 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           </section>
         ) : null}
 
-        {/* Floating Quick Controls (Profile Logins + Chat Bubble) */}
+        {/* Floating Quick Controls (Profile Logins) */}
         <div
           className="floating-dock-cluster"
           role="region"
-          aria-label="Quick profile and messaging controls"
+          aria-label="Quick profile controls"
         >
           <div className="floating-dock-cluster__profiles">
             <ProfileMenu />
           </div>
-          {isLoggedIn ? (
-            <button
-              type="button"
-              className={`chat-fab${isChatOpen ? " is-open" : ""}`}
-              onPointerEnter={() => void import("@/components/messages")}
-              onFocus={() => void import("@/components/messages")}
-              onClick={() => handleTogglePanel("messages")}
-              aria-label={isChatOpen ? "Close chat" : "Open chat"}
-              aria-expanded={isChatOpen}
-              aria-controls="floating-chat-panel"
-            >
-              <MessageIcon size={24} />
-            </button>
-          ) : null}
         </div>
       </main>
     </BentoSlotContext.Provider>

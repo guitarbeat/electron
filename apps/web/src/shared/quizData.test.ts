@@ -7,12 +7,18 @@ import {
   normalizeQuizPercentages,
   quizQuestions,
   buildQuizProgressStorageKey,
+  buildQuizOutcomeStorageKey,
   readSavedQuizProgress,
   writeSavedQuizProgress,
   clearSavedQuizProgress,
+  readSavedQuizOutcome,
+  writeSavedQuizOutcome,
+  clearSavedQuizOutcome,
+  formatQuizOutcomeSummary,
   type QuizAnswer,
   type QuizCharacter,
   type QuizQuestion,
+  type QuizResult,
 } from "./quizData";
 
 const primaryChoiceIndex: Record<QuizCharacter, number> = {
@@ -166,3 +172,84 @@ test("saves, reads, and clears in-progress quiz progress using local storage moc
     globalThis.window = originalWindow;
   }
 });
+
+test("saves, reads, and clears completed quiz outcome using local storage mock", () => {
+  const localStore = new Map<string, string>();
+  const sessionStore = new Map<string, string>();
+
+  const createMockStorage = (store: Map<string, string>) => ({
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => store.set(key, value),
+    removeItem: (key: string) => store.delete(key),
+    clear: () => store.clear(),
+  });
+
+  const originalWindow = globalThis.window;
+  // @ts-expect-error mocking window in node test
+  globalThis.window = {
+    localStorage: createMockStorage(localStore),
+    sessionStorage: createMockStorage(sessionStore),
+  };
+
+  try {
+    const outcomeStorageKey = buildQuizOutcomeStorageKey("user-123");
+    const sampleOutcome: QuizResult = {
+      character: "Aaron",
+      scores: {
+        Aaron: 12,
+        Electra: 4,
+        Madeleine: 3,
+        "Nosferatu/Smeemo": 1,
+      },
+      percentages: {
+        Aaron: 60,
+        Electra: 20,
+        Madeleine: 15,
+        "Nosferatu/Smeemo": 5,
+      },
+    };
+
+    writeSavedQuizOutcome(outcomeStorageKey, sampleOutcome);
+    const restored = readSavedQuizOutcome(outcomeStorageKey);
+    assert.deepEqual(restored, sampleOutcome);
+
+    clearSavedQuizOutcome(outcomeStorageKey);
+    const cleared = readSavedQuizOutcome(outcomeStorageKey);
+    assert.equal(cleared, null);
+  } finally {
+    globalThis.window = originalWindow;
+  }
+});
+
+test("formatQuizOutcomeSummary formats a complete personality summary with mix percentages", () => {
+  const sampleResult: QuizResult = {
+    character: "Electra",
+    scores: {
+      Electra: 10,
+      Aaron: 5,
+      Madeleine: 3,
+      "Nosferatu/Smeemo": 2,
+    },
+    percentages: {
+      Electra: 50,
+      Aaron: 25,
+      Madeleine: 15,
+      "Nosferatu/Smeemo": 10,
+    },
+  };
+
+  const summary = formatQuizOutcomeSummary({
+    result: sampleResult,
+    resultName: "Electra",
+    archetype: "The Social Spark",
+    description: "You're vibrant, social, and full of energy!",
+  });
+
+  assert.ok(summary.includes("Movie-Night Personality Match: 💖 Electra (The Social Spark)"));
+  assert.ok(summary.includes('"You\'re vibrant, social, and full of energy!"'));
+  assert.ok(summary.includes("📊 My Persona Mix:"));
+  assert.ok(summary.includes("• 💖 Electra: 50%"));
+  assert.ok(summary.includes("• 🦉 Aaron: 25%"));
+});
+
+

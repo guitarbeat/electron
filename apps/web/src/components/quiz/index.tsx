@@ -469,17 +469,36 @@ import {
   writeSavedQuizProgress,
   clearSavedQuizProgress,
   buildQuizProgressStorageKey,
+  readSavedQuizOutcome,
+  writeSavedQuizOutcome,
+  clearSavedQuizOutcome,
+  buildQuizOutcomeStorageKey,
+  readSavedQuizResult,
+  writeSavedQuizResult,
+  clearSavedQuizResult,
+  buildQuizResultStorageKey,
+  formatQuizOutcomeSummary,
   type SavedQuizProgress,
 } from "@/shared/quizData";
+import { copyTextToClipboard } from "@/utils/dom";
 
 export {
   readSavedQuizProgress,
   writeSavedQuizProgress,
   clearSavedQuizProgress,
   buildQuizProgressStorageKey,
+  readSavedQuizOutcome,
+  writeSavedQuizOutcome,
+  clearSavedQuizOutcome,
+  buildQuizOutcomeStorageKey,
+  readSavedQuizResult,
+  writeSavedQuizResult,
+  clearSavedQuizResult,
+  buildQuizResultStorageKey,
   type SavedQuizProgress,
 };
-import { WorkspaceFeatureSectionLoading } from "@/components/ui";
+import { WorkspaceFeatureSectionLoading, PageFlip, type PageFlipLeaf } from "@/components/ui";
+import { useViewport } from "@/app/providerContexts";
 import { useQuiz, type QuizData, useFeatureFonts } from "@/hooks";
 
 export const BLINK_COLORS = [
@@ -877,7 +896,7 @@ export const QuizEditor: React.FC<QuizEditorProps> = ({ onClose }) => {
 export interface QuizExperienceProps {
   currentUser: User | null;
   quizCompleted: boolean;
-  onComplete: () => void;
+  onComplete: (outcome?: QuizResult) => void;
   onRetake: () => void;
   onEdit?: () => void;
 }
@@ -910,7 +929,7 @@ export const QuizExperience: FC<QuizExperienceProps> = ({
 };
 
 interface QuizFlowProps {
-  onComplete: () => void;
+  onComplete: (outcome?: QuizResult) => void;
   quizData: QuizData;
   sessionKey?: string;
   onRetake?: () => void;
@@ -924,6 +943,7 @@ interface QuizFlowInitialState {
   currentQuestionIndex: number;
   answers: QuizAnswer[];
   showResults: boolean;
+  result: QuizResult | null;
 }
 
 export const QUIZ_EMPTY_STATE_TEXT_STYLE = {
@@ -941,344 +961,33 @@ export const QUIZ_RETAKE_BUTTON_STYLE = { marginTop: 10 } as const;
 const getInitialQuizState = ({
   isCompleted,
   progressStorageKey,
+  outcomeStorageKey,
   questionSignature,
   questionCount,
 }: {
   isCompleted?: boolean;
   progressStorageKey: string;
+  outcomeStorageKey: string;
   questionSignature: string;
   questionCount: number;
 }): QuizFlowInitialState => {
-  const savedProgress = isCompleted
-    ? null
-    : readSavedQuizProgress(progressStorageKey, questionSignature);
+  const savedProgress = readSavedQuizProgress(progressStorageKey, questionSignature);
+  const savedOutcome =
+    readSavedQuizOutcome(outcomeStorageKey) ??
+    savedProgress?.result ??
+    savedProgress?.outcome ??
+    null;
   const savedIndex = savedProgress?.currentQuestionIndex ?? 0;
   const maxIndex = Math.max(questionCount - 1, 0);
+  const hasCompleted = Boolean(isCompleted || savedProgress?.isCompleted || savedOutcome);
 
   return {
-    currentQuestionIndex: Math.max(0, Math.min(savedIndex, maxIndex)),
+    currentQuestionIndex: hasCompleted ? maxIndex : Math.max(0, Math.min(savedIndex, maxIndex)),
     answers: savedProgress?.answers ?? [],
-    showResults: Boolean(isCompleted),
+    showResults: hasCompleted,
+    result: savedOutcome,
   };
 };
-
-export const QuizFlow: React.FC<QuizFlowProps> = ({
-  onComplete,
-  quizData,
-  sessionKey = "guest",
-  onRetake,
-  isCompleted,
-}) => {
-  const questions = useMemo(
-    () => quizData.questions ?? EMPTY_QUESTIONS,
-    [quizData.questions],
-  );
-  const questionSignature = useMemo(
-    () => questions.map((question) => question.id).join("|"),
-    [questions],
-  );
-  const progressStorageKey = useMemo(
-    () => buildQuizProgressStorageKey(sessionKey),
-    [sessionKey],
-  );
-  const [initialState] = useState(() =>
-    getInitialQuizState({
-      isCompleted,
-      progressStorageKey,
-      questionSignature,
-      questionCount: questions.length,
-    }),
-  );
-
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
-    initialState.currentQuestionIndex,
-  );
-  const [answers, setAnswers] = useState(initialState.answers);
-  const [showResults, setShowResults] = useState(initialState.showResults);
-  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
-
-  const currentQuestion = questions[currentQuestionIndex];
-  const totalQuestions = questions.length;
-  const progress =
-    totalQuestions > 0
-      ? Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100)
-      : 0;
-
-  const clearProgressAndContinue = () => {
-    clearSavedQuizProgress(progressStorageKey);
-    onComplete();
-  };
-
-  useEffect(() => {
-    if (isCompleted || showResults || totalQuestions === 0) {
-      clearSavedQuizProgress(progressStorageKey);
-      return;
-    }
-
-    writeSavedQuizProgress(progressStorageKey, {
-      questionSignature,
-      currentQuestionIndex,
-      answers,
-    });
-  }, [
-    answers,
-    currentQuestionIndex,
-    isCompleted,
-    progressStorageKey,
-    questionSignature,
-    showResults,
-    totalQuestions,
-  ]);
-
-  if (!currentQuestion && !showResults) {
-    return (
-      <div className="quiz-retro-wrapper">
-        <div
-          className="quiz-retro-question-card"
-          style={{ textAlign: "center" }}
-        >
-          <p style={{ ...QUIZ_EMPTY_STATE_TEXT_STYLE, marginBottom: 12 }}>
-            No quiz questions available.
-          </p>
-          <div style={QUIZ_EMPTY_STATE_ACTIONS_STYLE}>
-            <button
-              className="quiz-retro-btn"
-              onClick={clearProgressAndContinue}
-              aria-label="Continue"
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const currentAnswer = currentQuestion
-    ? answers.find((answer) => answer.questionId === currentQuestion.id)
-    : undefined;
-  const isAnswered =
-    currentAnswer !== undefined &&
-    (currentAnswer.answerIndex !== undefined ||
-      currentAnswer.scaleValue !== undefined ||
-      currentAnswer.xyPosition !== undefined);
-
-  const handleAnswer = (
-    answerIndex?: number,
-    scaleValue?:
-      "stronglyDisagree" | "disagree" | "neutral" | "agree" | "stronglyAgree",
-    xyPosition?: { x: number; y: number },
-  ) => {
-    if (!currentQuestion) {
-      return;
-    }
-
-    const nextAnswer: QuizAnswer = {
-      questionId: currentQuestion.id,
-      answerIndex,
-      scaleValue,
-      xyPosition,
-    };
-
-    setAnswers((prev) => {
-      const filtered = prev.filter(
-        (answer) => answer.questionId !== currentQuestion.id,
-      );
-      return [...filtered, nextAnswer];
-    });
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      return;
-    }
-
-    const result = calculateQuizResults(answers, questions);
-    clearSavedQuizProgress(progressStorageKey);
-    setQuizResult(result);
-    setShowResults(true);
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-    }
-  };
-
-  const handleRetake = () => {
-    onRetake?.();
-    clearSavedQuizProgress(progressStorageKey);
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setShowResults(false);
-    setQuizResult(null);
-  };
-
-  if (showResults) {
-    if (!quizResult && isCompleted) {
-      return (
-        <div className="quiz-retro-wrapper">
-          <div
-            className="quiz-retro-question-card"
-            style={{ textAlign: "center" }}
-          >
-            <p style={QUIZ_EMPTY_STATE_TEXT_STYLE}>Quiz complete</p>
-            <button
-              className="quiz-retro-btn"
-              onClick={handleRetake}
-              style={QUIZ_RETAKE_BUTTON_STYLE}
-              aria-label="Retake Quiz"
-            >
-              Retake quiz
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (quizResult) {
-      return (
-        <ResultsScreen
-          result={quizResult}
-          onContinue={onComplete}
-          onRetake={handleRetake}
-          characterDescriptions={quizData.characterDescriptions}
-          neitherDescription={quizData.neitherDescription}
-        />
-      );
-    }
-  }
-
-  const renderCurrentQuestion = () => {
-    if (!currentQuestion) {
-      return null;
-    }
-
-    switch (currentQuestion.type) {
-      case "multiple-choice":
-        return (
-          <MultipleChoiceQuestionView
-            key={currentQuestion.id}
-            question={currentQuestion}
-            selectedIndex={currentAnswer?.answerIndex ?? null}
-            onSelect={(index) => handleAnswer(index)}
-          />
-        );
-      case "agree-disagree":
-        return (
-          <AgreeDisagreeQuestionView
-            key={currentQuestion.id}
-            question={currentQuestion}
-            selectedValue={currentAnswer?.scaleValue ?? null}
-            onSelect={(value) => handleAnswer(undefined, value)}
-          />
-        );
-      case "image-choice":
-        return (
-          <ImageChoiceQuestionView
-            key={currentQuestion.id}
-            question={currentQuestion}
-            selectedIndex={currentAnswer?.answerIndex ?? null}
-            onSelect={(index) => handleAnswer(index)}
-          />
-        );
-      case "xy-axis":
-        return (
-          <XYAxisQuestionView
-            key={currentQuestion.id}
-            question={currentQuestion as XYAxisQuestion}
-            selectedPosition={currentAnswer?.xyPosition ?? null}
-            onSelect={(position) =>
-              handleAnswer(undefined, undefined, position)
-            }
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="quiz-retro-wrapper">
-      <div className="quiz-retro-main">
-        <div className="quiz-retro-title-banner">
-          <span className="quiz-retro-kicker">Movie-night personality</span>
-          <h2>Which character are you?</h2>
-          <p>Seven quick questions. Go with your first instinct.</p>
-        </div>
-
-        <div
-          className="quiz-retro-progress-wrap"
-          role="progressbar"
-          aria-valuenow={currentQuestionIndex + 1}
-          aria-valuemin={1}
-          aria-valuemax={totalQuestions}
-          aria-label={`Question ${currentQuestionIndex + 1} of ${totalQuestions}`}
-        >
-          <div className="quiz-retro-progress-label">
-            <span>
-              Question {currentQuestionIndex + 1} of {totalQuestions}
-            </span>
-            <span>{progress}%</span>
-          </div>
-          <div className="quiz-retro-progress-track">
-            <div
-              className="quiz-retro-progress-fill"
-              style={{ transform: `scaleX(${progress / 100})` }}
-            />
-            <div className="quiz-retro-progress-text">{progress}% COMPLETE</div>
-          </div>
-          <div className="quiz-retro-progress-sub">
-            {currentQuestionIndex === totalQuestions - 1
-              ? "Last one"
-              : `${totalQuestions - currentQuestionIndex - 1} left after this`}
-          </div>
-        </div>
-
-        <div
-          key={currentQuestion.id}
-          className="quiz-retro-question-card quiz-retro-question-stage"
-        >
-          {renderCurrentQuestion()}
-        </div>
-
-        <div className="quiz-retro-nav-row">
-          <button
-            className="quiz-retro-btn quiz-retro-btn--secondary"
-            onClick={handlePrevious}
-            disabled={currentQuestionIndex === 0}
-            aria-label="Previous question"
-          >
-            Back
-          </button>
-          <button
-            className="quiz-retro-btn"
-            onClick={handleNext}
-            disabled={!isAnswered}
-            aria-label={
-              currentQuestionIndex === totalQuestions - 1
-                ? "See results"
-                : "Next question"
-            }
-          >
-            {currentQuestionIndex === totalQuestions - 1
-              ? "See my result"
-              : "Next"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface ResultsScreenProps {
-  result: QuizResult;
-  onContinue: () => void;
-  onRetake: () => void;
-  characterDescriptions: Record<QuizCharacter, string>;
-  neitherDescription: string;
-}
 
 const characterEmojis: Record<string, string> = {
   Electra: "💖",
@@ -1314,6 +1023,806 @@ const getResultDescription = (
     : (characterDescriptions[result.character as QuizCharacter] ??
       `You got ${result.character}!`);
 
+export const QuizFlow: React.FC<QuizFlowProps> = ({
+  onComplete,
+  quizData,
+  sessionKey = "guest",
+  onRetake,
+  isCompleted,
+}) => {
+  const questions = useMemo(
+    () => quizData.questions ?? EMPTY_QUESTIONS,
+    [quizData.questions],
+  );
+  const questionSignature = useMemo(
+    () => questions.map((question) => question.id).join("|"),
+    [questions],
+  );
+  const progressStorageKey = useMemo(
+    () => buildQuizProgressStorageKey(sessionKey),
+    [sessionKey],
+  );
+  const outcomeStorageKey = useMemo(
+    () => buildQuizOutcomeStorageKey(sessionKey),
+    [sessionKey],
+  );
+  const [initialState] = useState(() =>
+    getInitialQuizState({
+      isCompleted,
+      progressStorageKey,
+      outcomeStorageKey,
+      questionSignature,
+      questionCount: questions.length,
+    }),
+  );
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
+    initialState.currentQuestionIndex,
+  );
+  const [answers, setAnswers] = useState(initialState.answers);
+  const [showResults, setShowResults] = useState(initialState.showResults);
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(() => {
+    if (initialState.result) {
+      return initialState.result;
+    }
+    if (initialState.showResults && initialState.answers.length > 0 && questions.length > 0) {
+      return calculateQuizResults(initialState.answers, questions);
+    }
+    return null;
+  });
+  const [isQuizStarted, setIsQuizStarted] = useState(
+    () => initialState.currentQuestionIndex > 0 || initialState.answers.length > 0 || Boolean(initialState.showResults),
+  );
+  const { isMobile } = useViewport();
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const totalQuestions = questions.length;
+  const progress =
+    totalQuestions > 0
+      ? Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100)
+      : 0;
+
+  const clearProgressAndContinue = () => {
+    onComplete(quizResult ?? undefined);
+  };
+
+  useEffect(() => {
+    if (totalQuestions === 0) {
+      return;
+    }
+
+    if (showResults && quizResult) {
+      writeSavedQuizOutcome(outcomeStorageKey, quizResult);
+      writeSavedQuizProgress(progressStorageKey, {
+        questionSignature,
+        currentQuestionIndex: Math.max(0, totalQuestions - 1),
+        answers,
+        result: quizResult,
+        outcome: quizResult,
+        isCompleted: true,
+      });
+      return;
+    }
+
+    if (!showResults) {
+      writeSavedQuizProgress(progressStorageKey, {
+        questionSignature,
+        currentQuestionIndex,
+        answers,
+        result: null,
+        outcome: null,
+        isCompleted: false,
+      });
+    }
+  }, [
+    answers,
+    currentQuestionIndex,
+    outcomeStorageKey,
+    progressStorageKey,
+    questionSignature,
+    quizResult,
+    showResults,
+    totalQuestions,
+  ]);
+
+  const currentAnswer = currentQuestion
+    ? answers.find((answer) => answer.questionId === currentQuestion.id)
+    : undefined;
+  const isAnswered =
+    currentAnswer !== undefined &&
+    (currentAnswer.answerIndex !== undefined ||
+      currentAnswer.scaleValue !== undefined ||
+      currentAnswer.xyPosition !== undefined);
+
+  const activeResult = useMemo(() => {
+    if (quizResult) return quizResult;
+    if (answers.length > 0 && questions.length > 0) {
+      return calculateQuizResults(answers, questions);
+    }
+    return null;
+  }, [quizResult, answers, questions]);
+
+  const sortedChars = useMemo(() => {
+    if (!activeResult) return [] as QuizCharacter[];
+    return (Object.keys(activeResult.percentages) as QuizCharacter[]).sort(
+      (a, b) => activeResult.percentages[b] - activeResult.percentages[a],
+    );
+  }, [activeResult]);
+
+  const handleAnswer = useCallback(
+    (
+      questionId: string,
+      answerIndex?: number,
+      scaleValue?:
+        | "stronglyDisagree"
+        | "disagree"
+        | "neutral"
+        | "agree"
+        | "stronglyAgree",
+      xyPosition?: { x: number; y: number },
+    ) => {
+      const nextAnswer: QuizAnswer = {
+        questionId,
+        answerIndex,
+        scaleValue,
+        xyPosition,
+      };
+
+      let updatedAnswers: QuizAnswer[] = [];
+      setAnswers((prev) => {
+        const filtered = prev.filter(
+          (answer) => answer.questionId !== questionId,
+        );
+        updatedAnswers = [...filtered, nextAnswer];
+        return updatedAnswers;
+      });
+
+      // Auto-advance
+      setTimeout(() => {
+        const qIndex = questions.findIndex((q) => q.id === questionId);
+        if (qIndex !== -1) {
+          if (qIndex < totalQuestions - 1) {
+            setCurrentQuestionIndex(qIndex + 1);
+          } else {
+            // Reached the end: compute results and turn to results leaf!
+            const finalAnswers = updatedAnswers.length > 0 ? updatedAnswers : [nextAnswer];
+            const finalResult = calculateQuizResults(
+              finalAnswers,
+              questions,
+            );
+            writeSavedQuizOutcome(outcomeStorageKey, finalResult);
+            writeSavedQuizProgress(progressStorageKey, {
+              questionSignature,
+              currentQuestionIndex: Math.max(0, totalQuestions - 1),
+              answers: finalAnswers,
+              result: finalResult,
+              outcome: finalResult,
+              isCompleted: true,
+            });
+            setQuizResult(finalResult);
+            setShowResults(true);
+          }
+        }
+      }, 450);
+    },
+    [questions, totalQuestions, progressStorageKey, outcomeStorageKey, questionSignature],
+  );
+
+  const handleNext = useCallback(() => {
+    if (currentQuestionIndex < totalQuestions - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      return;
+    }
+
+    const result = calculateQuizResults(answers, questions);
+    writeSavedQuizOutcome(outcomeStorageKey, result);
+    writeSavedQuizProgress(progressStorageKey, {
+      questionSignature,
+      currentQuestionIndex: Math.max(0, totalQuestions - 1),
+      answers,
+      result,
+      outcome: result,
+      isCompleted: true,
+    });
+    setQuizResult(result);
+    setShowResults(true);
+  }, [answers, currentQuestionIndex, outcomeStorageKey, progressStorageKey, questionSignature, questions, totalQuestions]);
+
+  const handlePrevious = useCallback(() => {
+    if (showResults) {
+      setShowResults(false);
+      setCurrentQuestionIndex(Math.max(0, totalQuestions - 1));
+    } else if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((prev) => prev - 1);
+    } else if (currentQuestionIndex === 0) {
+      setIsQuizStarted(false);
+    }
+  }, [currentQuestionIndex, showResults, totalQuestions]);
+
+  const handleRetake = useCallback(() => {
+    onRetake?.();
+    clearSavedQuizProgress(progressStorageKey);
+    clearSavedQuizOutcome(outcomeStorageKey);
+    setCurrentQuestionIndex(0);
+    setAnswers([]);
+    setShowResults(false);
+    setQuizResult(null);
+    setIsQuizStarted(true);
+  }, [onRetake, outcomeStorageKey, progressStorageKey]);
+
+  const [bookletCopied, setBookletCopied] = useState(false);
+
+  const handleBookletShare = useCallback(async () => {
+    if (!activeResult) return;
+    const resName =
+      activeResult.character === "Neither"
+        ? "A little bit of everyone"
+        : activeResult.character;
+    const desc = getResultDescription(
+      activeResult,
+      quizData.characterDescriptions,
+      quizData.neitherDescription,
+    );
+    const summary = formatQuizOutcomeSummary({
+      result: activeResult,
+      resultName: resName,
+      archetype: characterArchetypes[activeResult.character],
+      description: desc,
+      characterEmojis,
+    });
+
+    try {
+      await copyTextToClipboard(summary);
+      setBookletCopied(true);
+      setTimeout(() => setBookletCopied(false), 2500);
+    } catch (err) {
+      console.warn("Failed to copy quiz outcome summary to clipboard:", err);
+    }
+  }, [activeResult, quizData.characterDescriptions, quizData.neitherDescription]);
+
+  const renderQuestion = useCallback(
+    (q: QuizQuestion, answer?: QuizAnswer) => {
+      switch (q.type) {
+        case "multiple-choice":
+          return (
+            <MultipleChoiceQuestionView
+              key={q.id}
+              question={q}
+              selectedIndex={answer?.answerIndex ?? null}
+              onSelect={(index) => handleAnswer(q.id, index)}
+            />
+          );
+        case "agree-disagree":
+          return (
+            <AgreeDisagreeQuestionView
+              key={q.id}
+              question={q}
+              selectedValue={answer?.scaleValue ?? null}
+              onSelect={(value) => handleAnswer(q.id, undefined, value)}
+            />
+          );
+        case "image-choice":
+          return (
+            <ImageChoiceQuestionView
+              key={q.id}
+              question={q}
+              selectedIndex={answer?.answerIndex ?? null}
+              onSelect={(index) => handleAnswer(q.id, index)}
+            />
+          );
+        case "xy-axis":
+          return (
+            <XYAxisQuestionView
+              key={q.id}
+              question={q as XYAxisQuestion}
+              selectedPosition={answer?.xyPosition ?? null}
+              onSelect={(position) =>
+                handleAnswer(q.id, undefined, undefined, position)
+              }
+            />
+          );
+        default:
+          return null;
+      }
+    },
+    [handleAnswer],
+  );
+
+  const pages: PageFlipLeaf[] = useMemo(() => {
+    const allPages: PageFlipLeaf[] = [];
+
+    // Page 0: Cover Leaf
+    allPages.push({
+      id: "cover",
+      front: (
+        <div
+          className="flex h-full w-full flex-col bg-[#0d111a] text-white overflow-hidden items-center justify-center p-6 border-r border-white/10 relative cursor-pointer select-none group"
+          style={{ borderRadius: "inherit" }}
+          onClick={() => setIsQuizStarted(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsQuizStarted(true);
+            }
+          }}
+          aria-label="Start Quiz: Which character are you?"
+        >
+          <div
+            className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+            style={{
+              background:
+                "linear-gradient(135deg, #f472b6, #a855f7, #38bdf8)",
+            }}
+          />
+          <div className="relative text-center z-10">
+            <span className="text-xs uppercase tracking-widest text-slate-300 mb-2 block">
+              Movie-night personality
+            </span>
+            <h2 className="text-3xl font-bold mb-4 text-white">
+              Which character are you?
+            </h2>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-semibold tracking-wider uppercase text-white shadow-sm group-hover:bg-white/20 transition-all">
+              Open booklet & start →
+            </div>
+          </div>
+        </div>
+      ),
+      back: (
+        <div
+          className="flex h-full w-full flex-col bg-[#0d111a] text-slate-300 p-6 border-l border-white/10 justify-center text-center"
+          style={{ borderRadius: "inherit" }}
+        >
+          <div className="opacity-60">
+            <p className="text-lg font-medium text-white">
+              Seven quick questions.
+            </p>
+            <p className="text-sm mt-2 text-slate-400">
+              Go with your first instinct.
+            </p>
+          </div>
+        </div>
+      ),
+    });
+
+    // Pages 1..N: Questions
+    questions.forEach((q, i) => {
+      const answer = answers.find((a) => a.questionId === q.id);
+      const isLastQuestion = i === questions.length - 1;
+
+      allPages.push({
+        id: q.id,
+        front: (
+          <div
+            className="flex h-full w-full flex-col bg-[#0d111a] text-white border-r border-white/10 overflow-hidden"
+            style={{ borderRadius: "inherit" }}
+          >
+            <div
+              className="flex-1 overflow-y-auto custom-scrollbar p-6"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {renderQuestion(q, answer)}
+            </div>
+          </div>
+        ),
+        back: isLastQuestion && activeResult ? (
+          <div
+            className="flex h-full w-full flex-col bg-[#0d111a] text-white p-6 border-l border-white/10 justify-center items-center text-center relative overflow-hidden"
+            style={{ borderRadius: "inherit" }}
+          >
+            <div
+              className="absolute inset-0 opacity-25 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at center, ${
+                  characterColors[activeResult.character] || "#8ed6c5"
+                } 0%, transparent 70%)`,
+              }}
+            />
+            <div className="relative z-10 flex flex-col items-center">
+              <div
+                className="text-5xl sm:text-6xl mb-3 animate-pulse"
+                style={{ animationDuration: "2.5s" }}
+              >
+                {characterEmojis[activeResult.character] || "🎞️"}
+              </div>
+              <span className="text-[11px] uppercase tracking-widest text-slate-400 mb-1">
+                Your Movie-Night Match
+              </span>
+              <h3
+                className="text-2xl sm:text-3xl font-bold mb-1.5"
+                style={{
+                  color:
+                    characterColors[activeResult.character] || "#fff",
+                }}
+              >
+                {activeResult.character === "Neither"
+                  ? "A little bit of everyone"
+                  : activeResult.character}
+              </h3>
+              <p className="text-xs text-slate-300 font-medium px-3 py-1 rounded-full bg-white/10 border border-white/10 mt-1 mb-3">
+                {characterArchetypes[activeResult.character] ??
+                  "Your movie-night match"}
+              </p>
+              <p className="text-xs text-slate-400 italic max-w-[240px] line-clamp-3">
+                &ldquo;
+                {getResultDescription(
+                  activeResult,
+                  quizData.characterDescriptions,
+                  quizData.neitherDescription,
+                )}
+                &rdquo;
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="flex h-full w-full flex-col bg-[#0d111a] text-slate-400 items-center justify-center border-l border-white/10"
+            style={{ borderRadius: "inherit" }}
+          >
+            <div className="opacity-30 text-center">
+              <div className="text-4xl font-bold mb-2">Q{i + 1}</div>
+              <div className="text-sm tracking-widest uppercase">
+                Completed
+              </div>
+            </div>
+          </div>
+        ),
+      });
+    });
+
+    // Final Page: Results Leaf
+    allPages.push({
+      id: "results",
+      front: (
+        <div
+          className="flex h-full w-full flex-col bg-[#0d111a] text-white border-r border-white/10 overflow-hidden relative"
+          style={{ borderRadius: "inherit" }}
+        >
+          {activeResult ? (
+            <div
+              className="flex-1 overflow-y-auto p-5 sm:p-6 flex flex-col justify-between custom-scrollbar"
+              style={{ scrollbarWidth: "thin" }}
+            >
+              <div>
+                {/* Header for single-page/mobile views */}
+                <div className="sm:hidden flex items-center gap-3 pb-3 mb-3 border-b border-white/10">
+                  <span className="text-3xl">
+                    {characterEmojis[activeResult.character] || "🎞️"}
+                  </span>
+                  <div>
+                    <h3
+                      className="text-lg font-bold leading-tight"
+                      style={{
+                        color:
+                          characterColors[activeResult.character] ||
+                          "#fff",
+                      }}
+                    >
+                      {activeResult.character === "Neither"
+                        ? "A little bit of everyone"
+                        : activeResult.character}
+                    </h3>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                      {characterArchetypes[activeResult.character]}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Personality Profile Description */}
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <span>Personality Profile</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/10">
+                    {getResultDescription(
+                      activeResult,
+                      quizData.characterDescriptions,
+                      quizData.neitherDescription,
+                    )}
+                  </p>
+                </div>
+
+                {/* Your Mix breakdown */}
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Your Mix
+                  </div>
+                  <div className="space-y-2">
+                    {sortedChars.map((char) => {
+                      const isWinner = char === activeResult.character;
+                      const pct = activeResult.percentages[char] || 0;
+                      const color = characterColors[char] || "#888888";
+                      return (
+                        <div
+                          key={char}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <span
+                            className="w-24 truncate font-medium text-slate-300 flex items-center gap-1.5"
+                            style={{
+                              color: isWinner ? color : undefined,
+                            }}
+                          >
+                            <span>{characterEmojis[char]}</span>
+                            <span>{char}</span>
+                          </span>
+                          <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${pct}%`,
+                                backgroundColor: color,
+                              }}
+                            />
+                          </div>
+                          <span
+                            className="w-8 text-right font-mono text-[11px] text-slate-400"
+                            style={{
+                              color: isWinner ? color : undefined,
+                            }}
+                          >
+                            {pct}%
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons inside page */}
+              <div className="pt-3 border-t border-white/10 flex flex-col gap-2 mt-auto">
+                <button
+                  type="button"
+                  className={`quiz-retro-btn quiz-share-btn w-full py-2 text-xs font-bold justify-center flex items-center gap-1.5 ${
+                    bookletCopied ? "quiz-share-btn--copied" : ""
+                  }`}
+                  onClick={handleBookletShare}
+                  aria-label="Copy personality outcome summary to clipboard"
+                >
+                  <span aria-hidden="true">{bookletCopied ? "✓" : "📋"}</span>
+                  <span>{bookletCopied ? "Summary Copied!" : "Share Summary"}</span>
+                </button>
+                <button
+                  type="button"
+                  className="quiz-retro-btn w-full py-2.5 text-xs font-bold justify-center"
+                  onClick={() => onComplete(activeResult ?? quizResult ?? undefined)}
+                  aria-label="Back to movie night"
+                >
+                  Back to movie night
+                </button>
+                <button
+                  type="button"
+                  className="quiz-retro-btn quiz-retro-btn--secondary w-full py-2 text-xs font-semibold justify-center"
+                  onClick={handleRetake}
+                  aria-label="Retake quiz"
+                >
+                  Retake quiz
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400">
+              <p className="text-sm">
+                Complete all questions to reveal your results here!
+              </p>
+            </div>
+          )}
+        </div>
+      ),
+      back: (
+        <div
+          className="flex h-full w-full flex-col bg-[#0d111a] text-slate-300 p-6 border-l border-white/10 items-center justify-center text-center"
+          style={{ borderRadius: "inherit" }}
+        >
+          <div className="text-4xl mb-3 opacity-40">🎞️</div>
+          <h4 className="text-base font-bold text-white mb-1">
+            Movie Night Personality Quiz
+          </h4>
+          <p className="text-xs text-slate-400 mb-4">Booklet complete</p>
+          <button
+            type="button"
+            className="quiz-retro-btn quiz-retro-btn--secondary text-xs px-3 py-1.5"
+            onClick={handleRetake}
+          >
+            Retake quiz
+          </button>
+        </div>
+      ),
+    });
+
+    return allPages;
+  }, [
+    questions,
+    answers,
+    renderQuestion,
+    activeResult,
+    quizData.characterDescriptions,
+    quizData.neitherDescription,
+    sortedChars,
+    onComplete,
+    handleRetake,
+    quizResult,
+    bookletCopied,
+    handleBookletShare,
+  ]);
+
+  if (questions.length === 0) {
+    return (
+      <div className="quiz-retro-wrapper">
+        <div
+          className="quiz-retro-question-card"
+          style={{ textAlign: "center" }}
+        >
+          <p style={{ ...QUIZ_EMPTY_STATE_TEXT_STYLE, marginBottom: 12 }}>
+            No quiz questions available.
+          </p>
+          <div style={QUIZ_EMPTY_STATE_ACTIONS_STYLE}>
+            <button
+              className="quiz-retro-btn"
+              onClick={clearProgressAndContinue}
+              aria-label="Continue"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Match the exact dimensions of the Movie Booklet
+  const bookWidth = isMobile ? 280 : 380;
+  const bookHeight = isMobile ? 420 : 560;
+
+  const currentTurnedCount = !isQuizStarted
+    ? 0
+    : showResults
+      ? totalQuestions + 1
+      : currentQuestionIndex + 1;
+
+  return (
+    <div className="quiz-retro-wrapper">
+      <div
+        className="w-full flex-1 flex flex-col items-center justify-center mx-auto"
+        style={{
+          maxWidth: isMobile ? bookWidth : bookWidth * 2 + 100,
+          minHeight: 0,
+        }}
+      >
+        <div
+          className="flex-1 flex items-center justify-center relative w-full my-2 sm:my-4"
+          style={{ minHeight: 0 }}
+        >
+          <PageFlip
+            pages={pages}
+            pageWidth={bookWidth}
+            pageHeight={bookHeight}
+            spineShift={isMobile ? 85 : 130}
+            pageRadius={isMobile ? 6 : 8}
+            turnAngle={180}
+            shadow={0.45}
+            interactive={true}
+            closeOnLeave={false}
+            closeOnClickOutside={false}
+            leafClickTurnsPage={false}
+            turnedCount={currentTurnedCount}
+            onPageChange={(c) => {
+              if (c === 0) {
+                setIsQuizStarted(false);
+                setShowResults(false);
+              } else if (c <= totalQuestions) {
+                setIsQuizStarted(true);
+                setShowResults(false);
+                setCurrentQuestionIndex(Math.max(0, c - 1));
+              } else {
+                setIsQuizStarted(true);
+                let res = quizResult ?? readSavedQuizOutcome(outcomeStorageKey);
+                if (!res && answers.length > 0 && questions.length > 0) {
+                  res = calculateQuizResults(answers, questions);
+                }
+                if (res) {
+                  setQuizResult(res);
+                  writeSavedQuizOutcome(outcomeStorageKey, res);
+                }
+                setShowResults(true);
+              }
+            }}
+          />
+        </div>
+
+        {!isQuizStarted ? (
+          <div className="flex justify-center mt-auto pb-2">
+            <button
+              className="quiz-retro-btn"
+              onClick={() => setIsQuizStarted(true)}
+              aria-label="Start Quiz"
+            >
+              Start Quiz
+            </button>
+          </div>
+        ) : showResults ? (
+          <div className="quiz-retro-nav-row mt-auto w-full pb-2">
+            <button
+              className="quiz-retro-btn quiz-retro-btn--secondary"
+              onClick={handlePrevious}
+              aria-label="Previous question"
+            >
+              ← Review questions
+            </button>
+            <div className="flex-1 mx-4 text-center">
+              <span className="text-xs text-white/70 font-semibold tracking-wider uppercase">
+                Personality Match
+              </span>
+            </div>
+            <button
+              className="quiz-retro-btn"
+              onClick={() => onComplete(activeResult ?? quizResult ?? undefined)}
+              aria-label="Back to movie night"
+            >
+              Back to movie night →
+            </button>
+          </div>
+        ) : (
+          <div className="quiz-retro-nav-row mt-auto w-full pb-2">
+            <button
+              className="quiz-retro-btn quiz-retro-btn--secondary"
+              onClick={handlePrevious}
+              aria-label={
+                currentQuestionIndex === 0
+                  ? "Back to cover"
+                  : "Previous question"
+              }
+            >
+              Back
+            </button>
+            <div className="flex-1 mx-4">
+              <div
+                className="quiz-retro-progress-track"
+                style={{ height: 6, borderRadius: 3 }}
+              >
+                <div
+                  className="quiz-retro-progress-fill"
+                  style={{
+                    transform: `scaleX(${progress / 100})`,
+                    borderRadius: 3,
+                  }}
+                />
+              </div>
+              <div className="text-center mt-2 text-xs text-white/50 font-medium tracking-widest uppercase">
+                {currentQuestionIndex + 1} of {totalQuestions}
+              </div>
+            </div>
+            <button
+              className="quiz-retro-btn"
+              onClick={handleNext}
+              disabled={!isAnswered}
+              aria-label={
+                currentQuestionIndex === totalQuestions - 1
+                  ? "See my result"
+                  : "Next question"
+              }
+            >
+              {currentQuestionIndex === totalQuestions - 1
+                ? "See my result"
+                : "Next"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface ResultsScreenProps {
+  result: QuizResult;
+  onContinue: () => void;
+  onRetake: () => void;
+  characterDescriptions: Record<QuizCharacter, string>;
+  neitherDescription: string;
+}
+
 export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   result,
   onContinue,
@@ -1321,6 +1830,8 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
   characterDescriptions,
   neitherDescription,
 }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [copied, setCopied] = useState(false);
   const resultRootRef = useRef<HTMLDivElement>(null);
   const characterColor = characterColors[result.character] || "#888888";
   const characterEmoji = characterEmojis[result.character] || "🎞️";
@@ -1340,6 +1851,26 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
     (a, b) => result.percentages[b] - result.percentages[a],
   );
 
+  const handleShare = useCallback(async () => {
+    const summary = formatQuizOutcomeSummary({
+      result,
+      resultName,
+      archetype,
+      description,
+      characterEmojis,
+    });
+
+    try {
+      await copyTextToClipboard(summary);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2500);
+    } catch (err) {
+      console.warn("Failed to copy quiz outcome summary to clipboard:", err);
+    }
+  }, [result, resultName, archetype, description]);
+
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       resultRootRef.current?.scrollIntoView({ block: "start" });
@@ -1353,76 +1884,200 @@ export const ResultsScreen: React.FC<ResultsScreenProps> = ({
       className="quiz-retro-wrapper quiz-retro-wrapper--results"
       style={{ "--quiz-result-color": characterColor } as React.CSSProperties}
     >
-      <div className="quiz-retro-main">
-        <div className="quiz-retro-results-win">
-          <span className="quiz-retro-results-star" aria-hidden="true">
-            {characterEmoji}
-          </span>
-          <span className="quiz-retro-results-sub">Your movie-night match</span>
-          <h2 className="quiz-retro-results-name">{resultName}</h2>
-          <p className="quiz-retro-results-archetype">{archetype}</p>
-        </div>
+      <div className="quiz-flip-stage">
+        <div
+          className={`quiz-flip-card ${isFlipped ? "is-flipped" : ""}`}
+          aria-live="polite"
+        >
+          {/* Front Face: Poster View */}
+          <div className="quiz-flip-face quiz-flip-face--front quiz-poster-face">
+            <div className="quiz-poster-glow" aria-hidden="true" />
+            
+            <div className="relative z-10 flex flex-col items-center w-full">
+              <span className="quiz-poster-badge">
+                <span aria-hidden="true">🎬</span> Movie-Night Match
+              </span>
 
-        <div className="quiz-retro-results-body">
-          <div className="quiz-retro-results-description">
-            <p className="quiz-retro-results-desc">{description}</p>
+              <div className="quiz-poster-avatar-ring" aria-hidden="true">
+                {characterEmoji}
+              </div>
+
+              <h2 className="quiz-poster-title">{resultName}</h2>
+              <p className="quiz-poster-archetype">{archetype}</p>
+
+              <div className="quiz-poster-quote">
+                &ldquo;{description}&rdquo;
+              </div>
+            </div>
+
+            <div className="relative z-10 w-full pt-4 flex flex-col items-center gap-3">
+              <button
+                type="button"
+                className="quiz-poster-flip-trigger w-full sm:w-auto"
+                onClick={() => setIsFlipped(true)}
+                aria-label="Flip to view detailed breakdown"
+              >
+                <span>Flip to View Full Mix</span>
+                <span className="quiz-poster-flip-icon" aria-hidden="true">⟳</span>
+              </button>
+
+              <div className="flex gap-2 w-full justify-center">
+                <button
+                  type="button"
+                  className="quiz-retro-btn text-xs py-2 px-4"
+                  onClick={onContinue}
+                  aria-label="Return to the movie library"
+                >
+                  Back to movie night
+                </button>
+                <button
+                  type="button"
+                  className="quiz-retro-btn quiz-retro-btn--secondary text-xs py-2 px-4"
+                  onClick={onRetake}
+                  aria-label="Retake the quiz"
+                >
+                  Retake quiz
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="quiz-retro-results-breakdown">
-            <div className="quiz-retro-results-breakdown-title">Your mix</div>
-            {sortedChars.map((char) => {
-              const isWinner = char === result.character;
-              const pct = result.percentages[char];
-              const color = characterColors[char] || "#888888";
-              return (
-                <div key={char} className="quiz-retro-results-bar-row">
-                  <div
-                    className="quiz-retro-results-bar-label"
-                    style={{
-                      fontWeight: isWinner ? 700 : 500,
-                      color: isWinner ? color : undefined,
-                    }}
-                  >
-                    {characterEmojis[char]} {char}
-                  </div>
-                  <div className="quiz-retro-results-bar-track">
-                    <div
-                      className="quiz-retro-results-bar-fill"
-                      style={{
-                        transform: `scaleX(${pct / 100})`,
-                        background: color,
-                      }}
-                    />
-                  </div>
-                  <div
-                    className="quiz-retro-results-bar-pct"
-                    style={{
-                      fontWeight: isWinner ? 700 : 500,
-                      color: isWinner ? color : undefined,
-                    }}
-                  >
-                    {pct}%
+          {/* Back Face: Results Breakdown View */}
+          <div className="quiz-flip-face quiz-flip-face--back p-6 flex flex-col justify-between">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {/* Header summary */}
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl" aria-hidden="true">
+                    {characterEmoji}
+                  </span>
+                  <div>
+                    <h3
+                      className="text-lg font-bold leading-tight"
+                      style={{ color: characterColor }}
+                    >
+                      {resultName}
+                    </h3>
+                    <span className="text-[11px] text-slate-400 uppercase tracking-wider">
+                      {archetype}
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
 
-          <div className="quiz-retro-results-actions">
-            <button
-              className="quiz-retro-btn"
-              onClick={onContinue}
-              aria-label="Return to the movie library"
-            >
-              Back to movie night
-            </button>
-            <button
-              className="quiz-retro-btn quiz-retro-btn--secondary"
-              onClick={onRetake}
-              aria-label="Retake the quiz"
-            >
-              Retake quiz
-            </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    className={`quiz-retro-btn text-xs px-2.5 py-1.5 flex items-center gap-1 transition-all ${
+                      copied
+                        ? "quiz-share-btn--copied bg-emerald-600/90 text-white"
+                        : "quiz-retro-btn--secondary"
+                    }`}
+                    onClick={handleShare}
+                    aria-label="Copy summary of your personality outcome to clipboard"
+                    title="Copy personality outcome summary to clipboard"
+                  >
+                    <span aria-hidden="true">{copied ? "✓" : "📋"}</span>
+                    <span>{copied ? "Copied!" : "Share"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="quiz-retro-btn quiz-retro-btn--secondary text-xs px-2.5 py-1.5 flex items-center gap-1"
+                    onClick={() => setIsFlipped(false)}
+                    aria-label="Flip back to poster view"
+                  >
+                    <span aria-hidden="true">↺</span> Poster
+                  </button>
+                </div>
+              </div>
+
+              {/* Personality Profile */}
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <span>Personality Profile</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/10">
+                  {description}
+                </p>
+              </div>
+
+              {/* Your Mix breakdown */}
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  Your Mix
+                </div>
+                <div className="space-y-2">
+                  {sortedChars.map((char) => {
+                    const isWinner = char === result.character;
+                    const pct = result.percentages[char] || 0;
+                    const color = characterColors[char] || "#888888";
+                    return (
+                      <div key={char} className="quiz-retro-results-bar-row">
+                        <div
+                          className="quiz-retro-results-bar-label"
+                          style={{
+                            fontWeight: isWinner ? 700 : 500,
+                            color: isWinner ? color : undefined,
+                          }}
+                        >
+                          {characterEmojis[char]} {char}
+                        </div>
+                        <div className="quiz-retro-results-bar-track">
+                          <div
+                            className="quiz-retro-results-bar-fill"
+                            style={{
+                              transform: `scaleX(${pct / 100})`,
+                              background: color,
+                            }}
+                          />
+                        </div>
+                        <div
+                          className="quiz-retro-results-bar-pct"
+                          style={{
+                            fontWeight: isWinner ? 700 : 500,
+                            color: isWinner ? color : undefined,
+                          }}
+                        >
+                          {pct}%
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-3 border-t border-white/10 flex flex-col gap-2 mt-auto">
+              <button
+                type="button"
+                className={`quiz-retro-btn quiz-share-btn w-full py-2.5 text-xs font-bold justify-center flex items-center gap-2 cursor-pointer ${
+                  copied ? "quiz-share-btn--copied" : ""
+                }`}
+                onClick={handleShare}
+                aria-label="Copy summary of your personality outcome to clipboard"
+              >
+                <span aria-hidden="true">{copied ? "✓" : "📋"}</span>
+                <span>{copied ? "Summary Copied to Clipboard!" : "Share Outcome Summary"}</span>
+              </button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <button
+                  type="button"
+                  className="quiz-retro-btn flex-1 py-2.5 text-xs font-bold justify-center"
+                  onClick={onContinue}
+                  aria-label="Return to the movie library"
+                >
+                  Back to movie night
+                </button>
+                <button
+                  type="button"
+                  className="quiz-retro-btn quiz-retro-btn--secondary flex-1 py-2.5 text-xs font-semibold justify-center"
+                  onClick={onRetake}
+                  aria-label="Retake the quiz"
+                >
+                  Retake quiz
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

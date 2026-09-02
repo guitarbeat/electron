@@ -1,0 +1,13 @@
+--- apps/web/src/components/movies/MoviesView.tsx
++++ apps/web/src/components/movies/MoviesView.tsx
+@@ -140,6 +140,11 @@
+           </span>
+         </span>
+       </h2>
++      
++      <div style={{ background: 'red', color: 'white', padding: 20, zIndex: 9999, position: 'relative' }}>
++        DEBUG INFO: isLoading={String(isLoading)} movies={movies.length} mock={String(false)}
++      </div>
+ 
+       <div className="watchlist-container places-container">
+         {isMoviesWorkspaceDegraded && (

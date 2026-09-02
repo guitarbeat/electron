@@ -1,18 +1,87 @@
 /* eslint-disable react-refresh/only-export-components */
+import React, { useMemo, useState } from "react";
+import type {
+  Movie,
+  User,
+  MovieSuggestion,
+  MoviesViewProps,
+} from "@/shared/types";
 import {
   buildCollectionSections,
   compareCreatedAtDesc,
   compareStringsAlpha,
   type CollectionSections,
-} from "@/utils/shared";
+  formatMemoryTimestamp,
+  resolvePosterUrl,
+} from "@/utils";
 import {
   getListEnterSelectionIndex,
   getNextListIndex,
 } from "@/components/ui/lib/workspaceListAutocomplete";
+import {
+  StremioButton,
+  YoutubeButton,
+  CardActionButton,
+  PageFlip,
+  type PageFlipLeaf,
+  type BentoSortChipConfig,
+} from "@/components/ui";
+import {
+  CheckIcon,
+  FilmIcon,
+  EditIcon,
+  PlayIcon,
+  StarIcon,
+  TvIcon,
+} from "@/common/Icons";
+import type { MovieAutocompleteResult } from "@/services/metadata";
+
+/* -------------------------------------------------------------------------- */
+/*                               Domain Constants                             */
+/* -------------------------------------------------------------------------- */
 
 export const MAX_MOVIE_NOTE_LENGTH = 500;
 export const MAX_RECOMMENDATION_REASON_LENGTH = 150;
 export const MAX_GUEST_SUGGESTER_NAME_LENGTH = 30;
+
+export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
+export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 75;
+
+export const MOVIE_SCROLL_DECK_MAX_DESKTOP = 24;
+export const MOVIE_SCROLL_DECK_MAX_MOBILE = 16;
+
+const STORAGE_KEY = "movie-watch.movies.browseLayout";
+const USERS: User[] = ["Aaron", "Electra"];
+
+export const MOVIE_SECTION_IDS = {
+  incoming: "movies-section-incoming",
+  queue: "movies-section-queue",
+  completed: "movies-section-watched",
+};
+
+export const MOVIE_SORTS: BentoSortChipConfig[] = [
+  { value: "recent", label: "🕐 Recent" },
+  { value: "alpha", label: "A→Z" },
+  { value: "rating", label: "★ Rating" },
+];
+
+export const MOVIE_BROWSE_LAYOUTS: Array<{
+  value: MovieBrowseLayout;
+  label: string;
+}> = [
+  { value: "grid", label: "⊞ Grid" },
+  { value: "scroll", label: "↕ Scroll" },
+];
+
+/* -------------------------------------------------------------------------- */
+/*                              Type Definitions                              */
+/* -------------------------------------------------------------------------- */
+
+export type MovieBrowseLayout = "grid" | "scroll";
+export type MovieSortOrder = "recent" | "alpha" | "rating";
+export type MediaTypeFilter = "all" | "movie" | "series";
+export type MovieSections = CollectionSections<Movie, MovieSuggestion>;
+
 export interface MovieActionState {
   isGuest: boolean;
   watchedByCurrentUser: boolean;
@@ -23,42 +92,35 @@ export interface MovieActionState {
   primaryActionAriaLabel: string | null;
 }
 
-interface GetMovieActionStateParams {
-  movie: Movie;
-  currentUser: User | null;
+export interface MovieTransitionOrigin {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
 }
 
-export const getMovieActionState = ({
-  movie,
-  currentUser,
-}: GetMovieActionStateParams): MovieActionState => {
-  const isGuest = !currentUser;
-  const watchedByCurrentUser = currentUser
-    ? movie.watchedBy.includes(currentUser)
-    : false;
-  const showWatchedAction = Boolean(currentUser);
-  const showActionRail = showWatchedAction;
+export interface MovieBodyActions {
+  toggleWatched: (id: string, targetUser?: User) => void | unknown;
+  editMovie: (
+    id: string,
+    updates: { title: string; customPosterUrl?: string },
+  ) => void | unknown;
+}
 
-  let primaryActionAriaLabel: string | null = null;
-  if (showWatchedAction) {
-    primaryActionAriaLabel = watchedByCurrentUser
-      ? `Mark "${movie.title}" as unwatched`
-      : `Mark "${movie.title}" as watched`;
-  }
+export interface MovieSectionIds {
+  incoming?: string;
+  queue?: string;
+  completed?: string;
+}
 
-  return {
-    isGuest,
-    watchedByCurrentUser,
-    showActionRail,
-    showWatchedAction,
-    primaryActionLabel: watchedByCurrentUser ? "Watched" : "Mark watched",
-    primaryActionCompactLabel: watchedByCurrentUser ? "Watched" : "Watch",
-    primaryActionAriaLabel,
-  };
+export type MoviesWorkspaceViewProps = MoviesViewProps & {
+  posterPlaceCards?: React.ReactNode[];
+  isInteractionStatic?: boolean;
 };
 
-export const MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH = 2;
-export const MOVIE_AUTOCOMPLETE_DEBOUNCE_MS = 75;
+/* -------------------------------------------------------------------------- */
+/*                          Autocomplete & Query Helpers                      */
+/* -------------------------------------------------------------------------- */
 
 export const normalizeMovieAutocompleteQuery = (value: string): string =>
   value.trim().toLowerCase();
@@ -113,13 +175,10 @@ export const getMovieAutocompleteEnterSelectionIndex =
   getListEnterSelectionIndex;
 
 export const getNextMovieAutocompleteIndex = getNextListIndex;
-export type MovieBrowseLayout = "grid" | "scroll";
 
-const STORAGE_KEY = "movie-watch.movies.browseLayout";
-
-/** Scroll deck fans one card per movie — keep this bounded for mobile performance. */
-export const MOVIE_SCROLL_DECK_MAX_DESKTOP = 24;
-export const MOVIE_SCROLL_DECK_MAX_MOBILE = 16;
+/* -------------------------------------------------------------------------- */
+/*                          Browse Layout & Storage Helpers                   */
+/* -------------------------------------------------------------------------- */
 
 export const movieScrollDeckMax = (isMobile: boolean): number =>
   isMobile ? MOVIE_SCROLL_DECK_MAX_MOBILE : MOVIE_SCROLL_DECK_MAX_DESKTOP;
@@ -132,14 +191,6 @@ export const shouldUseMovieScrollDeck = (
   browseLayout === "scroll" &&
   movieCount >= 2 &&
   movieCount <= movieScrollDeckMax(isMobile);
-
-export const MOVIE_BROWSE_LAYOUTS: Array<{
-  value: MovieBrowseLayout;
-  label: string;
-}> = [
-  { value: "grid", label: "⊞ Grid" },
-  { value: "scroll", label: "↕ Scroll" },
-];
 
 export const readMovieBrowseLayout = (): MovieBrowseLayout => {
   if (typeof window === "undefined") {
@@ -162,72 +213,9 @@ export const writeMovieBrowseLayout = (layout: MovieBrowseLayout): void => {
   window.localStorage.setItem(STORAGE_KEY, layout);
 };
 
-const USERS: User[] = ["Aaron", "Electra"];
-const _CINEMATIC_FALLBACKS = [
-  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=800&auto=format&fit=crop",
-];
-
-export const clampMovieTransitionOrigin = (
-  origin: MovieTransitionOrigin | null,
-) =>
-  origin
-    ? {
-        top: `${origin.top}px`,
-        left: `${origin.left}px`,
-        width: `${origin.width}px`,
-        height: `${origin.height}px`,
-      }
-    : { top: "50dvh", left: "50vw", width: "18rem", height: "27rem" };
-
-export const getMovieDialogMetrics = (isMobile: boolean) => {
-  const viewportWidth =
-    typeof window === "undefined" ? 1280 : window.innerWidth;
-  const viewportHeight =
-    typeof window === "undefined" ? 800 : window.innerHeight;
-  return {
-    targetWidth: Math.min(viewportWidth - 32, isMobile ? 544 : 1440),
-    targetHeight: Math.min(viewportHeight - 32, isMobile ? 768 : 900),
-  };
-};
-
-export const getMovieWatchStatus = (movie: Movie) => {
-  if (movie.watchedBy.length === USERS.length) {
-    return {
-      label: "Seen together",
-      title: "Already a shared watch",
-      detail: "You both marked this watched already.",
-    };
-  }
-  if (movie.watchedBy.length === 1) {
-    const watcher = movie.watchedBy[0];
-    const remaining = USERS.find((user) => !movie.watchedBy.includes(user));
-    return {
-      label: `${watcher} watched`,
-      title: `${watcher} is ahead on this one`,
-      detail: remaining
-        ? `${remaining} still has this waiting in the queue.`
-        : "One watch logged so far.",
-    };
-  }
-  return {
-    label: "Still queued",
-    title: "Still sitting in the lineup",
-    detail: `${movie.addedBy} queued it for a future night.`,
-  };
-};
-
-export type MovieSortOrder = "recent" | "alpha" | "rating";
-
-export type MovieSections = CollectionSections<Movie, MovieSuggestion>;
-
-export const getAllMovies = (sections: MovieSections): Movie[] => [
-  ...sections.queue,
-  ...sections.completed,
-];
+/* -------------------------------------------------------------------------- */
+/*                       Sorting, Filtering & Media Utilities                 */
+/* -------------------------------------------------------------------------- */
 
 function parseImdbRating(rating: string | undefined): number {
   return parseFloat(rating ?? "0") || 0;
@@ -248,6 +236,11 @@ function sortMovies(movies: Movie[], sortOrder: MovieSortOrder): Movie[] {
   }
 }
 
+export const getAllMovies = (sections: MovieSections): Movie[] => [
+  ...sections.queue,
+  ...sections.completed,
+];
+
 export const buildMovieSections = (
   movies: Movie[],
   pendingSuggestions: MovieSuggestion[],
@@ -260,8 +253,6 @@ export const buildMovieSections = (
     (movie) => movie.watchedBy.length === 2,
   );
 };
-
-export type MediaTypeFilter = "all" | "movie" | "series";
 
 /**
  * Robustly detects whether a movie record is a TV Series.
@@ -295,276 +286,105 @@ export const filterMoviesByMediaType = (
   );
 };
 
-/* eslint-disable react-refresh/only-export-components */
-import React from "react";
-import type {
-  Movie,
-  User,
-  MovieSuggestion,
-  MoviesViewProps,
-} from "@/shared/types";
-
-
-import {
-  StremioButton,
-  YoutubeButton,
-  CardActionButton,
-  PageFlip,
-  type PageFlipLeaf,
-  type BentoSortChipConfig,
-} from "@/components/ui";
-import {
-  CheckIcon,
-  FilmIcon,
-  EditIcon,
-  PlayIcon,
-  StarIcon,
-  TvIcon,
-} from "@/common/Icons";
-import {
-  formatMemoryTimestamp,
-  resolvePosterUrl,
-} from "@/utils";
-import {
-  type MovieAutocompleteResult,
-} from "@/services/metadata";
-
-
-
-
-
-export const MOVIE_SECTION_IDS = {
-  incoming: "movies-section-incoming",
-  queue: "movies-section-queue",
-  completed: "movies-section-watched",
-};
-
-export const MOVIE_SORTS: BentoSortChipConfig[] = [
-  { value: "recent", label: "🕐 Recent" },
-  { value: "alpha", label: "A→Z" },
-  { value: "rating", label: "★ Rating" },
-];
-
-export type MoviesWorkspaceViewProps = MoviesViewProps & {
-  posterPlaceCards?: React.ReactNode[];
-  isInteractionStatic?: boolean;
-};
 /* -------------------------------------------------------------------------- */
-/* Sub-component: PosterHero                                                   */
+/*                         Action & Status Resolvers                          */
 /* -------------------------------------------------------------------------- */
 
-export interface PosterHeroProps {
+interface GetMovieActionStateParams {
   movie: Movie;
-  watchStatusLabel: string;
-  hasPosterError: boolean;
-  onPosterError: () => void;
-  isMobile?: boolean;
-  metadataItems: string[];
-  watchStatus: ReturnType<typeof getMovieWatchStatus>;
-  isWatchedByCurrentUser: boolean;
-  isUpdatingWatchStatus: boolean;
-  onToggleWatched?: () => void | Promise<void>;
-  onToggleUserWatched?: (user: User) => void | Promise<void>;
-  activeUsers?: User[];
-  onEdit?: () => void;
-  onClose?: () => void;
-  isOpen?: boolean;
+  currentUser: User | null;
 }
 
-export const PosterHero: React.FC<PosterHeroProps> = ({
+export const getMovieActionState = ({
   movie,
-  watchStatusLabel: _watchStatusLabel,
-  hasPosterError,
-  onPosterError: _onPosterError,
-  isMobile = false,
-  metadataItems,
-  watchStatus,
-  isWatchedByCurrentUser,
-  isUpdatingWatchStatus,
-  onToggleWatched,
-  onToggleUserWatched,
-  activeUsers = [],
-  onEdit,
-  onClose: _onClose,
-  isOpen = true,
-}) => {
-  const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
-  const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
-  const activePosterUrl = isCustomOrValid
-    ? (resolvedPosterUrl as string)
-    : resolvePosterUrl(undefined, movie.id || movie.title);
+  currentUser,
+}: GetMovieActionStateParams): MovieActionState => {
+  const isGuest = !currentUser;
+  const watchedByCurrentUser = currentUser
+    ? movie.watchedBy.includes(currentUser)
+    : false;
+  const showWatchedAction = Boolean(currentUser);
+  const showActionRail = showWatchedAction;
 
-  const [turnedCount, setTurnedCount] = React.useState(0);
+  let primaryActionAriaLabel: string | null = null;
+  if (showWatchedAction) {
+    primaryActionAriaLabel = watchedByCurrentUser
+      ? `Mark "${movie.title}" as unwatched`
+      : `Mark "${movie.title}" as watched`;
+  }
 
-  const pages: PageFlipLeaf[] = React.useMemo(() => {
-    return [
-      {
-        id: "cover",
-        front: activePosterUrl,
-        frontAlt: `${movie.title} cover`,
-        back: (
-          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-l border-white/10 select-none overflow-y-auto custom-scrollbar relative z-10">
-            <MetadataHeader
-              movie={movie}
-              metadataItems={metadataItems}
-              watchStatus={watchStatus}
-              isWatchedByCurrentUser={isWatchedByCurrentUser}
-              isUpdatingWatchStatus={isUpdatingWatchStatus}
-              onToggleWatched={onToggleWatched}
-              onToggleUserWatched={onToggleUserWatched}
-              activeUsers={activeUsers}
-              onEdit={onEdit}
-            />
-          </div>
-        ),
-      },
-      {
-        id: "details",
-        front: (
-          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-r border-white/10 select-none overflow-y-auto custom-scrollbar">
-            {movie.plot ? (
-              <section aria-labelledby="movie-overview-heading" className="movie-details-modal__section" style={{ padding: 0 }}>
-                <h3 id="movie-overview-heading" className="movie-details-modal__section-label">
-                  Overview
-                </h3>
-                <p className="movie-details-modal__plot" style={{ marginBottom: 0 }}>
-                  {movie.plot}
-                </p>
-              </section>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
-                No overview recorded for this title.
-              </div>
-            )}
-            <footer className="movie-details-modal__footer mt-auto pt-4 border-t border-white/5" style={{ padding: '1rem 0 0' }}>
-              <span>
-                Catalog item added {new Date(movie.createdAt).toLocaleDateString()}
-              </span>
-              <span>
-                {movie.watchedBy.length === 2
-                  ? "Watched by Aaron & Electra"
-                  : movie.watchedBy.length === 1
-                    ? `Watched by ${movie.watchedBy[0]}`
-                    : "Not watched yet"}
-              </span>
-            </footer>
-          </div>
-        ),
-      },
-    ];
-  }, [
-    movie,
-    activePosterUrl,
-    metadataItems,
-    watchStatus,
-    isWatchedByCurrentUser,
-    isUpdatingWatchStatus,
-    onToggleWatched,
-    onToggleUserWatched,
-    activeUsers,
-    onEdit,
-  ]);
+  return {
+    isGuest,
+    watchedByCurrentUser,
+    showActionRail,
+    showWatchedAction,
+    primaryActionLabel: watchedByCurrentUser ? "Watched" : "Mark watched",
+    primaryActionCompactLabel: watchedByCurrentUser ? "Watched" : "Watch",
+    primaryActionAriaLabel,
+  };
+};
 
-  const bookWidth = isMobile ? 180 : 280;
-  const bookHeight = isMobile ? 270 : 420;
-  const bookSpineShift = isMobile ? 85 : 130;
+export const getMovieWatchStatus = (movie: Movie) => {
+  if (movie.watchedBy.length === USERS.length) {
+    return {
+      label: "Seen together",
+      title: "Already a shared watch",
+      detail: "You both marked this watched already.",
+    };
+  }
+  if (movie.watchedBy.length === 1) {
+    const watcher = movie.watchedBy[0];
+    const remaining = USERS.find((user) => !movie.watchedBy.includes(user));
+    return {
+      label: `${watcher} watched`,
+      title: `${watcher} is ahead on this one`,
+      detail: remaining
+        ? `${remaining} still has this waiting in the queue.`
+        : "One watch logged so far.",
+    };
+  }
+  return {
+    label: "Still queued",
+    title: "Still sitting in the lineup",
+    detail: `${movie.addedBy} queued it for a future night.`,
+  };
+};
 
-  return (
-    <figure
-      className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
-      aria-label={`Poster for ${movie.title}`}
-    >
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-3 pt-6 sm:p-4 sm:pt-8">
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <PageFlip
-            pages={pages}
-            pageWidth={bookWidth}
-            pageHeight={bookHeight}
-            spineShift={bookSpineShift}
-            pageRadius={isMobile ? 6 : 8}
-            turnAngle={180}
-            peekAngle={14}
-            shadow={0.45}
-            closeOnLeave={false}
-            forceClose={!isOpen}
-            maxTurnCount={1}
-            turnedCount={turnedCount}
-            onPageChange={(count) => setTurnedCount(count)}
-          />
-        </div>
+export const clampMovieTransitionOrigin = (
+  origin: MovieTransitionOrigin | null,
+) =>
+  origin
+    ? {
+        top: `${origin.top}px`,
+        left: `${origin.left}px`,
+        width: `${origin.width}px`,
+        height: `${origin.height}px`,
+      }
+    : { top: "50dvh", left: "50vw", width: "18rem", height: "27rem" };
 
-        {/* Simplified Booklet Controls */}
-        <nav
-          className="flex flex-col items-center gap-2 mt-4 sm:mt-5 select-none"
-          aria-label="Booklet navigation"
-        >
-          <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/80 border border-white/15 backdrop-blur-md shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setTurnedCount((c) => Math.max(0, c - 1))}
-              disabled={turnedCount === 0}
-              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
-                turnedCount === 0
-                  ? "text-white/25 cursor-not-allowed opacity-40"
-                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
-              }`}
-              aria-label="Previous page"
-            >
-              ‹ Prev
-            </button>
+export const getMovieDialogMetrics = (
+  isMobile: boolean,
+  container?: HTMLElement | null,
+) => {
+  let viewportWidth = typeof window === "undefined" ? 1280 : window.innerWidth;
+  let viewportHeight = typeof window === "undefined" ? 800 : window.innerHeight;
 
-            <div className="flex items-center gap-0.5 px-1 border-x border-white/10">
-              {[
-                { label: "Cover", index: 0 },
-                { label: "Details", index: 1 },
-              ].map((tab) => {
-                const isActive = turnedCount === tab.index;
-                return (
-                  <button
-                    key={tab.index}
-                    type="button"
-                    onClick={() => setTurnedCount(tab.index)}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer ${
-                      isActive
-                        ? "bg-white text-slate-950 font-semibold shadow-sm scale-100"
-                        : "text-white/70 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
+  if (container) {
+    const rect = container.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      viewportWidth = rect.width;
+      viewportHeight = rect.height;
+    }
+  }
 
-            <button
-              type="button"
-              onClick={() => setTurnedCount((c) => Math.min(1, c + 1))}
-              disabled={turnedCount >= 1}
-              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
-                turnedCount >= 1
-                  ? "text-white/25 cursor-not-allowed opacity-40"
-                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
-              }`}
-              aria-label="Next page"
-            >
-              Next ›
-            </button>
-          </div>
-
-          <span className="text-[11px] text-white/50 tracking-wide font-normal">
-            {turnedCount === 0
-              ? "Swipe left, click cover, or tap 'Details' to open"
-              : "Swipe right, click 'Cover', or tap ‹ Prev to close"}
-          </span>
-        </nav>
-      </div>
-    </figure>
-  );
+  return {
+    targetWidth: Math.min(viewportWidth - 32, isMobile ? 544 : 1440),
+    targetHeight: Math.min(viewportHeight - 32, isMobile ? 768 : 900),
+  };
 };
 
 /* -------------------------------------------------------------------------- */
-/* Sub-component: MetadataHeader                                               */
+/*                   Sub-component: MetadataHeader                            */
 /* -------------------------------------------------------------------------- */
 
 interface MetadataHeaderProps {
@@ -593,7 +413,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
 
   return (
     <header className="movie-details-modal__header">
-      {/* Clean Eyebrow Category */}
+      {/* Category & Type Eyebrow */}
       <div className="movie-details-modal__eyebrow">
         <span className="movie-details-modal__type-badge">
           {isSeries ? (
@@ -616,7 +436,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         </h2>
       </div>
 
-      {/* Clean Specs Fact Pills */}
+      {/* Specs Fact Pills */}
       {metadataItems.length > 0 && (
         <div
           className="movie-details-modal__fact-row"
@@ -648,7 +468,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         </div>
       )}
 
-      {/* Primary Action Buttons */}
+      {/* Action Toolbar */}
       <div
         className="movie-details-modal__actions"
         role="toolbar"
@@ -660,7 +480,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         ) : (
           <StremioButton movie={movie} variant="full" />
         )}
-        
+
         {activeUsers.length > 1 && onToggleUserWatched ? (
           activeUsers.map((user) => {
             const isWatched = movie.watchedBy.includes(user);
@@ -705,7 +525,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
 };
 
 /* -------------------------------------------------------------------------- */
-/* Sub-component: SummaryBand                                                  */
+/*                     Sub-component: SummaryBand                             */
 /* -------------------------------------------------------------------------- */
 
 interface SummaryBandProps {
@@ -743,23 +563,229 @@ export const SummaryBand: React.FC<SummaryBandProps> = ({
   </div>
 );
 
-export interface MovieTransitionOrigin {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
+/* -------------------------------------------------------------------------- */
+/*                     Sub-component: PosterHero                              */
+/* -------------------------------------------------------------------------- */
+
+export interface PosterHeroProps {
+  movie: Movie;
+  watchStatusLabel: string;
+  hasPosterError: boolean;
+  onPosterError: () => void;
+  isMobile?: boolean;
+  metadataItems: string[];
+  watchStatus: ReturnType<typeof getMovieWatchStatus>;
+  isWatchedByCurrentUser: boolean;
+  isUpdatingWatchStatus: boolean;
+  onToggleWatched?: () => void | Promise<void>;
+  onToggleUserWatched?: (user: User) => void | Promise<void>;
+  activeUsers?: User[];
+  onEdit?: () => void;
+  onClose?: () => void;
+  isOpen?: boolean;
 }
 
-export interface MovieBodyActions {
-  toggleWatched: (id: string, targetUser?: User) => void | unknown;
-  editMovie: (
-    id: string,
-    updates: { title: string; customPosterUrl?: string },
-  ) => void | unknown;
-}
+export const PosterHero: React.FC<PosterHeroProps> = ({
+  movie,
+  watchStatusLabel: _watchStatusLabel,
+  hasPosterError,
+  onPosterError: _onPosterError,
+  isMobile = false,
+  metadataItems,
+  watchStatus,
+  isWatchedByCurrentUser,
+  isUpdatingWatchStatus,
+  onToggleWatched,
+  onToggleUserWatched,
+  activeUsers = [],
+  onEdit,
+  onClose: _onClose,
+  isOpen = true,
+}) => {
+  const [turnedCount, setTurnedCount] = useState(0);
 
-export interface MovieSectionIds {
-  incoming?: string;
-  queue?: string;
-  completed?: string;
-}
+  const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
+  const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
+  const activePosterUrl = isCustomOrValid
+    ? (resolvedPosterUrl as string)
+    : resolvePosterUrl(undefined, movie.id || movie.title);
+
+  // Define the booklet pages
+  const pages: PageFlipLeaf[] = useMemo(() => {
+    return [
+      {
+        id: "cover",
+        front: activePosterUrl,
+        frontAlt: `${movie.title} cover`,
+        back: (
+          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-l border-white/10 select-none overflow-y-auto custom-scrollbar relative z-10">
+            <MetadataHeader
+              movie={movie}
+              metadataItems={metadataItems}
+              watchStatus={watchStatus}
+              isWatchedByCurrentUser={isWatchedByCurrentUser}
+              isUpdatingWatchStatus={isUpdatingWatchStatus}
+              onToggleWatched={onToggleWatched}
+              onToggleUserWatched={onToggleUserWatched}
+              activeUsers={activeUsers}
+              onEdit={onEdit}
+            />
+          </div>
+        ),
+      },
+      {
+        id: "details",
+        front: (
+          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-r border-white/10 select-none overflow-y-auto custom-scrollbar">
+            {movie.plot ? (
+              <section
+                aria-labelledby="movie-overview-heading"
+                className="movie-details-modal__section"
+                style={{ padding: 0 }}
+              >
+                <h3
+                  id="movie-overview-heading"
+                  className="movie-details-modal__section-label"
+                >
+                  Overview
+                </h3>
+                <p className="movie-details-modal__plot" style={{ marginBottom: 0 }}>
+                  {movie.plot}
+                </p>
+              </section>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
+                No overview recorded for this title.
+              </div>
+            )}
+            <footer
+              className="movie-details-modal__footer mt-auto pt-4 border-t border-white/5"
+              style={{ padding: "1rem 0 0" }}
+            >
+              <span>
+                Catalog item added {new Date(movie.createdAt).toLocaleDateString()}
+              </span>
+              <span>
+                {movie.watchedBy.length === 2
+                  ? "Watched by Aaron & Electra"
+                  : movie.watchedBy.length === 1
+                    ? `Watched by ${movie.watchedBy[0]}`
+                    : "Not watched yet"}
+              </span>
+            </footer>
+          </div>
+        ),
+      },
+    ];
+  }, [
+    movie,
+    activePosterUrl,
+    metadataItems,
+    watchStatus,
+    isWatchedByCurrentUser,
+    isUpdatingWatchStatus,
+    onToggleWatched,
+    onToggleUserWatched,
+    activeUsers,
+    onEdit,
+  ]);
+
+  const bookWidth = isMobile ? 180 : 280;
+  const bookHeight = isMobile ? 270 : 420;
+  const bookSpineShift = isMobile ? 85 : 130;
+
+  const navTabs = [
+    { label: "Cover", index: 0 },
+    { label: "Details", index: 1 },
+  ];
+
+  return (
+    <figure
+      className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
+      aria-label={`Poster for ${movie.title}`}
+    >
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-3 pt-6 sm:p-4 sm:pt-8">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <PageFlip
+            pages={pages}
+            pageWidth={bookWidth}
+            pageHeight={bookHeight}
+            spineShift={bookSpineShift}
+            pageRadius={isMobile ? 6 : 8}
+            turnAngle={180}
+            peekAngle={14}
+            shadow={0.45}
+            closeOnLeave={false}
+            forceClose={!isOpen}
+            maxTurnCount={1}
+            turnedCount={turnedCount}
+            onPageChange={(count) => setTurnedCount(count)}
+          />
+        </div>
+
+        {/* Booklet Controls & Tab Selector */}
+        <nav
+          className="flex flex-col items-center gap-2 mt-4 sm:mt-5 select-none"
+          aria-label="Booklet navigation"
+        >
+          <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/80 border border-white/15 backdrop-blur-md shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setTurnedCount((c) => Math.max(0, c - 1))}
+              disabled={turnedCount === 0}
+              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
+                turnedCount === 0
+                  ? "text-white/25 cursor-not-allowed opacity-40"
+                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
+              }`}
+              aria-label="Previous page"
+            >
+              ‹ Prev
+            </button>
+
+            <div className="flex items-center gap-0.5 px-1 border-x border-white/10">
+              {navTabs.map((tab) => {
+                const isActive = turnedCount === tab.index;
+                return (
+                  <button
+                    key={tab.index}
+                    type="button"
+                    onClick={() => setTurnedCount(tab.index)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-950 font-semibold shadow-sm scale-100"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTurnedCount((c) => Math.min(1, c + 1))}
+              disabled={turnedCount >= 1}
+              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
+                turnedCount >= 1
+                  ? "text-white/25 cursor-not-allowed opacity-40"
+                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
+              }`}
+              aria-label="Next page"
+            >
+              Next ›
+            </button>
+          </div>
+
+          <span className="text-[11px] text-white/50 tracking-wide font-normal">
+            {turnedCount === 0
+              ? "Swipe left, click cover, or tap 'Details' to open"
+              : "Swipe right, click 'Cover', or tap ‹ Prev to close"}
+          </span>
+        </nav>
+      </div>
+    </figure>
+  );
+};

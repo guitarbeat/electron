@@ -10,7 +10,9 @@ import { buildFeatureModals } from "@/app/buildMinigameModals";
 import {
   readQuizCompletionState,
   writeQuizCompletionState,
+  writeUserQuizOutcome,
 } from "@/app/quizCompletionStorage";
+import type { QuizResult } from "@/shared/types";
 
 import { useViewport, useUser } from "@/app/providerContexts";
 import { ThemeProvider } from "@/app/providers";
@@ -101,9 +103,14 @@ const App: React.FC = () => {
   }, [activeTab]);
 
   const updateQuizCompletion = useCallback(
-    (completed: boolean) => {
+    (completed: boolean, outcome?: QuizResult | null) => {
       setQuizCompleted(completed);
       writeQuizCompletionState(currentUser, completed);
+      if (completed && outcome) {
+        writeUserQuizOutcome(currentUser, outcome);
+      } else if (!completed) {
+        writeUserQuizOutcome(currentUser, null);
+      }
     },
     [currentUser],
   );
@@ -140,9 +147,26 @@ const App: React.FC = () => {
     };
   }, [openSpinExperience]);
 
-  const handleQuizComplete = useCallback(() => {
-    updateQuizCompletion(true);
-  }, [updateQuizCompletion]);
+  useEffect(() => {
+    const handleOpenChat = () => {
+      togglePanel("messages");
+    };
+    window.addEventListener("open-chat-experience", handleOpenChat);
+    window.addEventListener("open-messages-experience", handleOpenChat);
+    window.addEventListener("toggle-chat-panel", handleOpenChat);
+    return () => {
+      window.removeEventListener("open-chat-experience", handleOpenChat);
+      window.removeEventListener("open-messages-experience", handleOpenChat);
+      window.removeEventListener("toggle-chat-panel", handleOpenChat);
+    };
+  }, [togglePanel]);
+
+  const handleQuizComplete = useCallback(
+    (outcome?: QuizResult) => {
+      updateQuizCompletion(true, outcome);
+    },
+    [updateQuizCompletion],
+  );
 
   const handleQuizEdit = useCallback(() => {
     setShowQuizExperience(false);
@@ -150,7 +174,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleQuizRetake = useCallback(() => {
-    updateQuizCompletion(false);
+    updateQuizCompletion(false, null);
   }, [updateQuizCompletion]);
 
   const featureModals = useMemo(
@@ -224,6 +248,7 @@ const App: React.FC = () => {
             maxHeight={modal.maxHeight}
             closeDisabled={modal.closeDisabled}
             closeDisabledLabel={modal.closeDisabledLabel}
+            isUnstyled={modal.isUnstyled}
           >
             <div style={modal.contentStyle ?? modalBodyStyle}>
               {modal.isOpen ? modal.content : null}

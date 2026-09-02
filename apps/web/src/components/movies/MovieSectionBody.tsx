@@ -2,6 +2,9 @@ import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
+import { QuizDriftCard } from "./QuizDriftCard";
+import { SpinDriftCard } from "./SpinDriftCard";
+import { ChatDriftCard } from "./ChatDriftCard";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
@@ -61,6 +64,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   actions,
   posterPlaceCards = [],
 }) => {
+  const wallContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [selectedOrigin, setSelectedOrigin] =
     React.useState<MovieTransitionOrigin | null>(null);
@@ -180,10 +184,43 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     ));
     const movieCards = allPosters.map(renderMovie);
 
+    // Provide quiz and spin cards moving along with movies on the drift wall
+    const totalCount =
+      allPosters.length +
+      sections.suggestions.length +
+      (posterPlaceCards?.length || 0);
+    const bonusCardCount = totalCount > 24 ? 3 : totalCount > 10 ? 2 : 1;
+
+    const quizCards = Array.from({ length: bonusCardCount }, (_, idx) => (
+      <QuizDriftCard
+        key={`quiz-drift-card-${idx}`}
+        currentUser={currentUser}
+        isCompact={isMobile}
+      />
+    ));
+
+    const spinCards = Array.from({ length: bonusCardCount }, (_, idx) => (
+      <SpinDriftCard
+        key={`spin-drift-card-${idx}`}
+        isCompact={isMobile}
+      />
+    ));
+
+    const chatCards = Array.from({ length: bonusCardCount }, (_, idx) => (
+      <ChatDriftCard
+        key={`chat-drift-card-${idx}`}
+        currentUser={currentUser}
+        isCompact={isMobile}
+      />
+    ));
+
     return interleaveCollectionItems(
       suggestionCards,
       movieCards,
       posterPlaceCards,
+      quizCards,
+      spinCards,
+      chatCards,
     );
   }, [
     collectionState,
@@ -209,7 +246,38 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       return;
     }
 
-    const movie = (item.props as { movie?: Movie }).movie;
+    const props = item.props as {
+      movie?: Movie;
+      "data-quiz-card"?: boolean;
+      isQuizCard?: boolean;
+      "data-spin-card"?: boolean;
+      isSpinCard?: boolean;
+      "data-chat-card"?: boolean;
+      isChatCard?: boolean;
+    };
+
+    if (props["data-quiz-card"] || props.isQuizCard) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("open-quiz-experience"));
+      }
+      return;
+    }
+
+    if (props["data-spin-card"] || props.isSpinCard) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("open-spin-experience"));
+      }
+      return;
+    }
+
+    if (props["data-chat-card"] || props.isChatCard) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("open-chat-experience"));
+      }
+      return;
+    }
+
+    const movie = props.movie;
     if (!movie) {
       return;
     }
@@ -240,7 +308,10 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       }}
     >
       {unifiedCards.length > 0 ? (
-        <div style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}>
+        <div
+          ref={wallContainerRef}
+          style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
+        >
           <DriftWall
             items={unifiedCards}
             columns={dynamicColumns}
@@ -286,6 +357,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             movie={resolvedSelectedMovie}
             isOpen={Boolean(resolvedSelectedMovie)}
             origin={selectedOrigin}
+            container={wallContainerRef.current}
+            contained={true}
             currentUser={currentUser}
             activeUsers={activeUsers}
             isWatchedByCurrentUser={Boolean(

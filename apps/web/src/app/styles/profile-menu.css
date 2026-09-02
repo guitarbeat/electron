@@ -232,6 +232,11 @@
   }
 }
 
+.profile-switcher-btn.is-menu-open {
+  transform: scale(1.14) translateY(-2px);
+  z-index: 1015;
+}
+
 .profile-switcher-name {
   display: none !important;
 }

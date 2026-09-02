@@ -81,6 +81,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
     toggleWatched,
     editMovie,
   } = useMoviesWorkspace({ currentUser, isPaused, focusSearchInput });
+
   const sections = useMemo(
     () => buildMovieSections(movies, pendingSuggestions, sortOrder),
     [movies, pendingSuggestions, sortOrder],

@@ -6,44 +6,72 @@ import { motion, useMotionValue, useTransform, animate, type PanInfo } from "mot
 /* -------------------------------------------------------------------------- */
 
 export interface PageFlipLeaf {
-  /** Optional unique identifier */
+  /** Optional unique identifier for React keys */
   id?: string;
   /** Front face content (visible before turning) */
   front: React.ReactNode;
-  /** Back face content (visible after turning) */
+  /** Back face content (visible after turning; optional for single-spread items) */
   back?: React.ReactNode;
-  /** Accessible label/alt text for front */
+  /** Accessible label or alt text for the front face */
   frontAlt?: string;
-  /** Accessible label/alt text for back */
+  /** Accessible label or alt text for the back face */
   backAlt?: string;
 }
 
 export type PageFlipEase = "easeInOut" | "easeOut" | "circOut" | "backOut";
 
 export interface PageFlipProps {
+  /** Ordered list of pages/leaves */
   pages: PageFlipLeaf[];
+  /** Single page width in px (default: 220) */
   pageWidth?: number;
+  /** Single page height in px (default: 320) */
   pageHeight?: number;
+  /** Corner radius in px (default: 8) */
   pageRadius?: number;
+  /** Paper background color (default: rgba(15, 23, 42, 0.95)) */
   pageColor?: string;
+  /** 3D Perspective in px (default: 1200) */
   perspective?: number;
+  /** Horizontal shift of stage when book is opened (default: 110) */
   spineShift?: number;
+  /** Angle in degrees when fully turned (default: 180) */
   turnAngle?: number;
+  /** Angle in degrees for hover-peek (default: 12) */
   peekAngle?: number;
+  /** Turn animation duration in seconds (default: 0.55) */
   duration?: number;
+  /** Stagger delay between cascading page closes (default: 0.08) */
   stagger?: number;
+  /** Easing curve type (default: "easeInOut") */
   ease?: PageFlipEase;
+  /** Drop shadow intensity (0 to 1, default: 0.3) */
   shadow?: number;
+  /** Trigger mode for page turn (default: "click") */
   trigger?: "click" | "hover";
+  /** Whether moving cursor away resets pages (default: false) */
   closeOnLeave?: boolean;
+  /** Whether clicking the backdrop background resets pages (default: true) */
+  closeOnClickOutside?: boolean;
+  /** Whether clicking the leaf body itself turns the page (default: true) */
+  leafClickTurnsPage?: boolean;
+  /** Whether the flipbook accepts clicks/swipes/keys (default: true) */
   interactive?: boolean;
+  /** Upper bound on turned count (e.g. 1 for single-spread book) */
   maxTurnCount?: number;
+  /** Programmatically force all pages closed */
   forceClose?: boolean;
+  /** Automatically open the first page on initial mount */
   autoOpen?: boolean;
+  /** Additional CSS classes for outer container */
   className?: string;
+  /** Additional CSS inline styles for outer container */
   style?: React.CSSProperties;
+  /** Controlled turned page count */
   turnedCount?: number;
+  /** Callback fired whenever turned page count updates */
   onPageChange?: (currentTurnedCount: number) => void;
+  /** Callback fired when user clicks the background backdrop */
   onBackgroundClick?: () => void;
 }
 
@@ -56,6 +84,11 @@ const EASING_CURVES: Record<PageFlipEase, [number, number, number, number]> = {
 
 const INTERACTIVE_ELEMENTS_SELECTOR =
   'button, a, input, select, textarea, [role="button"], [role="switch"], [role="link"]';
+
+const SWIPE_VELOCITY_THRESHOLD = 180;
+const SWIPE_DISTANCE_THRESHOLD = 35;
+const QUICK_FLICK_MIN_DISTANCE = 20;
+const QUICK_FLICK_MAX_TIME_MS = 350;
 
 /* -------------------------------------------------------------------------- */
 /*                               Helper Functions                             */
@@ -71,7 +104,7 @@ function getShadowStyle(intensity: number): string {
   return `${x}px ${y}px ${blur}px rgba(0, 0, 0, ${alpha})`;
 }
 
-/** Checks whether a keyboard event originated from a form control */
+/** Checks whether an event originated from a form control or editable element */
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   return (
@@ -80,6 +113,12 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target.tagName === "SELECT" ||
     target.isContentEditable
   );
+}
+
+/** Checks if a clicked element is an interactive control that should not trigger page turns */
+function isInteractiveChild(target: HTMLElement | null, currentTarget: HTMLElement): boolean {
+  const interactiveChild = target?.closest?.(INTERACTIVE_ELEMENTS_SELECTOR);
+  return Boolean(interactiveChild && interactiveChild !== currentTarget);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -101,7 +140,11 @@ const LeafFace: React.FC<LeafFaceProps> = ({
   paperColor,
   borderRadius,
 }) => {
-  const transform = isBack ? "rotateY(180deg) translateZ(1px)" : "rotateY(0deg) translateZ(1px)";
+  if (!content) return null;
+
+  const transform = isBack
+    ? "rotateY(180deg) translateZ(1px)"
+    : "rotateY(0deg) translateZ(1px)";
 
   const style: React.CSSProperties = {
     background: paperColor,
@@ -154,6 +197,7 @@ interface LeafProps {
   curve: [number, number, number, number];
   shadow: number;
   interactive: boolean;
+  leafClickTurnsPage: boolean;
   onSelect: (index: number) => void;
   onHoverStart: (index: number) => void;
   onHoverEnd: () => void;
@@ -176,13 +220,14 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
   curve,
   shadow,
   interactive,
+  leafClickTurnsPage,
   onSelect,
   onHoverStart,
   onHoverEnd,
 }: LeafProps) {
   const rotationY = useMotionValue(isTurned ? -turnAngle : 0);
 
-  // Switch z-index at the 90-degree spine midpoint
+  // Switch z-index at the 90-degree spine midpoint so turned leaves stack in reverse order
   const zIndex = useTransform(rotationY, (angle) =>
     angle < -turnAngle / 2 ? total + index + 1 : total - index
   );
@@ -199,6 +244,7 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
 
   const shadowStyle = useMemo(() => getShadowStyle(shadow), [shadow]);
 
+  // Leaf-level pan gesture
   const handlePanEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       if (!interactive) return;
@@ -206,9 +252,12 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
       const absY = Math.abs(info.offset.y);
       if (absX < 20 || absX < absY) return;
 
-      if ((info.offset.x < -25 || info.velocity.x < -180) && !isTurned) {
+      const isTurnForward = info.offset.x < -25 || info.velocity.x < -SWIPE_VELOCITY_THRESHOLD;
+      const isTurnBackward = info.offset.x > 25 || info.velocity.x > SWIPE_VELOCITY_THRESHOLD;
+
+      if (isTurnForward && !isTurned) {
         onSelect(index);
-      } else if ((info.offset.x > 25 || info.velocity.x > 180) && isTurned) {
+      } else if (isTurnBackward && isTurned) {
         onSelect(index);
       }
     },
@@ -217,18 +266,13 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const clickedTarget = event.target as HTMLElement | null;
-      const interactiveChild = clickedTarget?.closest?.(INTERACTIVE_ELEMENTS_SELECTOR);
-
-      // Do not flip if an interactive child element (button, link) was clicked
-      if (interactiveChild && interactiveChild !== event.currentTarget) {
+      if (!leafClickTurnsPage || isInteractiveChild(event.target as HTMLElement | null, event.currentTarget)) {
         return;
       }
-
       event.stopPropagation();
       onSelect(index);
     },
-    [onSelect, index]
+    [leafClickTurnsPage, onSelect, index]
   );
 
   const handleKeyDown = useCallback(
@@ -305,7 +349,9 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   ease = "easeInOut",
   shadow = 0.3,
   trigger = "click",
-  closeOnLeave = true,
+  closeOnLeave = false,
+  closeOnClickOutside = true,
+  leafClickTurnsPage = true,
   interactive = true,
   maxTurnCount,
   forceClose,
@@ -317,13 +363,15 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   onBackgroundClick,
 }) => {
   const totalPages = pages.length;
-  const [internalTurnedCount, setInternalTurnedCount] = useState(turnedCountProp ?? 0);
   const isControlled = turnedCountProp !== undefined;
+  const [internalTurnedCount, setInternalTurnedCount] = useState(turnedCountProp ?? 0);
   const turnedCount = isControlled ? turnedCountProp : internalTurnedCount;
+
   const [hoveredIndex, setHoveredIndex] = useState(-1);
   const [isCascadingClose, setIsCascadingClose] = useState(false);
 
   const activeCurve = useMemo(() => EASING_CURVES[ease] ?? EASING_CURVES.easeInOut, [ease]);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   const updateTurnedCount = useCallback(
     (action: number | ((prev: number) => number)) => {
@@ -336,7 +384,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     [isControlled, turnedCount, onPageChange]
   );
 
-  // Sync page change notification for uncontrolled changes
+  // Sync page change notification when controlled state changes
   const prevTurnedCountRef = useRef(turnedCount);
   useEffect(() => {
     if (prevTurnedCountRef.current !== turnedCount) {
@@ -403,9 +451,11 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   }, []);
 
   const handleBackgroundClick = useCallback(() => {
-    closeAllPages();
+    if (closeOnClickOutside) {
+      closeAllPages();
+    }
     onBackgroundClick?.();
-  }, [closeAllPages, onBackgroundClick]);
+  }, [closeOnClickOutside, closeAllPages, onBackgroundClick]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -432,7 +482,9 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         case "End":
           event.preventDefault();
           setIsCascadingClose(false);
-          updateTurnedCount(maxTurnCount !== undefined ? Math.min(maxTurnCount, totalPages) : totalPages);
+          updateTurnedCount(
+            maxTurnCount !== undefined ? Math.min(maxTurnCount, totalPages) : totalPages
+          );
           break;
 
         case "Escape":
@@ -441,12 +493,18 @@ export const PageFlip: React.FC<PageFlipProps> = ({
           break;
       }
     },
-    [interactive, turnedCount, maxTurnCount, totalPages, updateTurnedCount, closeAllPages, handleBackgroundClick]
+    [
+      interactive,
+      turnedCount,
+      maxTurnCount,
+      totalPages,
+      updateTurnedCount,
+      closeAllPages,
+      handleBackgroundClick,
+    ]
   );
 
   /* -------------------------- Gesture Actions --------------------------- */
-
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
@@ -476,17 +534,17 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
-      // Check if horizontal swipe is dominant and meets distance or velocity threshold
-      const isQuickFlick = deltaTime < 350 && absX > 20;
-      const isDrag = absX > 35;
+      // Verify horizontal swipe is dominant and meets flick/drag threshold
+      const isQuickFlick = deltaTime < QUICK_FLICK_MAX_TIME_MS && absX > QUICK_FLICK_MIN_DISTANCE;
+      const isDrag = absX > SWIPE_DISTANCE_THRESHOLD;
 
       if ((isQuickFlick || isDrag) && absX > absY * 1.1) {
         setIsCascadingClose(false);
         if (deltaX < 0) {
-          // Swiped left (dragged right-to-left) -> Flip forward / next page
+          // Swipe Left -> Next page
           updateTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? totalPages));
         } else {
-          // Swiped right (dragged left-to-right) -> Flip backward / prev page
+          // Swipe Right -> Previous page
           updateTurnedCount((prev) => Math.max(prev - 1, 0));
         }
       }
@@ -499,16 +557,16 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       if (!interactive) return;
       const absX = Math.abs(info.offset.x);
       const absY = Math.abs(info.offset.y);
-      const isFlick = Math.abs(info.velocity.x) > 180 && absX > 15;
-      const isDrag = absX > 35;
+      const isFlick = Math.abs(info.velocity.x) > SWIPE_VELOCITY_THRESHOLD && absX > 15;
+      const isDrag = absX > SWIPE_DISTANCE_THRESHOLD;
 
       if ((isFlick || isDrag) && absX > absY) {
         setIsCascadingClose(false);
-        if (info.offset.x < 0 || info.velocity.x < -180) {
-          // Swiped left -> Next page
+        if (info.offset.x < 0 || info.velocity.x < -SWIPE_VELOCITY_THRESHOLD) {
+          // Pan Left -> Next page
           updateTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? totalPages));
-        } else if (info.offset.x > 0 || info.velocity.x > 180) {
-          // Swiped right -> Previous page
+        } else if (info.offset.x > 0 || info.velocity.x > SWIPE_VELOCITY_THRESHOLD) {
+          // Pan Right -> Previous page
           updateTurnedCount((prev) => Math.max(prev - 1, 0));
         }
       }
@@ -587,6 +645,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
               curve={activeCurve}
               shadow={shadow}
               interactive={interactive}
+              leafClickTurnsPage={leafClickTurnsPage}
               onSelect={flipToPage}
               onHoverStart={handleHoverStart}
               onHoverEnd={handleHoverEnd}

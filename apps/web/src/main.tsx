@@ -51,7 +51,6 @@ if ("serviceWorker" in navigator) {
                 newWorker.state === "installed" &&
                 navigator.serviceWorker.controller
               ) {
-                // Tell the new service worker to take over immediately
                 newWorker.postMessage({ type: "SKIP_WAITING" });
               }
             });
@@ -59,35 +58,21 @@ if ("serviceWorker" in navigator) {
         });
       })
       .catch(() => undefined);
-
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
-      }
-    });
   };
 
   if (import.meta.env.PROD) {
     window.addEventListener("load", registerSW);
+  } else if (new URLSearchParams(window.location.search).get("sw") === "1") {
+    window.addEventListener("load", registerSW);
   } else {
-    if (new URLSearchParams(window.location.search).get("sw") === "1") {
-      window.addEventListener("load", registerSW);
-    } else {
-      navigator.serviceWorker
-        .getRegistrations()
-        .then((registrations) => {
-          let unreg = false;
-          for (const registration of registrations) {
-            registration.unregister();
-            unreg = true;
-          }
-          if (unreg) {
-            window.location.reload();
-          }
-        })
-        .catch(() => undefined);
-    }
+    // Clean up any stale service workers in dev mode quietly without forced reloads
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => {
+        for (const registration of registrations) {
+          void registration.unregister();
+        }
+      })
+      .catch(() => undefined);
   }
 }

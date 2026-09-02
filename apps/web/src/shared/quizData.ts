@@ -443,15 +443,114 @@ export const calculateQuizResults = (
 };
 
 const QUIZ_PROGRESS_STORAGE_KEY = "quiz-flow-progress";
+const QUIZ_OUTCOME_STORAGE_KEY = "quiz-flow-outcome";
 
 export interface SavedQuizProgress {
   questionSignature: string;
   currentQuestionIndex: number;
   answers: QuizAnswer[];
+  result?: QuizResult | null;
+  outcome?: QuizResult | null;
+  isCompleted?: boolean;
 }
 
 export const buildQuizProgressStorageKey = (sessionKey: string) =>
   `${QUIZ_PROGRESS_STORAGE_KEY}:${sessionKey}`;
+
+export const buildQuizOutcomeStorageKey = (sessionKey: string) =>
+  `${QUIZ_OUTCOME_STORAGE_KEY}:${sessionKey}`;
+
+export const buildQuizResultStorageKey = buildQuizOutcomeStorageKey;
+
+export const readSavedQuizOutcome = (
+  storageKey: string,
+): QuizResult | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  let raw: string | null = null;
+  try {
+    raw = window.localStorage.getItem(storageKey);
+  } catch {
+    // Ignore localStorage read errors
+  }
+
+  if (!raw) {
+    try {
+      raw = window.sessionStorage.getItem(storageKey);
+    } catch {
+      // Ignore sessionStorage read errors
+    }
+  }
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<QuizResult>;
+    if (
+      typeof parsed.character === "string" &&
+      parsed.scores &&
+      typeof parsed.scores === "object" &&
+      parsed.percentages &&
+      typeof parsed.percentages === "object"
+    ) {
+      return parsed as QuizResult;
+    }
+    clearSavedQuizOutcome(storageKey);
+    return null;
+  } catch {
+    clearSavedQuizOutcome(storageKey);
+    return null;
+  }
+};
+
+export const readSavedQuizResult = readSavedQuizOutcome;
+
+export const writeSavedQuizOutcome = (
+  storageKey: string,
+  outcome: QuizResult,
+) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(outcome));
+  } catch (err) {
+    console.warn("Failed to save quiz outcome to localStorage:", err);
+  }
+
+  try {
+    window.sessionStorage.removeItem(storageKey);
+  } catch {
+    // Ignore sessionStorage cleanup errors
+  }
+};
+
+export const writeSavedQuizResult = writeSavedQuizOutcome;
+
+export const clearSavedQuizOutcome = (storageKey: string) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(storageKey);
+  } catch {
+    // Ignore localStorage cleanup errors
+  }
+
+  try {
+    window.sessionStorage.removeItem(storageKey);
+  } catch {
+    // Ignore sessionStorage cleanup errors
+  }
+};
+
+export const clearSavedQuizResult = clearSavedQuizOutcome;
 
 export const readSavedQuizProgress = (
   storageKey: string,
@@ -491,11 +590,29 @@ export const readSavedQuizProgress = (
       return null;
     }
 
-    return {
+    const resolvedResult =
+      parsed.result && typeof parsed.result.character === "string"
+        ? parsed.result
+        : parsed.outcome && typeof parsed.outcome.character === "string"
+          ? parsed.outcome
+          : undefined;
+
+    const progress: SavedQuizProgress = {
       questionSignature,
       currentQuestionIndex: parsed.currentQuestionIndex,
       answers: parsed.answers,
     };
+
+    if (resolvedResult) {
+      progress.result = resolvedResult;
+      progress.outcome = resolvedResult;
+    }
+
+    if (typeof parsed.isCompleted === "boolean") {
+      progress.isCompleted = parsed.isCompleted;
+    }
+
+    return progress;
   } catch {
     clearSavedQuizProgress(storageKey);
     return null;
@@ -540,3 +657,56 @@ export const clearSavedQuizProgress = (storageKey: string) => {
     // Ignore sessionStorage cleanup errors
   }
 };
+
+export interface QuizOutcomeSummaryOptions {
+  result: QuizResult;
+  resultName?: string;
+  archetype?: string;
+  description?: string;
+  characterEmojis?: Record<string, string>;
+}
+
+export const formatQuizOutcomeSummary = ({
+  result,
+  resultName,
+  archetype,
+  description,
+  characterEmojis = {
+    Electra: "💖",
+    Aaron: "🦉",
+    Madeleine: "👑",
+    "Nosferatu/Smeemo": "🦇",
+    Neither: "🎞️",
+  },
+}: QuizOutcomeSummaryOptions): string => {
+  const resolvedName =
+    resultName ??
+    (result.character === "Neither"
+      ? "A little bit of everyone"
+      : result.character);
+  const characterEmoji =
+    characterEmojis[result.character] ||
+    (result.character === "Neither" ? "🎞️" : "✨");
+
+  const sortedChars = (
+    Object.keys(result.percentages) as QuizCharacter[]
+  ).sort((a, b) => (result.percentages[b] || 0) - (result.percentages[a] || 0));
+
+  const mixLines = sortedChars.map(
+    (char) =>
+      `• ${characterEmojis[char] || "•"} ${char}: ${result.percentages[char] || 0}%`,
+  );
+
+  const lines = [
+    `🎬 Movie-Night Personality Match: ${characterEmoji} ${resolvedName}${archetype ? ` (${archetype})` : ""}`,
+  ];
+
+  if (description) {
+    lines.push(`"${description}"`);
+  }
+
+  lines.push("", "📊 My Persona Mix:", ...mixLines);
+
+  return lines.join("\n");
+};
+

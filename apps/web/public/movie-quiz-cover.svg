@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bgGlow" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.85"/>
+      <stop offset="35%" stop-color="#db2777" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#1e1035" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#090514" stop-opacity="1"/>
+    </radialGradient>
+
+    <linearGradient id="beamGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="beamGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="popcornStripes" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="25%" stop-color="#ef4444"/>
+      <stop offset="25%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#ef4444"/>
+      <stop offset="75%" stop-color="#ef4444"/>
+      <stop offset="75%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+
+    <linearGradient id="glassLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="glassRightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="shadowHeavy" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="400" height="600" fill="#090514"/>
+  <rect width="400" height="600" fill="url(#bgGlow)"/>
+
+  <!-- Light Beams / Projector Cones -->
+  <polygon points="200,0 0,600 120,600" fill="url(#beamGrad1)"/>
+  <polygon points="200,0 280,600 400,600" fill="url(#beamGrad2)"/>
+
+  <!-- Floating Golden & Neon Sparkles / Bokeh -->
+  <circle cx="60" cy="120" r="4" fill="#fde047" opacity="0.8" filter="url(#neonGlow)"/>
+  <circle cx="340" cy="140" r="5" fill="#38bdf8" opacity="0.9" filter="url(#neonGlow)"/>
+  <circle cx="80" cy="280" r="3" fill="#f472b6" opacity="0.7"/>
+  <circle cx="320" cy="300" r="4.5" fill="#fde047" opacity="0.85" filter="url(#neonGlow)"/>
+  <circle cx="50" cy="420" r="6" fill="#c084fc" opacity="0.6"/>
+  <circle cx="350" cy="460" r="3" fill="#38bdf8" opacity="0.8"/>
+  <circle cx="190" cy="90" r="2.5" fill="#ffffff" opacity="0.9"/>
+  <circle cx="230" cy="130" r="3" fill="#fde047" opacity="0.9"/>
+
+  <!-- Cinema Sparkle Stars (4-point stars) -->
+  <path d="M70,90 Q70,105 85,105 Q70,105 70,120 Q70,105 55,105 Q70,105 70,90 Z" fill="#fef08a" opacity="0.9" filter="url(#neonGlow)"/>
+  <path d="M330,80 Q330,92 342,92 Q330,92 330,104 Q330,92 318,92 Q330,92 330,80 Z" fill="#67e8f9" opacity="0.85" filter="url(#neonGlow)"/>
+  <path d="M90,360 Q90,370 100,370 Q90,370 90,380 Q90,370 80,370 Q90,370 90,360 Z" fill="#f472b6" opacity="0.8"/>
+  <path d="M310,210 Q310,222 322,222 Q310,222 310,234 Q310,222 298,222 Q310,222 310,210 Z" fill="#fde047" opacity="0.95" filter="url(#neonGlow)"/>
+
+  <!-- Golden Movie Tickets floating in background -->
+  <g transform="translate(40, 160) rotate(-22)" filter="url(#shadowHeavy)">
+    <rect x="0" y="0" width="70" height="42" rx="4" fill="url(#goldGrad)" stroke="#fef08a" stroke-width="1.5"/>
+    <circle cx="0" cy="21" r="7" fill="#090514"/>
+    <circle cx="70" cy="21" r="7" fill="#090514"/>
+    <line x1="22" y1="6" x2="22" y2="36" stroke="#78350f" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="32" y="26" fill="#451a03" font-size="11" font-weight="900" font-family="system-ui, sans-serif">ADMIT 1</text>
+  </g>
+
+  <g transform="translate(280, 150) rotate(20)" filter="url(#shadowHeavy)">
+    <rect x="0" y="0" width="75" height="44" rx="4" fill="#ec4899" stroke="#fbcfe8" stroke-width="1.5"/>
+    <circle cx="0" cy="22" r="7" fill="#090514"/>
+    <circle cx="75" cy="22" r="7" fill="#090514"/>
+    <line x1="24" y1="6" x2="24" y2="38" stroke="#831843" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="33" y="27" fill="#ffffff" font-size="10" font-weight="900" font-family="system-ui, sans-serif">VIP PASS</text>
+  </g>
+
+  <!-- Film Reel Strip Curved Behind Popcorn -->
+  <g filter="url(#shadowHeavy)">
+    <path d="M-20,240 C100,180 300,320 420,220" fill="none" stroke="#18181b" stroke-width="26" stroke-linecap="round"/>
+    <path d="M-20,240 C100,180 300,320 420,220" fill="none" stroke="#3f3f46" stroke-width="24" stroke-linecap="round"/>
+    <path d="M-20,240 C100,180 300,320 420,220" fill="none" stroke="#09090b" stroke-width="14" stroke-dasharray="14,10"/>
+    <circle cx="80" cy="210" r="3" fill="#ffffff" opacity="0.6"/>
+    <circle cx="160" cy="215" r="3" fill="#ffffff" opacity="0.6"/>
+    <circle cx="240" cy="255" r="3" fill="#ffffff" opacity="0.6"/>
+    <circle cx="320" cy="265" r="3" fill="#ffffff" opacity="0.6"/>
+  </g>
+
+  <!-- Popcorn Overflow / Flying Popcorn Kernels -->
+  <g id="popcornClouds" filter="url(#shadowHeavy)">
+    <!-- Back Popcorn puffs -->
+    <ellipse cx="150" cy="220" rx="22" ry="18" fill="#fef08a"/>
+    <ellipse cx="250" cy="225" rx="24" ry="20" fill="#fef08a"/>
+    <ellipse cx="200" cy="200" rx="30" ry="25" fill="#fffbeb"/>
+    <ellipse cx="170" cy="180" rx="20" ry="16" fill="#fef9c3"/>
+    <ellipse cx="230" cy="175" rx="22" ry="18" fill="#fef08a"/>
+    <ellipse cx="200" cy="160" rx="26" ry="22" fill="#ffffff"/>
+
+    <!-- Exploding Kernels in Air -->
+    <g transform="translate(110, 140) rotate(-15)">
+      <ellipse cx="0" cy="0" rx="12" ry="10" fill="#fef08a"/>
+      <ellipse cx="-4" cy="-4" rx="8" ry="7" fill="#ffffff"/>
+      <circle cx="2" cy="2" r="3" fill="#f59e0b" opacity="0.7"/>
+    </g>
+
+    <g transform="translate(290, 130) rotate(25)">
+      <ellipse cx="0" cy="0" rx="14" ry="11" fill="#fffbeb"/>
+      <ellipse cx="5" cy="-3" rx="9" ry="8" fill="#ffffff"/>
+      <circle cx="-2" cy="2" r="4" fill="#f59e0b" opacity="0.7"/>
+    </g>
+
+    <g transform="translate(200, 110) scale(1.1)">
+      <ellipse cx="0" cy="0" rx="15" ry="12" fill="#ffffff"/>
+      <ellipse cx="-5" cy="-4" rx="9" ry="8" fill="#fef08a"/>
+      <circle cx="3" cy="3" r="4" fill="#fbbf24"/>
+    </g>
+
+    <g transform="translate(145, 105) rotate(40)">
+      <ellipse cx="0" cy="0" rx="10" ry="8" fill="#fef08a"/>
+      <circle cx="-2" cy="2" r="3" fill="#f59e0b"/>
+    </g>
+
+    <g transform="translate(255, 95) rotate(-30)">
+      <ellipse cx="0" cy="0" rx="11" ry="9" fill="#ffffff"/>
+      <circle cx="2" cy="-1" r="3.5" fill="#f59e0b"/>
+    </g>
+
+    <!-- Front Butter Popcorn mounds with shading -->
+    <ellipse cx="140" cy="245" rx="25" ry="20" fill="#fffbeb"/>
+    <circle cx="132" cy="240" r="8" fill="#fbbf24" opacity="0.4"/>
+    <ellipse cx="260" cy="245" rx="26" ry="21" fill="#fffbeb"/>
+    <circle cx="265" cy="242" r="8" fill="#fbbf24" opacity="0.4"/>
+    <ellipse cx="200" cy="235" rx="34" ry="26" fill="#ffffff"/>
+    <ellipse cx="175" cy="225" rx="20" ry="16" fill="#fef08a"/>
+    <ellipse cx="225" cy="225" rx="22" ry="17" fill="#fef08a"/>
+    <circle cx="200" cy="230" r="10" fill="#f59e0b" opacity="0.3"/>
+  </g>
+
+  <!-- Striped Popcorn Bucket -->
+  <g filter="url(#shadowHeavy)">
+    <polygon points="120,250 280,250 255,420 145,420" fill="url(#popcornStripes)"/>
+    <!-- Bucket Rim -->
+    <ellipse cx="200" cy="250" rx="80" ry="12" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+    <!-- Bucket Bottom curve -->
+    <ellipse cx="200" cy="420" rx="55" ry="8" fill="#991b1b"/>
+    <!-- Golden emblem on bucket -->
+    <ellipse cx="200" cy="335" rx="44" ry="32" fill="#18181b" stroke="url(#goldGrad)" stroke-width="3"/>
+    <text x="200" y="330" fill="#fef08a" font-size="12" font-weight="900" font-family="system-ui, sans-serif" text-anchor="middle" letter-spacing="1">CINEMA</text>
+    <text x="200" y="348" fill="#ffffff" font-size="15" font-weight="900" font-family="system-ui, sans-serif" text-anchor="middle" letter-spacing="2">TASTE</text>
+    <path d="M175,356 L225,356" stroke="#f59e0b" stroke-width="1.5"/>
+  </g>
+
+  <!-- Iconic 3D Glasses Resting in Front -->
+  <g transform="translate(200, 395) rotate(-6)" filter="url(#shadowHeavy)">
+    <!-- Frame Body -->
+    <path d="M-90,-16 C-90,-16 -60,-22 0,-18 C60,-22 90,-16 90,-16 C95,-10 95,20 85,25 C75,30 45,28 35,16 C30,10 15,10 10,16 C0,28 -30,30 -40,25 C-50,20 -95,-10 -90,-16 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5"/>
+    <!-- Bridge accent -->
+    <rect x="-10" y="-18" width="20" height="12" rx="3" fill="#0f172a"/>
+    <!-- Left Lens (Cyan 3D) -->
+    <path d="M-80,-8 C-75,-12 -45,-12 -38,-8 C-35,4 -40,18 -55,18 C-70,18 -82,6 -80,-8 Z" fill="url(#glassLeftGrad)" opacity="0.9"/>
+    <ellipse cx="-60" cy="-3" rx="12" ry="4" fill="#ffffff" opacity="0.6"/>
+    <!-- Right Lens (Red 3D) -->
+    <path d="M38,-8 C45,-12 75,-12 80,-8 C82,6 70,18 55,18 C40,18 35,4 38,-8 Z" fill="url(#glassRightGrad)" opacity="0.9"/>
+    <ellipse cx="58" cy="-3" rx="12" ry="4" fill="#ffffff" opacity="0.6"/>
+  </g>
+
+  <!-- Clapperboard in Corner -->
+  <g transform="translate(30, 370) rotate(-16)" filter="url(#shadowHeavy)">
+    <rect x="0" y="18" width="65" height="45" rx="3" fill="#18181b" stroke="#ffffff" stroke-width="1.5"/>
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="65" height="18" rx="2" fill="#18181b"/>
+      <!-- Chevron stripes on clapper top -->
+      <polygon points="5,0 15,0 5,18 -5,18" fill="#ffffff"/>
+      <polygon points="25,0 35,0 25,18 15,18" fill="#ffffff"/>
+      <polygon points="45,0 55,0 45,18 35,18" fill="#ffffff"/>
+      <polygon points="65,0 75,0 65,18 55,18" fill="#ffffff"/>
+    </g>
+    <text x="8" y="38" fill="#38bdf8" font-size="8" font-weight="800" font-family="system-ui, sans-serif">QUIZ</text>
+    <text x="8" y="52" fill="#fbbf24" font-size="9" font-weight="900" font-family="system-ui, sans-serif">SCENE 1</text>
+  </g>
+
+  <!-- Big Neon Glow Headline "TASTE QUIZ" on Poster -->
+  <g transform="translate(200, 495)">
+    <!-- Glow Backdrop -->
+    <rect x="-120" y="-22" width="240" height="44" rx="22" fill="#000000" opacity="0.6" stroke="url(#goldGrad)" stroke-width="1.5"/>
+    <text x="0" y="6" fill="#ffffff" font-size="20" font-weight="900" font-family="system-ui, sans-serif" text-anchor="middle" letter-spacing="3">
+      MOVIE NIGHT
+    </text>
+  </g>
+
+  <!-- Bottom Catchphrase -->
+  <text x="200" y="540" fill="#fbcfe8" font-size="12" font-weight="700" font-family="system-ui, sans-serif" text-anchor="middle" letter-spacing="1.5" opacity="0.95">
+    WHAT'S YOUR FILM DNA?
+  </text>
+</svg>

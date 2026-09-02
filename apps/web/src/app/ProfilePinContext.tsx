@@ -24,7 +24,7 @@ interface ProfileSelectionContextValue {
   selectProfile: (profile: User) => void;
   handleLogout: () => void;
   handleLogoutUser: (user: User) => void;
-  openPinSettings: () => void;
+  openPinSettings: (userToEdit?: User | null) => void;
   clearSelectionError: () => void;
 }
 
@@ -167,11 +167,15 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     [pendingUser, setCurrentUser],
   );
 
-  const openPinSettings = useCallback(() => {
-    if (!currentUser || isLoading || isVerifying || isSavingPin) return;
-    setSelectionError(null);
-    setPinSettingsUser(currentUser);
-  }, [currentUser, isLoading, isSavingPin, isVerifying]);
+  const openPinSettings = useCallback(
+    (userToEdit?: User | null) => {
+      const target = userToEdit || currentUser;
+      if (!target || isLoading || isVerifying || isSavingPin) return;
+      setSelectionError(null);
+      setPinSettingsUser(target);
+    },
+    [currentUser, isLoading, isSavingPin, isVerifying],
+  );
 
   const clearPendingUser = useCallback(() => {
     setPendingUser(null);

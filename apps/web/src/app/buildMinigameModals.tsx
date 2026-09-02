@@ -7,7 +7,7 @@ import {
   SpinSwipeGamePanel,
 } from "@/app/lazyFeaturePanels";
 import { WorkspaceFeatureSection } from "@/components/ui";
-import type { User } from "@/shared/types";
+import type { User, QuizResult } from "@/shared/types";
 
 export interface AppModalConfig {
   key: string;
@@ -21,12 +21,22 @@ export interface AppModalConfig {
   closeDisabledLabel?: string;
   content: ReactNode;
   contentStyle?: CSSProperties;
+  isUnstyled?: boolean;
 }
 
 const scrollContentStyle: CSSProperties = {
   flex: 1,
   minHeight: 0,
   overflowY: "auto",
+};
+
+const uncontainedContentStyle: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  height: "100%",
 };
 
 const renderSuspended = (content: ReactNode, label: string) => (
@@ -44,7 +54,7 @@ export interface BuildFeatureModalsParams {
   setShowQuizEditor: (open: boolean) => void;
   setShowQuizExperience: (open: boolean) => void;
   setShowSpinMatch: (open: boolean) => void;
-  onQuizComplete: () => void;
+  onQuizComplete: (outcome?: QuizResult) => void;
   onQuizRetake: () => void;
   onQuizEdit: () => void;
 }
@@ -84,11 +94,12 @@ export function buildFeatureModals(
       key: "quiz-experience",
       isOpen: showQuizExperience,
       onClose: () => setShowQuizExperience(false),
-      title: "Quiz · Personality",
+      title: "",
       ariaLabel: "Personality quiz",
-      maxWidth: 720,
-      maxHeight: 900,
-      contentStyle: scrollContentStyle,
+      maxWidth: 960,
+      maxHeight: 880,
+      isUnstyled: true,
+      contentStyle: uncontainedContentStyle,
       content: renderSuspended(
         <WorkspaceFeatureSection
           id="quiz-section"
@@ -124,21 +135,15 @@ export function buildFeatureModals(
       key: "spin-match",
       isOpen: showSpinMatch,
       onClose: () => setShowSpinMatch(false),
-      title: "Spin & Match",
-      ariaLabel: "Spin match game",
+      title: "",
+      ariaLabel: "Spin game",
       maxWidth: 720,
       maxHeight: 900,
-      contentStyle: scrollContentStyle,
+      isUnstyled: true,
+      contentStyle: uncontainedContentStyle,
       content: renderSuspended(
-        <WorkspaceFeatureSection
-          id="spin-match-section"
-          ariaLabel="Spin match game"
-          variant="embedded"
-          bodyClassName="workspace-feature-section__body--spin"
-        >
-          <SpinSwipeGamePanel />
-        </WorkspaceFeatureSection>,
-        "Loading spin match",
+        <SpinSwipeGamePanel />,
+        "Loading spin game",
       ),
     },
   ];

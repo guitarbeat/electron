@@ -571,28 +571,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                     handlePrimary();
                   }}
                   buttonText={primaryLabel}
-                  secondaryButtonText="Quiz"
-                  onSecondaryPointerEnter={() =>
-                    void import("@/components/quiz")
-                  }
-                  onSecondaryFocus={() => void import("@/components/quiz")}
-                  onSecondarySubmit={() => {
-                    window.dispatchEvent(
-                      new CustomEvent("open-quiz-experience"),
-                    );
-                  }}
-                  spinButtonText="Spin"
-                  onSpinPointerEnter={() =>
-                    void import("@/components/spin-match/SpinSwipeGame")
-                  }
-                  onSpinFocus={() =>
-                    void import("@/components/spin-match/SpinSwipeGame")
-                  }
-                  onSpinSubmit={() => {
-                    window.dispatchEvent(
-                      new CustomEvent("open-spin-experience"),
-                    );
-                  }}
                   isBusy={isBusy}
                   buttonDisabled={!hasQuery}
                   placeholder="Add a movie, show, or place"

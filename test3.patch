@@ -1,0 +1,9 @@
+--- apps/web/src/components/ui/index.tsx
++++ apps/web/src/components/ui/index.tsx
+@@ -2393,6 +2393,7 @@
+ }) => {
+   const { isMobile } = useViewport();
+   if (tab === "movies" || tab === "places") {
++    console.log("RENDERING DRIFTWALLLOADING IN FALLBACK");
+     return <DriftWallLoading isMobile={isMobile} fullViewport />;
+   }

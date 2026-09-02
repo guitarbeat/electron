@@ -590,23 +590,6 @@ export const CloseIcon: FC = () => (
   </svg>
 );
 
-export const GearIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-  </svg>
-);
-
 export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   const {
     currentUser,
@@ -624,13 +607,17 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   } = useProfileSelection();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeSettingsProfile, setActiveSettingsProfile] = useState<User | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const toggleSettings = useCallback(
     (next: boolean) => {
       setIsSettingsOpen(next);
-      if (!next) clearSelectionError();
+      if (!next) {
+        clearSelectionError();
+        setActiveSettingsProfile(null);
+      }
       onOpenChange?.(next);
     },
     [clearSelectionError, onOpenChange],
@@ -643,9 +630,9 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
       const target = e.target as Node;
       if (
         menuRef.current &&
-        triggerRef.current &&
+        containerRef.current &&
         !menuRef.current.contains(target) &&
-        !triggerRef.current.contains(target)
+        !containerRef.current.contains(target)
       ) {
         toggleSettings(false);
       }
@@ -661,7 +648,6 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
       if (e.key === "Escape") {
         e.preventDefault();
         toggleSettings(false);
-        triggerRef.current?.focus();
       }
     };
     document.addEventListener("keydown", handler);
@@ -671,28 +657,42 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   const handleProfileClick = (profile: User) => {
     const isProfileLoggedIn = (activeUsers || []).includes(profile);
     if (isProfileLoggedIn) {
-      handleLogoutUser(profile);
-      toggleSettings(false);
+      if (isSettingsOpen && activeSettingsProfile === profile) {
+        toggleSettings(false);
+      } else {
+        setActiveSettingsProfile(profile);
+        setIsSettingsOpen(true);
+        onOpenChange?.(true);
+      }
       return;
     }
-    selectProfile(profile);
     toggleSettings(false);
+    selectProfile(profile);
   };
 
+  const targetProfile =
+    activeSettingsProfile ||
+    currentUser ||
+    (activeUsers && activeUsers.length > 0 ? activeUsers[0] : null);
+
   const handleSettingsClick = () => {
-    openPinSettings();
+    if (targetProfile) {
+      openPinSettings(targetProfile);
+    }
     toggleSettings(false);
   };
 
   const handleLogoutClick = () => {
-    handleLogout();
+    if (targetProfile) {
+      handleLogoutUser(targetProfile);
+    } else {
+      handleLogout();
+    }
     toggleSettings(false);
   };
 
-  const activeProfile = currentUser || (activeUsers && activeUsers.length > 0 ? activeUsers[0] : null);
-
   return (
-    <div className="inline-profiles-container">
+    <div ref={containerRef} className="inline-profiles-container">
       {/* Profiles Switcher Row */}
       <div
         className="profiles-switcher-row"
@@ -702,16 +702,20 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
         {([...USER_OPTIONS] as User[]).map((profile) => {
           const isProfileLoggedIn = (activeUsers || []).includes(profile);
           const hasPin = userHasPin(profile);
+          const isMenuTarget = isSettingsOpen && targetProfile === profile;
+
           return (
             <button
               key={profile}
               type="button"
-              className={`profile-switcher-btn profile-switcher-btn--${profile.toLowerCase()}${isProfileLoggedIn ? " is-active is-logged-in" : " is-logged-out"}`}
+              className={`profile-switcher-btn profile-switcher-btn--${profile.toLowerCase()}${isProfileLoggedIn ? " is-active is-logged-in" : " is-logged-out"}${isMenuTarget ? " is-menu-open" : ""}`}
               onClick={() => handleProfileClick(profile)}
               disabled={isDisabled}
+              aria-expanded={isProfileLoggedIn ? isMenuTarget : undefined}
+              aria-haspopup={isProfileLoggedIn ? "menu" : undefined}
               aria-label={
                 isProfileLoggedIn
-                  ? `${profile} (logged in, click to log out)`
+                  ? `${profile} (active, click for profile settings & logout)`
                   : hasPin
                     ? `Log in as ${profile} (PIN protected)`
                     : `Log in as ${profile}`
@@ -724,79 +728,63 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
             </button>
           );
         })}
-
-        {/* Settings/Logout Cog Trigger (only when a user is logged in) */}
-        {activeProfile && (
-          <div className="profile-settings-dropdown-wrap">
-            <button
-              ref={triggerRef}
-              type="button"
-              className={`profile-settings-trigger-btn${isSettingsOpen ? " is-open" : ""}`}
-              onClick={() => toggleSettings(!isSettingsOpen)}
-              aria-expanded={isSettingsOpen}
-              aria-haspopup="menu"
-              aria-label="Profile options"
-            >
-              <GearIcon size={16} />
-            </button>
-
-            {isSettingsOpen && (
-              <>
-                <div
-                  className="app-header__profile-backdrop"
-                  onClick={() => toggleSettings(false)}
-                  aria-hidden="true"
-                />
-                <div
-                  ref={menuRef}
-                  className="profile-settings-menu"
-                  role="menu"
-                  aria-label="Profile settings"
-                >
-                  <div className="profile-settings-header">
-                    <span className="profile-settings-title">
-                      {activeProfile}
-                    </span>
-                    <span className="profile-settings-subtitle">
-                      Profile Options
-                    </span>
-                  </div>
-
-                  <div className="profile-settings-section">
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="profile-settings-action-btn"
-                      onClick={handleSettingsClick}
-                      disabled={isDisabled || isSavingPin}
-                    >
-                      <LockIcon size={14} />
-                      <span>
-                        {activeProfile && userNeedsPin(activeProfile)
-                          ? "Finish PIN Setup"
-                          : activeProfile && userHasPin(activeProfile)
-                            ? "Change Security PIN"
-                            : "Set Security PIN"}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="profile-settings-action-btn is-logout"
-                      onClick={handleLogoutClick}
-                      disabled={isDisabled}
-                    >
-                      <LogoutIcon />
-                      <span>Log out (Switch to Guest)</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Settings Popover (opens when clicking active profile face) */}
+      {isSettingsOpen && targetProfile && (
+        <>
+          <div
+            className="app-header__profile-backdrop"
+            onClick={() => toggleSettings(false)}
+            aria-hidden="true"
+          />
+          <div
+            ref={menuRef}
+            className="profile-settings-menu"
+            role="menu"
+            aria-label={`${targetProfile} settings`}
+          >
+            <div className="profile-settings-header">
+              <span className="profile-settings-title">
+                {targetProfile}
+              </span>
+              <span className="profile-settings-subtitle">
+                Profile Options
+              </span>
+            </div>
+
+            <div className="profile-settings-section">
+              <button
+                type="button"
+                role="menuitem"
+                className="profile-settings-action-btn"
+                onClick={handleSettingsClick}
+                disabled={isDisabled || isSavingPin}
+              >
+                <LockIcon size={14} />
+                <span>
+                  {userNeedsPin(targetProfile)
+                    ? "Finish PIN Setup"
+                    : userHasPin(targetProfile)
+                      ? "Change Security PIN"
+                      : "Set Security PIN"}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
+                className="profile-settings-action-btn is-logout"
+                onClick={handleLogoutClick}
+                disabled={isDisabled}
+              >
+                <LogoutIcon />
+                <span>Log out (Switch to Guest)</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {selectionError && (
         <p className="inline-profiles-error" role="alert">
@@ -2027,6 +2015,7 @@ interface MinigameModalProps {
   closeDisabled?: boolean;
   /** Explain why dismissal is temporarily disabled */
   closeDisabledLabel?: string;
+  isUnstyled?: boolean;
 }
 
 /**
@@ -2043,6 +2032,7 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
   ariaLabel = "Dialog",
   closeDisabled = false,
   closeDisabledLabel = "Please wait for the current action to finish.",
+  isUnstyled = false,
 }) => {
   const isMobileShell = useMediaQuery(mediaBreakpoints.sm);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -2149,7 +2139,20 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
         ref={dialogRef}
         tabIndex={-1}
         className="minigame-modal-surface"
-        style={surfaceStyles}
+        style={
+          isUnstyled
+            ? {
+                ...surfaceStyles,
+                background: "transparent",
+                border: "none",
+                boxShadow: "none",
+                backdropFilter: "none",
+                WebkitBackdropFilter: "none",
+                overflow: "visible",
+                scrollbarWidth: "none",
+              }
+            : surfaceStyles
+        }
       >
         {/* Header: only rendered when a title is provided; otherwise close floats absolute */}
         {title ? (
@@ -2331,17 +2334,28 @@ export const MinigameModal: React.FC<MinigameModalProps> = ({
         {/* Content */}
         <div
           className="minigame-modal-content"
-          style={{
-            position: "relative",
-            flex: 1,
-            minHeight: 0,
-            display: "flex",
-            flexDirection: "column",
-            overflowY: "auto",
-            overscrollBehavior: "contain",
-            WebkitOverflowScrolling: "touch",
-            scrollbarGutter: "stable both-edges",
-          }}
+          style={
+            isUnstyled
+              ? {
+                  position: "relative",
+                  flex: 1,
+                  minHeight: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "visible",
+                }
+              : {
+                  position: "relative",
+                  flex: 1,
+                  minHeight: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  overflowY: "auto",
+                  overscrollBehavior: "contain",
+                  WebkitOverflowScrolling: "touch",
+                  scrollbarGutter: "stable both-edges",
+                }
+          }
         >
           {children}
         </div>
@@ -2666,6 +2680,7 @@ interface BottomSheetProps {
   children: React.ReactNode;
   closeDisabled?: boolean;
   closeDisabledLabel?: string;
+  isUnstyled?: boolean;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
