@@ -375,7 +375,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   movie,
   watchStatusLabel,
   hasPosterError,
-  onPosterError,
+  onPosterError: _onPosterError,
   isMobile = false,
   metadataItems,
   watchStatus,
@@ -394,7 +394,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     ? (resolvedPosterUrl as string)
     : resolvePosterUrl(undefined, movie.id || movie.title);
 
-  const [isMobileBookletOpen, setIsMobileBookletOpen] = React.useState(false);
+  const [turnedCount, setTurnedCount] = React.useState(0);
 
   const pages: PageFlipLeaf[] = React.useMemo(() => {
     return [
@@ -491,85 +491,39 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     onEdit,
   ]);
 
+  const bookWidth = isMobile ? 180 : 280;
+  const bookHeight = isMobile ? 270 : 420;
+  const bookSpineShift = isMobile ? 85 : 130;
+
   return (
     <figure
       className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
       aria-label={`Poster for ${movie.title}`}
     >
-      {/* Desktop/Tablet inline booklet mode */}
-      {!isMobile ? (
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-10">
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <PageFlip
-              pages={pages}
-              pageWidth={280}
-              pageHeight={420}
-              spineShift={130}
-              pageRadius={8}
-              turnAngle={180}
-              peekAngle={14}
-              shadow={0.4}
-              onBackgroundClick={onClose}
-              forceClose={!isOpen}
-            />
-          </div>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="w-full h-full p-0 border-0 bg-transparent cursor-pointer block text-left"
-          onClick={() => setIsMobileBookletOpen(true)}
-          aria-label={`Open 3D booklet for ${movie.title}`}
-        >
-          <img
-            src={activePosterUrl}
-            alt={`${movie.title} poster`}
-            className="movie-details-modal__poster"
-            loading="lazy"
-            decoding="async"
-            fetchPriority="high"
-            onError={onPosterError}
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-8">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <PageFlip
+            pages={pages}
+            pageWidth={bookWidth}
+            pageHeight={bookHeight}
+            spineShift={bookSpineShift}
+            pageRadius={isMobile ? 6 : 8}
+            turnAngle={180}
+            peekAngle={14}
+            shadow={0.45}
+            onBackgroundClick={onClose}
+            forceClose={!isOpen}
+            onPageChange={(count) => setTurnedCount(count)}
           />
-        </button>
-      )}
-
-      {/* Mobile dedicated 3D Flipbook overlay */}
-      {isMobile && isMobileBookletOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070b14]/95 backdrop-blur-xl p-4 select-none"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${movie.title} 3D Flipbook`}
-        >
-          <button
-            type="button"
-            onClick={() => setIsMobileBookletOpen(false)}
-            className="absolute top-4 right-4 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 border border-white/20 text-lg transition cursor-pointer"
-            aria-label="Close 3D booklet"
-          >
-            ✕
-          </button>
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <PageFlip
-              pages={pages}
-              pageWidth={170}
-              pageHeight={255}
-              spineShift={80}
-              pageRadius={6}
-              turnAngle={180}
-              peekAngle={14}
-              shadow={0.5}
-              forceClose={!isOpen}
-              onBackgroundClick={() => setIsMobileBookletOpen(false)}
-            />
-          </div>
-          <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-md">
-            <span className="text-xs text-white/90 font-medium">
-              📖 Swipe, tap, or arrow keys to flip
-            </span>
-          </div>
         </div>
-      )}
+        <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-md shadow-lg transition-all duration-200">
+          <span className="text-xs text-white/90 font-medium tracking-wide">
+            {turnedCount === 0
+              ? "📖 Tap or click cover to open booklet"
+              : "📖 Click or swipe pages to turn"}
+          </span>
+        </div>
+      </div>
     </figure>
   );
 };

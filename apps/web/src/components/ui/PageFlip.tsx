@@ -114,13 +114,14 @@ const LeafFace: React.FC<LeafFaceProps> = ({
 
   if (typeof content === "string") {
     return (
-      <img
-        src={content}
-        alt={altText}
-        draggable={false}
-        className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
-        style={style}
-      />
+      <div className="absolute inset-0 h-full w-full overflow-hidden select-none" style={style}>
+        <img
+          src={content}
+          alt={altText}
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
+        />
+      </div>
     );
   }
 

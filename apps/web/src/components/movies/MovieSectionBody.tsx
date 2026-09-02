@@ -265,6 +265,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             grayscale={false}
             onTileClick={handleTileClick}
             scrollStorageKey="movies-workspace-wall"
+            isPaused={Boolean(selectedMovie)}
+            className={selectedMovie ? "drift-wall--modal-open" : ""}
           />
         </div>
       ) : (

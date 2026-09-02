@@ -154,6 +154,23 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
     };
   }, [close, dialogRef, isOpen]);
 
+  const originDelta = React.useMemo(() => {
+    if (!origin || typeof window === "undefined") {
+      return { dx: 0, dy: 0, scale: 0.85 };
+    }
+    const originCenterX = origin.left + origin.width / 2;
+    const originCenterY = origin.top + origin.height / 2;
+    const viewportCenterX = window.innerWidth / 2;
+    const viewportCenterY = window.innerHeight / 2;
+    const bookWidth = isMobile ? 180 : 280;
+    const scale = Math.min(Math.max(origin.width / bookWidth, 0.35), 0.95);
+    return {
+      dx: Math.round(originCenterX - viewportCenterX),
+      dy: Math.round(originCenterY - viewportCenterY),
+      scale,
+    };
+  }, [origin, isMobile]);
+
   if (!isVisible) {
     return null;
   }
@@ -191,6 +208,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
           "--movie-origin-height": source.height,
           "--movie-origin-scale-x": String(scaleX),
           "--movie-origin-scale-y": String(scaleY),
+          "--movie-origin-dx": `${originDelta.dx}px`,
+          "--movie-origin-dy": `${originDelta.dy}px`,
+          "--movie-origin-scale": String(originDelta.scale),
         } as React.CSSProperties
       }
       role="dialog"
@@ -209,6 +229,14 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         tabIndex={-1}
         className={`movie-details-modal__dialog${isMobile ? " movie-details-modal__dialog--mobile" : ""}`}
       >
+        <button
+          type="button"
+          onClick={close}
+          className="movie-details-modal__close z-50"
+          aria-label="Close details"
+        >
+          ✕
+        </button>
         <motion.div 
           className="movie-details-modal__surface"
           drag={isMobile ? "y" : false}

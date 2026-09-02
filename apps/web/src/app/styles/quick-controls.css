@@ -318,8 +318,7 @@
 
 .toggle-panel,
 .msg-board-surface,
-.ui-card,
-.movie-item-card {
+.ui-card {
   border-color: var(--color-border-subtle);
   box-shadow: var(--shadow-card);
 }

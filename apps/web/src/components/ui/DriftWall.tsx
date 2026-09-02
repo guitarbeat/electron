@@ -46,6 +46,7 @@ export interface DriftWallProps {
   style?: CSSProperties;
   onTileClick?: (item: DriftWallItem | ReactNode, index: number) => void;
   scrollStorageKey?: string;
+  isPaused?: boolean;
 }
 
 const EMPTY_ITEMS: (DriftWallItem | ReactNode)[] = [];
@@ -85,6 +86,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   style,
   onTileClick,
   scrollStorageKey,
+  isPaused = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLDivElement>(null);
@@ -388,12 +390,14 @@ export const DriftWall: React.FC<DriftWallProps> = ({
           if (!meta) continue;
 
           // 1. Determine Target Speed
-          const paused = wallHoveredRef.current && pauseOnHover;
-          const factor = paused || hoveredColRef.current === c ? 0 : 1;
+          const isWallPaused = isPaused || (wallHoveredRef.current && pauseOnHover);
+          const isColHovered = hoveredColRef.current === c;
+          // Hovering a column slows it down smoothly (0.28x speed); wall pause eases to 0
+          const factor = isWallPaused ? 0 : isColHovered ? 0.28 : 1;
           const target = baseVelocities[c] * factor;
 
           // 2. Smoothly adjust current column velocity towards the target speed
-          const ease = 1 - Math.exp(-dt / (target === 0 ? 0.16 : 0.28));
+          const ease = 1 - Math.exp(-dt / (target === 0 ? 0.2 : 0.32));
           velocitiesRef.current[c] += (target - velocitiesRef.current[c]) * ease;
 
           // 3. Compute final movement for this frame
@@ -441,6 +445,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     parallax,
     reduced,
     applyPlaneTransform,
+    isPaused,
   ]);
 
   // ============================================================================
