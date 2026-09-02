@@ -373,7 +373,7 @@ export interface PosterHeroProps {
 
 export const PosterHero: React.FC<PosterHeroProps> = ({
   movie,
-  watchStatusLabel,
+  watchStatusLabel: _watchStatusLabel,
   hasPosterError,
   onPosterError: _onPosterError,
   isMobile = false,
@@ -385,7 +385,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   onToggleUserWatched,
   activeUsers = [],
   onEdit,
-  onClose,
+  onClose: _onClose,
   isOpen = true,
 }) => {
   const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
@@ -450,37 +450,11 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             </footer>
           </div>
         ),
-        back: (
-          <div className="relative flex h-full w-full flex-col items-center justify-center p-4 bg-slate-900 text-center select-none overflow-hidden">
-            <img
-              src={activePosterUrl}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-xs scale-110 pointer-events-none"
-            />
-            <div className="relative z-10 flex flex-col items-center justify-center h-full w-full">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
-                Viewing Status
-              </span>
-              <h4 className="text-sm font-bold text-white mb-2">
-                {watchStatusLabel}
-              </h4>
-              <p className="text-[11px] text-slate-300 max-w-[170px] mx-auto leading-tight mb-6">
-                {movie.watchedBy.length === 2
-                  ? "Watched together by Aaron & Electra ❤️"
-                  : movie.watchedBy.length === 1
-                    ? `Watched by ${movie.watchedBy[0]}`
-                    : "On the movie night watchlist"}
-              </p>
-            </div>
-          </div>
-        ),
       },
     ];
   }, [
     movie,
     activePosterUrl,
-    watchStatusLabel,
     metadataItems,
     watchStatus,
     isWatchedByCurrentUser,
@@ -500,7 +474,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
       aria-label={`Poster for ${movie.title}`}
     >
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 pt-8">
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-3 pt-6 sm:p-4 sm:pt-8">
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
           <PageFlip
             pages={pages}
@@ -511,18 +485,79 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             turnAngle={180}
             peekAngle={14}
             shadow={0.45}
-            onBackgroundClick={onClose}
+            closeOnLeave={false}
             forceClose={!isOpen}
+            maxTurnCount={1}
+            turnedCount={turnedCount}
             onPageChange={(count) => setTurnedCount(count)}
           />
         </div>
-        <div className="flex items-center gap-1.5 mt-5 px-3.5 py-1.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-md shadow-lg transition-all duration-200">
-          <span className="text-xs text-white/90 font-medium tracking-wide">
+
+        {/* Simplified Booklet Controls */}
+        <nav
+          className="flex flex-col items-center gap-2 mt-4 sm:mt-5 select-none"
+          aria-label="Booklet navigation"
+        >
+          <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/80 border border-white/15 backdrop-blur-md shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setTurnedCount((c) => Math.max(0, c - 1))}
+              disabled={turnedCount === 0}
+              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
+                turnedCount === 0
+                  ? "text-white/25 cursor-not-allowed opacity-40"
+                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
+              }`}
+              aria-label="Previous page"
+            >
+              ‹ Prev
+            </button>
+
+            <div className="flex items-center gap-0.5 px-1 border-x border-white/10">
+              {[
+                { label: "Cover", index: 0 },
+                { label: "Details", index: 1 },
+              ].map((tab) => {
+                const isActive = turnedCount === tab.index;
+                return (
+                  <button
+                    key={tab.index}
+                    type="button"
+                    onClick={() => setTurnedCount(tab.index)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-950 font-semibold shadow-sm scale-100"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTurnedCount((c) => Math.min(1, c + 1))}
+              disabled={turnedCount >= 1}
+              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
+                turnedCount >= 1
+                  ? "text-white/25 cursor-not-allowed opacity-40"
+                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
+              }`}
+              aria-label="Next page"
+            >
+              Next ›
+            </button>
+          </div>
+
+          <span className="text-[11px] text-white/50 tracking-wide font-normal">
             {turnedCount === 0
-              ? "📖 Tap or click cover to open booklet"
-              : "📖 Click or swipe pages to turn"}
+              ? "Swipe left, click cover, or tap 'Details' to open"
+              : "Swipe right, click 'Cover', or tap ‹ Prev to close"}
           </span>
-        </div>
+        </nav>
       </div>
     </figure>
   );

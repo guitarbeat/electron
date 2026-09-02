@@ -1837,7 +1837,7 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
   details,
   className = "",
   style,
-  year,
+  year: _year,
 }) => {
   const actionsDisabled = isProcessing || disableActions || !canRespond;
 
@@ -1858,16 +1858,6 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
         >
           <MediaCardPosterWrap className="movie-item-poster-wrap">
             {media}
-            <div className="movie-item-title-overlay" aria-hidden="true">
-              <MediaCardTitle className="movie-item-title-overlay__title">
-                {title}
-              </MediaCardTitle>
-              {year && (
-                <div className="movie-item-title-overlay__meta">
-                  <span className="movie-item-meta__year">{year}</span>
-                </div>
-              )}
-            </div>
             <button
               type="button"
               className="movie-item-details-hit-area"

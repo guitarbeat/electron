@@ -11,7 +11,7 @@ export interface PageFlipLeaf {
   /** Front face content (visible before turning) */
   front: React.ReactNode;
   /** Back face content (visible after turning) */
-  back: React.ReactNode;
+  back?: React.ReactNode;
   /** Accessible label/alt text for front */
   frontAlt?: string;
   /** Accessible label/alt text for back */
@@ -42,6 +42,7 @@ export interface PageFlipProps {
   autoOpen?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  turnedCount?: number;
   onPageChange?: (currentTurnedCount: number) => void;
   onBackgroundClick?: () => void;
 }
@@ -201,9 +202,13 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
   const handlePanEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       if (!interactive) return;
-      if (info.offset.x < -25 && !isTurned) {
+      const absX = Math.abs(info.offset.x);
+      const absY = Math.abs(info.offset.y);
+      if (absX < 20 || absX < absY) return;
+
+      if ((info.offset.x < -25 || info.velocity.x < -180) && !isTurned) {
         onSelect(index);
-      } else if (info.offset.x > 25 && isTurned) {
+      } else if ((info.offset.x > 25 || info.velocity.x > 180) && isTurned) {
         onSelect(index);
       }
     },
@@ -307,44 +312,60 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   autoOpen,
   className = "",
   style,
+  turnedCount: turnedCountProp,
   onPageChange,
   onBackgroundClick,
 }) => {
   const totalPages = pages.length;
-  const [turnedCount, setTurnedCount] = useState(0);
+  const [internalTurnedCount, setInternalTurnedCount] = useState(turnedCountProp ?? 0);
+  const isControlled = turnedCountProp !== undefined;
+  const turnedCount = isControlled ? turnedCountProp : internalTurnedCount;
   const [hoveredIndex, setHoveredIndex] = useState(-1);
   const [isCascadingClose, setIsCascadingClose] = useState(false);
 
   const activeCurve = useMemo(() => EASING_CURVES[ease] ?? EASING_CURVES.easeInOut, [ease]);
 
-  // Sync page change notification
+  const updateTurnedCount = useCallback(
+    (action: number | ((prev: number) => number)) => {
+      const next = typeof action === "function" ? action(turnedCount) : action;
+      if (!isControlled) {
+        setInternalTurnedCount(next);
+      }
+      onPageChange?.(next);
+    },
+    [isControlled, turnedCount, onPageChange]
+  );
+
+  // Sync page change notification for uncontrolled changes
   const prevTurnedCountRef = useRef(turnedCount);
   useEffect(() => {
     if (prevTurnedCountRef.current !== turnedCount) {
       prevTurnedCountRef.current = turnedCount;
-      onPageChange?.(turnedCount);
+      if (!isControlled) {
+        onPageChange?.(turnedCount);
+      }
     }
-  }, [turnedCount, onPageChange]);
+  }, [turnedCount, isControlled, onPageChange]);
 
   // Handle programmatic forceClose
   useEffect(() => {
     if (forceClose && turnedCount > 0) {
       setIsCascadingClose(true);
-      setTurnedCount(0);
+      updateTurnedCount(0);
     }
-  }, [forceClose, turnedCount]);
+  }, [forceClose, turnedCount, updateTurnedCount]);
 
   // Handle autoOpen
   useEffect(() => {
     if (autoOpen && turnedCount === 0 && !forceClose) {
       const timer = setTimeout(() => {
         setIsCascadingClose(false);
-        setTurnedCount(1);
+        updateTurnedCount(1);
       }, 50);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [autoOpen, forceClose, turnedCount]);
+  }, [autoOpen, forceClose, turnedCount, updateTurnedCount]);
 
   /* -------------------------- Navigation Actions -------------------------- */
 
@@ -352,20 +373,18 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     (targetIndex: number) => {
       if (!interactive) return;
       setIsCascadingClose(false);
-      setTurnedCount((current) => {
-        const next = targetIndex < current ? targetIndex : targetIndex + 1;
-        if (maxTurnCount !== undefined && next > maxTurnCount) return 0;
-        return next;
-      });
+      const next = targetIndex < turnedCount ? targetIndex : targetIndex + 1;
+      const bounded = maxTurnCount !== undefined && next > maxTurnCount ? 0 : next;
+      updateTurnedCount(bounded);
     },
-    [interactive, maxTurnCount]
+    [interactive, maxTurnCount, turnedCount, updateTurnedCount]
   );
 
   const closeAllPages = useCallback(() => {
     if (!interactive) return;
     setIsCascadingClose(true);
-    setTurnedCount(0);
-  }, [interactive]);
+    updateTurnedCount(0);
+  }, [interactive, updateTurnedCount]);
 
   const handleHoverStart = useCallback(
     (index: number) => {
@@ -373,10 +392,10 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       setHoveredIndex(index);
       if (trigger === "hover") {
         setIsCascadingClose(false);
-        setTurnedCount(index + 1);
+        updateTurnedCount(index + 1);
       }
     },
-    [interactive, trigger]
+    [interactive, trigger, updateTurnedCount]
   );
 
   const handleHoverEnd = useCallback(() => {
@@ -396,13 +415,13 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         case "ArrowRight":
           event.preventDefault();
           setIsCascadingClose(false);
-          setTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? totalPages));
+          updateTurnedCount(Math.min(turnedCount + 1, maxTurnCount ?? totalPages));
           break;
 
         case "ArrowLeft":
           event.preventDefault();
           setIsCascadingClose(false);
-          setTurnedCount((prev) => Math.max(prev - 1, 0));
+          updateTurnedCount(Math.max(turnedCount - 1, 0));
           break;
 
         case "Home":
@@ -413,7 +432,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         case "End":
           event.preventDefault();
           setIsCascadingClose(false);
-          setTurnedCount(maxTurnCount !== undefined ? Math.min(maxTurnCount, totalPages) : totalPages);
+          updateTurnedCount(maxTurnCount !== undefined ? Math.min(maxTurnCount, totalPages) : totalPages);
           break;
 
         case "Escape":
@@ -422,7 +441,79 @@ export const PageFlip: React.FC<PageFlipProps> = ({
           break;
       }
     },
-    [interactive, maxTurnCount, totalPages, closeAllPages, handleBackgroundClick]
+    [interactive, turnedCount, maxTurnCount, totalPages, updateTurnedCount, closeAllPages, handleBackgroundClick]
+  );
+
+  /* -------------------------- Gesture Actions --------------------------- */
+
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (!interactive) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        time: Date.now(),
+      };
+    },
+    [interactive]
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!interactive || !touchStartRef.current) return;
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      const deltaTime = Date.now() - touchStartRef.current.time;
+      touchStartRef.current = null;
+
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      // Check if horizontal swipe is dominant and meets distance or velocity threshold
+      const isQuickFlick = deltaTime < 350 && absX > 20;
+      const isDrag = absX > 35;
+
+      if ((isQuickFlick || isDrag) && absX > absY * 1.1) {
+        setIsCascadingClose(false);
+        if (deltaX < 0) {
+          // Swiped left (dragged right-to-left) -> Flip forward / next page
+          updateTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? totalPages));
+        } else {
+          // Swiped right (dragged left-to-right) -> Flip backward / prev page
+          updateTurnedCount((prev) => Math.max(prev - 1, 0));
+        }
+      }
+    },
+    [interactive, maxTurnCount, totalPages, updateTurnedCount]
+  );
+
+  const handleStagePanEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (!interactive) return;
+      const absX = Math.abs(info.offset.x);
+      const absY = Math.abs(info.offset.y);
+      const isFlick = Math.abs(info.velocity.x) > 180 && absX > 15;
+      const isDrag = absX > 35;
+
+      if ((isFlick || isDrag) && absX > absY) {
+        setIsCascadingClose(false);
+        if (info.offset.x < 0 || info.velocity.x < -180) {
+          // Swiped left -> Next page
+          updateTurnedCount((prev) => Math.min(prev + 1, maxTurnCount ?? totalPages));
+        } else if (info.offset.x > 0 || info.velocity.x > 180) {
+          // Swiped right -> Previous page
+          updateTurnedCount((prev) => Math.max(prev - 1, 0));
+        }
+      }
+    },
+    [interactive, maxTurnCount, totalPages, updateTurnedCount]
   );
 
   /* ------------------------------- Render --------------------------------- */
@@ -432,8 +523,11 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       className={`page-flip-container relative flex h-full w-full items-center justify-center select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-xl ${className}`}
       style={{
         perspective: `${perspective}px`,
+        touchAction: "pan-y",
         ...style,
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       onPointerLeave={() => {
         setHoveredIndex(-1);
         if (closeOnLeave) closeAllPages();
@@ -450,7 +544,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
 
       {/* 3D Book Stage */}
       <motion.div
-        className="relative z-[1]"
+        className="relative z-[1] cursor-grab active:cursor-grabbing"
         style={{
           width: pageWidth,
           height: pageHeight,
@@ -458,12 +552,14 @@ export const PageFlip: React.FC<PageFlipProps> = ({
           WebkitPerspective: `${perspective}px`,
           transformStyle: "preserve-3d",
           WebkitTransformStyle: "preserve-3d",
+          touchAction: "pan-y",
         }}
         animate={{ x: turnedCount > 0 ? spineShift : 0 }}
         transition={{
           duration: Math.max(0.8 * duration, 0.1),
           ease: "easeOut",
         }}
+        onPanEnd={handleStagePanEnd}
       >
         {pages.map((leaf, index) => {
           const isTurned = index < turnedCount;

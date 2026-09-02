@@ -14,7 +14,6 @@ import {
   Button,
   MediaCardPosterWrap,
   MediaPoster,
-  MediaCardTitle,
 } from "@/components/ui";
 import { PlacesEmptyIllustration } from "@/components/ui/EmptyStateIllustrations";
 import { PlaceEditModal } from "./PlaceEditModal";
@@ -59,29 +58,6 @@ export const PlaceCard: React.FC<{
                 posterUrl={place.imageUrl}
                 id={place.id}
               />
-              <div className="movie-item-title-overlay" aria-hidden="true">
-                <MediaCardTitle className="movie-item-title-overlay__title">
-                  {place.name}
-                </MediaCardTitle>
-                <div className="movie-item-title-overlay__meta">
-                  <span
-                    className="movie-item-meta__year"
-                    style={{ color: "#38bdf8", fontWeight: 600 }}
-                  >
-                    📍 {place.category || "Place"}
-                  </span>
-                  {place.visitedAt ? (
-                    <span
-                      className="movie-item-meta__rating"
-                      style={{ color: "var(--color-accent)" }}
-                    >
-                      Visited
-                    </span>
-                  ) : (
-                    <span className="movie-item-meta__rating">To Visit</span>
-                  )}
-                </div>
-              </div>
               <button
                 type="button"
                 className="movie-item-details-hit-area"

@@ -10,7 +10,6 @@ import type {
 import {
   MediaPoster,
   MediaCardPosterWrap,
-  MediaCardTitle,
   MediaCardWatcherStack,
   CardTiltShell,
   CardTiltSheen,
@@ -183,17 +182,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 watchers={movie.watchedBy}
                 className="movie-item-watchers"
               />
-
-              <div className="movie-item-title-overlay" aria-hidden="true">
-                <MediaCardTitle className="movie-item-title-overlay__title">
-                  {movie.title}
-                </MediaCardTitle>
-                {movie.year && (
-                  <div className="movie-item-title-overlay__meta">
-                    <span className="movie-item-meta__year">{movie.year}</span>
-                  </div>
-                )}
-              </div>
 
               <button
                 type="button"
