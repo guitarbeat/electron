@@ -13,6 +13,8 @@ export interface ChatDriftCardProps {
   isCompact?: boolean;
   onOpenChat?: () => void;
   className?: string;
+  isChatCard?: boolean;
+  "data-chat-card"?: boolean;
 }
 
 export const ChatDriftCard: React.FC<ChatDriftCardProps> = ({
@@ -23,7 +25,7 @@ export const ChatDriftCard: React.FC<ChatDriftCardProps> = ({
   const { messages } = useMessages();
 
   const handleOpen = useCallback(
-    (e?: React.MouseEvent) => {
+    (e?: React.MouseEvent | React.KeyboardEvent) => {
       if (e) {
         e.stopPropagation();
       }
@@ -48,11 +50,23 @@ export const ChatDriftCard: React.FC<ChatDriftCardProps> = ({
       className={`movie-item-container chat-drift-card-container ${className}`.trim()}
       data-chat-card="true"
       data-height-ratio="1"
+      onClick={handleOpen}
+      role="button"
+      tabIndex={0}
+      aria-label="Open movie chat experience"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpen(e);
+        }
+      }}
+      style={{ cursor: "pointer" }}
     >
       <CardTiltShell disabled={isCompact}>
         <Card
           variant="default"
           className="movie-item-card chroma-card chat-drift-card"
+          onClick={handleOpen}
           style={{
             padding: 0,
             overflow: "hidden",

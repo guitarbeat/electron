@@ -244,7 +244,26 @@ function SpinWheel({
         {kept.length} movie{kept.length !== 1 ? "s" : ""} in the wheel
       </p>
 
-      <div style={{ position: "relative", width: 270, height: 270 }}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onSpin}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSpin();
+          }
+        }}
+        aria-label={isSpinning ? "Spinning wheel" : "Click to spin the wheel"}
+        title={isSpinning ? "Spinning..." : "Click to spin!"}
+        style={{
+          position: "relative",
+          width: 270,
+          height: 270,
+          cursor: isSpinning ? "wait" : kept.length < 1 ? "not-allowed" : "pointer",
+          userSelect: "none",
+        }}
+      >
         <div
           aria-hidden
           style={{
@@ -633,7 +652,7 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
           flexDirection: "column",
           alignItems: "center",
           gap: "0.85rem",
-          padding: "0.75rem 1rem 1rem",
+          padding: "1rem 1rem 1rem",
           userSelect: "none",
           position: "relative",
         }}
@@ -752,7 +771,14 @@ function ProgressBar({
   const pct = total > 0 ? (current / total) * 100 : 0;
 
   return (
-    <div style={{ width: "100%" }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        padding: "0 3rem",
+        boxSizing: "border-box",
+      }}
+    >
       <div
         style={{
           display: "flex",

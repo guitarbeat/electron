@@ -13,7 +13,7 @@
     "dev": "npm run dev --prefix apps/web",
     "preview": "npm run serve --prefix apps/web",
     "verify": "npm run check-types && npm run lint && npm run test && npm run build",
-    "build": "npm run typecheck && npm run build --prefix apps/web",
+    "build": "npm run typecheck && npm run build --prefix apps/web && node scripts/prepare-dist.mjs",
     "typecheck:libs": "tsc --build --force",
     "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
     "typecheck": "npm run typecheck:libs && npm run typecheck:api && npm run typecheck --prefix apps/web",

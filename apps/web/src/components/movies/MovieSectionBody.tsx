@@ -196,6 +196,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         key={`quiz-drift-card-${idx}`}
         currentUser={currentUser}
         isCompact={isMobile}
+        isQuizCard
+        data-quiz-card
       />
     ));
 
@@ -203,6 +205,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       <SpinDriftCard
         key={`spin-drift-card-${idx}`}
         isCompact={isMobile}
+        isSpinCard
+        data-spin-card
       />
     ));
 
@@ -211,6 +215,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         key={`chat-drift-card-${idx}`}
         currentUser={currentUser}
         isCompact={isMobile}
+        isChatCard
+        data-chat-card
       />
     ));
 

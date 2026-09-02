@@ -149,15 +149,28 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleOpenChat = () => {
+      setOpenPanels((prev) => {
+        const next = new Set(prev);
+        next.add("messages");
+        return next;
+      });
+      window.setTimeout(() => {
+        const input = document.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+          "#floating-chat-panel textarea, #floating-chat-panel input"
+        );
+        input?.focus();
+      }, 120);
+    };
+    const handleToggleChat = () => {
       togglePanel("messages");
     };
     window.addEventListener("open-chat-experience", handleOpenChat);
     window.addEventListener("open-messages-experience", handleOpenChat);
-    window.addEventListener("toggle-chat-panel", handleOpenChat);
+    window.addEventListener("toggle-chat-panel", handleToggleChat);
     return () => {
       window.removeEventListener("open-chat-experience", handleOpenChat);
       window.removeEventListener("open-messages-experience", handleOpenChat);
-      window.removeEventListener("toggle-chat-panel", handleOpenChat);
+      window.removeEventListener("toggle-chat-panel", handleToggleChat);
     };
   }, [togglePanel]);
 

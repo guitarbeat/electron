@@ -19,11 +19,11 @@ import {
   WorkspaceTabFallback,
   ProfileMenu,
 } from "../components/ui";
-import { BentoSlotContext, useUser } from "./providerContexts";
+import { BentoSlotContext } from "./providerContexts";
 import type { RegisteredBentoSlotConfig } from "./providerContexts";
 import { isLibraryWorkspaceTab } from "../utils/workspaceConfig";
+import LibraryWorkspace from "../components/library/LibraryWorkspace";
 import {
-  LibraryWorkspacePanel as LibraryWorkspace,
   MessageBoardPanel as MessageBoard,
   SpinSwipeGamePanel as SpinSwipeGame,
 } from "./lazyFeaturePanels";
@@ -526,10 +526,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   ) : (
     <MessageBoard />
   );
-  const { currentUser, activeUsers } = useUser();
-  const isLoggedIn = Boolean(
-    currentUser || (activeUsers && activeUsers.length > 0),
-  );
   const isChatOpen = openPanels.has("messages");
   const hasInlinePanels = openPanels.has("spin");
   const [chatRendered, setChatRendered] = useState(isChatOpen);
@@ -606,6 +602,18 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     [openPanels, onTogglePanel, activeTab],
   );
 
+  // Handle Escape key to dismiss open chat panel
+  useEffect(() => {
+    if (!isChatOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleTogglePanel("messages");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isChatOpen, handleTogglePanel]);
+
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <h1 className="sr-only">
@@ -678,7 +686,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
 
         {/* Floating Chat Panel Dock */}
-        {isLoggedIn && chatRendered ? (
+        {chatRendered ? (
           <section
             id="floating-chat-panel"
             className={`chat-dock${chatClosing ? " is-closing" : ""}`}

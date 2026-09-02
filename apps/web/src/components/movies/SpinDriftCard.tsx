@@ -10,6 +10,8 @@ export interface SpinDriftCardProps {
   isCompact?: boolean;
   onOpenSpin?: () => void;
   className?: string;
+  isSpinCard?: boolean;
+  "data-spin-card"?: boolean;
 }
 
 export const SpinDriftCard: React.FC<SpinDriftCardProps> = ({
@@ -18,7 +20,7 @@ export const SpinDriftCard: React.FC<SpinDriftCardProps> = ({
   className = "",
 }) => {
   const handleOpen = useCallback(
-    (e?: React.MouseEvent) => {
+    (e?: React.MouseEvent | React.KeyboardEvent) => {
       if (e) {
         e.stopPropagation();
       }
@@ -38,15 +40,28 @@ export const SpinDriftCard: React.FC<SpinDriftCardProps> = ({
       className={`movie-item-container spin-drift-card-container ${className}`.trim()}
       data-spin-card="true"
       data-height-ratio="1"
+      onClick={handleOpen}
+      role="button"
+      tabIndex={0}
+      aria-label="Open spin & match movie wheel"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpen(e);
+        }
+      }}
+      style={{ cursor: "pointer" }}
     >
       <CardTiltShell disabled={isCompact}>
         <Card
           variant="default"
           className="movie-item-card chroma-card spin-drift-card"
+          onClick={handleOpen}
           style={{
             padding: 0,
             overflow: "hidden",
             borderColor: `${accentColor}55`,
+            cursor: "pointer",
           }}
         >
           <CardTiltSheen />

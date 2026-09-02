@@ -1,5 +1,6 @@
+import fs from "node:fs";
 import path from "path";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { createServerlessRuntimeAdapter } from "./devServerlessRuntime.ts";
@@ -40,6 +41,22 @@ const aliasEntries = {
   "@": resolveFromRoot("src"),
 };
 
+const syncToRootDistPlugin = (): Plugin => ({
+  name: "sync-to-root-dist",
+  closeBundle() {
+    try {
+      const source = path.resolve(import.meta.dirname, "dist/public");
+      const target = path.resolve(import.meta.dirname, "../../dist");
+      if (fs.existsSync(source)) {
+        fs.mkdirSync(target, { recursive: true });
+        fs.cpSync(source, target, { recursive: true });
+      }
+    } catch (err) {
+      console.warn("Failed to sync artifacts to root dist:", err);
+    }
+  },
+});
+
 export default defineConfig(({ mode }) => {
   const rootDir = path.resolve(import.meta.dirname, "../..");
   const envRoot = loadEnv(mode, rootDir, "");
@@ -52,6 +69,7 @@ export default defineConfig(({ mode }) => {
     react(),
     tailwindcss(),
     createServerlessRuntimeAdapter(),
+    syncToRootDistPlugin(),
   ],
   // @tailwindcss/vite processes CSS with LightningCSS internally.
   // Explicitly setting css.transformer here caused an infinite transformation

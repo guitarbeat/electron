@@ -16,6 +16,8 @@ export interface QuizDriftCardProps {
   isCompact?: boolean;
   onOpenQuiz?: () => void;
   className?: string;
+  isQuizCard?: boolean;
+  "data-quiz-card"?: boolean;
 }
 
 const CHARACTER_CONFIG: Record<
@@ -108,6 +110,17 @@ export const QuizDriftCard: React.FC<QuizDriftCardProps> = ({
       className={`movie-item-container quiz-drift-card-container ${isCompleted ? "quiz-drift-card--completed" : ""} ${className}`.trim()}
       data-quiz-card="true"
       data-height-ratio="1"
+      onClick={handleOpen}
+      role="button"
+      tabIndex={0}
+      aria-label="Open movie quiz experience"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpen();
+        }
+      }}
+      style={{ cursor: "pointer" }}
     >
       <CardTiltShell disabled={isCompact}>
         <Card

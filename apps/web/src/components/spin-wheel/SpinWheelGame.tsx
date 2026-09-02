@@ -272,7 +272,37 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
           }`}
         >
           <div className="spin-marker" />
-          <div className="spin-wheel-container">
+          <div
+            className="spin-wheel-container"
+            role="button"
+            tabIndex={0}
+            onClick={handleSpin}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleSpin();
+              }
+            }}
+            aria-label={
+              isSpinning
+                ? "Spinning"
+                : (emptyStateMessage ?? "Spin the wheel")
+            }
+            title={
+              isSpinning
+                ? "Spinning..."
+                : spinPool.length === 0
+                  ? "Pool empty"
+                  : "Click to spin!"
+            }
+            style={{
+              cursor: isSpinning
+                ? "wait"
+                : spinPool.length === 0
+                  ? "not-allowed"
+                  : "pointer",
+            }}
+          >
             <div
               className="spin-wheel-rotor"
               style={{
@@ -307,7 +337,7 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
                         isFlipped ? "spin-wheel-segment__content--flipped" : ""
                       }`}
                     >
-                      {renderPoster(movie, "spin-wheel-segment__poster")}
+                      {renderPoster(movie, "spin-wheel-segment__poster", false)}
                       <span className="spin-wheel-segment__title">
                         {movie.title}
                       </span>
@@ -319,30 +349,31 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
             <div className="spin-wheel-rim" />
             <div className="spin-hub" />
-            {currentUser ? (
-              <button
-                type="button"
-                className="spin-wheel-trigger"
-                onClick={handleSpin}
-                disabled={isSpinning || isLoading || spinPool.length === 0}
-                aria-label={
-                  isSpinning
-                    ? "Spinning"
-                    : (emptyStateMessage ?? "Spin the wheel")
-                }
-              >
-                <span className="spin-wheel-trigger__label">
-                  {triggerLabel}
-                </span>
-                <span className="spin-wheel-trigger__subtext">
-                  {isSpinning
-                    ? "Locked"
-                    : emptyStateMessage
-                      ? "Load"
-                      : "Launch"}
-                </span>
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="spin-wheel-trigger"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSpin();
+              }}
+              disabled={isSpinning || isLoading || spinPool.length === 0}
+              aria-label={
+                isSpinning
+                  ? "Spinning"
+                  : (emptyStateMessage ?? "Spin the wheel")
+              }
+            >
+              <span className="spin-wheel-trigger__label">
+                {triggerLabel}
+              </span>
+              <span className="spin-wheel-trigger__subtext">
+                {isSpinning
+                  ? "Locked"
+                  : emptyStateMessage
+                    ? "Load"
+                    : "Launch"}
+              </span>
+            </button>
           </div>
           {isTv && (
             <div
