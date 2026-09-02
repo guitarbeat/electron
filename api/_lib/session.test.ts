@@ -320,6 +320,18 @@ describe("pin attempt session signing and token verification", () => {
 });
 
 describe("token verification edge cases and error handling", () => {
+  it("should reject token with empty payload or empty signature", () => {
+    const reqEmptyPayload = new Request("http://localhost/api/test", {
+      headers: { cookie: "movie_watch_profile=.some-signature" },
+    });
+    assert.strictEqual(getSessionState(reqEmptyPayload).currentUser, null);
+
+    const reqEmptySig = new Request("http://localhost/api/test", {
+      headers: { cookie: "movie_watch_profile=some-payload." },
+    });
+    assert.strictEqual(getSessionState(reqEmptySig).currentUser, null);
+  });
+
   it("should reject token with multiple dots / extra split parts", () => {
     const payload = base64urlEncode(
       JSON.stringify({
@@ -557,6 +569,22 @@ describe("token verification edge cases and error handling", () => {
 });
 
 describe("cookie generation details and clearing cookies", () => {
+  it("should parse cookies correctly including malformed headers and x-forwarded-scheme", () => {
+    // Test x-forwarded-scheme header for Secure attribute
+    const schemeReq = new Request("http://localhost/api/test", {
+      headers: { "x-forwarded-scheme": "HTTPS" },
+    });
+    const schemeCookie = buildProfileCookie(schemeReq, "Aaron");
+    assert.match(schemeCookie, /Secure/);
+
+    // Test parseCookies with empty parts and values containing equals signs
+    const complexReq = new Request("http://localhost/api/test", {
+      headers: { cookie: "  ; =value ; key=val=with=equals; movie_watch_profile= ; " },
+    });
+    const session = getSessionState(complexReq);
+    assert.strictEqual(session.currentUser, null);
+  });
+
   it("should format cookie with correct security attributes and handle x-forwarded-proto", () => {
     const httpReq = new Request("http://localhost/api/test");
     const httpCookie = buildProfileCookie(httpReq, "Aaron");
