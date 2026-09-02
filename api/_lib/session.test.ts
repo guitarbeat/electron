@@ -90,12 +90,20 @@ describe("verifyStoredPin and hashPin", () => {
       assert.strictEqual(verifyStoredPin("p@s$w0rd", specialHash), false);
     });
 
-    it("should return false when iteration count or salt/hash hex data is corrupted", () => {
+    it("should return false when iteration count is invalid, non-numeric, zero, or negative", () => {
       const validHash = hashPin("1234");
       const parts = validHash.split(":");
 
-      const invalidIterHash = [parts[0], "invalid", parts[2], parts[3]].join(":");
-      assert.strictEqual(verifyStoredPin("1234", invalidIterHash), false);
+      assert.strictEqual(verifyStoredPin("1234", [parts[0], "invalid", parts[2], parts[3]].join(":")), false);
+      assert.strictEqual(verifyStoredPin("1234", [parts[0], "0", parts[2], parts[3]].join(":")), false);
+      assert.strictEqual(verifyStoredPin("1234", [parts[0], "-1000", parts[2], parts[3]].join(":")), false);
+      assert.strictEqual(verifyStoredPin("1234", [parts[0], "NaN", parts[2], parts[3]].join(":")), false);
+      assert.strictEqual(verifyStoredPin("1234", [parts[0], "", parts[2], parts[3]].join(":")), false);
+    });
+
+    it("should return false when salt/hash hex data is corrupted", () => {
+      const validHash = hashPin("1234");
+      const parts = validHash.split(":");
 
       const altSuffix = parts[3].endsWith("ff") ? "00" : "ff";
       const corruptedHashBytes = parts[3].substring(0, parts[3].length - 2) + altSuffix;
