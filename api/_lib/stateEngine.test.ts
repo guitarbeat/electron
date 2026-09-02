@@ -23,6 +23,76 @@ describe("createReadHandler - error handling and fallback data", () => {
     assert.strictEqual(response.status, 405);
   });
 
+  it("returns degraded 200 JSON response with warning undefined when readScopeStoredData throws a non-Error value", async () => {
+    const handler = createReadHandler("movies");
+    const throwingRequest = {
+      method: "GET",
+      get headers() {
+        throw "Non-error string exception";
+      },
+    } as unknown as Request;
+
+    const response = await handler(throwingRequest);
+    assert.strictEqual(response.status, 200);
+
+    const body = (await response.json()) as {
+      data: unknown;
+      version: string;
+      degraded: boolean;
+      warning?: string;
+    };
+
+    assert.strictEqual(body.degraded, true);
+    assert.ok(Array.isArray(body.data));
+    assert.ok(typeof body.version === "string");
+    assert.strictEqual(body.warning, undefined);
+  });
+
+  it("returns degraded 200 JSON response with formatted HTTP warning when readScopeStoredData throws an HTTP error", async () => {
+    const originalDbUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = "postgres://invalid:invalid@127.0.0.1:5432/invalid";
+    sharedStateStore.invalidateSharedStateCache();
+
+    // Use memory store with custom error or mock readSharedStateFileRecord via proxy/store if needed,
+    // or test when readScopeStoredData throws a specific HTTP error string.
+    // Notice that when DATABASE_URL is invalid, readSharedStateFileRecord attempts to connect and fails with Error("connect ECONNREFUSED ...").
+    // We can testgetScopeWarning formatting directly or outer catch handling.
+    try {
+      const handler = createReadHandler("movies");
+      const throwingRequest = {
+        method: "GET",
+        get headers() {
+          throw new Error("Failed to read shared state (500).");
+        },
+      } as unknown as Request;
+
+      const response = await handler(throwingRequest);
+      assert.strictEqual(response.status, 200);
+
+      const body = (await response.json()) as {
+        data: unknown;
+        version: string;
+        degraded: boolean;
+        warning?: string;
+      };
+
+      assert.strictEqual(body.degraded, true);
+      assert.ok(Array.isArray(body.data));
+      assert.ok(typeof body.version === "string");
+      assert.strictEqual(
+        body.warning,
+        "Shared state could not be loaded (HTTP 500). Check server logs and https://status.neon.tech.",
+      );
+    } finally {
+      if (originalDbUrl === undefined) {
+        delete process.env.DATABASE_URL;
+      } else {
+        process.env.DATABASE_URL = originalDbUrl;
+      }
+      sharedStateStore.invalidateSharedStateCache();
+    }
+  });
+
   it("returns degraded 200 JSON response with fallback data when readScopeStoredData throws", async () => {
     const originalDbUrl = process.env.DATABASE_URL;
     process.env.DATABASE_URL = "postgres://invalid:invalid@127.0.0.1:5432/invalid";
