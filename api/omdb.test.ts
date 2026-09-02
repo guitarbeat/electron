@@ -346,4 +346,16 @@ describe("isRateLimited", () => {
 
     assert.strictEqual(isRateLimited("192.168.1.200"), false);
   });
+
+  it("should track rate limits independently for different IP addresses", () => {
+    const ip1 = "192.0.2.10";
+    const ip2 = "192.0.2.20";
+
+    for (let i = 0; i < 30; i++) {
+      assert.strictEqual(isRateLimited(ip1), false);
+    }
+    assert.strictEqual(isRateLimited(ip1), true);
+
+    assert.strictEqual(isRateLimited(ip2), false);
+  });
 });
