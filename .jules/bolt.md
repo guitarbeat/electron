@@ -6,3 +6,6 @@ Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, 
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts)
 Task requested removing type bypassing casts (as any[]) in api/agent.ts:108, but api/agent.ts is already strongly typed using CatalogItem[] and contains no as any[] casts.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Fix implicit any for MovieSectionBody handle events)
+Task requested fixing implicit 'any' for MovieSectionBody handle events referenced at scripts/maintenance/applied_patches/fix_imports.py:24, but fix_imports.py already contains these regex transformations and MovieSectionBody.tsx is already strongly typed.
