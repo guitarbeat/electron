@@ -51,7 +51,7 @@ export const isRateLimited = (ip: string): boolean => {
 
   if (!record || now > record.resetTime) {
     if (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
-      for (const [key, value] of ipRequestCounts.entries()) {
+      for (const [key, value] of ipRequestCounts) {
         if (now > value.resetTime) {
           ipRequestCounts.delete(key);
         } else {
