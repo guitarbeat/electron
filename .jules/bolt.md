@@ -30,3 +30,6 @@ Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by ex
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`, but `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
+Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`. However, `api/_lib/state.ts` has already been updated in a previous refactor and already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Documented the discrepancy with no additional code changes needed.
