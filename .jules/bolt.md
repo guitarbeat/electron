@@ -30,3 +30,6 @@ Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by ex
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`, but `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent in apps/web/src/components/ui/lib/syncBanner.ts:11)
+Task requested resolving a TODO/renaming `whatToDo` property in `SyncBannerContent` at `apps/web/src/components/ui/lib/syncBanner.ts:11`. However, `SyncBannerContent` is already updated and uses `recommendedAction: string;` (and contains no TODO comments), and callers and tests already use `recommendedAction`. Documented the discrepancy with no code changes needed.
