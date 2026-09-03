@@ -254,111 +254,15 @@ type CatalogItem =
   | CatalogMovieSuggestionItem
   | CatalogPlaceSuggestionItem;
 
-const publicCatalog = async (
-  resource: string,
-  url: URL,
-  requestId: string,
-): Promise<Response> => {
-  let items: CatalogItem[];
-  if (resource === "movies") {
-    const moviesData = (
-      await readScopeStoredData("movies", { bypassCache: true })
-    ).clientData;
-    items = moviesData.map(
-      ({
-        id,
-        title,
-        posterUrl,
-        year,
-        plot,
-        imdbRating,
-        runtime,
-        genre,
-        director,
-        category,
-        mediaType,
-      }): CatalogMovieItem => ({
-        id,
-        title,
-        posterUrl,
-        year,
-        plot,
-        imdbRating,
-        runtime,
-        genre,
-        director,
-        category,
-        mediaType,
-      }),
-    );
-  } else if (resource === "places") {
-    const placesData = (
-      await readScopeStoredData("places", { bypassCache: true })
-    ).clientData;
-    items = placesData.map(
-      ({
-        id,
-        name,
-        notes,
-        lat,
-        lng,
-        category,
-        rating,
-        description,
-        imageUrl,
-        visitedAt,
-      }): CatalogPlaceItem => ({
-        id,
-        name,
-        notes,
-        lat,
-        lng,
-        category,
-        rating,
-        description,
-        imageUrl,
-        isVisited: Boolean(visitedAt),
-      }),
-    );
-  } else if (resource === "suggestions") {
-    const moviesData = (
-      await readScopeStoredData("suggestions", { bypassCache: true })
-    ).clientData;
-    const placesData = (
-      await readScopeStoredData("placeSuggestions", { bypassCache: true })
-    ).clientData;
-    items = [
-      ...moviesData.map(
-        ({ id, title, reason, type, status }): CatalogMovieSuggestionItem => ({
-          id,
-          kind: "movie",
-          title,
-          reason,
-          type,
-          status,
-        }),
-      ),
-      ...placesData.map(
-        ({ id, name, notes, category, description, status }): CatalogPlaceSuggestionItem => ({
-          id,
-          kind: "place",
-          name,
-          notes,
-          category,
-          description,
-          status,
-        }),
-      ),
-    ];
-  } else
-    return errorResponse(
-      requestId,
-      404,
-      "NOT_FOUND",
-      "Catalog resource not found.",
-    );
+interface CatalogCacheEntry {
+  versionKey: string;
+  items: CatalogItem[];
+}
 
-  items.sort((a, b) => {
+const catalogCache = new Map<string, CatalogCacheEntry>();
+
+const sortCatalogItems = (items: CatalogItem[]): CatalogItem[] => {
+  return items.sort((a, b) => {
     const getName = (item: CatalogItem): string => {
       if ("title" in item && item.title) return item.title;
       if ("name" in item && item.name) return item.name;
@@ -368,6 +272,127 @@ const publicCatalog = async (
     const nameB = getName(b);
     return nameA.localeCompare(nameB);
   });
+};
+
+const publicCatalog = async (
+  resource: string,
+  url: URL,
+  requestId: string,
+): Promise<Response> => {
+  let items: CatalogItem[];
+  if (resource === "movies") {
+    const stored = await readScopeStoredData("movies", { bypassCache: true });
+    const versionKey = stored.version;
+    const cached = catalogCache.get("movies");
+    if (cached && cached.versionKey === versionKey) {
+      items = cached.items;
+    } else {
+      items = stored.clientData.map(
+        ({
+          id,
+          title,
+          posterUrl,
+          year,
+          plot,
+          imdbRating,
+          runtime,
+          genre,
+          director,
+          category,
+          mediaType,
+        }): CatalogMovieItem => ({
+          id,
+          title,
+          posterUrl,
+          year,
+          plot,
+          imdbRating,
+          runtime,
+          genre,
+          director,
+          category,
+          mediaType,
+        }),
+      );
+      sortCatalogItems(items);
+      catalogCache.set("movies", { versionKey, items });
+    }
+  } else if (resource === "places") {
+    const stored = await readScopeStoredData("places", { bypassCache: true });
+    const versionKey = stored.version;
+    const cached = catalogCache.get("places");
+    if (cached && cached.versionKey === versionKey) {
+      items = cached.items;
+    } else {
+      items = stored.clientData.map(
+        ({
+          id,
+          name,
+          notes,
+          lat,
+          lng,
+          category,
+          rating,
+          description,
+          imageUrl,
+          visitedAt,
+        }): CatalogPlaceItem => ({
+          id,
+          name,
+          notes,
+          lat,
+          lng,
+          category,
+          rating,
+          description,
+          imageUrl,
+          isVisited: Boolean(visitedAt),
+        }),
+      );
+      sortCatalogItems(items);
+      catalogCache.set("places", { versionKey, items });
+    }
+  } else if (resource === "suggestions") {
+    const moviesStored = await readScopeStoredData("suggestions", { bypassCache: true });
+    const placesStored = await readScopeStoredData("placeSuggestions", { bypassCache: true });
+    const versionKey = `${moviesStored.version}:${placesStored.version}`;
+    const cached = catalogCache.get("suggestions");
+    if (cached && cached.versionKey === versionKey) {
+      items = cached.items;
+    } else {
+      items = [
+        ...moviesStored.clientData.map(
+          ({ id, title, reason, type, status }): CatalogMovieSuggestionItem => ({
+            id,
+            kind: "movie",
+            title,
+            reason,
+            type,
+            status,
+          }),
+        ),
+        ...placesStored.clientData.map(
+          ({ id, name, notes, category, description, status }): CatalogPlaceSuggestionItem => ({
+            id,
+            kind: "place",
+            name,
+            notes,
+            category,
+            description,
+            status,
+          }),
+        ),
+      ];
+      sortCatalogItems(items);
+      catalogCache.set("suggestions", { versionKey, items });
+    }
+  } else
+    return errorResponse(
+      requestId,
+      404,
+      "NOT_FOUND",
+      "Catalog resource not found.",
+    );
 
   const result = paginate(items, url);
   return result
