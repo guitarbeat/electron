@@ -139,18 +139,60 @@ describe('cachedProxy utilities', () => {
       assert.strictEqual(await response.text(), 'response body');
     });
 
-    it('supports custom cache status like MISS', () => {
+    it('supports explicit cache status parameters HIT and MISS', async () => {
       const cached: CachedProxyResponse = {
-        body: 'data',
+        body: '{"key":"value"}',
         contentType: 'application/json',
-        status: 404,
-        statusText: 'Not Found',
+        status: 200,
+        statusText: 'OK',
       };
 
-      const response = cachedProxyResponse(cached, 'MISS');
+      const hitResponse = cachedProxyResponse(cached, 'HIT');
+      assert.strictEqual(hitResponse.headers.get('X-Cache'), 'HIT');
+      assert.strictEqual(await hitResponse.text(), '{"key":"value"}');
 
-      assert.strictEqual(response.status, 404);
-      assert.strictEqual(response.headers.get('X-Cache'), 'MISS');
+      const missResponse = cachedProxyResponse(cached, 'MISS');
+      assert.strictEqual(missResponse.headers.get('X-Cache'), 'MISS');
+      assert.strictEqual(await missResponse.text(), '{"key":"value"}');
+    });
+
+    it('preserves status codes and custom statusText', () => {
+      const statuses = [
+        { status: 200, statusText: 'OK' },
+        { status: 201, statusText: 'Created' },
+        { status: 400, statusText: 'Bad Request' },
+        { status: 404, statusText: 'Not Found' },
+        { status: 500, statusText: 'Internal Server Error' },
+      ];
+
+      for (const { status, statusText } of statuses) {
+        const cached: CachedProxyResponse = {
+          body: 'content',
+          contentType: 'application/json',
+          status,
+          statusText,
+        };
+
+        const response = cachedProxyResponse(cached);
+        assert.strictEqual(response.status, status);
+        assert.strictEqual(response.statusText, statusText);
+      }
+    });
+
+    it('handles empty string body and varied content types correctly', async () => {
+      const cachedEmpty: CachedProxyResponse = {
+        body: '',
+        contentType: 'text/plain',
+        status: 200,
+        statusText: 'OK',
+      };
+
+      const response = cachedProxyResponse(cachedEmpty, 'HIT');
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(response.statusText, 'OK');
+      assert.strictEqual(response.headers.get('Content-Type'), 'text/plain');
+      assert.strictEqual(response.headers.get('Cache-Control'), 'no-store');
+      assert.strictEqual(await response.text(), '');
     });
   });
 });
