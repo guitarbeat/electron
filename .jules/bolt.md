@@ -27,3 +27,6 @@ Task requested removing unused exported function `_clearCache` from `apps/web/sr
 
 ## 2026-09-03 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in api/agent.ts)
 Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP. However, `requestIp` in `api/agent.ts` is already updated and extracts the right-most IP (`ips[ips.length - 1]?.trim()`), and corresponding tests in `api/agent.test.ts` already exist and pass. Documented the discrepancy with no code changes.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Missing Tests for Health Check Handler in `api/health.ts`)
+Task requested adding tests for health check handler in `api/health.ts:9`, but comprehensive unit tests already exist in `api/health.test.ts` covering OPTIONS, non-GET/non-OPTIONS 405 response, shallow GET liveness, relative URL parsing, deep health check diagnostics, and 503 error handling. Documented the discrepancy with no unnecessary code changes.
