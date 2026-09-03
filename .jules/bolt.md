@@ -6,3 +6,6 @@ Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, 
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts)
 Task requested removing type bypassing casts (as any[]) in api/agent.ts:108, but api/agent.ts is already strongly typed using CatalogItem[] and contains no as any[] casts.
+
+## 2026-09-03 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in api/agent.ts)
+Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP. However, `requestIp` in `api/agent.ts` is already updated and extracts the right-most IP (`ips[ips.length - 1]?.trim()`), and corresponding tests in `api/agent.test.ts` already exist and pass. Documented the discrepancy with no code changes.
