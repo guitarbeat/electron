@@ -27,3 +27,6 @@ Task requested removing unused exported function `_clearCache` from `apps/web/sr
 
 ## 2026-09-03 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in api/agent.ts)
 Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP. However, `requestIp` in `api/agent.ts` is already updated and extracts the right-most IP (`ips[ips.length - 1]?.trim()`), and corresponding tests in `api/agent.test.ts` already exist and pass. Documented the discrepancy with no code changes.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Fix Initial Offset Calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13`)
+Task requested fixing initial offset calculation to include elapsed time as referenced in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` for `apps/web/src/components/ui/DriftWall.tsx`. However, `apps/web/src/components/ui/DriftWall.tsx` has been refactored in previous updates and no longer contains the target code pattern `(_, i) => offsetsRef.current[i] ?? ...`. Documented the discrepancy with no code changes to source files.
