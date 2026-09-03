@@ -215,9 +215,14 @@ export const bootstrapMissingScopeFiles =
       throw new Error("DATABASE_URL is not configured.");
     }
 
+    const filenames = STATE_SCOPES.map(
+      (scope: StateScope) => getScopeDefinition(scope).filename,
+    );
+    await preloadSharedStateFiles(filenames);
+
     await Promise.all(
       STATE_SCOPES.map((scope: StateScope) =>
-        readScopeStoredData(scope, { bypassCache: true }),
+        readScopeStoredData(scope),
       ),
     );
 
