@@ -27,3 +27,6 @@ Task requested removing unused exported function `_clearCache` from `apps/web/sr
 
 ## 2026-09-03 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in api/agent.ts)
 Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP. However, `requestIp` in `api/agent.ts` is already updated and extracts the right-most IP (`ips[ips.length - 1]?.trim()`), and corresponding tests in `api/agent.test.ts` already exist and pass. Documented the discrepancy with no code changes.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder)
+Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`, but `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
