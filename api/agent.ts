@@ -281,7 +281,7 @@ const publicCatalog = async (
 ): Promise<Response> => {
   let items: CatalogItem[];
   if (resource === "movies") {
-    const stored = await readScopeStoredData("movies", { bypassCache: true });
+    const stored = await readScopeStoredData("movies");
     const versionKey = stored.version;
     const cached = catalogCache.get("movies");
     if (cached && cached.versionKey === versionKey) {
@@ -318,7 +318,7 @@ const publicCatalog = async (
       catalogCache.set("movies", { versionKey, items });
     }
   } else if (resource === "places") {
-    const stored = await readScopeStoredData("places", { bypassCache: true });
+    const stored = await readScopeStoredData("places");
     const versionKey = stored.version;
     const cached = catalogCache.get("places");
     if (cached && cached.versionKey === versionKey) {
@@ -353,8 +353,8 @@ const publicCatalog = async (
       catalogCache.set("places", { versionKey, items });
     }
   } else if (resource === "suggestions") {
-    const moviesStored = await readScopeStoredData("suggestions", { bypassCache: true });
-    const placesStored = await readScopeStoredData("placeSuggestions", { bypassCache: true });
+    const moviesStored = await readScopeStoredData("suggestions");
+    const placesStored = await readScopeStoredData("placeSuggestions");
     const versionKey = `${moviesStored.version}:${placesStored.version}`;
     const cached = catalogCache.get("suggestions");
     if (cached && cached.versionKey === versionKey) {
