@@ -126,6 +126,30 @@ describe('logger helper', () => {
       assert.deepStrictEqual(args[3], plainObj);
       assert.strictEqual(args[4], stringVal);
     });
+
+    it('formats primitive error causes and primitive argument values properly in formatErrorDetails', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+
+      const errWithNumberCause = new Error('Number cause error');
+      (errWithNumberCause as unknown as { cause: unknown }).cause = 404;
+
+      const numVal = 123;
+      const boolVal = false;
+      const nullVal = null;
+      const undefinedVal = undefined;
+
+      logger.error('Primitive errors', errWithNumberCause, numVal, boolVal, nullVal, undefinedVal);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+
+      const formattedErr = args[2] as Record<string, unknown>;
+      assert.strictEqual(formattedErr.cause, '404');
+      assert.strictEqual(args[3], 123);
+      assert.strictEqual(args[4], false);
+      assert.strictEqual(args[5], null);
+      assert.strictEqual(args[6], undefined);
+    });
   });
 
   describe('withContext', () => {
@@ -158,6 +182,10 @@ describe('logger helper', () => {
 
       assert.strictEqual(mockError.mock.callCount(), 1);
       assert.match(mockError.mock.calls[0].arguments[0] as string, /\[ERROR\] \[req:req-123 scope:test-scope user:user-456\]/);
+
+      const formattedCtxErr = mockError.mock.calls[0].arguments[2] as Record<string, unknown>;
+      assert.strictEqual(formattedCtxErr.name, 'Error');
+      assert.strictEqual(formattedCtxErr.message, 'ctx err');
     });
 
     it('suppresses debug log in production on contextual logger when DEBUG is not set', (t) => {
@@ -170,6 +198,19 @@ describe('logger helper', () => {
       ctxLogger.debug('hidden ctx debug');
 
       assert.strictEqual(mockDebug.mock.callCount(), 0);
+    });
+
+    it('logs debug message in production on contextual logger when DEBUG is set', (t) => {
+      process.env.NODE_ENV = 'production';
+      process.env.DEBUG = '1';
+
+      const ctxLogger = logger.withContext({ requestId: 'req-1' });
+      const mockDebug = t.mock.method(console, 'debug', () => {});
+
+      ctxLogger.debug('visible ctx debug in prod');
+
+      assert.strictEqual(mockDebug.mock.callCount(), 1);
+      assert.strictEqual(mockDebug.mock.calls[0].arguments[1], 'visible ctx debug in prod');
     });
 
     it('handles empty context object without adding trailing brackets', (t) => {
