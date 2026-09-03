@@ -7,8 +7,12 @@ describe("resolveConfig", () => {
     assert.equal(resolveConfig("production", "development"), "production");
   });
 
-  it("trims whitespace from the provided value", () => {
+  it("trims leading and trailing whitespace from the provided value", () => {
     assert.equal(resolveConfig("  custom_value  ", "fallback_value"), "custom_value");
+  });
+
+  it("trims newlines and tabs from the provided value while preserving internal spaces", () => {
+    assert.equal(resolveConfig("\n\t hello world \r\n", "fallback"), "hello world");
   });
 
   it("returns fallback when value is undefined", () => {
@@ -19,7 +23,13 @@ describe("resolveConfig", () => {
     assert.equal(resolveConfig("", "fallback_value"), "fallback_value");
   });
 
-  it("returns fallback when value is whitespace-only string", () => {
+  it("returns fallback when value is a whitespace-only string containing spaces, tabs, or newlines", () => {
     assert.equal(resolveConfig("    ", "fallback_value"), "fallback_value");
+    assert.equal(resolveConfig("\t \n \r ", "fallback_value"), "fallback_value");
+  });
+
+  it("returns fallback even if fallback is an empty string", () => {
+    assert.equal(resolveConfig("   ", ""), "");
+    assert.equal(resolveConfig(undefined, ""), "");
   });
 });
