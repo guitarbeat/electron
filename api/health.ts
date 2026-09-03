@@ -3,10 +3,19 @@ import {
   mergeHeaders,
   methodNotAllowedResponse,
 } from "./_lib/http.js";
-import { getPinCoverageState, getStateScopeDiagnostics } from "./_lib/state.js";
+import {
+  getPinCoverageState as defaultGetPinCoverageState,
+  getStateScopeDiagnostics as defaultGetStateScopeDiagnostics,
+} from "./_lib/state.js";
 import { withWebHandler } from "./_lib/webHandler.js";
 
-async function handler(req: Request): Promise<Response> {
+export async function healthHandler(
+  req: Request,
+  deps = {
+    getStateScopeDiagnostics: defaultGetStateScopeDiagnostics,
+    getPinCoverageState: defaultGetPinCoverageState,
+  },
+): Promise<Response> {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -30,8 +39,8 @@ async function handler(req: Request): Promise<Response> {
 
   try {
     const [scopeDiagnostics, pinCoverage] = await Promise.all([
-      getStateScopeDiagnostics(),
-      getPinCoverageState(),
+      deps.getStateScopeDiagnostics(),
+      deps.getPinCoverageState(),
     ]);
 
     return jsonResponse({
@@ -53,4 +62,4 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-export default withWebHandler(handler);
+export default withWebHandler(healthHandler);
