@@ -30,3 +30,6 @@ Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by ex
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`, but `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for proxy URL validation)
+Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` is already thoroughly tested covering happy paths, schemes with +, -, ., case-insensitivity, and negative cases in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes needed.
