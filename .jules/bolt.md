@@ -30,3 +30,6 @@ Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by ex
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`, but `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts`)
+Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but `lib/db/src/schema/index.ts` contains only `export {};`. Documented the discrepancy with no source code changes.
