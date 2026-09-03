@@ -6,3 +6,6 @@ Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, 
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts)
 Task requested removing type bypassing casts (as any[]) in api/agent.ts:108, but api/agent.ts is already strongly typed using CatalogItem[] and contains no as any[] casts.
+
+## 2026-09-03 - N+1 Network Calls in Bulk Metadata Refresh
+Task requested fixing N+1 network calls in bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. Fixing this requires creating a bulk metadata API endpoint on the backend and updating frontend hooks, which is a larger architectural change (> 50 lines) beyond the scope of this task. Documented rationale with no code changes made.
