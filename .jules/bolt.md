@@ -6,3 +6,6 @@ Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, 
 
 ## 2026-09-01 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts)
 Task requested removing type bypassing casts (as any[]) in api/agent.ts:108, but api/agent.ts is already strongly typed using CatalogItem[] and contains no as any[] casts.
+
+## 2026-09-02 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts`)
+Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but `lib/db/src/schema/index.ts` currently contains only `export {};`. Documented the discrepancy with no code changes to `lib/db/src/schema/index.ts`.
