@@ -30,3 +30,6 @@ Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by ex
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`, but `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts)
+Task requested removing type-bypassing casts (`as any[]`) in `api/agent.ts:108`, but `api/agent.ts` is already strongly typed using `CatalogItem[]` and contains no `as any[]` casts.
