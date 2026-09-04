@@ -33,3 +33,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
 Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`. However, `api/_lib/state.ts` has already been updated in a previous refactor and already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
+Task requested resolving a TODO / removing `whatToDo: string;` in `SyncBannerContent` in `apps/web/src/components/ui/lib/syncBanner.ts:11`, but `SyncBannerContent` already uses `recommendedAction: string;` and does not contain `whatToDo`. Documented the discrepancy with no code changes needed.
