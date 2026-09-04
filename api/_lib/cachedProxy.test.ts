@@ -22,6 +22,13 @@ describe('cachedProxy utilities', () => {
       assert.strictEqual(isAbsoluteUrl('custom-scheme.1://test'), true);
     });
 
+    it('returns true for additional valid URL schemes including ws, wss, single-letter, and digits', () => {
+      assert.strictEqual(isAbsoluteUrl('ws://example.com/socket'), true);
+      assert.strictEqual(isAbsoluteUrl('wss://example.com/socket'), true);
+      assert.strictEqual(isAbsoluteUrl('a://test'), true);
+      assert.strictEqual(isAbsoluteUrl('h321://example.com'), true);
+    });
+
     it('returns false for relative URLs, protocol-relative, and invalid schemes', () => {
       assert.strictEqual(isAbsoluteUrl('/path/to/resource'), false);
       assert.strictEqual(isAbsoluteUrl('relative/path'), false);
@@ -29,6 +36,16 @@ describe('cachedProxy utilities', () => {
       assert.strictEqual(isAbsoluteUrl('123scheme://example.com'), false);
       assert.strictEqual(isAbsoluteUrl('http:/example.com'), false);
       assert.strictEqual(isAbsoluteUrl(''), false);
+    });
+
+    it('returns false for invalid scheme characters, missing slashes, or invalid formatting', () => {
+      assert.strictEqual(isAbsoluteUrl('bad_scheme://example.com'), false);
+      assert.strictEqual(isAbsoluteUrl('user@host://example.com'), false);
+      assert.strictEqual(isAbsoluteUrl('mailto:user@example.com'), false);
+      assert.strictEqual(isAbsoluteUrl('javascript:alert(1)'), false);
+      assert.strictEqual(isAbsoluteUrl(' https://example.com'), false);
+      assert.strictEqual(isAbsoluteUrl('http://'), true);
+      assert.strictEqual(isAbsoluteUrl('://example.com'), false);
     });
   });
 
