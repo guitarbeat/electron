@@ -33,3 +33,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
 Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`. However, `api/_lib/state.ts` has already been updated in a previous refactor and already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-03 - Stale Prompt Discrepancy (Missing tests for health check handler in api/health.ts:9)
+Task requested adding tests for health check handler in `api/health.ts:9`, but `api/health.ts` is already fully tested by `api/health.test.ts` covering OPTIONS, non-GET methods, shallow GET, relative URLs, deep GET success, and deep GET error handling. Documented the discrepancy with no code changes to source or test files.
