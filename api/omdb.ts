@@ -21,7 +21,66 @@ const omdbCache = new BoundedResponseCache<CachedProxyResponse>({
   ttlMs: ONE_HOUR_MS,
   maxEntries: MAX_CACHE_ENTRIES,
 });
+export class LRURateLimiter {
+  private readonly maxEntries: number;
+  private readonly windowMs: number;
+  private readonly maxRequests: number;
+
+  constructor(
+    public readonly counts: Map<string, { count: number; resetTime: number }> = new Map(),
+    options: { maxEntries?: number; windowMs?: number; maxRequests?: number } = {},
+  ) {
+    this.maxEntries = options.maxEntries ?? MAX_RATE_LIMIT_ENTRIES;
+    this.windowMs = options.windowMs ?? RATE_LIMIT_WINDOW_MS;
+    this.maxRequests = options.maxRequests ?? MAX_REQUESTS_PER_WINDOW;
+  }
+
+  isRateLimited(ip: string, now: number = Date.now()): boolean {
+    const record = this.counts.get(ip);
+
+    if (!record || now > record.resetTime) {
+      if (this.counts.size >= this.maxEntries) {
+        for (const [key, value] of this.counts) {
+          if (now > value.resetTime) {
+            this.counts.delete(key);
+          } else {
+            if (this.counts.size >= this.maxEntries) {
+              this.counts.delete(key);
+            }
+            break;
+          }
+        }
+      }
+
+      if (record) {
+        this.counts.delete(ip); // Ensure it is moved to the end of insertion order
+      }
+      this.counts.set(ip, {
+        count: 1,
+        resetTime: now + this.windowMs,
+      });
+      return false;
+    }
+
+    if (record.count >= this.maxRequests) {
+      return true;
+    }
+
+    record.count += 1;
+    return false;
+  }
+
+  clear(): void {
+    this.counts.clear();
+  }
+}
+
 export const ipRequestCounts = new Map<string, { count: number; resetTime: number }>();
+const omdbRateLimiter = new LRURateLimiter(ipRequestCounts, {
+  maxEntries: MAX_RATE_LIMIT_ENTRIES,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  maxRequests: MAX_REQUESTS_PER_WINDOW,
+});
 
 const getOmdbApiBaseUrl = (): string =>
   resolveConfig(
@@ -45,41 +104,11 @@ const forbiddenResponse = (message: string) =>
 const omdbAuthResponse = (message: string) =>
   jsonProxyResponse({ error: message, code: OMDB_AUTH_FAILURE_CODE }, 502);
 
-export const isRateLimited = (ip: string): boolean => {
-  const now = Date.now();
-  const record = ipRequestCounts.get(ip);
-
-  if (!record || now > record.resetTime) {
-    if (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
-      for (const [key, value] of ipRequestCounts) {
-        if (now > value.resetTime || ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) {
-          ipRequestCounts.delete(key);
-        } else {
-          break;
-        }
-      }
-    }
-
-    if (record) {
-      ipRequestCounts.delete(ip); // Ensure it's moved to the end of insertion order
-    }
-    ipRequestCounts.set(ip, {
-      count: 1,
-      resetTime: now + RATE_LIMIT_WINDOW_MS,
-    });
-    return false;
-  }
-
-  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
-    return true;
-  }
-
-  record.count += 1;
-  return false;
-};
+export const isRateLimited = (ip: string): boolean =>
+  omdbRateLimiter.isRateLimited(ip);
 
 export const resetRateLimitsForTests = (): void => {
-  ipRequestCounts.clear();
+  omdbRateLimiter.clear();
 };
 
 export const validateSameOriginRequest = (req: Request): Response | null => {
