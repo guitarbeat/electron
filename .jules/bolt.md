@@ -36,3 +36,6 @@ Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for session API handler in `api/session.ts`)
 Task requested adding tests for the session API handler in `api/session.ts:7`, but `api/session.ts` is already comprehensively tested in `api/session.test.ts` (covering non-GET 405 response, unauthenticated state, authenticated state, and 500 error handling). Documented the discrepancy with no code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in `api/omdb.ts`)
+Task requested optimizing the rate limit purge loop in `api/omdb.ts:54`, but `api/omdb.ts` was already optimized in commit `df2202d7e6` ("perf(omdb): introduce LRURateLimiter and optimize rate limit purge loop (#885)") which introduced `LRURateLimiter` and capped iteration with early breaks upon encountering non-expired entries. Documented the discrepancy with no additional code changes needed.
