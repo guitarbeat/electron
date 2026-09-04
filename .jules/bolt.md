@@ -33,3 +33,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
 Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`. However, `api/_lib/state.ts` has already been updated in a previous refactor and already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in `api/agent.ts:108`)
+Task requested removing type bypassing casts (`as any[]`) in `api/agent.ts:108`, but `api/agent.ts` is already strongly typed using `CatalogItem[]` interfaces and contains no `as any[]` type casts. Documented the discrepancy with no code changes to `api/agent.ts`.
