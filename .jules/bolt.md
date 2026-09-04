@@ -36,3 +36,6 @@ Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for session API handler in `api/session.ts`)
 Task requested adding tests for the session API handler in `api/session.ts:7`, but `api/session.ts` is already comprehensively tested in `api/session.test.ts` (covering non-GET 405 response, unauthenticated state, authenticated state, and 500 error handling). Documented the discrepancy with no code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
+Task requested adding tests for the health check handler in `api/health.ts:9`, but `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204 response, non-GET/OPTIONS 405 Method Not Allowed, shallow GET liveness, relative URL handling, deep GET diagnostic success, and deep GET 503 error handling). Documented the discrepancy with no code changes needed.
