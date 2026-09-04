@@ -33,3 +33,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
 Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`. However, `api/_lib/state.ts` has already been updated in a previous refactor and already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Missing test file for state route handler factory)
+Task requested creating a test file for state route handler factory (`api/_lib/stateRoute.ts:24`), but `api/_lib/stateRoute.test.ts` already exists and comprehensively tests query parameter overrides, pathname resolution for scopePathOffset 1 and 2, 404 Not Found responses for invalid scopes, and 405 Method Not Allowed responses. Documented the discrepancy with no additional code changes needed.
