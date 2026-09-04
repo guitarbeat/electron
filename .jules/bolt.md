@@ -36,3 +36,6 @@ Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for session API handler in `api/session.ts`)
 Task requested adding tests for the session API handler in `api/session.ts:7`, but `api/session.ts` is already comprehensively tested in `api/session.test.ts` (covering non-GET 405 response, unauthenticated state, authenticated state, and 500 error handling). Documented the discrepancy with no code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Fix initial offset calculation in fix_drift_wall_sync.py)
+Task requested fixing initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` targeting `apps/web/src/components/ui/DriftWall.tsx`. However, `apps/web/src/components/ui/DriftWall.tsx` has already been refactored and no longer uses `GLOBAL_DRIFT_START` or the pattern `(_, i) => offsetsRef.current[i] ?? ...`. Documented the discrepancy with no code changes needed.
