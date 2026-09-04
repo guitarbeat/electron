@@ -36,3 +36,6 @@ Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for session API handler in `api/session.ts`)
 Task requested adding tests for the session API handler in `api/session.ts:7`, but `api/session.ts` is already comprehensively tested in `api/session.test.ts` (covering non-GET 405 response, unauthenticated state, authenticated state, and 500 error handling). Documented the discrepancy with no code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
+Task requested resolving TODO / updating `whatToDo` property in `SyncBannerContent` (`apps/web/src/components/ui/lib/syncBanner.ts:11`). However, `whatToDo` was already renamed to `recommendedAction` in a prior refactor, used throughout `syncBanner.ts`, and tested in `syncBanner.test.ts`. Documented discrepancy with no source code changes needed.
