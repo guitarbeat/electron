@@ -33,3 +33,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 
 ## 2026-09-03 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
 Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`. However, `api/_lib/state.ts` has already been updated in a previous refactor and already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Uncached Array Mapping in Catalog Responses in `api/agent.ts`)
+Task requested caching or memoizing array mapping logic in catalog responses in `api/agent.ts:267`. However, `publicCatalog` in `api/agent.ts` has already been updated in a previous change and currently uses `catalogCache` (a `Map<string, CatalogCacheEntry>`) indexed by scope version key (`stored.version` or `${moviesStored.version}:${placesStored.version}`) to cache mapped items for movies, places, and suggestions catalog requests. Documented the discrepancy with no code changes needed in `api/agent.ts`.
