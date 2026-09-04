@@ -36,3 +36,6 @@ Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for session API handler in `api/session.ts`)
 Task requested adding tests for the session API handler in `api/session.ts:7`, but `api/session.ts` is already comprehensively tested in `api/session.test.ts` (covering non-GET 405 response, unauthenticated state, authenticated state, and 500 error handling). Documented the discrepancy with no code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Missing test file for state route handler factory)
+Task requested creating a test file for state route handler factory (`api/_lib/stateRoute.ts:24`), but `api/_lib/stateRoute.test.ts` already exists and comprehensively tests `createStateRouteHandler` (query param scope overrides, pathname offsets, 404 Not Found, and 405 Method Not Allowed flows). Documented the discrepancy with no additional code changes needed.
