@@ -67,17 +67,38 @@ describe('logger helper', () => {
   describe('warn', () => {
     it('logs warn message correctly', (t) => {
       const mockWarn = t.mock.method(console, 'warn', () => {});
-      logger.warn('warning message');
+      logger.warn('warning message', 'extra arg');
 
       assert.strictEqual(mockWarn.mock.callCount(), 1);
       const args = mockWarn.mock.calls[0].arguments;
       assert.match(args[0] as string, /\[WARN\]/);
       assert.strictEqual(args[1], 'warning message');
+      assert.strictEqual(args[2], 'extra arg');
     });
   });
 
   describe('error', () => {
-    it('logs error message and formats Error instances in arguments', (t) => {
+    it('formats a simple Error object without optional properties', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+      const simpleErr = new Error('Basic error message');
+
+      logger.error('Simple failure', simpleErr);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+      assert.match(args[0] as string, /\[ERROR\]/);
+      assert.strictEqual(args[1], 'Simple failure');
+
+      const formattedErr = args[2] as Record<string, unknown>;
+      assert.strictEqual(formattedErr.name, 'Error');
+      assert.strictEqual(formattedErr.message, 'Basic error message');
+      assert.ok(formattedErr.stack);
+      assert.strictEqual(formattedErr.code, undefined);
+      assert.strictEqual(formattedErr.status, undefined);
+      assert.strictEqual(formattedErr.cause, undefined);
+    });
+
+    it('logs error message and formats Error instances with code, status, cause', (t) => {
       const mockError = t.mock.method(console, 'error', () => {});
 
       const innerError = new Error('Inner error');
@@ -166,19 +187,22 @@ describe('logger helper', () => {
       const mockWarn = t.mock.method(console, 'warn', () => {});
       const mockError = t.mock.method(console, 'error', () => {});
 
-      ctxLogger.debug('ctx debug');
-      ctxLogger.info('ctx info');
-      ctxLogger.warn('ctx warn');
-      ctxLogger.error('ctx error', new Error('ctx err'));
+      ctxLogger.debug('ctx debug', { a: 1 });
+      ctxLogger.info('ctx info', 'extra info');
+      ctxLogger.warn('ctx warn', { warning: true });
+      ctxLogger.error('ctx error', new Error('ctx err'), 'extra err arg');
 
       assert.strictEqual(mockDebug.mock.callCount(), 1);
       assert.match(mockDebug.mock.calls[0].arguments[0] as string, /\[DEBUG\] \[req:req-123 scope:test-scope user:user-456\]/);
+      assert.deepStrictEqual(mockDebug.mock.calls[0].arguments[2], { a: 1 });
 
       assert.strictEqual(mockInfo.mock.callCount(), 1);
       assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-123 scope:test-scope user:user-456\]/);
+      assert.strictEqual(mockInfo.mock.calls[0].arguments[2], 'extra info');
 
       assert.strictEqual(mockWarn.mock.callCount(), 1);
       assert.match(mockWarn.mock.calls[0].arguments[0] as string, /\[WARN\] \[req:req-123 scope:test-scope user:user-456\]/);
+      assert.deepStrictEqual(mockWarn.mock.calls[0].arguments[2], { warning: true });
 
       assert.strictEqual(mockError.mock.callCount(), 1);
       assert.match(mockError.mock.calls[0].arguments[0] as string, /\[ERROR\] \[req:req-123 scope:test-scope user:user-456\]/);
@@ -186,6 +210,20 @@ describe('logger helper', () => {
       const formattedCtxErr = mockError.mock.calls[0].arguments[2] as Record<string, unknown>;
       assert.strictEqual(formattedCtxErr.name, 'Error');
       assert.strictEqual(formattedCtxErr.message, 'ctx err');
+      assert.strictEqual(mockError.mock.calls[0].arguments[3], 'extra err arg');
+    });
+
+    it('handles partial context fields correctly', (t) => {
+      const mockInfo = t.mock.method(console, 'info', () => {});
+
+      logger.withContext({ requestId: 'req-only' }).info('msg1');
+      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-only\]$/);
+
+      logger.withContext({ scope: 'scope-only' }).info('msg2');
+      assert.match(mockInfo.mock.calls[1].arguments[0] as string, /\[INFO\] \[scope:scope-only\]$/);
+
+      logger.withContext({ userId: 'user-only' }).info('msg3');
+      assert.match(mockInfo.mock.calls[2].arguments[0] as string, /\[INFO\] \[user:user-only\]$/);
     });
 
     it('suppresses debug log in production on contextual logger when DEBUG is not set', (t) => {
