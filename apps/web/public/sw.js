@@ -37,6 +37,11 @@ const ALLOWED_MEDIA_HOSTS = [
   'cataas.com',
   'api.tvmaze.com',
   'static.tvmaze.com',
+  'thecatapi.com',
+  'cdn2.thecatapi.com',
+  's3.us-west-2.amazonaws.com',
+  'image.tmdb.org',
+  'tmdb.org',
 ];
 
 self.addEventListener('install', (event) => {

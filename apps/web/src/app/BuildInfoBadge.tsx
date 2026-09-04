@@ -1,4 +1,5 @@
 import React from "react";
+import { isDevelopmentDeployment } from "./buildInfoDeployment";
 
 export interface BuildInfoBadgeProps {
   id?: string;
@@ -6,6 +7,7 @@ export interface BuildInfoBadgeProps {
   style?: React.CSSProperties;
   onDismiss?: () => void;
   defaultVisible?: boolean;
+  isDevelopment?: boolean;
 }
 
 interface BuildInfoBadgeState {
@@ -18,8 +20,9 @@ export class BuildInfoBadge extends React.Component<
 > {
   constructor(props: BuildInfoBadgeProps) {
     super(props);
+    const isDev = props.isDevelopment ?? isDevelopmentDeployment();
     this.state = {
-      isVisible: props.defaultVisible ?? true,
+      isVisible: (props.defaultVisible ?? true) && isDev,
     };
   }
 
@@ -33,7 +36,8 @@ export class BuildInfoBadge extends React.Component<
   };
 
   render() {
-    if (!this.state.isVisible) {
+    const isDev = this.props.isDevelopment ?? isDevelopmentDeployment();
+    if (!isDev || !this.state.isVisible) {
       return null;
     }
 

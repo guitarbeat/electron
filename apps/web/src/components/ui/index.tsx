@@ -70,6 +70,16 @@ import {
   USER_OPTIONS,
   getCatPosterUrl,
 } from "@/utils";
+import {
+  getCachedPosterUrl,
+  getCachedPosterUrlSync,
+  cachePosterLocally,
+} from "@/services/posterCache";
+import {
+  getImageBlob,
+  fetchAndCacheImage,
+  getCachedObjectUrlSync,
+} from "@/utils/imageCache";
 
 interface MediaPosterProps {
   title: string;
@@ -94,25 +104,136 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     return getCatPosterUrl(id || title);
   }, [id, title]);
 
+  const [cachedSrc, setCachedSrc] = React.useState<string | null>(() => {
+    return posterUrl
+      ? (getCachedObjectUrlSync(posterUrl) || getCachedPosterUrlSync(posterUrl))
+      : null;
+  });
+
+  const [cachedFallbackSrc, setCachedFallbackSrc] = React.useState<string | null>(() => {
+    return getCachedObjectUrlSync(fallbackCatUrl) || getCachedPosterUrlSync(fallbackCatUrl);
+  });
+
   const [hasImageError, setHasImageError] = React.useState(false);
-  const isCatFallback = !posterUrl || hasImageError;
-  const activeSrc = isCatFallback ? fallbackCatUrl : posterUrl;
+
+  React.useEffect(() => {
+    let isCancelled = false;
+    setHasImageError(false);
+
+    if (posterUrl) {
+      const syncCached =
+        getCachedObjectUrlSync(posterUrl) || getCachedPosterUrlSync(posterUrl);
+      if (syncCached) {
+        setCachedSrc(syncCached);
+      } else {
+        setCachedSrc(null);
+        // Check IndexedDB cache for poster blob before fetching from network
+        getImageBlob(posterUrl)
+          .then((blob) => {
+            if (isCancelled) return;
+            if (blob) {
+              try {
+                const objectUrl = URL.createObjectURL(blob);
+                setCachedSrc(objectUrl);
+              } catch {
+                setCachedSrc(null);
+              }
+            } else {
+              // Not in IndexedDB cache: check service worker cache fallback
+              void getCachedPosterUrl(posterUrl).then((cached) => {
+                if (!isCancelled && cached) {
+                  setCachedSrc(cached);
+                }
+              });
+            }
+          })
+          .catch(() => {
+            if (!isCancelled) {
+              void getCachedPosterUrl(posterUrl).then((cached) => {
+                if (!isCancelled && cached) setCachedSrc(cached);
+              });
+            }
+          });
+      }
+    } else {
+      setCachedSrc(null);
+    }
+
+    if (!cachedFallbackSrc && fallbackCatUrl) {
+      const syncFallback =
+        getCachedObjectUrlSync(fallbackCatUrl) || getCachedPosterUrlSync(fallbackCatUrl);
+      if (syncFallback) {
+        setCachedFallbackSrc(syncFallback);
+      } else {
+        getImageBlob(fallbackCatUrl)
+          .then((blob) => {
+            if (isCancelled) return;
+            if (blob) {
+              try {
+                const objectUrl = URL.createObjectURL(blob);
+                setCachedFallbackSrc(objectUrl);
+              } catch {
+                // Ignore object URL creation error
+              }
+            } else {
+              void getCachedPosterUrl(fallbackCatUrl).then((cached) => {
+                if (!isCancelled && cached) setCachedFallbackSrc(cached);
+              });
+            }
+          })
+          .catch(() => {
+            void getCachedPosterUrl(fallbackCatUrl).then((cached) => {
+              if (!isCancelled && cached) setCachedFallbackSrc(cached);
+            });
+          });
+      }
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [posterUrl, fallbackCatUrl, cachedFallbackSrc]);
+
+  // Determine active display source: prefer local cached version for offline resilience
+  const primarySrc = cachedSrc || posterUrl;
+  const isCatFallback = !primarySrc || hasImageError;
+  const activeSrc = isCatFallback
+    ? (cachedFallbackSrc || fallbackCatUrl)
+    : primarySrc;
 
   const [isLoaded, setIsLoaded] = React.useState<boolean>(() => {
     return Boolean(activeSrc && CACHED_LOADED_POSTERS.has(activeSrc));
   });
 
   React.useEffect(() => {
-    setHasImageError(false);
-    const initialSrc = posterUrl ? posterUrl : fallbackCatUrl;
-    if (initialSrc && CACHED_LOADED_POSTERS.has(initialSrc)) {
+    if (activeSrc && CACHED_LOADED_POSTERS.has(activeSrc)) {
       setIsLoaded(true);
     } else {
       setIsLoaded(false);
     }
-  }, [posterUrl, fallbackCatUrl]);
+  }, [activeSrc]);
 
-  const handleImageError = () => {
+  const handleImageError = async () => {
+    // If the network request failed and we haven't loaded from local cache yet, try cache lookup first
+    if (!hasImageError && posterUrl && !cachedSrc) {
+      try {
+        const cachedBlob = await getImageBlob(posterUrl);
+        if (cachedBlob) {
+          const objectUrl = URL.createObjectURL(cachedBlob);
+          setCachedSrc(objectUrl);
+          setIsLoaded(false);
+          return;
+        }
+      } catch {
+        // Ignore cache lookup error
+      }
+      const cached = await getCachedPosterUrl(posterUrl);
+      if (cached) {
+        setCachedSrc(cached);
+        setIsLoaded(false);
+        return;
+      }
+    }
     if (!hasImageError && posterUrl) {
       setHasImageError(true);
       setIsLoaded(false);
@@ -124,6 +245,14 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   const handleImageLoad = () => {
     if (activeSrc) {
       CACHED_LOADED_POSTERS.add(activeSrc);
+    }
+    // Asynchronously ensure poster is cached locally for offline readiness
+    if (posterUrl && !cachedSrc && !isCatFallback) {
+      void fetchAndCacheImage(posterUrl);
+      void cachePosterLocally(posterUrl);
+    } else if (isCatFallback && fallbackCatUrl && !cachedFallbackSrc) {
+      void fetchAndCacheImage(fallbackCatUrl);
+      void cachePosterLocally(fallbackCatUrl);
     }
     setIsLoaded(true);
   };

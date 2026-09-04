@@ -14,6 +14,8 @@ import {
   formatMemoryTimestamp,
   resolvePosterUrl,
 } from "@/utils";
+import { getCachedPosterUrlSync } from "@/services/posterCache";
+import { getCachedObjectUrlSync } from "@/utils/imageCache";
 import {
   getListEnterSelectionIndex,
   getNextListIndex,
@@ -604,7 +606,10 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
 }) => {
   const [turnedCount, setTurnedCount] = useState(0);
 
-  const resolvedPosterUrl = movie.customPosterUrl || movie.posterUrl;
+  const rawPosterUrl = movie.customPosterUrl || movie.posterUrl;
+  const cachedPoster =
+    getCachedObjectUrlSync(rawPosterUrl) || getCachedPosterUrlSync(rawPosterUrl);
+  const resolvedPosterUrl = cachedPoster || rawPosterUrl;
   const isCustomOrValid = Boolean(resolvedPosterUrl) && !hasPosterError;
   const activePosterUrl = isCustomOrValid
     ? (resolvedPosterUrl as string)

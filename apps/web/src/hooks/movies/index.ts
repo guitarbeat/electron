@@ -19,7 +19,7 @@ import { useCollection } from "../index.ts";
 import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/providerContexts";
 import { isMockMode } from "../../services/state";
-import { warmServiceWorkerMedia } from "../../services/swMediaCache";
+import { cacheWatchlistPosters } from "../../services/posterCache.js";
 
 const POLLING_INTERVAL = 15000;
 
@@ -97,10 +97,7 @@ export const useMovies = (
 
   useEffect(() => {
     if (movies && movies.length > 0) {
-      const posterUrls = movies
-        .map((m) => m.posterUrl)
-        .filter((url): url is string => Boolean(url));
-      warmServiceWorkerMedia(posterUrls);
+      void cacheWatchlistPosters(movies);
     }
   }, [movies]);
 
