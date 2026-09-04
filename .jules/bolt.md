@@ -36,3 +36,6 @@ Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for session API handler in `api/session.ts`)
 Task requested adding tests for the session API handler in `api/session.ts:7`, but `api/session.ts` is already comprehensively tested in `api/session.test.ts` (covering non-GET 405 response, unauthenticated state, authenticated state, and 500 error handling). Documented the discrepancy with no code changes needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for logger helper in `api/_lib/logger.ts:44`)
+Task requested adding tests for the logger helper in `api/_lib/logger.ts:44`, but `api/_lib/logger.ts` is already comprehensively tested in `api/_lib/logger.test.ts` (covering `debug`, `info`, `warn`, `error`, `formatErrorDetails`, `withContext`, and environment variable behavior for `NODE_ENV` and `DEBUG`). Documented the discrepancy with no unnecessary code changes.
