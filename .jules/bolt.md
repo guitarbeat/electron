@@ -39,3 +39,8 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## Discrepancy Note: Stale Prompt Reference in `api/agent.ts`
+- **Date/Context**: Task requested removing `let items: any[]; items = (await readScopeStoredData('movies', { bypassCache: true })).clientData as any[];` in `api/agent.ts`.
+- **Finding**: `api/agent.ts` already has full type safety using `CatalogItem[]` and `StateScopeDataMap`. No `any[]` or `as any[]` casts exist in `api/agent.ts`.
+- **Action Taken**: Concluded task with no code changes per repository instructions.
