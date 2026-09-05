@@ -128,6 +128,67 @@ describe('logger helper', () => {
       assert.strictEqual(args[3], 'additional context');
     });
 
+    it('formats deeply nested Error cause hierarchies correctly', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+
+      const rootCause = new Error('Root cause level 3');
+      const middleCause = new Error('Middle cause level 2');
+      (middleCause as unknown as { cause: Error }).cause = rootCause;
+
+      const topError = new Error('Top level 1');
+      (topError as unknown as { cause: Error }).cause = middleCause;
+
+      logger.error('Deep failure', topError);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+      const formattedTop = args[2] as Record<string, unknown>;
+      assert.strictEqual(formattedTop.message, 'Top level 1');
+
+      const formattedMiddle = formattedTop.cause as Record<string, unknown>;
+      assert.strictEqual(formattedMiddle.message, 'Middle cause level 2');
+
+      const formattedRoot = formattedMiddle.cause as Record<string, unknown>;
+      assert.strictEqual(formattedRoot.message, 'Root cause level 3');
+    });
+
+    it('handles Error objects with falsy code, status, or cause values', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+
+      const errWithFalsyProps = new Error('Falsy error');
+      (errWithFalsyProps as unknown as { code: unknown }).code = '';
+      (errWithFalsyProps as unknown as { status: unknown }).status = 0;
+      (errWithFalsyProps as unknown as { cause: unknown }).cause = null;
+
+      logger.error('Falsy properties', errWithFalsyProps);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+      const formattedErr = args[2] as Record<string, unknown>;
+
+      assert.strictEqual(formattedErr.code, undefined);
+      assert.strictEqual(formattedErr.status, undefined);
+      assert.strictEqual(formattedErr.cause, undefined);
+    });
+
+    it('formats multiple Error arguments passed to logger.error', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+
+      const err1 = new Error('First error');
+      const err2 = new Error('Second error');
+
+      logger.error('Multiple errors', err1, err2);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+
+      const formatted1 = args[2] as Record<string, unknown>;
+      const formatted2 = args[3] as Record<string, unknown>;
+
+      assert.strictEqual(formatted1.message, 'First error');
+      assert.strictEqual(formatted2.message, 'Second error');
+    });
+
     it('formats non-Error object causes and values properly in formatErrorDetails', (t) => {
       const mockError = t.mock.method(console, 'error', () => {});
 
@@ -224,6 +285,22 @@ describe('logger helper', () => {
 
       logger.withContext({ userId: 'user-only' }).info('msg3');
       assert.match(mockInfo.mock.calls[2].arguments[0] as string, /\[INFO\] \[user:user-only\]$/);
+    });
+
+    it('ignores empty string context values and custom context properties', (t) => {
+      const mockInfo = t.mock.method(console, 'info', () => {});
+
+      const ctxLogger = logger.withContext({
+        requestId: '',
+        scope: 'my-scope',
+        userId: '',
+        customProp: 'custom-value',
+      });
+
+      ctxLogger.info('test context');
+
+      assert.strictEqual(mockInfo.mock.callCount(), 1);
+      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[scope:my-scope\]$/);
     });
 
     it('suppresses debug log in production on contextual logger when DEBUG is not set', (t) => {
