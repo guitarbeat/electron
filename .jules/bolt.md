@@ -40,5 +40,5 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
 
-## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
-Task requested adding tests for `resolveConfig` in `api/_lib/config.ts:9`, but `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid strings, whitespace trimming, newlines/tabs, undefined, empty strings, and fallback behavior). Documented the discrepancy with no code changes to source/test files needed.
+## 2026-09-04 - Test Coverage Enhancement (`api/_lib/config.ts:9`)
+Task requested missing tests for `resolveConfig` in `api/_lib/config.ts:9`. Expanded `api/_lib/config.test.ts` with explicit test cases covering environment variable input resolution and non-existent environment variable fallback, using proper try...finally cleanup.
