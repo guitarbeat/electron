@@ -39,3 +39,6 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-05 - Performance Task Discrepancy (Uncached Array Mapping in Catalog Responses in `api/agent.ts:267`)
+Task requested caching or memoizing array mapping in catalog responses in `api/agent.ts`. Investigation revealed that catalog caching (`catalogCache` Map using scope version key) was already implemented in commit `687e4045cd3e81f4051570b5b4dc2148aff57730` for movies, places, and suggestions catalog endpoints, and unit tests in `api/agent.test.ts` already verify catalog caching behavior. Documented the discrepancy with no additional code changes needed.
