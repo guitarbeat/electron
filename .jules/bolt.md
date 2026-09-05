@@ -39,3 +39,6 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-05 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in api/agent.ts:92)
+Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP. However, `requestIp` in `api/agent.ts` is already updated and extracts the right-most IP (`ips[ips.length - 1]?.trim()`), and corresponding unit tests in `api/agent.test.ts` already exist and pass. Documented the discrepancy with no additional code changes.
