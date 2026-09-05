@@ -5,7 +5,13 @@
 
 export const DB_NAME = "movie_image_cache";
 export const STORE_NAME = "posters";
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
+
+/**
+ * 30 days in milliseconds
+ */
+export const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+export const DEFAULT_MAX_IMAGE_AGE_MS = THIRTY_DAYS_MS;
 
 export interface CachedImageRecord {
   url: string;
@@ -42,8 +48,14 @@ export const openImageDatabase = (): Promise<IDBDatabase | null> => {
 
       request.onupgradeneeded = () => {
         const db = request.result;
+        let store: IDBObjectStore;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: "url" });
+          store = db.createObjectStore(STORE_NAME, { keyPath: "url" });
+        } else {
+          store = request.transaction!.objectStore(STORE_NAME);
+        }
+        if (!store.indexNames.contains("timestamp")) {
+          store.createIndex("timestamp", "timestamp", { unique: false });
         }
       };
 
@@ -75,6 +87,7 @@ export const openImageDatabase = (): Promise<IDBDatabase | null> => {
 export const storeImageBlob = async (
   url: string | null | undefined,
   blob: Blob,
+  timestampOverride?: number,
 ): Promise<void> => {
   if (!url || !(blob instanceof Blob)) return;
 
@@ -82,7 +95,7 @@ export const storeImageBlob = async (
     url,
     blob,
     mimeType: blob.type || "image/jpeg",
-    timestamp: Date.now(),
+    timestamp: typeof timestampOverride === "number" ? timestampOverride : Date.now(),
   };
 
   const db = await openImageDatabase();
@@ -221,6 +234,79 @@ export const clearImageCache = async (): Promise<void> => {
 };
 
 /**
+ * Removes movie poster blobs older than the specified max age (default: 30 days) from IndexedDB
+ * and in-memory caches to manage storage size effectively.
+ *
+ * @param maxAgeMs Maximum age in milliseconds before a cached poster is purged (default: 30 days)
+ * @returns Promise resolving to the number of purged image records
+ */
+export const cleanupOldImages = async (
+  maxAgeMs: number = DEFAULT_MAX_IMAGE_AGE_MS,
+): Promise<number> => {
+  const cutoffTime = Date.now() - maxAgeMs;
+  let deletedCount = 0;
+
+  // 1. Clean up matching in-memory fallback store entries
+  for (const [url, record] of Array.from(memoryFallbackStore.entries())) {
+    if (!record?.timestamp || record.timestamp < cutoffTime) {
+      const objUrl = objectUrlMemoryCache.get(url);
+      if (objUrl && typeof window !== "undefined" && typeof window.URL?.revokeObjectURL === "function") {
+        try {
+          window.URL.revokeObjectURL(objUrl);
+        } catch {
+          // Ignore revocation error
+        }
+      }
+      objectUrlMemoryCache.delete(url);
+      memoryFallbackStore.delete(url);
+      deletedCount++;
+    }
+  }
+
+  // 2. Clean up expired records from IndexedDB
+  const db = await openImageDatabase();
+  if (!db) {
+    return deletedCount;
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      const cursorRequest = store.openCursor();
+
+      cursorRequest.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>).result;
+        if (cursor) {
+          const record = cursor.value as CachedImageRecord;
+          if (!record?.timestamp || record.timestamp < cutoffTime) {
+            const url = record?.url || (cursor.key as string);
+            const objUrl = objectUrlMemoryCache.get(url);
+            if (objUrl && typeof window !== "undefined" && typeof window.URL?.revokeObjectURL === "function") {
+              try {
+                window.URL.revokeObjectURL(objUrl);
+              } catch {
+                // Ignore revocation error
+              }
+            }
+            objectUrlMemoryCache.delete(url);
+            cursor.delete();
+            deletedCount++;
+          }
+          cursor.continue();
+        }
+      };
+
+      tx.oncomplete = () => resolve(deletedCount);
+      tx.onerror = () => resolve(deletedCount);
+      tx.onabort = () => resolve(deletedCount);
+    } catch {
+      resolve(deletedCount);
+    }
+  });
+};
+
+/**
  * Helper to check if an in-memory object URL already exists synchronously
  */
 export const getCachedObjectUrlSync = (url: string | null | undefined): string | null => {
@@ -317,6 +403,11 @@ export const getImage = getImageBlob;
 export const saveImage = storeImageBlob;
 export const deleteImage = deleteImageBlob;
 export const clearCache = clearImageCache;
+export const cleanOldImages = cleanupOldImages;
+export const cleanupExpiredImages = cleanupOldImages;
+export const cleanupImageCache = cleanupOldImages;
+export const removeOldImages = cleanupOldImages;
+export const purgeOldImages = cleanupOldImages;
 export const getImageUrl = getImageObjectUrl;
 export const loadImageWithCache = getImageObjectUrl;
 
@@ -326,6 +417,12 @@ export const imageCache = {
   getImageBlob,
   deleteImageBlob,
   clearImageCache,
+  cleanupOldImages,
+  cleanOldImages,
+  cleanupExpiredImages,
+  cleanupImageCache,
+  removeOldImages,
+  purgeOldImages,
   fetchAndCacheImage,
   getImageObjectUrl,
   getCachedObjectUrlSync,

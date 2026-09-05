@@ -5,6 +5,8 @@ import {
   getImageBlob,
   deleteImageBlob,
   clearImageCache,
+  cleanupOldImages,
+  THIRTY_DAYS_MS,
   imageCache,
 } from "./imageCache.js";
 
@@ -60,6 +62,7 @@ describe("imageCache utility (IndexedDB poster cache)", () => {
   });
 
   it("exposes convenient aliases on the imageCache export", async () => {
+    assert.equal(THIRTY_DAYS_MS, 30 * 24 * 60 * 60 * 1000);
     const testUrl = "https://example.com/poster-alias.jpg";
     const blob = new Blob(["alias-test"], { type: "image/webp" });
 
@@ -80,5 +83,68 @@ describe("imageCache utility (IndexedDB poster cache)", () => {
     // @ts-expect-error test invalid parameter
     await storeImageBlob("", null);
     assert.equal(await getImageBlob(""), null);
+  });
+
+  it("removes movie poster blobs older than 30 days while preserving recent ones", async () => {
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+
+    // Poster cached 35 days ago (should be purged)
+    const oldUrl = "https://example.com/old-poster.jpg";
+    const oldBlob = new Blob(["old-poster-data"], { type: "image/jpeg" });
+    await storeImageBlob(oldUrl, oldBlob, now - (35 * oneDayMs));
+
+    // Poster cached 10 days ago (should be kept)
+    const recentUrl = "https://example.com/recent-poster.jpg";
+    const recentBlob = new Blob(["recent-poster-data"], { type: "image/jpeg" });
+    await storeImageBlob(recentUrl, recentBlob, now - (10 * oneDayMs));
+
+    // Poster cached just now (should be kept)
+    const brandNewUrl = "https://example.com/new-poster.jpg";
+    const brandNewBlob = new Blob(["brand-new-data"], { type: "image/jpeg" });
+    await storeImageBlob(brandNewUrl, brandNewBlob, now);
+
+    // Verify all 3 are initially present
+    assert.ok(await getImageBlob(oldUrl));
+    assert.ok(await getImageBlob(recentUrl));
+    assert.ok(await getImageBlob(brandNewUrl));
+
+    // Run cleanup with default 30 days
+    const deletedCount = await cleanupOldImages();
+    assert.equal(deletedCount, 1);
+
+    // Old poster should be removed
+    assert.equal(await getImageBlob(oldUrl), null);
+
+    // Recent and brand new posters should still exist
+    const preservedRecent = await getImageBlob(recentUrl);
+    assert.ok(preservedRecent instanceof Blob);
+    assert.equal(preservedRecent.size, recentBlob.size);
+
+    const preservedNew = await getImageBlob(brandNewUrl);
+    assert.ok(preservedNew instanceof Blob);
+    assert.equal(preservedNew.size, brandNewBlob.size);
+  });
+
+  it("supports custom maxAgeMs parameter and cleanup aliases", async () => {
+    const now = Date.now();
+    const oneHourMs = 60 * 60 * 1000;
+
+    const expiredUrl = "https://example.com/expired-2hours.jpg";
+    await storeImageBlob(expiredUrl, new Blob(["expired"]), now - (2 * oneHourMs));
+
+    const activeUrl = "https://example.com/active-30min.jpg";
+    await storeImageBlob(activeUrl, new Blob(["active"]), now - (30 * 60 * 1000));
+
+    // Clean up anything older than 1 hour using imageCache.cleanupOldImages
+    const removed = await imageCache.cleanupOldImages(oneHourMs);
+    assert.equal(removed, 1);
+    assert.equal(await getImageBlob(expiredUrl), null);
+    assert.ok(await getImageBlob(activeUrl));
+
+    // Clean up remainder using alias cleanupExpiredImages
+    const remainingRemoved = await imageCache.cleanupExpiredImages(10 * 1000);
+    assert.equal(remainingRemoved, 1);
+    assert.equal(await getImageBlob(activeUrl), null);
   });
 });
