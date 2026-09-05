@@ -39,3 +39,6 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-05 - Stale Prompt Discrepancy (Fix implicit any for MovieSectionBody handle events)
+Task requested fixing implicit 'any' for `MovieSectionBody` handle events in `scripts/maintenance/applied_patches/fix_imports.py:24`. However, `scripts/maintenance/applied_patches/fix_imports.py` already contains the regex replacements for `MovieSectionBody` handle events, and `apps/web/src/components/movies/MovieSectionBody.tsx` is already strongly typed with explicit type annotations. Documented the discrepancy with no additional source code changes required.
