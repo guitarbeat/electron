@@ -39,3 +39,6 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-04 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh)
+Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. The local movie lookup array search was already optimized to O(N) using a `Set` (`currentMovieIds`), and replacing the underlying network calls with a bulk metadata endpoint would require backend API schema and handler modifications exceeding the 50-line scope limit. Documented the discrepancy with no additional code changes.
