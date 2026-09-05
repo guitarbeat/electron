@@ -39,3 +39,6 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-05 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
+Task requested resolving TODO in SyncBannerContent (`apps/web/src/components/ui/lib/syncBanner.ts:11`), referencing `whatToDo: string`. However, `apps/web/src/components/ui/lib/syncBanner.ts` has already been refactored and contains no TODO comments, and `SyncBannerContent` uses `recommendedAction` instead of `whatToDo`. Documented the discrepancy with no unnecessary source code changes.
