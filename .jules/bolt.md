@@ -39,3 +39,6 @@ Task requested adding tests for the session API handler in `api/session.ts:7`, b
 
 ## 2026-09-04 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
 Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-05 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in `api/omdb.ts:54`)
+Task requested optimizing Map iteration for rate limit purge in `api/omdb.ts:54`, referencing a snippet `while (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES)`. However, `LRURateLimiter` in `api/omdb.ts` was already refactored in a previous update (`LRURateLimiter` class using single-pass eviction loop without the `while` loop). Benchmarking alternative iteration patterns demonstrated that the existing implementation is optimal. Documented the discrepancy with no code changes to `api/omdb.ts`.
