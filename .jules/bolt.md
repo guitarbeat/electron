@@ -52,3 +52,6 @@ Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 
 
 ## 2026-09-06 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
 Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-06 - Stale Prompt Discrepancy (Remove Unused Exported Function _clearCache)
+Task requested removing unused exported function `_clearCache` from `apps/web/src/services/metadata/index.ts:493`, but `_clearCache` does not exist in `apps/web/src/services/metadata/index.ts` or anywhere in the codebase. Documented the discrepancy with no code changes to source files.
