@@ -35,6 +35,7 @@ import {
   libraryWorkspaceStackClass,
 } from "@/utils/workspaceConfig";
 import { prefetchCatPosters } from "@/utils/catPosters";
+import { cleanupOldImages } from "@/utils/imageCache";
 import { AppProviders } from "@/app/AppProviders";
 import "./globals.css";
 import "./component-styles.css";
@@ -83,6 +84,12 @@ const App: React.FC = () => {
   useEffect(() => {
     stripLaunchUrlShortcuts();
     prefetchCatPosters();
+    if (typeof window !== "undefined") {
+      const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2000));
+      scheduleIdle(() => {
+        void cleanupOldImages().catch(() => {});
+      });
+    }
   }, []);
 
   useEffect(() => {

@@ -76,3 +76,14 @@ pr_description.txt
 /playwright-report/
 /playwright/.cache/
 .last-run.json
+
+# Ephemeral scratchpad & one-off artifacts
+*.patch
+patch_*.py
+.scratch/
+tmp/
+scratch.*
+test-import.*
+screenshot.js
+body.html
+

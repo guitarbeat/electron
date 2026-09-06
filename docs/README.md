@@ -9,6 +9,7 @@ Welcome to the central documentation index for **Collaborative Movie Night ("Ele
 ```
 docs/
 ├── README.md                      # Documentation Hub (This File)
+├── PARETO_GUIDELINES.md           # Engineering guidelines for the Pareto Principle (80/20 rule)
 │
 ├── architecture/                  # Core System & Visual Architecture
 │   ├── ARCHITECTURE.md            # End-to-end system architecture & state sync
@@ -17,7 +18,8 @@ docs/
 │
 ├── operations/                    # Engineering Workflows & Hosting
 │   ├── DEVELOPMENT.md             # Local setup, toolchain & verification guide
-│   └── DEPLOYMENT.md              # Production runbook, Vercel & Neon setup
+│   ├── DEPLOYMENT.md              # Production runbook, Vercel & Neon setup
+│   └── ARTIFACT_LIFECYCLE.md      # Lifecycle states, boundary rules & mechanical hygiene
 │
 ├── api/                           # Machine & Developer API Contracts
 │   └── AGENT_API.md               # Agent API v1, OpenAPI 3.0 & 2-phase confirmation
@@ -28,7 +30,8 @@ docs/
 │
 └── history/                       # Evolutionary Records & References
     ├── HISTORY.md                 # Project timeline, milestones & regression log
-    └── YOUWARE.md                 # Technical architecture & stack snapshot
+    ├── YOUWARE.md                 # Technical architecture & stack snapshot
+    └── personas/                  # Historical prompt personas & guidelines
 ```
 
 ---
@@ -47,6 +50,8 @@ docs/
 | :--- | :--- | :--- |
 | **[`operations/DEVELOPMENT.md`](operations/DEVELOPMENT.md)** | Local environment setup, Vite dev middleware proxy, toolchain commands (`pnpm verify`), and testing standards. | All Contributors |
 | **[`operations/DEPLOYMENT.md`](operations/DEPLOYMENT.md)** | Production runbooks for Vercel, serverless function configurations, environment variables matrix, and health checks. | DevOps & Release Engineers |
+| **[`operations/ARTIFACT_LIFECYCLE.md`](operations/ARTIFACT_LIFECYCLE.md)** | Lifecycle definitions (Active, Ephemeral, Archived, Deprecated), directory boundary rules, and mechanical enforcement gates. | All Contributors & Systems Architects |
+| **[`PARETO_GUIDELINES.md`](PARETO_GUIDELINES.md)** | Practical 80/20 rule engineering guide: prioritizing core user loops, image purge, Vercel function limits, and root cause analysis. | All Contributors & Leads |
 
 ### 3. 🤖 API & Integration Contracts (`docs/api/`)
 | Document | Primary Scope | Target Audience |

@@ -42,3 +42,10 @@ Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_
 
 ## 2026-09-05 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
 Task requested resolving TODO in SyncBannerContent (`apps/web/src/components/ui/lib/syncBanner.ts:11`), referencing `whatToDo: string`. However, `apps/web/src/components/ui/lib/syncBanner.ts` has already been refactored and contains no TODO comments, and `SyncBannerContent` uses `recommendedAction` instead of `whatToDo`. Documented the discrepancy with no unnecessary source code changes.
+
+## 2026-09-06 - Mechanical Repo Hygiene Enforcement & Automated Storage Cleanup
+Implemented automated repository hygiene validator (`scripts/verify-repo-hygiene.mjs`) checking root allowlists, scripts folder boundaries, documentation topology, and source tree purity. Integrated into `npm run verify`. Added automated browser idle cleanup (`requestIdleCallback`) in `apps/web/src/app/App.tsx` calling `cleanupOldImages()` to evict poster blobs older than 30 days from IndexedDB.
+
+## 2026-09-06 - Artifact Lifecycle Compliance Gate (`scripts/check-artifacts.js`)
+Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 4 lifecycle states (Active, Ephemeral, Archived, Deprecated) across root boundaries, runner boundaries, doc topology, and active source directories. Integrated `check-artifacts` into `package.json` scripts (`check-artifacts`, `pre-commit`, `verify`, and `build`), and added mandatory verification steps to the `typecheck-and-lint` and `build` jobs in `.github/workflows/ci.yml`.
+

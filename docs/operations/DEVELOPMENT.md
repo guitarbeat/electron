@@ -30,8 +30,11 @@ The project provides a consolidated set of scripts defined in `package.json`:
 # Start local development server with API proxy middleware (http://localhost:5000)
 pnpm dev
 
-# Execute the complete pre-deploy validation suite (types + lint + test + build)
+# Execute the complete pre-deploy validation suite (hygiene + types + lint + test + build)
 pnpm verify
+
+# Run automated repo hygiene & artifact lifecycle check
+pnpm check-hygiene
 
 # Build optimized production assets to dist/
 pnpm build
@@ -57,7 +60,8 @@ pnpm test
 | `pnpm check-types` | `libs/`, `api/`, `apps/web/` | Runs `tsc --noEmit` across all project targets. | Any TypeScript type or import error. |
 | `pnpm lint` | Root + `apps/web/src` | Executes ESLint 9 Flat Config with React, JSX a11y, and TS rules. | Any rule marked with `error` severity. |
 | `pnpm test` | `apps/web/src/**/*.test.ts` | Executes Node.js native test runner (`node --test`). | Any failed test assertion. |
-| `pnpm verify` | Entire Monorepo | Sequentially runs `check-types` ➔ `lint` ➔ `test` ➔ `build`. | Any step in the chain returning non-zero exit code. |
+| `pnpm check-hygiene` | Monorepo Root | Validates root directory boundaries and artifact lifecycle rules. | Any unapproved root artifact or temporary scratchpad script. |
+| `pnpm verify` | Entire Monorepo | Sequentially runs `check-hygiene` ➔ `check-types` ➔ `lint` ➔ `test` ➔ `build`. | Any step in the chain returning non-zero exit code. |
 
 ---
 

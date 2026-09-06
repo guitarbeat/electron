@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate Artifact Compliance & Lifecycle
+        run: pnpm run check-artifacts
+
       - name: Type Check
         run: pnpm run check-types
 
@@ -95,6 +98,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Validate Artifact Compliance & Lifecycle
+        run: pnpm run check-artifacts
 
       - name: Build Application
         run: pnpm --filter '@workspace/web' run build

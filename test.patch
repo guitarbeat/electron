@@ -1,8 +1,0 @@
---- apps/web/src/components/movies/MoviesView.tsx
-+++ apps/web/src/components/movies/MoviesView.tsx
-@@ -82,6 +82,7 @@
-     toggleWatched,
-     editMovie,
-   } = useMoviesWorkspace({ currentUser, isPaused, focusSearchInput });
-+  console.log("[MoviesView] state:", { isLoading, isSuggestionsLoading, moviesLength: movies.length, pendingSuggestionsLength: pendingSuggestions.length });
-   const sections = useMemo(
