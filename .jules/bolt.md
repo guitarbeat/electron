@@ -49,3 +49,6 @@ Implemented automated repository hygiene validator (`scripts/verify-repo-hygiene
 ## 2026-09-06 - Artifact Lifecycle Compliance Gate (`scripts/check-artifacts.js`)
 Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 4 lifecycle states (Active, Ephemeral, Archived, Deprecated) across root boundaries, runner boundaries, doc topology, and active source directories. Integrated `check-artifacts` into `package.json` scripts (`check-artifacts`, `pre-commit`, `verify`, and `build`), and added mandatory verification steps to the `typecheck-and-lint` and `build` jobs in `.github/workflows/ci.yml`.
 
+
+## 2026-09-06 - Stale Prompt Discrepancy (Uncached Array Mapping in Catalog Responses in `api/agent.ts`)
+Task requested caching array mapping in catalog responses in `api/agent.ts:267`. However, `publicCatalog` in `api/agent.ts` is already using `catalogCache` (version-keyed `Map<string, CatalogCacheEntry>`) to cache mapped and sorted catalog items for "movies", "places", and "suggestions". Documented the discrepancy with no code changes to `api/agent.ts`.
