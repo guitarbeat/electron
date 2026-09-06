@@ -49,3 +49,6 @@ Implemented automated repository hygiene validator (`scripts/verify-repo-hygiene
 ## 2026-09-06 - Artifact Lifecycle Compliance Gate (`scripts/check-artifacts.js`)
 Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 4 lifecycle states (Active, Ephemeral, Archived, Deprecated) across root boundaries, runner boundaries, doc topology, and active source directories. Integrated `check-artifacts` into `package.json` scripts (`check-artifacts`, `pre-commit`, `verify`, and `build`), and added mandatory verification steps to the `typecheck-and-lint` and `build` jobs in `.github/workflows/ci.yml`.
 
+
+## 2026-09-06 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in `api/agent.ts:108`)
+Task requested removing type bypassing casts (`as any[]`) in `api/agent.ts:108`, but `api/agent.ts` is already strongly typed using `CatalogItem[]` and contains no `as any[]` or `any` type casts. Documented the discrepancy with no code changes to `api/agent.ts`.
