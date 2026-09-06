@@ -49,3 +49,6 @@ Implemented automated repository hygiene validator (`scripts/verify-repo-hygiene
 ## 2026-09-06 - Artifact Lifecycle Compliance Gate (`scripts/check-artifacts.js`)
 Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 4 lifecycle states (Active, Ephemeral, Archived, Deprecated) across root boundaries, runner boundaries, doc topology, and active source directories. Integrated `check-artifacts` into `package.json` scripts (`check-artifacts`, `pre-commit`, `verify`, and `build`), and added mandatory verification steps to the `typecheck-and-lint` and `build` jobs in `.github/workflows/ci.yml`.
 
+
+## 2026-09-06 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in `api/omdb.ts:54`)
+Task requested replacing `ipRequestCounts.entries()` / Map iteration with an LRU cache or optimized loop in `api/omdb.ts:54`. However, `api/omdb.ts` was already updated in a previous refactor to use `LRURateLimiter` iterating directly over `this.counts` (`for (const [key, value] of this.counts)`). Documented the discrepancy with no unnecessary code changes.
