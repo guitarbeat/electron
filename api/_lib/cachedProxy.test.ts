@@ -115,6 +115,22 @@ describe('cachedProxy utilities', () => {
       assert.strictEqual(cache.get('key2'), undefined);
       assert.strictEqual(cache.get('key3'), 'val3');
     });
+
+    it('updates value and resets expiration when overwriting an existing key', () => {
+      let now = 1000;
+      const cache = new BoundedResponseCache<string>({
+        ttlMs: 2000,
+        maxEntries: 2,
+        now: () => now,
+      });
+
+      cache.set('key1', 'v1');
+      now = 2000;
+      cache.set('key1', 'v2'); // Overwrites key1 at t=2000, expires at t=4000
+
+      now = 2500; // Past initial expiration (t=3000), but before new expiration (t=4000)
+      assert.strictEqual(cache.get('key1'), 'v2');
+    });
   });
 
   describe('jsonProxyResponse', () => {
@@ -134,6 +150,17 @@ describe('cachedProxy utilities', () => {
 
       assert.strictEqual(response.status, 400);
       assert.strictEqual(await response.text(), rawJsonString);
+    });
+
+    it('serializes numbers, booleans, and null values properly', async () => {
+      const numResp = jsonProxyResponse(42, 200);
+      assert.strictEqual(await numResp.text(), '42');
+
+      const boolResp = jsonProxyResponse(false, 200);
+      assert.strictEqual(await boolResp.text(), 'false');
+
+      const nullResp = jsonProxyResponse(null, 200);
+      assert.strictEqual(await nullResp.text(), 'null');
     });
   });
 
@@ -180,6 +207,7 @@ describe('cachedProxy utilities', () => {
         { status: 400, statusText: 'Bad Request' },
         { status: 404, statusText: 'Not Found' },
         { status: 500, statusText: 'Internal Server Error' },
+        { status: 502, statusText: 'Bad Gateway' },
       ];
 
       for (const { status, statusText } of statuses) {
@@ -210,6 +238,20 @@ describe('cachedProxy utilities', () => {
       assert.strictEqual(response.headers.get('Content-Type'), 'text/plain');
       assert.strictEqual(response.headers.get('Cache-Control'), 'no-store');
       assert.strictEqual(await response.text(), '');
+    });
+
+    it('allows parsing response body via .json() when contentType is application/json', async () => {
+      const cachedJson: CachedProxyResponse = {
+        body: JSON.stringify({ id: 123, name: 'test' }),
+        contentType: 'application/json; charset=utf-8',
+        status: 200,
+        statusText: 'OK',
+      };
+
+      const response = cachedProxyResponse(cachedJson, 'HIT');
+      assert.strictEqual(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
+      const data = await response.json();
+      assert.deepStrictEqual(data, { id: 123, name: 'test' });
     });
   });
 });
