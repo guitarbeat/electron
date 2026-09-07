@@ -55,3 +55,6 @@ Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/in
 
 ## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
+Task requested adding unit tests for `resolveConfig` in `api/_lib/config.ts:9`. However, `api/_lib/config.test.ts` already exists and comprehensively tests `resolveConfig` covering happy paths, trimming, whitespace/newlines, fallback behavior, and empty string handling. Documented the discrepancy with no additional code changes needed.
