@@ -52,3 +52,6 @@ Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 
 
 ## 2026-09-06 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
 Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-06 - Security Task Discrepancy (Authentication Bypass in State Scope Retrieval in `api/_lib/session.ts`)
+Task requested fixing an issue where `hasAccessSession` in `api/_lib/session.ts` unconditionally returned `true`. However, `hasAccessSession` is already properly implemented (`if (!req) return false; return getSessionState(req).hasAccess;`) and verifies session cookies. Full unit tests covering `hasAccessSession` already exist and pass in `api/_lib/session.test.ts`. Documented the discrepancy with no code changes needed.
