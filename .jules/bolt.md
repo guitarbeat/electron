@@ -55,3 +55,6 @@ Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/in
 
 ## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-07 - Security Task Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts`)
+Task requested updating `createPostgresPool` in `api/_lib/dbCommon.ts:56` to set `rejectUnauthorized` to `true`, but `api/_lib/dbCommon.ts` is already using `{ rejectUnauthorized: true }` and unit tests in `api/_lib/dbCommon.test.ts` verify this behavior. Confirmed codebase state with no additional code changes needed.
