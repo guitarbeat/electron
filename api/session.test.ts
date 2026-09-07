@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import sessionHandler from "./session.js";
+import defaultSessionHandler, { sessionHandler } from "./session.js";
 import { buildProfileCookie } from "./_lib/session.js";
 
 describe("sessionHandler", () => {
@@ -47,7 +47,78 @@ describe("sessionHandler", () => {
     assert.ok(Array.isArray(data.usersMissingPins));
   });
 
-  it("should return 500 status code with warning when error occurs during state retrieval", async () => {
+  it("should support injected dependencies for session and pin coverage state", async () => {
+    const req = new Request("http://localhost/api/session", { method: "GET" });
+    const deps = {
+      getSessionState: () => ({
+        hasAccess: true,
+        currentUser: "CustomUser",
+        activeUsers: ["CustomUser"],
+      }),
+      getPinCoverageState: async () => ({
+        pinProtectedUsers: ["CustomUser"],
+        usersMissingPins: ["OtherUser"],
+        pinCoverageComplete: false,
+      }),
+    };
+
+    const res = await sessionHandler(req, deps);
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.hasAccess, true);
+    assert.strictEqual(data.currentUser, "CustomUser");
+    assert.deepStrictEqual(data.activeUsers, ["CustomUser"]);
+    assert.deepStrictEqual(data.pinProtectedUsers, ["CustomUser"]);
+    assert.deepStrictEqual(data.usersMissingPins, ["OtherUser"]);
+  });
+
+  it("should return 500 with warning when getSessionState throws", async () => {
+    const req = new Request("http://localhost/api/session", { method: "GET" });
+    const deps = {
+      getSessionState: () => {
+        throw new Error("Session state error");
+      },
+      getPinCoverageState: async () => ({
+        pinProtectedUsers: [],
+        usersMissingPins: [],
+        pinCoverageComplete: true,
+      }),
+    };
+
+    const res = await sessionHandler(req, deps);
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.hasAccess, false);
+    assert.strictEqual(data.currentUser, null);
+    assert.deepStrictEqual(data.pinProtectedUsers, []);
+    assert.deepStrictEqual(data.usersMissingPins, []);
+    assert.strictEqual(data.warning, "Session state is temporarily unavailable.");
+  });
+
+  it("should return 500 with warning when getPinCoverageState rejects", async () => {
+    const req = new Request("http://localhost/api/session", { method: "GET" });
+    const deps = {
+      getSessionState: () => ({
+        hasAccess: false,
+        currentUser: null,
+        activeUsers: [],
+      }),
+      getPinCoverageState: async () => {
+        throw new Error("DB PIN coverage query error");
+      },
+    };
+
+    const res = await sessionHandler(req, deps);
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.hasAccess, false);
+    assert.strictEqual(data.currentUser, null);
+    assert.deepStrictEqual(data.pinProtectedUsers, []);
+    assert.deepStrictEqual(data.usersMissingPins, []);
+    assert.strictEqual(data.warning, "Session state is temporarily unavailable.");
+  });
+
+  it("should return 500 status code with warning when error occurs via default web handler", async () => {
     const baseReq = new Request("http://localhost/api/session", { method: "GET" });
     const failingReq = new Proxy(baseReq, {
       get(target, prop, receiver) {
@@ -58,7 +129,7 @@ describe("sessionHandler", () => {
       },
     });
 
-    const res = await sessionHandler(failingReq);
+    const res = await defaultSessionHandler(failingReq);
     assert.strictEqual(res.status, 500);
     const data = await res.json();
     assert.strictEqual(data.hasAccess, false);
