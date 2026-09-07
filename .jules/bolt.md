@@ -55,3 +55,6 @@ Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/in
 
 ## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
+Task requested creating a test file for the state route handler factory (`api/_lib/stateRoute.ts`), but `api/_lib/stateRoute.ts` is already fully tested by `api/_lib/stateRoute.test.ts` with 12 unit tests covering scope resolution via query parameter/pathname, path offsets, trailing slashes, 404 Not Found, 405 Method Not Allowed flows, and request forwarding. Documented the discrepancy with no unnecessary code changes.
