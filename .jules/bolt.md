@@ -63,3 +63,6 @@ Evaluating replacing `for (const [key, value] of this.counts)` with `for (const 
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Authentication Bypass in State Scope Retrieval in `api/_lib/session.ts:216`)
 Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/session.ts:216`) where it unconditionally returned `true`. However, `hasAccessSession` is already properly implemented in `api/_lib/session.ts` as `return getSessionState(req).hasAccess;` and is fully tested in `api/_lib/session.test.ts`. Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
+Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by using bulk query preloading (`preloadSharedStateFiles`) and parallel reads via `Promise.all`. Upon reviewing `api/_lib/state.ts`, `bootstrapMissingScopeFiles` already executes `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`. Bypassing the cache in `readScopeStoredData` would degrade performance by bypassing the preloaded cache. Documented the discrepancy with no code changes to source files needed.
