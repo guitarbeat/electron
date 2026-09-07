@@ -63,3 +63,6 @@ Evaluating replacing `for (const [key, value] of this.counts)` with `for (const 
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Authentication Bypass in State Scope Retrieval in `api/_lib/session.ts:216`)
 Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/session.ts:216`) where it unconditionally returned `true`. However, `hasAccessSession` is already properly implemented in `api/_lib/session.ts` as `return getSessionState(req).hasAccess;` and is fully tested in `api/_lib/session.test.ts`. Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts)
+Task requested removing type bypassing casts (`as any[]`) in `api/agent.ts:108` when fetching `movies` scope data, but `api/agent.ts` is already strongly typed using `CatalogItem[]` and `readScopeStoredData("movies")` return types, with no `as any[]` casts present. Documented the discrepancy with no code changes needed.
