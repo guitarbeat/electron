@@ -63,3 +63,6 @@ Evaluating replacing `for (const [key, value] of this.counts)` with `for (const 
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Authentication Bypass in State Scope Retrieval in `api/_lib/session.ts:216`)
 Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/session.ts:216`) where it unconditionally returned `true`. However, `hasAccessSession` is already properly implemented in `api/_lib/session.ts` as `return getSessionState(req).hasAccess;` and is fully tested in `api/_lib/session.test.ts`. Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
+Task requested adding tests for `resolveConfig` in `api/_lib/config.ts:9`. However, `resolveConfig` is already fully tested in `api/_lib/config.test.ts` (covering non-empty strings, whitespace trimming, tabs/newlines handling, undefined values, empty strings, whitespace-only strings, and empty string fallbacks). Documented the discrepancy with no additional code changes needed.
