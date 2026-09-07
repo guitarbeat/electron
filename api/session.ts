@@ -1,17 +1,23 @@
 import { jsonResponse, methodNotAllowedResponse } from "./_lib/http.js";
-import { getSessionState } from "./_lib/session.js";
-import { getPinCoverageState } from "./_lib/state.js";
+import { getSessionState as defaultGetSessionState } from "./_lib/session.js";
+import { getPinCoverageState as defaultGetPinCoverageState } from "./_lib/state.js";
 import { withWebHandler } from "./_lib/webHandler.js";
 import { logger } from "./_lib/logger.js";
 
-async function handler(req: Request): Promise<Response> {
+export async function sessionHandler(
+  req: Request,
+  deps = {
+    getSessionState: defaultGetSessionState,
+    getPinCoverageState: defaultGetPinCoverageState,
+  },
+): Promise<Response> {
   if (req.method !== "GET") {
     return methodNotAllowedResponse("GET");
   }
 
   try {
-    const session = getSessionState(req);
-    const { pinProtectedUsers, usersMissingPins } = await getPinCoverageState();
+    const session = deps.getSessionState(req);
+    const { pinProtectedUsers, usersMissingPins } = await deps.getPinCoverageState();
 
     return jsonResponse({
       hasAccess: session.hasAccess,
@@ -35,4 +41,4 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-export default withWebHandler(handler);
+export default withWebHandler(sessionHandler);
