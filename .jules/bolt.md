@@ -55,3 +55,6 @@ Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/in
 
 ## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for logger helper in `api/_lib/logger.ts:44`)
+Task requested adding unit tests for the logger helper in `api/_lib/logger.ts:44`. However, `api/_lib/logger.ts` is already comprehensively tested in `api/_lib/logger.test.ts` (with 21 test cases covering `debug`, `info`, `warn`, `error` with error formatting and cause hierarchies, and `withContext` logging with partial/empty contexts and NODE_ENV/DEBUG flag handling). Code coverage for `api/_lib/logger.ts` is already at 100%. Documented the discrepancy with no unnecessary code changes.
