@@ -28,13 +28,29 @@ describe('logger helper', () => {
       assert.deepStrictEqual(args[2], { foo: 'bar' });
     });
 
-    it('suppresses debug log when NODE_ENV is production and DEBUG is not set', (t) => {
+    it('logs debug message when NODE_ENV is undefined', (t) => {
+      delete process.env.NODE_ENV;
+      delete process.env.DEBUG;
+
+      const mockDebug = t.mock.method(console, 'debug', () => {});
+      logger.debug('undefined env debug');
+
+      assert.strictEqual(mockDebug.mock.callCount(), 1);
+      const args = mockDebug.mock.calls[0].arguments;
+      assert.strictEqual(args[1], 'undefined env debug');
+    });
+
+    it('suppresses debug log when NODE_ENV is production and DEBUG is not set or empty', (t) => {
       process.env.NODE_ENV = 'production';
       delete process.env.DEBUG;
 
       const mockDebug = t.mock.method(console, 'debug', () => {});
       logger.debug('hidden debug');
 
+      assert.strictEqual(mockDebug.mock.callCount(), 0);
+
+      process.env.DEBUG = '';
+      logger.debug('hidden debug empty string');
       assert.strictEqual(mockDebug.mock.callCount(), 0);
     });
 
@@ -52,26 +68,26 @@ describe('logger helper', () => {
   });
 
   describe('info', () => {
-    it('logs info message correctly', (t) => {
+    it('logs info message correctly with ISO timestamp prefix', (t) => {
       const mockInfo = t.mock.method(console, 'info', () => {});
       logger.info('info message', 123);
 
       assert.strictEqual(mockInfo.mock.callCount(), 1);
       const args = mockInfo.mock.calls[0].arguments;
-      assert.match(args[0] as string, /\[INFO\]/);
+      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[INFO\]$/);
       assert.strictEqual(args[1], 'info message');
       assert.strictEqual(args[2], 123);
     });
   });
 
   describe('warn', () => {
-    it('logs warn message correctly', (t) => {
+    it('logs warn message correctly with ISO timestamp prefix', (t) => {
       const mockWarn = t.mock.method(console, 'warn', () => {});
       logger.warn('warning message', 'extra arg');
 
       assert.strictEqual(mockWarn.mock.callCount(), 1);
       const args = mockWarn.mock.calls[0].arguments;
-      assert.match(args[0] as string, /\[WARN\]/);
+      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[WARN\]$/);
       assert.strictEqual(args[1], 'warning message');
       assert.strictEqual(args[2], 'extra arg');
     });
@@ -86,7 +102,7 @@ describe('logger helper', () => {
 
       assert.strictEqual(mockError.mock.callCount(), 1);
       const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /\[ERROR\]/);
+      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[ERROR\]$/);
       assert.strictEqual(args[1], 'Simple failure');
 
       const formattedErr = args[2] as Record<string, unknown>;
@@ -98,10 +114,25 @@ describe('logger helper', () => {
       assert.strictEqual(formattedErr.cause, undefined);
     });
 
+    it('handles Error object passed as primary message argument', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+      const primaryErr = new Error('Primary error as message');
+
+      logger.error(primaryErr);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[ERROR\]$/);
+      assert.strictEqual(args[1], primaryErr);
+    });
+
     it('logs error message and formats Error instances with code, status, cause', (t) => {
       const mockError = t.mock.method(console, 'error', () => {});
 
       const innerError = new Error('Inner error');
+      (innerError as unknown as { code: string; status: number }).code = 'ERR_INNER';
+      (innerError as unknown as { code: string; status: number }).status = 400;
+
       const err = new Error('Main error');
       (err as unknown as { code: string }).code = 'ERR_TEST';
       (err as unknown as { status: number }).status = 500;
@@ -111,7 +142,7 @@ describe('logger helper', () => {
 
       assert.strictEqual(mockError.mock.callCount(), 1);
       const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /\[ERROR\]/);
+      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[ERROR\]$/);
       assert.strictEqual(args[1], 'Failed to process');
 
       const formattedErr = args[2] as Record<string, unknown>;
@@ -124,6 +155,8 @@ describe('logger helper', () => {
       const cause = formattedErr.cause as Record<string, unknown>;
       assert.strictEqual(cause.name, 'Error');
       assert.strictEqual(cause.message, 'Inner error');
+      assert.strictEqual(cause.code, 'ERR_INNER');
+      assert.strictEqual(cause.status, 400);
 
       assert.strictEqual(args[3], 'additional context');
     });
@@ -316,6 +349,23 @@ describe('logger helper', () => {
       assert.strictEqual(formattedCtxErr.name, 'Error');
       assert.strictEqual(formattedCtxErr.message, 'ctx err');
       assert.strictEqual(mockError.mock.calls[0].arguments[3], 'extra err arg');
+    });
+
+    it('creates isolated logger instances that do not interfere with each other', (t) => {
+      const mockInfo = t.mock.method(console, 'info', () => {});
+
+      const ctxLoggerA = logger.withContext({ requestId: 'req-A', scope: 'scope-A' });
+      const ctxLoggerB = logger.withContext({ requestId: 'req-B', userId: 'user-B' });
+
+      ctxLoggerA.info('Message from A');
+      ctxLoggerB.info('Message from B');
+
+      assert.strictEqual(mockInfo.mock.callCount(), 2);
+      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-A scope:scope-A\]$/);
+      assert.strictEqual(mockInfo.mock.calls[0].arguments[1], 'Message from A');
+
+      assert.match(mockInfo.mock.calls[1].arguments[0] as string, /\[INFO\] \[req:req-B user:user-B\]$/);
+      assert.strictEqual(mockInfo.mock.calls[1].arguments[1], 'Message from B');
     });
 
     it('handles partial context fields correctly', (t) => {
