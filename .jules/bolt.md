@@ -55,3 +55,6 @@ Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/in
 
 ## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
 Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts:7`)
+Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but `lib/db/src/schema/index.ts` contains only `export {};` with no commented-out code present. Documented the discrepancy with no unnecessary source code changes.
