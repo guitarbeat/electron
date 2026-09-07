@@ -52,3 +52,6 @@ Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 
 
 ## 2026-09-06 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
 Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
+Task requested adding unit tests for `healthHandler` in `api/health.ts:9`. However, `healthHandler` is already fully tested in `api/health.test.ts` with coverage for OPTIONS 204 response, non-GET/OPTIONS 405 response, shallow GET liveness check, relative URL request handling, deep GET success with full scope/pin diagnostics, and deep GET failure 503 response. Documented the discrepancy with no unnecessary code changes.
