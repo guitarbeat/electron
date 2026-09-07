@@ -52,3 +52,6 @@ Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 
 
 ## 2026-09-06 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
 Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-06 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
+Task requested adding unit tests for `resolveConfig` in `api/_lib/config.ts:9`, but `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering non-empty trimmed strings, whitespace/tab/newline trimming, undefined values, empty strings, whitespace-only strings, and empty fallback strings). Documented the discrepancy with no additional code changes needed.
