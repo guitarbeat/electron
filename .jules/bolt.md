@@ -59,3 +59,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 ## 2026-09-06 - Performance Analysis (Map Iteration for Rate Limit Purge in `api/omdb.ts`)
 Analyzed rate limiter eviction logic in `LRURateLimiter` (`api/omdb.ts:40-52`).
 Evaluating replacing `for (const [key, value] of this.counts)` with `for (const key of this.counts.keys())` demonstrated that `for..of Map` entries iteration in V8/Node.js directly retrieves key and value in a single loop step without secondary `.get(key)` hash table lookups. Benchmark profiling confirmed `for..of Map` entries iteration performs ~15-42% faster and allocates fewer MapIterator handles than key-iteration with manual lookup. Preserved the optimal `for (const [key, value] of this.counts)` Map iteration pattern without code changes.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts`)
+Task requested removing commented-out code from `lib/db/src/schema/index.ts:7`, but the file currently contains only `export {};` and no commented-out code exists. Documented the discrepancy with no code changes to `lib/db/src/schema/index.ts`.
