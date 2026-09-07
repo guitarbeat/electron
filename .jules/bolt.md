@@ -63,3 +63,6 @@ Evaluating replacing `for (const [key, value] of this.counts)` with `for (const 
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Authentication Bypass in State Scope Retrieval in `api/_lib/session.ts:216`)
 Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/session.ts:216`) where it unconditionally returned `true`. However, `hasAccessSession` is already properly implemented in `api/_lib/session.ts` as `return getSessionState(req).hasAccess;` and is fully tested in `api/_lib/session.test.ts`. Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Performance Analysis (Map Iteration for Rate Limit Purge in `api/omdb.ts:54`)
+Analyzed rate limiter eviction logic in `LRURateLimiter` (`api/omdb.ts:38-52`). The eviction loop `for (const [key, value] of this.counts)` uses JavaScript Map's native insertion-order iterator. Microbenchmarks showed that `for (const [key, value] of this.counts)` directly yields key and value pairs efficiently in Node.js/V8 without extra lookup overhead. The existing implementation is optimal for maintaining insertion-order expiration/eviction and avoiding redundant Map lookups. Documented the performance analysis with no code changes required.
