@@ -232,6 +232,50 @@ describe('logger helper', () => {
       assert.strictEqual(args[5], null);
       assert.strictEqual(args[6], undefined);
     });
+
+    it('handles non-Error objects and primitives passed directly as logger.error arguments', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+
+      const plainPayload = { errorReason: 'database_timeout', attempts: 3 };
+      const statusNumber = 503;
+
+      logger.error('Database connection failed', plainPayload, statusNumber);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+      assert.match(args[0] as string, /\[ERROR\]/);
+      assert.strictEqual(args[1], 'Database connection failed');
+      assert.deepStrictEqual(args[2], plainPayload);
+      assert.strictEqual(args[3], statusNumber);
+    });
+
+    it('formats Error objects with code, status, and cause when logged via withContext error method', (t) => {
+      const mockError = t.mock.method(console, 'error', () => {});
+      const ctxLogger = logger.withContext({ requestId: 'req-err-1' });
+
+      const nestedErr = new Error('Database query timed out');
+      const err = new Error('Request processing failed');
+      (err as unknown as { code: string }).code = 'ERR_TIMEOUT';
+      (err as unknown as { status: number }).status = 504;
+      (err as unknown as { cause: Error }).cause = nestedErr;
+
+      ctxLogger.error('Handler error', err);
+
+      assert.strictEqual(mockError.mock.callCount(), 1);
+      const args = mockError.mock.calls[0].arguments;
+      assert.match(args[0] as string, /\[ERROR\] \[req:req-err-1\]/);
+      assert.strictEqual(args[1], 'Handler error');
+
+      const formattedErr = args[2] as Record<string, unknown>;
+      assert.strictEqual(formattedErr.name, 'Error');
+      assert.strictEqual(formattedErr.message, 'Request processing failed');
+      assert.strictEqual(formattedErr.code, 'ERR_TIMEOUT');
+      assert.strictEqual(formattedErr.status, 504);
+
+      const cause = formattedErr.cause as Record<string, unknown>;
+      assert.strictEqual(cause.name, 'Error');
+      assert.strictEqual(cause.message, 'Database query timed out');
+    });
   });
 
   describe('withContext', () => {
@@ -337,6 +381,21 @@ describe('logger helper', () => {
       assert.strictEqual(mockInfo.mock.callCount(), 1);
       const prefix = mockInfo.mock.calls[0].arguments[0] as string;
       assert.match(prefix, /\] \[INFO\]$/);
+    });
+
+    it('accepts context containing path property alongside requestId, scope, and userId', (t) => {
+      const mockInfo = t.mock.method(console, 'info', () => {});
+
+      const ctxLogger = logger.withContext({
+        requestId: 'req-path-1',
+        path: '/api/v1/movies',
+      });
+
+      ctxLogger.info('route handled');
+
+      assert.strictEqual(mockInfo.mock.callCount(), 1);
+      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-path-1\]$/);
+      assert.strictEqual(mockInfo.mock.calls[0].arguments[1], 'route handled');
     });
   });
 });
