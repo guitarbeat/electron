@@ -52,3 +52,6 @@ Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 
 
 ## 2026-09-06 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
 Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-06 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in `api/omdb.ts:54`)
+Task requested optimizing `ipRequestCounts.entries()` iteration in `api/omdb.ts:54`. However, `api/omdb.ts` has already been refactored to encapsulate rate limiting into `LRURateLimiter` using `for (const [key, value] of this.counts)` with LRU entry eviction and `Map` insertion-order re-positioning. Profiling showed that alternative iteration methods (e.g. `map.keys()` or manual iterator `.next()`) perform identically or slower than standard `for..of` entries iteration in Node/V8. Documented the discrepancy with no code changes needed.
