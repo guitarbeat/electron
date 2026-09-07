@@ -63,3 +63,6 @@ Evaluating replacing `for (const [key, value] of this.counts)` with `for (const 
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Authentication Bypass in State Scope Retrieval in `api/_lib/session.ts:216`)
 Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/session.ts:216`) where it unconditionally returned `true`. However, `hasAccessSession` is already properly implemented in `api/_lib/session.ts` as `return getSessionState(req).hasAccess;` and is fully tested in `api/_lib/session.test.ts`. Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
+Task requested resolving TODO in SyncBannerContent (`apps/web/src/components/ui/lib/syncBanner.ts:11`), referencing `whatToDo: string`. However, `apps/web/src/components/ui/lib/syncBanner.ts` has already been refactored and contains no TODO comments, and `SyncBannerContent` uses `recommendedAction` instead of `whatToDo`. Confirmed discrepancy and verified repository health with no unnecessary source code changes.
