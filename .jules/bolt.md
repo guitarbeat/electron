@@ -59,3 +59,6 @@ Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.t
 ## 2026-09-06 - Performance Analysis (Map Iteration for Rate Limit Purge in `api/omdb.ts`)
 Analyzed rate limiter eviction logic in `LRURateLimiter` (`api/omdb.ts:40-52`).
 Evaluating replacing `for (const [key, value] of this.counts)` with `for (const key of this.counts.keys())` demonstrated that `for..of Map` entries iteration in V8/Node.js directly retrieves key and value in a single loop step without secondary `.get(key)` hash table lookups. Benchmark profiling confirmed `for..of Map` entries iteration performs ~15-42% faster and allocates fewer MapIterator handles than key-iteration with manual lookup. Preserved the optimal `for (const [key, value] of this.counts)` Map iteration pattern without code changes.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Fix initial offset calculation in fix_drift_wall_sync.py)
+Task requested fixing the initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` to include elapsed time in `apps/web/src/components/ui/DriftWall.tsx`. However, `apps/web/src/components/ui/DriftWall.tsx` was already updated in a previous refactor and no longer contains the target code pattern `(_, i) => offsetsRef.current[i] ?? ...`. Documented the discrepancy with no unnecessary code changes.
