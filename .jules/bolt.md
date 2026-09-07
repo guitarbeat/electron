@@ -52,3 +52,6 @@ Created `scripts/check-artifacts.js` and `scripts/pre-commit.sh` to enforce the 
 
 ## 2026-09-06 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
 Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-06 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
+Task requested adding a test file for the state route handler factory in `api/_lib/stateRoute.ts:24`, but `api/_lib/stateRoute.test.ts` already exists and provides comprehensive unit test coverage (query parameters, pathname offsets, path slashes, 404/405 error flows, all valid state scopes, request object forwarding). Documented the discrepancy with no source code or test changes needed.
