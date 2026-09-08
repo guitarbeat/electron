@@ -66,3 +66,6 @@ Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success, and deep GET error/503 status). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Commented Out Code in `lib/db/src/schema/index.ts:7`)
+Task requested removing commented-out code in `lib/db/src/schema/index.ts:7`. However, `lib/db/src/schema/index.ts` already contains only `export {};` with no commented-out code present. Documented the discrepancy with no additional code changes needed.
