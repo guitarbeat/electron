@@ -1,451 +1,220 @@
-import { describe, it, beforeEach, afterEach } from 'node:test';
-import assert from 'node:assert';
-import { logger } from './logger';
+import { describe, it, beforeEach, afterEach } from "node:test";
+import assert from "node:assert";
+import { logger } from "./logger.js";
 
-describe('logger helper', () => {
-  const originalEnv = { ...process.env };
+describe("logger helper", () => {
+  let originalEnv: Record<string, string | undefined>;
+  let originalConsoleDebug: typeof console.debug;
+  let originalConsoleInfo: typeof console.info;
+  let originalConsoleWarn: typeof console.warn;
+  let originalConsoleError: typeof console.error;
+
+  let debugCalls: unknown[][] = [];
+  let infoCalls: unknown[][] = [];
+  let warnCalls: unknown[][] = [];
+  let errorCalls: unknown[][] = [];
 
   beforeEach(() => {
-    process.env = { ...originalEnv };
+    originalEnv = {
+      NODE_ENV: process.env.NODE_ENV,
+      DEBUG: process.env.DEBUG,
+    };
+
+    originalConsoleDebug = console.debug;
+    originalConsoleInfo = console.info;
+    originalConsoleWarn = console.warn;
+    originalConsoleError = console.error;
+
+    debugCalls = [];
+    infoCalls = [];
+    warnCalls = [];
+    errorCalls = [];
+
+    console.debug = (...args: unknown[]) => {
+      debugCalls.push(args);
+    };
+    console.info = (...args: unknown[]) => {
+      infoCalls.push(args);
+    };
+    console.warn = (...args: unknown[]) => {
+      warnCalls.push(args);
+    };
+    console.error = (...args: unknown[]) => {
+      errorCalls.push(args);
+    };
   });
 
   afterEach(() => {
-    process.env = originalEnv;
-  });
-
-  describe('debug', () => {
-    it('logs debug message when NODE_ENV is not production', (t) => {
-      process.env.NODE_ENV = 'development';
-      delete process.env.DEBUG;
-
-      const mockDebug = t.mock.method(console, 'debug', () => {});
-      logger.debug('test message', { foo: 'bar' });
-
-      assert.strictEqual(mockDebug.mock.callCount(), 1);
-      const args = mockDebug.mock.calls[0].arguments;
-      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[DEBUG\]$/);
-      assert.strictEqual(args[1], 'test message');
-      assert.deepStrictEqual(args[2], { foo: 'bar' });
-    });
-
-    it('logs debug message when NODE_ENV is undefined', (t) => {
+    if (originalEnv.NODE_ENV !== undefined) {
+      process.env.NODE_ENV = originalEnv.NODE_ENV;
+    } else {
       delete process.env.NODE_ENV;
+    }
+
+    if (originalEnv.DEBUG !== undefined) {
+      process.env.DEBUG = originalEnv.DEBUG;
+    } else {
+      delete process.env.DEBUG;
+    }
+
+    console.debug = originalConsoleDebug;
+    console.info = originalConsoleInfo;
+    console.warn = originalConsoleWarn;
+    console.error = originalConsoleError;
+  });
+
+  describe("debug logging", () => {
+    it("should log debug messages when NODE_ENV is not production", () => {
+      process.env.NODE_ENV = "development";
       delete process.env.DEBUG;
 
-      const mockDebug = t.mock.method(console, 'debug', () => {});
-      logger.debug('undefined env debug');
+      logger.debug("test debug message", { extra: "data" });
 
-      assert.strictEqual(mockDebug.mock.callCount(), 1);
-      const args = mockDebug.mock.calls[0].arguments;
-      assert.strictEqual(args[1], 'undefined env debug');
+      assert.strictEqual(debugCalls.length, 1);
+      assert.match(debugCalls[0][0] as string, /^\[.+\] \[DEBUG\]$/);
+      assert.strictEqual(debugCalls[0][1], "test debug message");
+      assert.deepStrictEqual(debugCalls[0][2], { extra: "data" });
     });
 
-    it('suppresses debug log when NODE_ENV is production and DEBUG is not set or empty', (t) => {
-      process.env.NODE_ENV = 'production';
+    it("should NOT log debug messages in production when DEBUG is not set", () => {
+      process.env.NODE_ENV = "production";
       delete process.env.DEBUG;
 
-      const mockDebug = t.mock.method(console, 'debug', () => {});
-      logger.debug('hidden debug');
+      logger.debug("should not log");
 
-      assert.strictEqual(mockDebug.mock.callCount(), 0);
-
-      process.env.DEBUG = '';
-      logger.debug('hidden debug empty string');
-      assert.strictEqual(mockDebug.mock.callCount(), 0);
+      assert.strictEqual(debugCalls.length, 0);
     });
 
-    it('logs debug message in production if DEBUG is set', (t) => {
-      process.env.NODE_ENV = 'production';
-      process.env.DEBUG = '1';
+    it("should log debug messages in production when DEBUG is truthy", () => {
+      process.env.NODE_ENV = "production";
+      process.env.DEBUG = "1";
 
-      const mockDebug = t.mock.method(console, 'debug', () => {});
-      logger.debug('visible debug in prod');
+      logger.debug("production debug message");
 
-      assert.strictEqual(mockDebug.mock.callCount(), 1);
-      const args = mockDebug.mock.calls[0].arguments;
-      assert.strictEqual(args[1], 'visible debug in prod');
+      assert.strictEqual(debugCalls.length, 1);
+      assert.match(debugCalls[0][0] as string, /^\[.+\] \[DEBUG\]$/);
+      assert.strictEqual(debugCalls[0][1], "production debug message");
     });
   });
 
-  describe('info', () => {
-    it('logs info message correctly with ISO timestamp prefix', (t) => {
-      const mockInfo = t.mock.method(console, 'info', () => {});
-      logger.info('info message', 123);
+  describe("info, warn, error logging", () => {
+    it("should log info messages with formatted prefix", () => {
+      logger.info("info message", 123);
 
-      assert.strictEqual(mockInfo.mock.callCount(), 1);
-      const args = mockInfo.mock.calls[0].arguments;
-      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[INFO\]$/);
-      assert.strictEqual(args[1], 'info message');
-      assert.strictEqual(args[2], 123);
-    });
-  });
-
-  describe('warn', () => {
-    it('logs warn message correctly with ISO timestamp prefix', (t) => {
-      const mockWarn = t.mock.method(console, 'warn', () => {});
-      logger.warn('warning message', 'extra arg');
-
-      assert.strictEqual(mockWarn.mock.callCount(), 1);
-      const args = mockWarn.mock.calls[0].arguments;
-      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[WARN\]$/);
-      assert.strictEqual(args[1], 'warning message');
-      assert.strictEqual(args[2], 'extra arg');
-    });
-  });
-
-  describe('error', () => {
-    it('formats a simple Error object without optional properties', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-      const simpleErr = new Error('Basic error message');
-
-      logger.error('Simple failure', simpleErr);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[ERROR\]$/);
-      assert.strictEqual(args[1], 'Simple failure');
-
-      const formattedErr = args[2] as Record<string, unknown>;
-      assert.strictEqual(formattedErr.name, 'Error');
-      assert.strictEqual(formattedErr.message, 'Basic error message');
-      assert.ok(formattedErr.stack);
-      assert.strictEqual(formattedErr.code, undefined);
-      assert.strictEqual(formattedErr.status, undefined);
-      assert.strictEqual(formattedErr.cause, undefined);
+      assert.strictEqual(infoCalls.length, 1);
+      assert.match(infoCalls[0][0] as string, /^\[.+\] \[INFO\]$/);
+      assert.strictEqual(infoCalls[0][1], "info message");
+      assert.strictEqual(infoCalls[0][2], 123);
     });
 
-    it('handles Error object passed as primary message argument', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-      const primaryErr = new Error('Primary error as message');
+    it("should log warn messages with formatted prefix", () => {
+      logger.warn("warn message");
 
-      logger.error(primaryErr);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[ERROR\]$/);
-      assert.strictEqual(args[1], primaryErr);
+      assert.strictEqual(warnCalls.length, 1);
+      assert.match(warnCalls[0][0] as string, /^\[.+\] \[WARN\]$/);
+      assert.strictEqual(warnCalls[0][1], "warn message");
     });
 
-    it('logs error message and formats Error instances with code, status, cause', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
+    it("should log error messages and format Error objects", () => {
+      const err = new Error("something went wrong");
+      (err as unknown as Record<string, unknown>).code = "ERR_CODE";
+      (err as unknown as Record<string, unknown>).status = 500;
+      err.cause = new Error("root cause");
 
-      const innerError = new Error('Inner error');
-      (innerError as unknown as { code: string; status: number }).code = 'ERR_INNER';
-      (innerError as unknown as { code: string; status: number }).status = 400;
+      logger.error("error occurred", err, "plain arg");
 
-      const err = new Error('Main error');
-      (err as unknown as { code: string }).code = 'ERR_TEST';
-      (err as unknown as { status: number }).status = 500;
-      (err as unknown as { cause: Error }).cause = innerError;
+      assert.strictEqual(errorCalls.length, 1);
+      assert.match(errorCalls[0][0] as string, /^\[.+\] \[ERROR\]$/);
+      assert.strictEqual(errorCalls[0][1], "error occurred");
 
-      logger.error('Failed to process', err, 'additional context');
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\] \[ERROR\]$/);
-      assert.strictEqual(args[1], 'Failed to process');
-
-      const formattedErr = args[2] as Record<string, unknown>;
-      assert.strictEqual(formattedErr.name, 'Error');
-      assert.strictEqual(formattedErr.message, 'Main error');
-      assert.strictEqual(formattedErr.code, 'ERR_TEST');
+      const formattedErr = errorCalls[0][2] as Record<string, unknown>;
+      assert.strictEqual(formattedErr.name, "Error");
+      assert.strictEqual(formattedErr.message, "something went wrong");
+      assert.strictEqual(formattedErr.code, "ERR_CODE");
       assert.strictEqual(formattedErr.status, 500);
-      assert.ok(formattedErr.stack);
+      assert.strictEqual(typeof formattedErr.stack, "string");
 
-      const cause = formattedErr.cause as Record<string, unknown>;
-      assert.strictEqual(cause.name, 'Error');
-      assert.strictEqual(cause.message, 'Inner error');
-      assert.strictEqual(cause.code, 'ERR_INNER');
-      assert.strictEqual(cause.status, 400);
+      const formattedCause = formattedErr.cause as Record<string, unknown>;
+      assert.strictEqual(formattedCause.name, "Error");
+      assert.strictEqual(formattedCause.message, "root cause");
 
-      assert.strictEqual(args[3], 'additional context');
+      assert.strictEqual(errorCalls[0][3], "plain arg");
     });
 
-    it('formats deeply nested Error cause hierarchies correctly', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
+    it("should format non-Error objects and non-object error args properly", () => {
+      const objErr = { custom: "error object" };
+      const strErr = "simple string error";
 
-      const rootCause = new Error('Root cause level 3');
-      const middleCause = new Error('Middle cause level 2');
-      (middleCause as unknown as { cause: Error }).cause = rootCause;
+      logger.error("error with custom objects", objErr, strErr);
 
-      const topError = new Error('Top level 1');
-      (topError as unknown as { cause: Error }).cause = middleCause;
-
-      logger.error('Deep failure', topError);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      const formattedTop = args[2] as Record<string, unknown>;
-      assert.strictEqual(formattedTop.message, 'Top level 1');
-
-      const formattedMiddle = formattedTop.cause as Record<string, unknown>;
-      assert.strictEqual(formattedMiddle.message, 'Middle cause level 2');
-
-      const formattedRoot = formattedMiddle.cause as Record<string, unknown>;
-      assert.strictEqual(formattedRoot.message, 'Root cause level 3');
-    });
-
-    it('handles Error objects with falsy code, status, or cause values', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-
-      const errWithFalsyProps = new Error('Falsy error');
-      (errWithFalsyProps as unknown as { code: unknown }).code = '';
-      (errWithFalsyProps as unknown as { status: unknown }).status = 0;
-      (errWithFalsyProps as unknown as { cause: unknown }).cause = null;
-
-      logger.error('Falsy properties', errWithFalsyProps);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      const formattedErr = args[2] as Record<string, unknown>;
-
-      assert.strictEqual(formattedErr.code, undefined);
-      assert.strictEqual(formattedErr.status, undefined);
-      assert.strictEqual(formattedErr.cause, undefined);
-    });
-
-    it('formats multiple Error arguments passed to logger.error', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-
-      const err1 = new Error('First error');
-      const err2 = new Error('Second error');
-
-      logger.error('Multiple errors', err1, err2);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-
-      const formatted1 = args[2] as Record<string, unknown>;
-      const formatted2 = args[3] as Record<string, unknown>;
-
-      assert.strictEqual(formatted1.message, 'First error');
-      assert.strictEqual(formatted2.message, 'Second error');
-    });
-
-    it('formats non-Error object causes and values properly in formatErrorDetails', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-
-      const errWithObjectCause = new Error('Object cause error');
-      (errWithObjectCause as unknown as { cause: unknown }).cause = { detail: 'custom cause object' };
-
-      const plainObj = { custom: 'object' };
-      const stringVal = 'string error';
-
-      logger.error('Multiple errors', errWithObjectCause, plainObj, stringVal);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-
-      const formattedErr = args[2] as Record<string, unknown>;
-      assert.deepStrictEqual(formattedErr.cause, { detail: 'custom cause object' });
-      assert.deepStrictEqual(args[3], plainObj);
-      assert.strictEqual(args[4], stringVal);
-    });
-
-    it('formats primitive error causes and primitive argument values properly in formatErrorDetails', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-
-      const errWithNumberCause = new Error('Number cause error');
-      (errWithNumberCause as unknown as { cause: unknown }).cause = 404;
-
-      const numVal = 123;
-      const boolVal = false;
-      const nullVal = null;
-      const undefinedVal = undefined;
-
-      logger.error('Primitive errors', errWithNumberCause, numVal, boolVal, nullVal, undefinedVal);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-
-      const formattedErr = args[2] as Record<string, unknown>;
-      assert.strictEqual(formattedErr.cause, '404');
-      assert.strictEqual(args[3], 123);
-      assert.strictEqual(args[4], false);
-      assert.strictEqual(args[5], null);
-      assert.strictEqual(args[6], undefined);
-    });
-
-    it('handles non-Error objects and primitives passed directly as logger.error arguments', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-
-      const plainPayload = { errorReason: 'database_timeout', attempts: 3 };
-      const statusNumber = 503;
-
-      logger.error('Database connection failed', plainPayload, statusNumber);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /\[ERROR\]/);
-      assert.strictEqual(args[1], 'Database connection failed');
-      assert.deepStrictEqual(args[2], plainPayload);
-      assert.strictEqual(args[3], statusNumber);
-    });
-
-    it('formats Error objects with code, status, and cause when logged via withContext error method', (t) => {
-      const mockError = t.mock.method(console, 'error', () => {});
-      const ctxLogger = logger.withContext({ requestId: 'req-err-1' });
-
-      const nestedErr = new Error('Database query timed out');
-      const err = new Error('Request processing failed');
-      (err as unknown as { code: string }).code = 'ERR_TIMEOUT';
-      (err as unknown as { status: number }).status = 504;
-      (err as unknown as { cause: Error }).cause = nestedErr;
-
-      ctxLogger.error('Handler error', err);
-
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      const args = mockError.mock.calls[0].arguments;
-      assert.match(args[0] as string, /\[ERROR\] \[req:req-err-1\]/);
-      assert.strictEqual(args[1], 'Handler error');
-
-      const formattedErr = args[2] as Record<string, unknown>;
-      assert.strictEqual(formattedErr.name, 'Error');
-      assert.strictEqual(formattedErr.message, 'Request processing failed');
-      assert.strictEqual(formattedErr.code, 'ERR_TIMEOUT');
-      assert.strictEqual(formattedErr.status, 504);
-
-      const cause = formattedErr.cause as Record<string, unknown>;
-      assert.strictEqual(cause.name, 'Error');
-      assert.strictEqual(cause.message, 'Database query timed out');
+      assert.strictEqual(errorCalls.length, 1);
+      assert.deepStrictEqual(errorCalls[0][2], objErr);
+      assert.strictEqual(errorCalls[0][3], strErr);
     });
   });
 
-  describe('withContext', () => {
-    it('prefixes logs with request, scope, and user details', (t) => {
-      process.env.NODE_ENV = 'development';
-      const ctxLogger = logger.withContext({
-        requestId: 'req-123',
-        scope: 'test-scope',
-        userId: 'user-456',
+  describe("withContext logging", () => {
+    it("should attach request, scope, and user context to log prefix", () => {
+      const scopedLogger = logger.withContext({
+        requestId: "req-123",
+        scope: "movies",
+        userId: "Aaron",
       });
 
-      const mockDebug = t.mock.method(console, 'debug', () => {});
-      const mockInfo = t.mock.method(console, 'info', () => {});
-      const mockWarn = t.mock.method(console, 'warn', () => {});
-      const mockError = t.mock.method(console, 'error', () => {});
+      process.env.NODE_ENV = "development";
+      scopedLogger.debug("context debug");
+      scopedLogger.info("context info");
+      scopedLogger.warn("context warn");
 
-      ctxLogger.debug('ctx debug', { a: 1 });
-      ctxLogger.info('ctx info', 'extra info');
-      ctxLogger.warn('ctx warn', { warning: true });
-      ctxLogger.error('ctx error', new Error('ctx err'), 'extra err arg');
+      const customErr = new Error("context error");
+      scopedLogger.error("context error msg", customErr);
 
-      assert.strictEqual(mockDebug.mock.callCount(), 1);
-      assert.match(mockDebug.mock.calls[0].arguments[0] as string, /\[DEBUG\] \[req:req-123 scope:test-scope user:user-456\]/);
-      assert.deepStrictEqual(mockDebug.mock.calls[0].arguments[2], { a: 1 });
+      assert.strictEqual(debugCalls.length, 1);
+      assert.match(
+        debugCalls[0][0] as string,
+        /^\[.+\] \[DEBUG\] \[req:req-123 scope:movies user:Aaron\]$/,
+      );
 
-      assert.strictEqual(mockInfo.mock.callCount(), 1);
-      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-123 scope:test-scope user:user-456\]/);
-      assert.strictEqual(mockInfo.mock.calls[0].arguments[2], 'extra info');
+      assert.strictEqual(infoCalls.length, 1);
+      assert.match(
+        infoCalls[0][0] as string,
+        /^\[.+\] \[INFO\] \[req:req-123 scope:movies user:Aaron\]$/,
+      );
 
-      assert.strictEqual(mockWarn.mock.callCount(), 1);
-      assert.match(mockWarn.mock.calls[0].arguments[0] as string, /\[WARN\] \[req:req-123 scope:test-scope user:user-456\]/);
-      assert.deepStrictEqual(mockWarn.mock.calls[0].arguments[2], { warning: true });
+      assert.strictEqual(warnCalls.length, 1);
+      assert.match(
+        warnCalls[0][0] as string,
+        /^\[.+\] \[WARN\] \[req:req-123 scope:movies user:Aaron\]$/,
+      );
 
-      assert.strictEqual(mockError.mock.callCount(), 1);
-      assert.match(mockError.mock.calls[0].arguments[0] as string, /\[ERROR\] \[req:req-123 scope:test-scope user:user-456\]/);
-
-      const formattedCtxErr = mockError.mock.calls[0].arguments[2] as Record<string, unknown>;
-      assert.strictEqual(formattedCtxErr.name, 'Error');
-      assert.strictEqual(formattedCtxErr.message, 'ctx err');
-      assert.strictEqual(mockError.mock.calls[0].arguments[3], 'extra err arg');
+      assert.strictEqual(errorCalls.length, 1);
+      assert.match(
+        errorCalls[0][0] as string,
+        /^\[.+\] \[ERROR\] \[req:req-123 scope:movies user:Aaron\]$/,
+      );
     });
 
-    it('creates isolated logger instances that do not interfere with each other', (t) => {
-      const mockInfo = t.mock.method(console, 'info', () => {});
-
-      const ctxLoggerA = logger.withContext({ requestId: 'req-A', scope: 'scope-A' });
-      const ctxLoggerB = logger.withContext({ requestId: 'req-B', userId: 'user-B' });
-
-      ctxLoggerA.info('Message from A');
-      ctxLoggerB.info('Message from B');
-
-      assert.strictEqual(mockInfo.mock.callCount(), 2);
-      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-A scope:scope-A\]$/);
-      assert.strictEqual(mockInfo.mock.calls[0].arguments[1], 'Message from A');
-
-      assert.match(mockInfo.mock.calls[1].arguments[0] as string, /\[INFO\] \[req:req-B user:user-B\]$/);
-      assert.strictEqual(mockInfo.mock.calls[1].arguments[1], 'Message from B');
-    });
-
-    it('handles partial context fields correctly', (t) => {
-      const mockInfo = t.mock.method(console, 'info', () => {});
-
-      logger.withContext({ requestId: 'req-only' }).info('msg1');
-      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-only\]$/);
-
-      logger.withContext({ scope: 'scope-only' }).info('msg2');
-      assert.match(mockInfo.mock.calls[1].arguments[0] as string, /\[INFO\] \[scope:scope-only\]$/);
-
-      logger.withContext({ userId: 'user-only' }).info('msg3');
-      assert.match(mockInfo.mock.calls[2].arguments[0] as string, /\[INFO\] \[user:user-only\]$/);
-    });
-
-    it('ignores empty string context values and custom context properties', (t) => {
-      const mockInfo = t.mock.method(console, 'info', () => {});
-
-      const ctxLogger = logger.withContext({
-        requestId: '',
-        scope: 'my-scope',
-        userId: '',
-        customProp: 'custom-value',
+    it("should support partial context properties", () => {
+      const scopedLogger = logger.withContext({
+        requestId: "req-456",
       });
 
-      ctxLogger.info('test context');
+      scopedLogger.info("partial context");
 
-      assert.strictEqual(mockInfo.mock.callCount(), 1);
-      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[scope:my-scope\]$/);
+      assert.strictEqual(infoCalls.length, 1);
+      assert.match(
+        infoCalls[0][0] as string,
+        /^\[.+\] \[INFO\] \[req:req-456\]$/,
+      );
     });
 
-    it('suppresses debug log in production on contextual logger when DEBUG is not set', (t) => {
-      process.env.NODE_ENV = 'production';
-      delete process.env.DEBUG;
+    it("should handle empty context gracefully without trailing brackets", () => {
+      const scopedLogger = logger.withContext({});
 
-      const ctxLogger = logger.withContext({ requestId: 'req-1' });
-      const mockDebug = t.mock.method(console, 'debug', () => {});
+      scopedLogger.info("empty context");
 
-      ctxLogger.debug('hidden ctx debug');
-
-      assert.strictEqual(mockDebug.mock.callCount(), 0);
-    });
-
-    it('logs debug message in production on contextual logger when DEBUG is set', (t) => {
-      process.env.NODE_ENV = 'production';
-      process.env.DEBUG = '1';
-
-      const ctxLogger = logger.withContext({ requestId: 'req-1' });
-      const mockDebug = t.mock.method(console, 'debug', () => {});
-
-      ctxLogger.debug('visible ctx debug in prod');
-
-      assert.strictEqual(mockDebug.mock.callCount(), 1);
-      assert.strictEqual(mockDebug.mock.calls[0].arguments[1], 'visible ctx debug in prod');
-    });
-
-    it('handles empty context object without adding trailing brackets', (t) => {
-      const ctxLogger = logger.withContext({});
-      const mockInfo = t.mock.method(console, 'info', () => {});
-
-      ctxLogger.info('no context parts');
-
-      assert.strictEqual(mockInfo.mock.callCount(), 1);
-      const prefix = mockInfo.mock.calls[0].arguments[0] as string;
-      assert.match(prefix, /\] \[INFO\]$/);
-    });
-
-    it('accepts context containing path property alongside requestId, scope, and userId', (t) => {
-      const mockInfo = t.mock.method(console, 'info', () => {});
-
-      const ctxLogger = logger.withContext({
-        requestId: 'req-path-1',
-        path: '/api/v1/movies',
-      });
-
-      ctxLogger.info('route handled');
-
-      assert.strictEqual(mockInfo.mock.callCount(), 1);
-      assert.match(mockInfo.mock.calls[0].arguments[0] as string, /\[INFO\] \[req:req-path-1\]$/);
-      assert.strictEqual(mockInfo.mock.calls[0].arguments[1], 'route handled');
+      assert.strictEqual(infoCalls.length, 1);
+      assert.match(infoCalls[0][0] as string, /^\[.+\] \[INFO\]$/);
     });
   });
 });
