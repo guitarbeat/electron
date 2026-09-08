@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Initial Offset Calculation in scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13)
+Task requested fixing initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13`. The script `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` is an archived/applied patch script whose contents already match the described target code state, and `DriftWall.tsx` has evolved past this patch. Documented the discrepancy with no code changes needed.
