@@ -66,3 +66,6 @@ Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success, and deep GET error/503 status). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in `api/agent.ts:108`)
+Task requested removing type bypassing casts (`items = (await readScopeStoredData('movies', { bypassCache: true })).clientData as any[]`) from `api/agent.ts:108`. However, `api/agent.ts` is already strongly typed using `CatalogItem[]` (and `items` in `publicCatalog` is typed as `CatalogItem[]`), containing no `as any[]` type casts. Documented the discrepancy with no unnecessary code changes.
