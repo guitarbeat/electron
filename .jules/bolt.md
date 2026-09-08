@@ -72,3 +72,10 @@ Task requested removing leftover console log / debug statement from `apps/web/sr
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
 Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already fully tested in `api/_lib/stateRoute.test.ts`, covering query parameters, path offset resolution, trailing/multiple slashes, invalid scopes, 404 vs 405 response flows, method mismatches, all valid `STATE_SCOPES`, and request object forwarding. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-08 - Performance Benchmark & Analysis (`api/omdb.ts:54` LRU Rate Limiter Purge Loop)
+Task requested optimizing Map iteration in `api/omdb.ts:54` for rate limit purge.
+- Benchmarked Map iteration vs alternative structures (DLL + Map, `Map.keys()`, iterator `.next()`).
+- In V8 / Node.js, `for (const [key, value] of this.counts)` does not allocate intermediate array wrappers and performs $O(1)$ LRU eviction when capacity is reached.
+- The inner check `if (this.counts.size >= this.maxEntries)` in the `else` block is strictly required: if an expired entry was deleted earlier in the loop, `counts.size` drops below `maxEntries`, meaning non-expired items must NOT be evicted.
+- Confirmed the current implementation is already optimal and correct. Documented analysis in `.jules/bolt.md`.
