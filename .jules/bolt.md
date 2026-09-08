@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in `api/agent.ts:108`)
+Task requested removing type-bypassing casts (`items: any[]` and `as any[]`) in `api/agent.ts:108`, but `api/agent.ts` is already strongly typed using `CatalogItem[]` and contains no `any[]` casts. Documented the discrepancy with no code changes needed.
