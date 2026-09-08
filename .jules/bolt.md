@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
+Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` to use `preloadSharedStateFiles` instead of individual reads. However, `bootstrapMissingScopeFiles` is already updated and calls `preloadSharedStateFiles(filenames)` before invoking `readScopeStoredData(scope)` without `{ bypassCache: true }`. This bulk-fetches all scope records into in-memory cache in a single query. Documented the discrepancy with no code changes required.
