@@ -78,3 +78,10 @@ Task requested adding tests for configuration resolver (`resolveConfig`) in `api
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` with 10 test cases (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success with mock dependencies, default dependencies fallback, deep GET 503 error handling, non-Error exception handling, and default export withWebHandler wrapper). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts:108)
+- Task Details referenced `api/agent.ts:108` with snippet:
+  `let items: any[]; if (resource === "movies") { items = (await readScopeStoredData("movies", { bypassCache: true })).clientData as any[];`
+- Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
+- No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
+- As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
