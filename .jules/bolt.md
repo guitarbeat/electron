@@ -66,3 +66,6 @@ Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success, and deep GET error/503 status). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in `api/omdb.ts:54`)
+Task requested replacing `for (const [key, value] of ipRequestCounts.entries())` and `while (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES)` in `api/omdb.ts`. However, `api/omdb.ts` was already previously refactored into the `LRURateLimiter` class, which uses `for (const [key, value] of this.counts)` without the separate `while` loop or `ipRequestCounts.entries()`. Benchmark testing confirmed that direct `for (const [key, value] of this.counts)` iteration in V8/Node.js is optimal. Documented the discrepancy with no code changes needed.
