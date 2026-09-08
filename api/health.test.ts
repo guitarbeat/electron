@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { healthHandler } from "./health.js";
+import defaultHandler, { healthHandler } from "./health.js";
 
 describe("healthHandler", () => {
   it("should respond to OPTIONS with 204 status and Allow header", async () => {
@@ -18,6 +18,14 @@ describe("healthHandler", () => {
 
   it("should respond to shallow GET with liveness status", async () => {
     const req = new Request("http://localhost/api/health", { method: "GET" });
+    const res = await healthHandler(req);
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.deepStrictEqual(data, { ok: true, liveness: true });
+  });
+
+  it("should respond to shallow GET when deep query param is not '1'", async () => {
+    const req = new Request("http://localhost/api/health?deep=0", { method: "GET" });
     const res = await healthHandler(req);
     assert.strictEqual(res.status, 200);
     const data = await res.json();
@@ -72,6 +80,12 @@ describe("healthHandler", () => {
     });
   });
 
+  it("should respond to deep GET using default dependencies when deps is not provided", async () => {
+    const req = new Request("http://localhost/api/health?deep=1", { method: "GET" });
+    const res = await healthHandler(req);
+    assert.ok(res.status === 200 || res.status === 503);
+  });
+
   it("should respond with 503 when deep check fails", async () => {
     const deps = {
       getStateScopeDiagnostics: async () => {
@@ -95,5 +109,38 @@ describe("healthHandler", () => {
       readiness: false,
       error: "Database connection error",
     });
+  });
+
+  it("should respond with 503 and string error message when non-Error exception is thrown during deep check", async () => {
+    const deps = {
+      getStateScopeDiagnostics: async () => {
+        throw "String error thrown";
+      },
+      getPinCoverageState: async () => ({
+        pinProtectedUsers: [],
+        usersMissingPins: [],
+        pinCoverageComplete: true,
+      }),
+    };
+
+    const req = new Request("http://localhost/api/health?deep=1", { method: "GET" });
+    const res = await healthHandler(req, deps);
+
+    assert.strictEqual(res.status, 503);
+    const data = await res.json();
+    assert.deepStrictEqual(data, {
+      ok: false,
+      liveness: true,
+      readiness: false,
+      error: "String error thrown",
+    });
+  });
+
+  it("should handle request via default export withWebHandler wrapped function", async () => {
+    const req = new Request("http://localhost/api/health", { method: "GET" });
+    const res = await defaultHandler(req);
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.deepStrictEqual(data, { ok: true, liveness: true });
   });
 });
