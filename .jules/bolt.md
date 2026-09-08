@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
+Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes needed.
