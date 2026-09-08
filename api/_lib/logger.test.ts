@@ -95,6 +95,24 @@ describe("logger helper", () => {
       assert.match(debugCalls[0][0] as string, /^\[.+\] \[DEBUG\]$/);
       assert.strictEqual(debugCalls[0][1], "production debug message");
     });
+
+    it("should respect production/DEBUG settings in scopedLogger debug calls", () => {
+      const scoped = logger.withContext({ requestId: "req-debug" });
+
+      process.env.NODE_ENV = "production";
+      delete process.env.DEBUG;
+      scoped.debug("scoped production no debug");
+      assert.strictEqual(debugCalls.length, 0);
+
+      process.env.DEBUG = "true";
+      scoped.debug("scoped production with debug");
+      assert.strictEqual(debugCalls.length, 1);
+      assert.match(
+        debugCalls[0][0] as string,
+        /^\[.+\] \[DEBUG\] \[req:req-debug\]$/,
+      );
+      assert.strictEqual(debugCalls[0][1], "scoped production with debug");
+    });
   });
 
   describe("info, warn, error logging", () => {
@@ -141,15 +159,54 @@ describe("logger helper", () => {
       assert.strictEqual(errorCalls[0][3], "plain arg");
     });
 
+    it("should format plain Error objects without optional code/status/cause properties", () => {
+      const simpleErr = new Error("simple error");
+
+      logger.error("simple error test", simpleErr);
+
+      assert.strictEqual(errorCalls.length, 1);
+      const formattedErr = errorCalls[0][2] as Record<string, unknown>;
+      assert.strictEqual(formattedErr.name, "Error");
+      assert.strictEqual(formattedErr.message, "simple error");
+      assert.strictEqual("code" in formattedErr, false);
+      assert.strictEqual("status" in formattedErr, false);
+      assert.strictEqual("cause" in formattedErr, false);
+    });
+
+    it("should format Error instances with non-Error cause (string, object)", () => {
+      const errWithStringCause = new Error("string cause error");
+      errWithStringCause.cause = "string cause text";
+
+      const errWithObjCause = new Error("object cause error");
+      errWithObjCause.cause = { customCauseField: "cause data" };
+
+      logger.error("cause test", errWithStringCause, errWithObjCause);
+
+      assert.strictEqual(errorCalls.length, 1);
+      const formatted1 = errorCalls[0][2] as Record<string, unknown>;
+      assert.strictEqual(formatted1.cause, "string cause text");
+
+      const formatted2 = errorCalls[0][3] as Record<string, unknown>;
+      assert.deepStrictEqual(formatted2.cause, { customCauseField: "cause data" });
+    });
+
     it("should format non-Error objects and non-object error args properly", () => {
       const objErr = { custom: "error object" };
       const strErr = "simple string error";
+      const numArg = 404;
+      const nullArg = null;
+      const undefinedArg = undefined;
+      const boolArg = false;
 
-      logger.error("error with custom objects", objErr, strErr);
+      logger.error("error with mixed primitives/objects", objErr, strErr, numArg, nullArg, undefinedArg, boolArg);
 
       assert.strictEqual(errorCalls.length, 1);
       assert.deepStrictEqual(errorCalls[0][2], objErr);
       assert.strictEqual(errorCalls[0][3], strErr);
+      assert.strictEqual(errorCalls[0][4], 404);
+      assert.strictEqual(errorCalls[0][5], null);
+      assert.strictEqual(errorCalls[0][6], undefined);
+      assert.strictEqual(errorCalls[0][7], false);
     });
   });
 
@@ -208,6 +265,18 @@ describe("logger helper", () => {
       );
     });
 
+    it("should handle custom or extra context fields without crashing", () => {
+      const scopedLogger = logger.withContext({
+        path: "/api/movies",
+        customProp: "hello",
+      });
+
+      scopedLogger.info("custom context test");
+
+      assert.strictEqual(infoCalls.length, 1);
+      assert.match(infoCalls[0][0] as string, /^\[.+\] \[INFO\]$/);
+    });
+
     it("should handle empty context gracefully without trailing brackets", () => {
       const scopedLogger = logger.withContext({});
 
@@ -215,6 +284,20 @@ describe("logger helper", () => {
 
       assert.strictEqual(infoCalls.length, 1);
       assert.match(infoCalls[0][0] as string, /^\[.+\] \[INFO\]$/);
+    });
+
+    it("should properly format error objects in scopedLogger.error", () => {
+      const scopedLogger = logger.withContext({ scope: "test" });
+      const err = new Error("scoped error");
+
+      scopedLogger.error("scoped error log", err);
+
+      assert.strictEqual(errorCalls.length, 1);
+      assert.match(errorCalls[0][0] as string, /^\[.+\] \[ERROR\] \[scope:test\]$/);
+      assert.strictEqual(errorCalls[0][1], "scoped error log");
+      const formattedErr = errorCalls[0][2] as Record<string, unknown>;
+      assert.strictEqual(formattedErr.name, "Error");
+      assert.strictEqual(formattedErr.message, "scoped error");
     });
   });
 });
