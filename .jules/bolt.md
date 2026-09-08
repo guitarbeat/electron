@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh)
+Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the task rationale and codebase, local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) is already implemented, and fixing network-level N+1 calls requires backend architectural changes (> 50 lines) which are explicitly out of scope. Documented the discrepancy with no additional code changes needed.
