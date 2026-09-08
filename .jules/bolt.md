@@ -75,3 +75,6 @@ Task requested adding a test file for `createStateRouteHandler` in `api/_lib/sta
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
 Task requested adding tests for configuration resolver (`resolveConfig`) in `api/_lib/config.ts:9`. However, `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid values, leading/trailing whitespace, newlines/tabs, undefined, empty string, whitespace-only, and empty fallback values). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
+Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` with 10 test cases (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success with mock dependencies, default dependencies fallback, deep GET 503 error handling, non-Error exception handling, and default export withWebHandler wrapper). Documented the discrepancy with no code changes needed.
