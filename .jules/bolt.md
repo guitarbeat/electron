@@ -72,3 +72,6 @@ Task requested removing leftover console log / debug statement from `apps/web/sr
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
 Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already fully tested in `api/_lib/stateRoute.test.ts`, covering query parameters, path offset resolution, trailing/multiple slashes, invalid scopes, 404 vs 405 response flows, method mismatches, all valid `STATE_SCOPES`, and request object forwarding. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts:56`)
+Task requested setting `rejectUnauthorized: true` in `createPostgresPool` (`api/_lib/dbCommon.ts:56`). However, `api/_lib/dbCommon.ts` is already setting `rejectUnauthorized: true` when SSL is required, and `api/_lib/dbCommon.test.ts` includes unit tests verifying this secure configuration. Documented the discrepancy with no source or test code changes needed.
