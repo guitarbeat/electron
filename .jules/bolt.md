@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Performance Analysis (Map Iteration for Rate Limit Purge in `api/omdb.ts`)
+Evaluated `LRURateLimiter` rate limit purge iteration logic in `api/omdb.ts:40-52`. Micro-benchmarking confirmed that V8 optimizes `for (const [key, value] of this.counts)` Map entry iteration by avoiding secondary key hash lookups, outperforming `Map.keys()` iteration combined with `.get(key)`. The rate limiter implementation in `api/omdb.ts` is already optimal and fully tested in `api/omdb.test.ts`. Documented the analysis with no code changes to source files.
