@@ -72,3 +72,6 @@ Task requested removing leftover console log / debug statement from `apps/web/sr
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
 Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already fully tested in `api/_lib/stateRoute.test.ts`, covering query parameters, path offset resolution, trailing/multiple slashes, invalid scopes, 404 vs 405 response flows, method mismatches, all valid `STATE_SCOPES`, and request object forwarding. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in `api/agent.ts:108`)
+Task requested removing type bypassing casts (`let items: any[]; items = (await readScopeStoredData('movies', { bypassCache: true })).clientData as any[];`) at `api/agent.ts:108`. However, `publicCatalog` in `api/agent.ts` is already strongly typed using `CatalogItem[]` and contains no `any` casts. Documented the discrepancy with no code changes to `api/agent.ts` needed.
