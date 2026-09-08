@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Fix implicit any for MovieSectionBody handle events)
+Task requested fixing implicit 'any' types for `MovieSectionBody` handle events referencing `scripts/maintenance/applied_patches/fix_imports.py:24` and `apps/web/src/components/movies/MovieSectionBody.tsx`. However, `MovieSectionBody.tsx` has already been refactored and no longer contains `handleMovieUpdate`, `handleNoteAdded`, `handleNoteEdited`, `handleNoteDeleted`, or `handleReactionToggled`. Workspace typechecks pass without issues. Documented the discrepancy with no unnecessary source/test file changes.
