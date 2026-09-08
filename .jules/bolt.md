@@ -66,3 +66,6 @@ Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success, and deep GET error/503 status). Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Remove Unused Exported Function `_clearCache` in apps/web/src/services/metadata/index.ts)
+Task requested removing unused exported function `_clearCache` from `apps/web/src/services/metadata/index.ts:493`. Verified that `_clearCache` does not exist in `apps/web/src/services/metadata/index.ts` or anywhere in the codebase. Documented the discrepancy with no code changes to source files.
