@@ -66,3 +66,6 @@ Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success, and deep GET error/503 status). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for cached proxy response builder in `api/_lib/cachedProxy.ts:66`)
+Task requested adding tests for `cachedProxyResponse` in `api/_lib/cachedProxy.ts:66`. However, `cachedProxyResponse` (along with `isAbsoluteUrl`, `BoundedResponseCache`, and `jsonProxyResponse`) is already comprehensively tested in `api/_lib/cachedProxy.test.ts` (covering `HIT`/`MISS` statuses, HTTP status codes, statusText, response headers, empty bodies, and JSON body parsing). Documented the discrepancy with no code changes to source or test files needed.
