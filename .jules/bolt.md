@@ -72,3 +72,6 @@ Task requested removing leftover console log / debug statement from `apps/web/sr
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
 Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already fully tested in `api/_lib/stateRoute.test.ts`, covering query parameters, path offset resolution, trailing/multiple slashes, invalid scopes, 404 vs 405 response flows, method mismatches, all valid `STATE_SCOPES`, and request object forwarding. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
+Task requested adding tests for configuration resolver (`resolveConfig`) in `api/_lib/config.ts:9`. However, `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid values, leading/trailing whitespace, newlines/tabs, undefined, empty string, whitespace-only, and empty fallback values). Documented the discrepancy with no code changes needed.
