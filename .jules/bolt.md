@@ -72,3 +72,6 @@ Task requested removing leftover console log / debug statement from `apps/web/sr
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
 Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already fully tested in `api/_lib/stateRoute.test.ts`, covering query parameters, path offset resolution, trailing/multiple slashes, invalid scopes, 404 vs 405 response flows, method mismatches, all valid `STATE_SCOPES`, and request object forwarding. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for proxy URL validation in `api/_lib/cachedProxy.ts:54`)
+Task requested adding tests for proxy URL validation (`isAbsoluteUrl`) in `api/_lib/cachedProxy.ts:54`, but `isAbsoluteUrl` (along with `BoundedResponseCache`, `jsonProxyResponse`, and `cachedProxyResponse`) is already thoroughly tested in `api/_lib/cachedProxy.test.ts`. Documented the discrepancy with no code changes to source/test files needed.
