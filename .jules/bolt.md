@@ -75,3 +75,6 @@ Task requested adding a test file for `createStateRouteHandler` in `api/_lib/sta
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
 Task requested adding tests for configuration resolver (`resolveConfig`) in `api/_lib/config.ts:9`. However, `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid values, leading/trailing whitespace, newlines/tabs, undefined, empty string, whitespace-only, and empty fallback values). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
+Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As acknowledged in the task rationale, resolving network-level N+1 calls requires backend API architectural changes (> 50 lines), while client-side lookup optimization using a `Set` (`currentMovieIds`) inside `refreshAllMetadata` is already in place. Documented the discrepancy with no source code changes needed.
