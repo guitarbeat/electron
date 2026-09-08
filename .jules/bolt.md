@@ -75,3 +75,6 @@ Task requested adding a test file for `createStateRouteHandler` in `api/_lib/sta
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
 Task requested adding tests for configuration resolver (`resolveConfig`) in `api/_lib/config.ts:9`. However, `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid values, leading/trailing whitespace, newlines/tabs, undefined, empty string, whitespace-only, and empty fallback values). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Fix initial offset calculation in fix_drift_wall_sync.py)
+Task requested fixing the initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` targeting `apps/web/src/components/ui/DriftWall.tsx`. However, `apps/web/src/components/ui/DriftWall.tsx` was already refactored in a previous update and no longer contains the target code pattern `(_, i) => offsetsRef.current[i] ?? ...`. Documented the discrepancy with no unnecessary code changes.
