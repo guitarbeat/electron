@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
+Task requested resolving TODO in SyncBannerContent (`apps/web/src/components/ui/lib/syncBanner.ts:11`), referencing `whatToDo: string`. However, `apps/web/src/components/ui/lib/syncBanner.ts` has already been refactored and contains no TODO comments, and `SyncBannerContent` uses `recommendedAction` instead of `whatToDo`. Documented the discrepancy with no unnecessary source code changes.
