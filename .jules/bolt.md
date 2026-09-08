@@ -72,3 +72,6 @@ Task requested removing leftover console log / debug statement from `apps/web/sr
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
 Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already fully tested in `api/_lib/stateRoute.test.ts`, covering query parameters, path offset resolution, trailing/multiple slashes, invalid scopes, 404 vs 405 response flows, method mismatches, all valid `STATE_SCOPES`, and request object forwarding. Documented the discrepancy with no additional code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh in `apps/web/src/hooks/movies/index.ts:361`)
+Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`. As noted in the task rationale and existing `.jules/bolt.md` logs, resolving network-level N+1 calls requires backend architectural changes (> 50 lines), while local movie lookup optimization inside `refreshAllMetadata` using `Set` (`currentMovieIds`) was already completed. Documented the discrepancy with no additional code changes needed.
