@@ -66,3 +66,6 @@ Task requested fixing an authentication bypass in `hasAccessSession` (`api/_lib/
 
 ## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for health check handler in `api/health.ts:9`)
 Task requested adding tests for health check handler in `api/health.ts:9`. However, `api/health.ts` is already comprehensively tested in `api/health.test.ts` (covering OPTIONS 204, non-GET/OPTIONS 405, shallow GET liveness, relative URL handling, deep GET success, and deep GET error/503 status). Documented the discrepancy with no code changes needed.
+
+## 2026-09-07 - Stale Prompt Discrepancy (Missing tests for logger helper in `api/_lib/logger.ts:44`)
+Task requested adding tests for `logger` in `api/_lib/logger.ts:44`. However, `api/_lib/logger.ts` is already comprehensively tested in `api/_lib/logger.test.ts` (covering `debug`, `info`, `warn`, `error`, `withContext`, `NODE_ENV` / `DEBUG` environment variables, and `formatErrorDetails` error object formatting). Documented the discrepancy with no code changes needed.
