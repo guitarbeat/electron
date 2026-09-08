@@ -75,3 +75,6 @@ Task requested adding a test file for `createStateRouteHandler` in `api/_lib/sta
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
 Task requested adding tests for configuration resolver (`resolveConfig`) in `api/_lib/config.ts:9`. However, `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid values, leading/trailing whitespace, newlines/tabs, undefined, empty string, whitespace-only, and empty fallback values). Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Fix implicit any for MovieSectionBody handle events)
+Task requested fixing implicit 'any' for MovieSectionBody handle events referenced at `scripts/maintenance/applied_patches/fix_imports.py:24`. However, `scripts/maintenance/applied_patches/fix_imports.py` already contains these regex transformations and `MovieSectionBody.tsx` is already strongly typed. Documented the discrepancy with no unnecessary code changes.
