@@ -69,3 +69,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 
 ## 2026-09-08 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but `apps/web/src/app/providers.tsx` contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes needed.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Unused Exported Function `_clearCache` in `apps/web/src/services/metadata/index.ts:493`)
+Task requested removing unused exported function `_clearCache` from `apps/web/src/services/metadata/index.ts:493`, but `_clearCache` does not exist in `apps/web/src/services/metadata/index.ts` or anywhere in the codebase. Documented the discrepancy with no code changes to source files.
