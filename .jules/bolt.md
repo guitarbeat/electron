@@ -85,3 +85,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing tests for configuration resolver in `api/_lib/config.ts:9`)
+Task requested adding tests for configuration resolver (`resolveConfig`) in `api/_lib/config.ts:9`. However, `resolveConfig` is already comprehensively tested in `api/_lib/config.test.ts` (covering valid values, leading/trailing whitespace, newlines/tabs, undefined, empty string, whitespace-only, and empty fallback values). Documented the discrepancy with no code changes needed.
