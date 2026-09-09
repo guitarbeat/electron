@@ -85,3 +85,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in `api/agent.ts:92`)
+- Task Details requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP.
+- Upon inspection of `api/agent.ts`, `requestIp` is already updated to extract the right-most IP (`ips[ips.length - 1]?.trim()`), and comprehensive tests verifying spoofing prevention are already present and passing in `api/agent.test.ts`.
+- Documented the discrepancy with no code changes needed.
