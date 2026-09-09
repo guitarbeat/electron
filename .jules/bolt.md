@@ -85,3 +85,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-09 - Stale Prompt Discrepancy (Fix implicit any for MovieSectionBody handle events)
+- Task Details referenced `scripts/maintenance/applied_patches/fix_imports.py:24` where `MovieSectionBody` event handlers (`handleMovieUpdate`, `handleNoteAdded`, `handleNoteEdited`, `handleNoteDeleted`, `handleReactionToggled`) were supposedly implicitly typed as 'any'.
+- Upon inspection, `scripts/maintenance/applied_patches/fix_imports.py` is an archived patch script and `MovieSectionBody.tsx` contains no such event handlers. `pnpm check-types` and `pnpm test` pass cleanly.
+- Documented the discrepancy with no functional code changes needed.
