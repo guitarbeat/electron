@@ -90,3 +90,10 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`.
 - Upon inspecting `bootstrapMissingScopeFiles` in `api/_lib/state.ts`, the function already calls `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`.
 - As per memory instructions, concluded the task with no additional code changes and documented the discrepancy.
+
+
+## 2026-09-08 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in api/omdb.ts:54)
+- Task details referenced `api/omdb.ts:54` with a code snippet: `if (!record || now > record.resetTime) { if (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) { for (const [key, value] of ipRequestCounts.entries()) ... while (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) ...`
+- Upon inspection of `api/omdb.ts`, this standalone snippet does not exist. `api/omdb.ts` uses an `LRURateLimiter` class wrapping `counts` (`Map<string, { count: number; resetTime: number }>`).
+- The rate limiter eviction loop in `LRURateLimiter.isRateLimited` already uses `for (const [key, value] of this.counts)`, which is the optimal Map iteration pattern in V8.
+- Documented the discrepancy with no source code changes needed.
