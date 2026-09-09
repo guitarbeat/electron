@@ -85,3 +85,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-09 - Stale Prompt Discrepancy (Remove Type Bypassing Casts in api/agent.ts:108)
+Task requested removing type bypassing casts in `api/agent.ts:108` with snippet `let items: any[]; if (resource === 'movies') { items = (await readScopeStoredData('movies', { bypassCache: true })).clientData as any[];`. However, no such code or `any` cast exists in `api/agent.ts` (line 108 is `return timingSafeEqual(expectedHash, providedHash);`). Documented the discrepancy with no source code changes needed.
