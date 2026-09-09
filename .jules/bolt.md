@@ -85,3 +85,7 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+
+## 2026-09-09 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in api/_lib/dbCommon.ts)
+Task requested updating `createPostgresPool` in `api/_lib/dbCommon.ts` to set `rejectUnauthorized` to `true`. However, `api/_lib/dbCommon.ts` is already using `poolConfig.ssl = { rejectUnauthorized: true };` and `api/_lib/dbCommon.test.ts` includes unit tests verifying this secure configuration. Documented the discrepancy with no source code changes required.
