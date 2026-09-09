@@ -85,3 +85,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Remove Unused Exported Function _clearCache in apps/web/src/services/metadata/index.ts:493)
+Task requested removing unused exported function `_clearCache` from `apps/web/src/services/metadata/index.ts:493`, but `_clearCache` does not exist in `apps/web/src/services/metadata/index.ts` or anywhere in the codebase. Documented the discrepancy with no code changes to source files.
