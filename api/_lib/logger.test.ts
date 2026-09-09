@@ -76,11 +76,31 @@ describe("logger helper", () => {
       assert.deepStrictEqual(debugCalls[0][2], { extra: "data" });
     });
 
+    it("should log debug messages when NODE_ENV is undefined", () => {
+      delete process.env.NODE_ENV;
+      delete process.env.DEBUG;
+
+      logger.debug("debug when NODE_ENV is undefined");
+
+      assert.strictEqual(debugCalls.length, 1);
+      assert.match(debugCalls[0][0] as string, /^\[.+\] \[DEBUG\]$/);
+      assert.strictEqual(debugCalls[0][1], "debug when NODE_ENV is undefined");
+    });
+
     it("should NOT log debug messages in production when DEBUG is not set", () => {
       process.env.NODE_ENV = "production";
       delete process.env.DEBUG;
 
       logger.debug("should not log");
+
+      assert.strictEqual(debugCalls.length, 0);
+    });
+
+    it("should NOT log debug messages in production when DEBUG is empty string", () => {
+      process.env.NODE_ENV = "production";
+      process.env.DEBUG = "";
+
+      logger.debug("should not log when DEBUG is empty");
 
       assert.strictEqual(debugCalls.length, 0);
     });
@@ -126,11 +146,12 @@ describe("logger helper", () => {
     });
 
     it("should log warn messages with formatted prefix", () => {
-      logger.warn("warn message");
+      logger.warn("warn message", "extra arg");
 
       assert.strictEqual(warnCalls.length, 1);
       assert.match(warnCalls[0][0] as string, /^\[.+\] \[WARN\]$/);
       assert.strictEqual(warnCalls[0][1], "warn message");
+      assert.strictEqual(warnCalls[0][2], "extra arg");
     });
 
     it("should log error messages and format Error objects", () => {
@@ -171,6 +192,42 @@ describe("logger helper", () => {
       assert.strictEqual("code" in formattedErr, false);
       assert.strictEqual("status" in formattedErr, false);
       assert.strictEqual("cause" in formattedErr, false);
+    });
+
+    it("should ignore falsy code, status, or cause values on Error objects", () => {
+      const errWithFalsyProps = new Error("falsy props");
+      (errWithFalsyProps as unknown as Record<string, unknown>).code = "";
+      (errWithFalsyProps as unknown as Record<string, unknown>).status = 0;
+      errWithFalsyProps.cause = null;
+
+      logger.error("falsy test", errWithFalsyProps);
+
+      assert.strictEqual(errorCalls.length, 1);
+      const formatted = errorCalls[0][2] as Record<string, unknown>;
+      assert.strictEqual(formatted.name, "Error");
+      assert.strictEqual(formatted.message, "falsy props");
+      assert.strictEqual("code" in formatted, false);
+      assert.strictEqual("status" in formatted, false);
+      assert.strictEqual("cause" in formatted, false);
+    });
+
+    it("should format deeply nested Error causes recursively", () => {
+      const deepCause = new Error("deepest cause");
+      const middleCause = new Error("middle cause");
+      middleCause.cause = deepCause;
+      const topError = new Error("top error");
+      topError.cause = middleCause;
+
+      logger.error("deep error cause", topError);
+
+      assert.strictEqual(errorCalls.length, 1);
+      const formattedTop = errorCalls[0][2] as Record<string, unknown>;
+      const formattedMiddle = formattedTop.cause as Record<string, unknown>;
+      const formattedDeep = formattedMiddle.cause as Record<string, unknown>;
+
+      assert.strictEqual(formattedTop.message, "top error");
+      assert.strictEqual(formattedMiddle.message, "middle cause");
+      assert.strictEqual(formattedDeep.message, "deepest cause");
     });
 
     it("should format Error instances with non-Error cause (string, object)", () => {
@@ -251,17 +308,41 @@ describe("logger helper", () => {
       );
     });
 
-    it("should support partial context properties", () => {
+    it("should support partial context properties (scope only, userId only)", () => {
+      const scopeOnly = logger.withContext({ scope: "state" });
+      scopeOnly.info("scope log");
+      assert.match(infoCalls[0][0] as string, /^\[.+\] \[INFO\] \[scope:state\]$/);
+
+      const userOnly = logger.withContext({ userId: "Electra" });
+      userOnly.info("user log");
+      assert.match(infoCalls[1][0] as string, /^\[.+\] \[INFO\] \[user:Electra\]$/);
+
+      const scopeAndUser = logger.withContext({ scope: "state", userId: "Electra" });
+      scopeAndUser.info("scope and user log");
+      assert.match(infoCalls[2][0] as string, /^\[.+\] \[INFO\] \[scope:state user:Electra\]$/);
+
+      const reqAndUser = logger.withContext({ requestId: "req-99", userId: "Electra" });
+      reqAndUser.info("req and user log");
+      assert.match(infoCalls[3][0] as string, /^\[.+\] \[INFO\] \[req:req-99 user:Electra\]$/);
+
+      const reqAndScope = logger.withContext({ requestId: "req-99", scope: "state" });
+      reqAndScope.info("req and scope log");
+      assert.match(infoCalls[4][0] as string, /^\[.+\] \[INFO\] \[req:req-99 scope:state\]$/);
+    });
+
+    it("should handle context with explicit undefined values gracefully", () => {
       const scopedLogger = logger.withContext({
-        requestId: "req-456",
+        requestId: undefined,
+        scope: "movies",
+        userId: undefined,
       });
 
-      scopedLogger.info("partial context");
+      scopedLogger.info("undefined context values");
 
       assert.strictEqual(infoCalls.length, 1);
       assert.match(
         infoCalls[0][0] as string,
-        /^\[.+\] \[INFO\] \[req:req-456\]$/,
+        /^\[.+\] \[INFO\] \[scope:movies\]$/,
       );
     });
 
@@ -286,18 +367,22 @@ describe("logger helper", () => {
       assert.match(infoCalls[0][0] as string, /^\[.+\] \[INFO\]$/);
     });
 
-    it("should properly format error objects in scopedLogger.error", () => {
+    it("should properly format error objects in scopedLogger.error with multiple args", () => {
       const scopedLogger = logger.withContext({ scope: "test" });
       const err = new Error("scoped error");
+      (err as unknown as Record<string, unknown>).code = "SCOPED_ERR";
 
-      scopedLogger.error("scoped error log", err);
+      scopedLogger.error("scoped error log", err, { extra: true });
 
       assert.strictEqual(errorCalls.length, 1);
       assert.match(errorCalls[0][0] as string, /^\[.+\] \[ERROR\] \[scope:test\]$/);
       assert.strictEqual(errorCalls[0][1], "scoped error log");
+
       const formattedErr = errorCalls[0][2] as Record<string, unknown>;
       assert.strictEqual(formattedErr.name, "Error");
       assert.strictEqual(formattedErr.message, "scoped error");
+      assert.strictEqual(formattedErr.code, "SCOPED_ERR");
+      assert.deepStrictEqual(errorCalls[0][3], { extra: true });
     });
   });
 });
