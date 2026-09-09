@@ -85,3 +85,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Sequential Await in Promise.all Scope Reading in `api/_lib/state.ts:220`)
+- Task requested optimizing `bootstrapMissingScopeFiles` in `api/_lib/state.ts:220` by replacing sequential reads with `preloadSharedStateFiles` and parallel reads via `Promise.all`.
+- Upon inspecting `bootstrapMissingScopeFiles` in `api/_lib/state.ts`, the function already calls `await preloadSharedStateFiles(filenames)` followed by `await Promise.all(...)`.
+- As per memory instructions, concluded the task with no additional code changes and documented the discrepancy.
