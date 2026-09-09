@@ -85,3 +85,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Inefficient Map Iteration for Rate Limit Purge in api/omdb.ts:54)
+- Task details referenced `api/omdb.ts:54` with a code snippet: `if (!record || now > record.resetTime) { if (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) { for (const [key, value] of ipRequestCounts.entries()) ... while (ipRequestCounts.size >= MAX_RATE_LIMIT_ENTRIES) ...`
+- Upon inspection of `api/omdb.ts`, this standalone snippet does not exist. `api/omdb.ts` uses an `LRURateLimiter` class wrapping `counts` (`Map<string, { count: number; resetTime: number }>`).
+- The rate limiter eviction loop in `LRURateLimiter.isRateLimited` already uses `for (const [key, value] of this.counts)`, which is the optimal Map iteration pattern in V8.
+- Documented the discrepancy with no source code changes needed.
