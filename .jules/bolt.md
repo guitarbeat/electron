@@ -85,3 +85,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Fix Initial Offset Calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13`)
+- Task requested fixing initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13`.
+- `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` already contains the requested initial offset calculation replacement logic.
+- Furthermore, `apps/web/src/components/ui/DriftWall.tsx` has been refactored and no longer uses `(_, i) => offsetsRef.current[i] ?? ...`.
+- Documented discrepancy with no source code changes needed.
