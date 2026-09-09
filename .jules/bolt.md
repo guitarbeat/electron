@@ -85,3 +85,7 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-09 - Stale Prompt Discrepancy (N+1 Network Calls in Bulk Metadata Refresh)
+Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/index.ts:361`.
+As noted in the task rationale, fixing network-level N+1 calls requires creating a bulk metadata API endpoint on the backend and updating the frontend, which is an architectural change (> 50 lines). The in-memory movie set lookup optimization (`currentMovieIds = new Set(...)`) is already present in `refreshAllMetadata`. Documented the discrepancy with no additional code changes needed.
