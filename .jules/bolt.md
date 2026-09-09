@@ -85,3 +85,7 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+
+## 2026-09-08 - Stale Prompt Discrepancy (Missing test file for state route handler factory in `api/_lib/stateRoute.ts:24`)
+Task requested adding a test file for `createStateRouteHandler` in `api/_lib/stateRoute.ts:24`. However, `api/_lib/stateRoute.ts` is already comprehensively tested in `api/_lib/stateRoute.test.ts`, covering query parameter overrides, fallback handling, path offset resolution, trailing/slashes, invalid scopes, 404 vs 405 Method Not Allowed flows, routing for all valid `STATE_SCOPES`, and request forwarding. Documented the discrepancy with no additional code changes needed.
