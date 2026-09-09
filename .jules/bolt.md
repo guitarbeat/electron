@@ -85,3 +85,6 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/agent.ts`, line 108 is `return timingSafeEqual(expectedHash, providedHash);`.
 - No such code snippet exists in `api/agent.ts` or elsewhere in the codebase.
 - As per memory instructions, concluding the task with no code changes and documenting the discrepancy.
+
+## 2026-09-08 - Stale Prompt Discrepancy (Resolve TODO in SyncBannerContent)
+Task requested resolving TODO in SyncBannerContent (`apps/web/src/components/ui/lib/syncBanner.ts:11`), referencing `whatToDo: string`. However, `apps/web/src/components/ui/lib/syncBanner.ts` has already been refactored and contains no TODO comments, and `SyncBannerContent` uses `recommendedAction` instead of `whatToDo`. Documented the discrepancy with no code changes needed.
