@@ -40,6 +40,8 @@ import { AppProviders } from "@/app/AppProviders";
 import "./globals.css";
 import "./component-styles.css";
 
+const IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000;
+
 const modalBodyStyle = {
   flex: 1,
   overflowY: "auto",
@@ -85,7 +87,7 @@ const App: React.FC = () => {
     stripLaunchUrlShortcuts();
     prefetchCatPosters();
     if (typeof window !== "undefined") {
-      const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2000));
+      const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS));
       scheduleIdle(() => {
         void cleanupOldImages().catch(() => {});
       });
