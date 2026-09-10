@@ -9,6 +9,7 @@ import {
 import {
   buildCollectionSections,
   concurrentMap,
+  scheduleIdleWork,
   findMovieByNormalizedTitle,
   getWorkspaceCollectionState,
   isValidUrl,
@@ -421,8 +422,8 @@ export const useMovies = (
 
     hasAutoSyncedRef.current = true;
 
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 2000);
+    await new Promise<void>((resolve) => {
+      scheduleIdleWork(resolve, 500);
     });
 
     await concurrentMap(moviesMissingMetadata, 5, async (movie: Movie) => {
