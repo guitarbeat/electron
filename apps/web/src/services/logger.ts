@@ -53,6 +53,7 @@ export interface DiagnosticSendResult {
 
 // In-memory sliding window for error deduplication (max 1 dispatch per unique error signature every 5 seconds)
 const DEDUPE_WINDOW_MS = 5000;
+const NAVIGATION_TIMING_DELAY_MS = 1000;
 const recentErrorSignatures = new Map<string, number>();
 
 function getErrorSignature(message: string, module: string, stack?: string): string {
@@ -604,10 +605,10 @@ export class FrontendLogger {
     };
 
     if (document.readyState === "complete") {
-      setTimeout(collectNavigationTiming, 1000);
+      setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS);
     } else {
       window.addEventListener("load", () => {
-        setTimeout(collectNavigationTiming, 1000);
+        setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS);
       });
     }
 
