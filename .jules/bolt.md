@@ -97,3 +97,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/omdb.ts`, this standalone snippet does not exist. `api/omdb.ts` uses an `LRURateLimiter` class wrapping `counts` (`Map<string, { count: number; resetTime: number }>`).
 - The rate limiter eviction loop in `LRURateLimiter.isRateLimited` already uses `for (const [key, value] of this.counts)`, which is the optimal Map iteration pattern in V8.
 - Documented the discrepancy with no source code changes needed.
+
+## 2026-09-09 - Stale Prompt Discrepancy (N+1 Mutation Operations in Promise.all in `apps/web/src/hooks/movies/index.ts:380`)
+- Task requested refactoring `refreshAllMetadata` in `apps/web/src/hooks/movies/index.ts:380` to a single batched mutation to eliminate network-level N+1 calls.
+- Analyzing the backend mutation API (`api/_lib/stateScopes/movies.ts`) confirmed that the backend only supports `update_metadata` per single `movieId` payload (batching `update_metadata` is not supported in the backend state engine or agent contracts).
+- Local movie ID lookup optimization using `Set` (`currentMovieIds`) in `refreshAllMetadata` was previously completed.
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
