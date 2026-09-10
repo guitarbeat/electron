@@ -103,3 +103,10 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Analyzing the backend mutation API (`api/_lib/stateScopes/movies.ts`) confirmed that the backend only supports `update_metadata` per single `movieId` payload (batching `update_metadata` is not supported in the backend state engine or agent contracts).
 - Local movie ID lookup optimization using `Set` (`currentMovieIds`) in `refreshAllMetadata` was previously completed.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-09 - Stale Prompt Discrepancy (Virtualized List in `src/`)
+- Task requested updating "the main list component in src/ to use a virtualized list container" instead of a single scrollable container, to improve performance while "preserving the existing card layout and filtering behavior".
+- Inspecting `apps/web/src/components/movies/MovieSectionBody.tsx`, the movie list is exclusively rendered using `<DriftWall />`, which is a complex, 3D animated continuous-scrolling physics layout.
+- Replacing `<DriftWall />` with a standard 2D virtualized list component (e.g. `@tanstack/react-virtual` or `react-window`) causes a severe UI/UX regression, explicitly violating the requirement to "Do NOT change functionality" and "preserve the existing card layout". Code review rejected the change on this basis.
+- The 3D continuous loop physics of `<DriftWall />` uses translated CSS columns and cannot be adapted to standard 2D windowed virtualization without fundamentally rewriting the physics engine. No standard 2D list component exists in the codebase to replace or virtualize instead.
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
