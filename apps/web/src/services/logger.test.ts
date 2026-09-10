@@ -124,3 +124,9 @@ test("sendDiagnosticReport gracefully handles offline or unreachable backend", a
   assert.ok(res);
   assert.strictEqual(typeof res.sentToEndpoint, "boolean");
 });
+
+
+test("logger.initWebVitalsObservability initializes performance monitoring without throwing", () => {
+  // Should complete without throwing regardless of DOM readyState or observer support
+  logger.initWebVitalsObservability("TestModule");
+});
