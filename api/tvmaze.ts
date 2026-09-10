@@ -56,7 +56,12 @@ const buildTargetUrl = (req: Request): URL | Response => {
   );
 };
 
-async function handler(req: Request): Promise<Response> {
+export async function tvmazeHandler(
+  req: Request,
+  deps = {
+    fetchWithRetry,
+  },
+): Promise<Response> {
   try {
     if (req.method !== "GET") {
       return methodNotAllowedResponse();
@@ -73,7 +78,7 @@ async function handler(req: Request): Promise<Response> {
       return cachedProxyResponse(cached);
     }
 
-    const upstreamResponse = await fetchWithRetry(
+    const upstreamResponse = await deps.fetchWithRetry(
       targetUrl,
       {
         headers: {
@@ -111,4 +116,4 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-export default withWebHandler(handler);
+export default withWebHandler(tvmazeHandler);
