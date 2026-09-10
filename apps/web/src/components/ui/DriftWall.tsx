@@ -144,6 +144,15 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   const [containerHeight, setContainerHeight] = useState<number>(600);
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeIdRef = useRef<string | null>(null);
+  const [focusedCoord, setFocusedCoord] = useState<{ c: number; r: number } | null>(null);
+
+  /* Roving tabindex logic for arrow-key navigation instead of tabbing through every element (WCAG 2.1 SC 2.1.1 Keyboard) */
+  const getTabIndex = (c: number, r: number) => {
+    if (!focusedCoord) {
+      return c === 0 && r === 0 ? 0 : -1;
+    }
+    return focusedCoord.c === c && focusedCoord.r === r ? 0 : -1;
+  };
   const [reduced, setReduced] = useState<boolean>(false);
 
   // ============================================================================
@@ -562,7 +571,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     id: string,
     colIndex: number,
     originalIndex: number,
+    copyIndex: number,
   ) => {
+    const r = originalIndex + copyIndex * (columnItems[colIndex]?.length || 1);
     // If item is a custom React element (like a MovieCard / PlaceCard)
     if (
       React.isValidElement(item) ||
@@ -584,13 +595,17 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       return (
         <div
           key={id}
-          role={onTileClick ? "button" : undefined}
-          tabIndex={onTileClick ? 0 : undefined}
+          /* WCAG 2.1 SC 1.3.1 Info and Relationships: gridcell semantics */
+          role="gridcell"
+          tabIndex={getTabIndex(colIndex, r)}
           className={`drift-wall__tile-custom${activeId === id ? " is-active" : ""}`}
           data-tile-id={id}
           data-col={colIndex}
           style={{ "--dw-custom-h": `${tileHeight * hr}px` } as React.CSSProperties}
-          onFocus={() => activate(id, colIndex)}
+          onFocus={() => {
+            activate(id, colIndex);
+            setFocusedCoord({ c: colIndex, r });
+          }}
           onBlur={release}
           onClick={
             onTileClick ? () => onTileClick(item, originalIndex) : undefined
@@ -627,9 +642,15 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
     const commonProps = {
       className: `drift-wall__tile${activeId === id ? " is-active" : ""}`,
+      /* WCAG 2.1 SC 1.3.1 Info and Relationships: gridcell semantics */
+      role: "gridcell",
+      tabIndex: getTabIndex(colIndex, r),
       "data-tile-id": id,
       "data-col": colIndex,
-      onFocus: () => activate(id, colIndex),
+      onFocus: () => {
+        activate(id, colIndex);
+        setFocusedCoord({ c: colIndex, r });
+      },
       onBlur: release,
       onClick: () => onTileClick?.(tileItem, originalIndex),
     };
@@ -652,7 +673,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       <button
         type="button"
         key={id}
-        tabIndex={0}
+
         aria-label={tileItem.title ?? "tile"}
         {...commonProps}
       >
@@ -685,15 +706,52 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       onPointerMove={handlePointerMove}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeaveWall}
-      role="group"
+      /* WCAG 2.1 SC 1.3.1 Info and Relationships: semantic grid role */
+      role="grid"
       aria-label="Drifting wall of tiles"
+      tabIndex={-1}
+      onKeyDown={(e) => {
+        if (!focusedCoord || focusedCoord === null) { if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) { setFocusedCoord({c:0,r:0}); e.preventDefault(); const el = containerRef.current?.querySelector(`[data-tile-id="0-0-0"]`) as HTMLElement | null; el?.focus(); } return; }
+        let { c, r } = focusedCoord;
+        const currentMeta = columnMeta[c];
+        if (!currentMeta) return;
+        const copies = currentMeta.copies;
+        const itemsPerCol = columnItems[c]?.length || 0;
+        const maxR = copies * itemsPerCol - 1;
+        const maxC = columnItems.length - 1;
+
+        let handled = true;
+        if (e.key === "ArrowUp") {
+          r = Math.max(0, r - 1);
+        } else if (e.key === "ArrowDown") {
+          r = Math.min(maxR, r + 1);
+        } else if (e.key === "ArrowLeft") {
+          c = Math.max(0, c - 1);
+          r = Math.min(r, (columnMeta[c]?.copies || 1) * (columnItems[c]?.length || 0) - 1);
+        } else if (e.key === "ArrowRight") {
+          c = Math.min(maxC, c + 1);
+          r = Math.min(r, (columnMeta[c]?.copies || 1) * (columnItems[c]?.length || 0) - 1);
+        } else {
+          handled = false;
+        }
+
+        if (handled) {
+          e.preventDefault();
+          setFocusedCoord({ c, r });
+          const copyIndex = Math.floor(r / itemsPerCol);
+          const itemIndex = r % itemsPerCol;
+          const id = `${c}-${copyIndex}-${itemIndex}`;
+          const el = containerRef.current?.querySelector(`[data-tile-id="${id}"]`) as HTMLElement | null;
+          el?.focus();
+        }
+      }}
     >
       <div ref={planeRef} className="drift-wall__plane">
         {columnItems.map((col, c) => {
           const meta = columnMeta[c];
           const copies = Array.from({ length: meta.copies });
           return (
-            <div className="drift-wall__col" key={`col-${c}`}>
+            <div className="drift-wall__col" key={`col-${c}`} /* WCAG 2.1 SC 1.3.1 Info and Relationships: rows own gridcells */ role="row">
               <div
                 className="drift-wall__track"
                 ref={(el) => {
@@ -707,6 +765,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
                       `${c}-${copyIndex}-${itemIndex}`,
                       c,
                       itemIndex,
+                      copyIndex,
                     ),
                   ),
                 )}

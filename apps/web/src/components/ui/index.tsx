@@ -4511,12 +4511,31 @@ export const Modal: FC<ModalProps> = ({
   maxWidth = 520,
   maxHeight,
 }) => {
+  const modalRef = React.useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = React.useRef<HTMLElement | null>(null);
+  React.useEffect(() => {
+    if (isOpen) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+      const timer = setTimeout(() => modalRef.current?.focus(), 50);
+      return () => {
+        clearTimeout(timer);
+        /* Restore focus on modal close to maintain logical flow (WCAG 2.1 SC 2.4.3) */
+        previouslyFocusedRef.current?.focus();
+      };
+    }
+    return undefined;
+  }, [isOpen]);
   React.useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !closeDisabled) {
         e.preventDefault();
         onClose();
+        return;
+      }
+      if (e.key === "Tab" && modalRef.current) {
+        /* Trap focus within the modal (WCAG 2.1 SC 2.4.3 Focus Order) */
+        trapFocusOnTab(e, modalRef.current);
       }
     };
     const prevOverflow = document.body.style.overflow;
@@ -4546,6 +4565,9 @@ export const Modal: FC<ModalProps> = ({
         tabIndex={-1}
       />
       <div
+        ref={modalRef}
+        tabIndex={-1}
+
         className="relative z-10 w-full bg-[#0b101b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-6 overscroll-contain"
         style={{
           maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth,

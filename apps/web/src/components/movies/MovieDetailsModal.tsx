@@ -5,6 +5,7 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { motion, useDragControls } from "motion/react";
+import { trapFocusOnTab } from "@/components/ui/lib/modalPrimitives";
 import type {
   Movie,
   User,
@@ -131,23 +132,9 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
         close();
         return;
       }
-
-      if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = Array.from(
-        dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
+      if (event.key === "Tab" && dialogRef.current) {
+        /* Trap focus within the modal (WCAG 2.1 SC 2.4.3 Focus Order) */
+        trapFocusOnTab(event, dialogRef.current);
       }
     };
 
@@ -158,6 +145,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       if (!contained && !container) {
         document.body.style.overflow = previousOverflow;
       }
+      /* Restore focus on modal close to maintain logical flow (WCAG 2.1 SC 2.4.3) */
       previouslyFocusedRef.current?.focus();
     };
   }, [close, dialogRef, isOpen, contained, container]);
