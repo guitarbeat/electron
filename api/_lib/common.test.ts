@@ -10,7 +10,23 @@ import {
   ensureFourDigitPin,
   ensureBoolean,
   KNOWN_USERS,
+  USER_OPTIONS,
+  MAX_MESSAGE_LENGTH,
+  MAX_MOVIE_TITLE_LENGTH
 } from "./common.js";
+
+
+describe("constants", () => {
+  it("defines KNOWN_USERS and USER_OPTIONS", () => {
+    assert.deepEqual(KNOWN_USERS, ["Aaron", "Electra"]);
+    assert.deepEqual(USER_OPTIONS, ["Aaron", "Electra"]);
+  });
+
+  it("defines MAX_MESSAGE_LENGTH and MAX_MOVIE_TITLE_LENGTH", () => {
+    assert.equal(MAX_MESSAGE_LENGTH, 500);
+    assert.equal(MAX_MOVIE_TITLE_LENGTH, 200);
+  });
+});
 
 describe("isUser", () => {
   it("returns true for known users", () => {
