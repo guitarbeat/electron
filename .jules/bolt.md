@@ -97,3 +97,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspection of `api/omdb.ts`, this standalone snippet does not exist. `api/omdb.ts` uses an `LRURateLimiter` class wrapping `counts` (`Map<string, { count: number; resetTime: number }>`).
 - The rate limiter eviction loop in `LRURateLimiter.isRateLimited` already uses `for (const [key, value] of this.counts)`, which is the optimal Map iteration pattern in V8.
 - Documented the discrepancy with no source code changes needed.
+
+## 2026-09-10 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts:56`)
+- Task requested fixing insecure database connection configuration (`rejectUnauthorized: false`) in `api/_lib/dbCommon.ts:56`.
+- Upon inspection of `createPostgresPool` in `api/_lib/dbCommon.ts`, `rejectUnauthorized` is already set to `true` (`poolConfig.ssl = { rejectUnauthorized: true };`), and `api/_lib/dbCommon.test.ts` already tests and verifies this behavior.
+- Documented the discrepancy with no source code changes needed.
