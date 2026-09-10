@@ -22,6 +22,7 @@ import { isMockMode } from "../../services/state";
 import { cacheWatchlistPosters } from "../../services/posterCache.js";
 
 const POLLING_INTERVAL = 15000;
+const MOCK_MODE_DELAY_MS = 800;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   const { poster, year, plot, imdbRating, runtime, genre, director, type } =
@@ -627,7 +628,7 @@ export const useMoviesWorkspace = (
       try {
         // Add a deliberate delay in mock mode so the user sees the spinner and transition
         if (isMockMode()) {
-          await new Promise((resolve) => window.setTimeout(resolve, 800));
+          await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));
         }
 
         await suggestionsState.acceptSuggestion(suggestion.id, currentUser);
@@ -677,7 +678,7 @@ export const useMoviesWorkspace = (
       try {
         // Add a deliberate delay in mock mode
         if (isMockMode()) {
-          await new Promise((resolve) => window.setTimeout(resolve, 800));
+          await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));
         }
 
         await suggestionsState.rejectSuggestion(id, currentUser);
