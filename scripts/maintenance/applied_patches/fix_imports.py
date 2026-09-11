@@ -3,11 +3,24 @@ import re
 
 DIR = "apps/web/src/components/movies"
 
+
+def strip_comments(code: str) -> str:
+    """Remove single-line and multi-line comments from code before checking imports."""
+    code = re.sub(r'/\*[\s\S]*?\*/', '', code)
+    code = re.sub(r'//.*', '', code)
+    return code
+
+
 def has_import(content: str, name: str) -> bool:
-    """Check if an import statement for `name` exists in the file content."""
-    import_blocks = re.findall(r"^\s*import\b[\s\S]*?(?:from\s*[\x27\x22][^\x27\x22]+[\x27\x22]|;)", content, re.MULTILINE)
+    """Check if an import statement for `name` exists in the file content robustly."""
+    clean_code = strip_comments(content)
+    import_blocks = re.findall(
+        r"\bimport\b[\s\S]*?(?:from\s*[\x27\x22][^\x27\x22]+[\x27\x22]|[\x27\x22][^\x27\x22]+[\x27\x22]|;)",
+        clean_code,
+    )
     pattern = r"\b" + re.escape(name) + r"\b"
     return any(re.search(pattern, block) for block in import_blocks)
+
 
 # MovieCard needs MovieEditModal and MovieDetailsModal
 with open(os.path.join(DIR, "MovieCard.tsx"), "r") as f:
@@ -36,7 +49,3 @@ content = re.sub(r'handleReactionToggled = \(memoryId\) =>', 'handleReactionTogg
 
 with open(os.path.join(DIR, "MovieSectionBody.tsx"), "w") as f:
     f.write(content)
-
-# MoviesTopControls needs MoviesTopControlsProps
-# wait, what was MoviesTopControlsProps? It probably wasn't an interface, but a type or just an inline type?
-# Let's check shared.tsx for it.
