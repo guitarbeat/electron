@@ -1,3 +1,4 @@
+import { getShadowStyle } from "./lib/pageFlipUtils";
 import React, { useState, useCallback, memo, useEffect, useRef, useMemo } from "react";
 import { motion, useMotionValue, useTransform, animate, type PanInfo } from "motion/react";
 
@@ -94,15 +95,6 @@ const QUICK_FLICK_MAX_TIME_MS = 350;
 /*                               Helper Functions                             */
 /* -------------------------------------------------------------------------- */
 
-/** Builds the CSS box-shadow string scaled by intensity */
-export function getShadowStyle(intensity: number): string {
-  if (intensity <= 0) return "none";
-  const offsetX = Math.round(4 * intensity);
-  const offsetY = Math.round(6 * intensity);
-  const blur = Math.round(34 * intensity);
-  const alpha = Math.min(0.75 * intensity, 1);
-  return `${offsetX}px ${offsetY}px ${blur}px rgba(0, 0, 0, ${alpha})`;
-}
 
 /** Checks whether an event originated from a form control or editable element */
 function isEditableTarget(target: EventTarget | null): boolean {

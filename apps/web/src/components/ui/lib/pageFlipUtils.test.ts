@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { getShadowStyle } from "./PageFlip.js";
+import { getShadowStyle } from "./pageFlipUtils.ts";
 
 describe("getShadowStyle", () => {
   it("returns 'none' when intensity is 0 or negative", () => {
