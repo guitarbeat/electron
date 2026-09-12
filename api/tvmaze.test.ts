@@ -144,10 +144,13 @@ describe("tvmazeHandler", () => {
     assert.strictEqual(callCount, 2);
   });
 
-  it("should catch errors in fetchWithRetry, log them, and return 500 Internal Server Error", async () => {
+  it("should catch errors in fetchWithRetry, log them, and return 500 Internal Server Error", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+    const expectedError = new Error("Upstream network failure");
+
     const mockDeps = {
       fetchWithRetry: async () => {
-        throw new Error("Upstream network failure");
+        throw expectedError;
       },
     };
 
@@ -159,6 +162,13 @@ describe("tvmazeHandler", () => {
     assert.strictEqual(res.status, 500);
     const data = await res.json();
     assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 1);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[0].arguments[0],
+      `Error handling GET ${req.url}:`,
+    );
+    assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], expectedError);
   });
 
   it("should handle request via default export withWebHandler wrapper", async () => {
