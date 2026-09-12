@@ -110,3 +110,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Replacing `<DriftWall />` with a standard 2D virtualized list component (e.g. `@tanstack/react-virtual` or `react-window`) causes a severe UI/UX regression, explicitly violating the requirement to "Do NOT change functionality" and "preserve the existing card layout". Code review rejected the change on this basis.
 - The 3D continuous loop physics of `<DriftWall />` uses translated CSS columns and cannot be adapted to standard 2D windowed virtualization without fundamentally rewriting the physics engine. No standard 2D list component exists in the codebase to replace or virtualize instead.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-09 - Stale Prompt Discrepancy (Hardcoded timeout in apps/web/src/app/App.tsx:88)
+- Task requested extracting the hardcoded timeout `2000` in `apps/web/src/app/App.tsx:88` to a named constant.
+- Upon inspection of `apps/web/src/app/App.tsx`, line 42 already defines `const IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000;`, and line 88 uses `setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS)`.
+- Documented the discrepancy with no source code changes needed.
