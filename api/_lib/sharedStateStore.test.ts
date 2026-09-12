@@ -145,36 +145,43 @@ describe("sharedStateStore", () => {
       });
 
       try {
-        // First read populates cache
+        // 1. First read populates the in-memory fileCache
         const firstRead = await readSharedStateFileRecord("movies.json");
         assert.strictEqual(firstRead.content, '{"v":1}');
 
-        // Directly modify underlying store map without calling patchSharedStateFile (so cache isn't cleared by patch)
-        // To verify that readSharedStateFileRecord returns cached value when bypassCache is false
-        // We need to access store directly through store.getFile if we patched it, but store Map is internal.
-        // If we call patchSharedStateFile, it clears cache for filename.
-        // Let's test cache hit vs bypassCache.
-        // Reading with bypassCache: false should return cached hit
+        // Directly mutate the underlying memory store without calling patchSharedStateFile
+        // (which would normally clear the cache for that key).
+        // Modifying the store directly allows testing cache hits and explicit invalidation.
+        store.setFile("movies.json", '{"v":2}');
+
+        // 2. Unexpired cache hit: returns stale cached content '{"v":1}' despite store change
         const cachedRead = await readSharedStateFileRecord("movies.json");
         assert.strictEqual(cachedRead.content, '{"v":1}');
 
-        // Test bypassCache: true
-        // Advance time within TTL (10 seconds)
+        // 3. bypassCache: true bypasses fileCache and reads fresh content '{"v":2}' from store
         t.mock.timers.setTime(now + 10000);
         const readWithBypass = await readSharedStateFileRecord("movies.json", {
           bypassCache: true,
         });
-        assert.strictEqual(readWithBypass.content, '{"v":1}');
+        assert.strictEqual(readWithBypass.content, '{"v":2}');
 
-        // Advance time beyond 30 seconds TTL (e.g. 30001 ms)
-        t.mock.timers.setTime(now + 30001);
-        const expiredRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(expiredRead.content, '{"v":1}');
+        // But reading again without bypassCache still returns cached '{"v":2}' (since bypassCache updated cache)
+        // Let's update store to '{"v":3}' directly
+        store.setFile("movies.json", '{"v":3}');
 
-        // Manual cache invalidation
+        // 4. Manual cache invalidation via invalidateSharedStateCache clears fileCache
         invalidateSharedStateCache();
+
+        // Reading after invalidateSharedStateCache fetches the newly updated content '{"v":3}'
         const postInvalidateRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(postInvalidateRead.content, '{"v":1}');
+        assert.strictEqual(postInvalidateRead.content, '{"v":3}');
+
+        // 5. TTL expiration: update store to '{"v":4}' and advance time beyond 30s TTL
+        store.setFile("movies.json", '{"v":4}');
+        t.mock.timers.setTime(now + 45000);
+
+        const expiredRead = await readSharedStateFileRecord("movies.json");
+        assert.strictEqual(expiredRead.content, '{"v":4}');
       } finally {
         store.dispose();
       }
