@@ -110,3 +110,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Replacing `<DriftWall />` with a standard 2D virtualized list component (e.g. `@tanstack/react-virtual` or `react-window`) causes a severe UI/UX regression, explicitly violating the requirement to "Do NOT change functionality" and "preserve the existing card layout". Code review rejected the change on this basis.
 - The 3D continuous loop physics of `<DriftWall />` uses translated CSS columns and cannot be adapted to standard 2D windowed virtualization without fundamentally rewriting the physics engine. No standard 2D list component exists in the codebase to replace or virtualize instead.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-09 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts:56`)
+- Task requested updating `createPostgresPool` in `api/_lib/dbCommon.ts:56` to set `rejectUnauthorized` to `true`.
+- Upon inspection of `api/_lib/dbCommon.ts:68`, `poolConfig.ssl = { rejectUnauthorized: true };` is already set to `true`.
+- Unit tests in `api/_lib/dbCommon.test.ts` already verify `rejectUnauthorized: true` configuration and pass.
+- As per memory directives for stale prompts, documented the discrepancy with no additional source or test code changes.
