@@ -697,11 +697,11 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
       gridRectRef.current = rect;
     }
     if (!rect) return null;
-    const x = ((clientX - rect.left) / rect.width) * 2 - 1;
-    const y = 1 - ((clientY - rect.top) / rect.height) * 2;
+    const normalizedX = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const normalizedY = 1 - ((clientY - rect.top) / rect.height) * 2;
     return {
-      x: Math.max(-1, Math.min(1, x)),
-      y: Math.max(-1, Math.min(1, y)),
+      x: Math.max(-1, Math.min(1, normalizedX)),
+      y: Math.max(-1, Math.min(1, normalizedY)),
     };
   }, []);
 
