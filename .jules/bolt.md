@@ -120,3 +120,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested extracting the hardcoded timeout `1000` in `apps/web/src/services/logger.ts:610` to a constant variable.
 - Upon inspection of `apps/web/src/services/logger.ts`, the timeout `1000` is already extracted as constant `NAVIGATION_TIMING_DELAY_MS` (defined on line 56) and used in `setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS)` on lines 607 and 610.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in `api/agent.ts:92`)
+- Task requested fixing an IP spoofing vulnerability in `api/agent.ts:92` by extracting the right-most IP from `x-forwarded-for`.
+- Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
+- The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
+- Concluded the task with no code changes and documented the discrepancy.
