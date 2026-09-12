@@ -74,7 +74,8 @@ describe("sharedStateStore", () => {
 
       delete process.env.POSTGRES_URL;
       delete process.env.POSTGRES_PRISMA_URL;
-      process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db";
+      process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db_list";
+      invalidateSharedStateCache();
 
       try {
         assert.strictEqual(isSharedStateConfigured(), true);
@@ -517,6 +518,7 @@ describe("sharedStateStore", () => {
   });
 
   describe("when DATABASE_URL is set and database query is mocked", () => {
+
     it("preloads shared state files into fileCache and allows cached reads", async () => {
       const originalDbUrl = process.env.DATABASE_URL;
       process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db";
@@ -567,6 +569,7 @@ describe("sharedStateStore", () => {
           content: "{\"movies\":[1]}",
         });
 
+
         // Read preloaded missing file from cache
         const missingRecord = await readSharedStateFileRecord("missing.json");
         assert.deepStrictEqual(missingRecord, {
@@ -576,6 +579,60 @@ describe("sharedStateStore", () => {
 
         // Assert no additional database queries were executed during cached reads
         assert.strictEqual(queriesExecuted.length, queryCountBeforeRead);
+      } finally {
+        connectMock.mock.restore();
+        if (originalDbUrl !== undefined) {
+          process.env.DATABASE_URL = originalDbUrl;
+        } else {
+          delete process.env.DATABASE_URL;
+        }
+        invalidateSharedStateCache();
+      }
+    });
+
+    it("lists shared state filenames from database when DATABASE_URL is configured", async () => {
+      const originalDbUrl = process.env.DATABASE_URL;
+      process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db";
+      invalidateSharedStateCache();
+
+      const queriesExecuted: { sql: string; params?: unknown[] }[] = [];
+
+      const connectMock = mock.method(
+        pg.Pool.prototype,
+        "connect",
+        async function (this: any) {
+          return {
+            query: async (sql: string | { text: string }, params?: unknown[]) => {
+              const sqlStr = typeof sql === "string" ? sql : sql?.text ?? "";
+              queriesExecuted.push({ sql: sqlStr, params });
+              if (sqlStr.includes("shared_state_files")) {
+                if (sqlStr.includes("CREATE TABLE")) {
+                  return { rows: [] };
+                }
+                if (sqlStr.includes("SELECT filename FROM shared_state_files")) {
+                  return {
+                    rows: [
+                      { filename: "a_movies.json" },
+                      { filename: "b_settings.json" },
+                    ],
+                  };
+                }
+              }
+              return { rows: [] };
+            },
+            release: () => {},
+          };
+        },
+      );
+
+      try {
+        const filenames = await listSharedStateFilenames();
+        assert.deepStrictEqual(filenames, ["a_movies.json", "b_settings.json"]);
+        assert.ok(
+          queriesExecuted.some((q) =>
+            q.sql.includes("SELECT filename FROM shared_state_files"),
+          ),
+        );
       } finally {
         connectMock.mock.restore();
         if (originalDbUrl !== undefined) {
