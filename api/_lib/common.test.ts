@@ -20,6 +20,10 @@ describe("constants", () => {
   it("defines KNOWN_USERS and USER_OPTIONS", () => {
     assert.deepEqual(KNOWN_USERS, ["Aaron", "Electra"]);
     assert.deepEqual(USER_OPTIONS, ["Aaron", "Electra"]);
+    assert.strictEqual(USER_OPTIONS, KNOWN_USERS);
+    assert.strictEqual(USER_OPTIONS.length, 2);
+    assert.ok(Array.isArray(USER_OPTIONS));
+    assert.ok(USER_OPTIONS.every((user) => isUser(user)));
   });
 
   it("defines MAX_MESSAGE_LENGTH and MAX_MOVIE_TITLE_LENGTH", () => {
