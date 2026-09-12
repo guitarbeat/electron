@@ -15,7 +15,6 @@ import {
   MAX_MOVIE_TITLE_LENGTH
 } from "./common.js";
 
-
 describe("constants", () => {
   it("defines KNOWN_USERS and USER_OPTIONS", () => {
     assert.deepEqual(KNOWN_USERS, ["Aaron", "Electra"]);
@@ -80,6 +79,38 @@ describe("sanitizeInput", () => {
     assert.strictEqual(sanitizeInput(null), "");
     assert.strictEqual(sanitizeInput(undefined), "");
     assert.strictEqual(sanitizeInput(""), "");
+    assert.strictEqual(sanitizeInput("   "), "");
+  });
+
+  it("removes all control characters in range \\x00-\\x08", () => {
+    const controlChars = String.fromCharCode(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    const input = `A${controlChars}B`;
+    assert.strictEqual(sanitizeInput(input), "AB");
+  });
+
+  it("removes all control characters in range \\x0B-\\x0C", () => {
+    const controlChars = String.fromCharCode(11, 12);
+    const input = `A${controlChars}B`;
+    assert.strictEqual(sanitizeInput(input), "AB");
+  });
+
+  it("removes all control characters in range \\x0E-\\x1F and \\x7F", () => {
+    const range1 = Array.from({ length: 0x1f - 0x0e + 1 }, (_, i) =>
+      String.fromCharCode(0x0e + i),
+    ).join("");
+    const del = String.fromCharCode(0x7f);
+    const input = `A${range1}${del}B`;
+    assert.strictEqual(sanitizeInput(input), "AB");
+  });
+
+  it("preserves tab (\\x09), newline (\\x0A), and carriage return (\\x0D) inside text", () => {
+    const input = "Line 1\nLine 2\r\nLine 3\tTabbed";
+    assert.strictEqual(sanitizeInput(input), "Line 1\nLine 2\r\nLine 3\tTabbed");
+  });
+
+  it("preserves unicode characters, emojis, and accented letters", () => {
+    const input = "  \u0000Café 🎬 🚀  ";
+    assert.strictEqual(sanitizeInput(input), "Café 🎬 🚀");
   });
 });
 
