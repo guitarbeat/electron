@@ -115,3 +115,14 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## Performance Task Findings - Synchronous/Blocking Sleep in Async Context
+- **Issue**: The task requested optimizing a 2000ms hardcoded `setTimeout` delay in `apps/web/src/hooks/movies/index.ts:424`.
+- **Investigation**: Inspection of `apps/web/src/hooks/movies/index.ts` revealed that this code was already refactored/optimized previously:
+  ```typescript
+  await new Promise<void>((resolve) => {
+    scheduleIdleWork(resolve, 500);
+  });
+  ```
+  `scheduleIdleWork` utilizes `requestIdleCallback` when available with a fallback timeout, non-blocking background processing when idle or after 500ms max.
+- **Outcome**: The task referenced a stale snippet or previous state of the code that has already been resolved. No further code modifications were required.
