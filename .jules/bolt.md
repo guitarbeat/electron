@@ -115,3 +115,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (Missing tests for `isSharedStateWriteConfigured` in `api/_lib/sharedStateStore.ts:69`)
+- Task requested adding tests for `isSharedStateWriteConfigured` in `api/_lib/sharedStateStore.ts:69` stating that its file lacks a test file.
+- Upon inspection, `api/_lib/sharedStateStore.ts` is already comprehensively tested in `api/_lib/sharedStateStore.test.ts`.
+- `isSharedStateWriteConfigured` is explicitly tested across 5 test cases in `api/_lib/sharedStateStore.test.ts` (when unconfigured, when empty env vars, when DATABASE_URL is set, when POSTGRES_URL is set, when test memory store is installed, and when invalid DB URL is set).
+- Documented the discrepancy with no code changes needed.
