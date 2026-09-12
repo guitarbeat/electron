@@ -237,6 +237,30 @@ describe("sharedStateStore", () => {
         const files = await listSharedStateFilenames();
         assert.deepStrictEqual(files, ["movies.json", "settings.json"]);
 
+        // listSharedStateFilenames when empty
+        const emptyStore = installSharedStateMemoryStoreForTests({});
+        try {
+          assert.deepStrictEqual(await listSharedStateFilenames(), []);
+        } finally {
+          emptyStore.dispose();
+        }
+
+        // listSharedStateFilenames sorts unsorted keys correctly
+        const unsortedStore = installSharedStateMemoryStoreForTests({
+          "z_file.json": "{}",
+          "a_file.json": "{}",
+          "m_file.json": "{}",
+        });
+        try {
+          assert.deepStrictEqual(await listSharedStateFilenames(), [
+            "a_file.json",
+            "m_file.json",
+            "z_file.json",
+          ]);
+        } finally {
+          unsortedStore.dispose();
+        }
+
         // preloadSharedStateFiles is a no-op when testStore is installed
         await preloadSharedStateFiles(["movies.json", "missing.json"]);
 
