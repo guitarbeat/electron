@@ -179,6 +179,103 @@ describe("sharedStateStore", () => {
         store.dispose();
       }
     });
+
+    it("supports nested memory store installation and restores outer store on dispose", async () => {
+      const outerStore = installSharedStateMemoryStoreForTests({
+        "shared.json": '{"level":"outer"}',
+        "outer_only.json": '{"outer":true}',
+      });
+
+      try {
+        await patchSharedStateFile("shared.json", '{"level":"outer_updated"}');
+        assert.strictEqual(outerStore.getFile("shared.json"), '{"level":"outer_updated"}');
+        assert.deepStrictEqual(outerStore.patchBodies, ['{"level":"outer_updated"}']);
+
+        // Install inner store
+        const innerStore = installSharedStateMemoryStoreForTests({
+          "shared.json": '{"level":"inner"}',
+          "inner_only.json": '{"inner":true}',
+        });
+
+        try {
+          const innerRead = await readSharedStateFileRecord("shared.json");
+          assert.strictEqual(innerRead.content, '{"level":"inner"}');
+          assert.strictEqual(innerStore.getFile("outer_only.json"), undefined);
+
+          await patchSharedStateFile("shared.json", '{"level":"inner_updated"}');
+          assert.strictEqual(innerStore.getFile("shared.json"), '{"level":"inner_updated"}');
+          assert.deepStrictEqual(innerStore.patchBodies, ['{"level":"inner_updated"}']);
+          // Outer patchBodies remains unaffected
+          assert.deepStrictEqual(outerStore.patchBodies, ['{"level":"outer_updated"}']);
+        } finally {
+          innerStore.dispose();
+        }
+
+        // After innerStore dispose, outerStore state is restored
+        const restoredRead = await readSharedStateFileRecord("shared.json");
+        assert.strictEqual(restoredRead.content, '{"level":"outer_updated"}');
+        assert.strictEqual(outerStore.getFile("inner_only.json"), undefined);
+
+        await patchSharedStateFile("shared.json", '{"level":"outer_final"}');
+        assert.strictEqual(outerStore.getFile("shared.json"), '{"level":"outer_final"}');
+        assert.deepStrictEqual(outerStore.patchBodies, [
+          '{"level":"outer_updated"}',
+          '{"level":"outer_final"}',
+        ]);
+      } finally {
+        outerStore.dispose();
+      }
+
+      // After outerStore dispose, no test store is active
+      const postDisposeRead = readSharedStateFileRecord("shared.json");
+      await assert.rejects(postDisposeRead, {
+        name: "Error",
+        message: "DATABASE_URL is not configured.",
+      });
+    });
+
+    it("invalidates cache on dispose so stale records do not leak", async () => {
+      const store = installSharedStateMemoryStoreForTests({
+        "data.json": '{"version":1}',
+      });
+
+      // Populate cache
+      const cached = await readSharedStateFileRecord("data.json");
+      assert.strictEqual(cached.content, '{"version":1}');
+
+      // Dispose store
+      store.dispose();
+
+      // With store disposed and no DATABASE_URL, attempting to read should throw rather than hit cache
+      await assert.rejects(
+        async () => {
+          await readSharedStateFileRecord("data.json");
+        },
+        { name: "Error", message: "DATABASE_URL is not configured." },
+      );
+    });
+
+    it("provides getFile and patchBodies helper functionality on store handle", async () => {
+      const store = installSharedStateMemoryStoreForTests({
+        "file1.txt": "hello",
+      });
+
+      try {
+        assert.strictEqual(store.getFile("file1.txt"), "hello");
+        assert.strictEqual(store.getFile("non_existent.txt"), undefined);
+        assert.deepStrictEqual(store.patchBodies, []);
+
+        await patchSharedStateFile("file1.txt", "world");
+        assert.strictEqual(store.getFile("file1.txt"), "world");
+
+        await patchSharedStateFile("file2.txt", "foo");
+        assert.strictEqual(store.getFile("file2.txt"), "foo");
+
+        assert.deepStrictEqual(store.patchBodies, ["world", "foo"]);
+      } finally {
+        store.dispose();
+      }
+    });
   });
 
   describe("when DATABASE_URL is set to an invalid database address", () => {
