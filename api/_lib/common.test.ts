@@ -26,6 +26,16 @@ describe("constants", () => {
     assert.equal(MAX_MESSAGE_LENGTH, 500);
     assert.equal(MAX_MOVIE_TITLE_LENGTH, 200);
   });
+
+  it("validates title string length boundaries against MAX_MOVIE_TITLE_LENGTH", () => {
+    const validTitle = "A".repeat(MAX_MOVIE_TITLE_LENGTH);
+    const invalidTitle = "A".repeat(MAX_MOVIE_TITLE_LENGTH + 1);
+
+    assert.equal(validTitle.length, 200);
+    assert.equal(invalidTitle.length, 201);
+    assert.equal(validTitle.length <= MAX_MOVIE_TITLE_LENGTH, true);
+    assert.equal(invalidTitle.length <= MAX_MOVIE_TITLE_LENGTH, false);
+  });
 });
 
 describe("isUser", () => {
