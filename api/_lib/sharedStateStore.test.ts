@@ -175,6 +175,16 @@ describe("sharedStateStore", () => {
         invalidateSharedStateCache();
         const postInvalidateRead = await readSharedStateFileRecord("movies.json");
         assert.strictEqual(postInvalidateRead.content, '{"v":1}');
+        // readSharedStateFile with bypassCache option
+        const readWithBypassContent = await readSharedStateFile("movies.json", {
+          bypassCache: true,
+        });
+        assert.strictEqual(readWithBypassContent, '{"v":1}');
+
+        const missingBypassContent = await readSharedStateFile("nonexistent.json", {
+          bypassCache: true,
+        });
+        assert.strictEqual(missingBypassContent, null);
       } finally {
         store.dispose();
       }
@@ -195,6 +205,12 @@ describe("sharedStateStore", () => {
         await assert.rejects(
           async () => {
             await readSharedStateFileRecord("test.json");
+          },
+          (err: unknown) => err instanceof Error,
+        );
+        await assert.rejects(
+          async () => {
+            await readSharedStateFile("test.json");
           },
           (err: unknown) => err instanceof Error,
         );
