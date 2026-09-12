@@ -76,6 +76,7 @@ export const invalidateSharedStateCache = (): void => {
 export const installSharedStateMemoryStoreForTests = (
   initialFiles: Record<string, string>,
 ): {
+  setFile: (filename: string, content: string) => void;
   getFile: (filename: string) => string | undefined;
   patchBodies: string[];
   dispose: () => void;
@@ -91,6 +92,9 @@ export const installSharedStateMemoryStoreForTests = (
   return {
     getFile: (filename: string) => store.get(filename),
     patchBodies,
+    setFile: (filename: string, content: string) => {
+      store.set(filename, content);
+    },
     dispose: () => {
       testStore = previousStore;
       testPatchBodies = previousPatchBodies;

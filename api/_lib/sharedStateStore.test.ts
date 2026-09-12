@@ -643,3 +643,46 @@ describe("sharedStateStore", () => {
     });
   });
 });
+
+
+describe("invalidateSharedStateCache with memory store.setFile", () => {
+  it("returns stale cache until invalidateSharedStateCache or bypassCache", async (t) => {
+    const originalDbUrl = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
+    invalidateSharedStateCache();
+
+    const store = installSharedStateMemoryStoreForTests({
+      "movies.json": '{"v":1}',
+    });
+    try {
+      t.mock.timers.enable({ apis: ["Date"] });
+      const now = Date.now();
+      t.mock.timers.setTime(now);
+
+      const firstRead = await readSharedStateFileRecord("movies.json");
+      assert.strictEqual(firstRead.content, '{"v":1}');
+
+      store.setFile("movies.json", '{"v":2}');
+      const cached = await readSharedStateFileRecord("movies.json");
+      assert.strictEqual(cached.content, '{"v":1}');
+
+      const bypassed = await readSharedStateFileRecord("movies.json", { bypassCache: true });
+      assert.strictEqual(bypassed.content, '{"v":2}');
+
+      store.setFile("movies.json", '{"v":3}');
+      invalidateSharedStateCache();
+      const afterInvalidate = await readSharedStateFileRecord("movies.json");
+      assert.strictEqual(afterInvalidate.content, '{"v":3}');
+
+      store.setFile("movies.json", '{"v":4}');
+      t.mock.timers.setTime(now + 45000);
+      const afterTtl = await readSharedStateFileRecord("movies.json");
+      assert.strictEqual(afterTtl.content, '{"v":4}');
+    } finally {
+      store.dispose();
+      if (originalDbUrl !== undefined) process.env.DATABASE_URL = originalDbUrl;
+      else delete process.env.DATABASE_URL;
+      invalidateSharedStateCache();
+    }
+  });
+});
