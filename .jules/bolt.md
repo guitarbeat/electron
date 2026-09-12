@@ -115,3 +115,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/hooks/movies/index.ts:680`)
+- Task requested extracting the hardcoded timeout (`800`) at `apps/web/src/hooks/movies/index.ts:680` into a meaningful named variable/constant.
+- Upon inspecting `apps/web/src/hooks/movies/index.ts`, the timeout constant `MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used consistently at lines 632 and 682 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
