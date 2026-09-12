@@ -26,6 +26,16 @@ describe("constants", () => {
     assert.equal(MAX_MESSAGE_LENGTH, 500);
     assert.equal(MAX_MOVIE_TITLE_LENGTH, 200);
   });
+
+  it("validates MAX_MESSAGE_LENGTH boundary constraints", () => {
+    const validMessage = "a".repeat(MAX_MESSAGE_LENGTH);
+    const invalidMessage = "a".repeat(MAX_MESSAGE_LENGTH + 1);
+
+    assert.strictEqual(validMessage.length, 500);
+    assert.strictEqual(validMessage.length <= MAX_MESSAGE_LENGTH, true);
+    assert.strictEqual(invalidMessage.length, 501);
+    assert.strictEqual(invalidMessage.length <= MAX_MESSAGE_LENGTH, false);
+  });
 });
 
 describe("isUser", () => {
