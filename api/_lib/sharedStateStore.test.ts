@@ -145,36 +145,64 @@ describe("sharedStateStore", () => {
       });
 
       try {
-        // First read populates cache
+        // First read populates cache for existing file
         const firstRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(firstRead.content, '{"v":1}');
+        assert.deepStrictEqual(firstRead, {
+          exists: true,
+          content: '{"v":1}',
+        });
 
-        // Directly modify underlying store map without calling patchSharedStateFile (so cache isn't cleared by patch)
-        // To verify that readSharedStateFileRecord returns cached value when bypassCache is false
-        // We need to access store directly through store.getFile if we patched it, but store Map is internal.
-        // If we call patchSharedStateFile, it clears cache for filename.
-        // Let's test cache hit vs bypassCache.
-        // Reading with bypassCache: false should return cached hit
+        // First read populates cache for non-existent file
+        const missingRead1 = await readSharedStateFileRecord("absent.json");
+        assert.deepStrictEqual(missingRead1, {
+          exists: false,
+          content: null,
+        });
+
+        // Repeated reads hit cache
         const cachedRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(cachedRead.content, '{"v":1}');
+        assert.deepStrictEqual(cachedRead, {
+          exists: true,
+          content: '{"v":1}',
+        });
 
-        // Test bypassCache: true
-        // Advance time within TTL (10 seconds)
+        const cachedMissingRead = await readSharedStateFileRecord("absent.json");
+        assert.deepStrictEqual(cachedMissingRead, {
+          exists: false,
+          content: null,
+        });
+
+        // bypassCache: true re-queries the database / store
         t.mock.timers.setTime(now + 10000);
         const readWithBypass = await readSharedStateFileRecord("movies.json", {
           bypassCache: true,
         });
-        assert.strictEqual(readWithBypass.content, '{"v":1}');
+        assert.deepStrictEqual(readWithBypass, {
+          exists: true,
+          content: '{"v":1}',
+        });
 
-        // Advance time beyond 30 seconds TTL (e.g. 30001 ms)
-        t.mock.timers.setTime(now + 30001);
+        // Advance time beyond 30 seconds TTL (30001 ms) to verify cache expiration
+        t.mock.timers.setTime(now + 35001);
         const expiredRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(expiredRead.content, '{"v":1}');
+        assert.deepStrictEqual(expiredRead, {
+          exists: true,
+          content: '{"v":1}',
+        });
 
-        // Manual cache invalidation
+        const expiredMissingRead = await readSharedStateFileRecord("absent.json");
+        assert.deepStrictEqual(expiredMissingRead, {
+          exists: false,
+          content: null,
+        });
+
+        // Manual cache invalidation clears cached entries
         invalidateSharedStateCache();
         const postInvalidateRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(postInvalidateRead.content, '{"v":1}');
+        assert.deepStrictEqual(postInvalidateRead, {
+          exists: true,
+          content: '{"v":1}',
+        });
       } finally {
         store.dispose();
       }
