@@ -54,6 +54,8 @@ describe("isUser", () => {
     assert.strictEqual(isUser("aaron"), false);
     assert.strictEqual(isUser("ELECTRA"), false);
     assert.strictEqual(isUser(""), false);
+    assert.strictEqual(isUser(" Aaron "), false);
+    assert.strictEqual(isUser("Aaron "), false);
   });
 
   it("returns false for non-string values", () => {
