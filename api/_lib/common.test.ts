@@ -118,6 +118,26 @@ describe("normalizeMovieTitle", () => {
       "the dark knight",
     );
   });
+
+  it("handles empty string and whitespace-only string", () => {
+    assert.strictEqual(normalizeMovieTitle(""), "");
+    assert.strictEqual(normalizeMovieTitle("   "), "");
+    assert.strictEqual(normalizeMovieTitle("\t\n\r"), "");
+  });
+
+  it("collapses tabs, newlines, and mixed whitespace into single spaces", () => {
+    assert.strictEqual(
+      normalizeMovieTitle("Blade\nRunner\t2049\r\n  Director\x27s   Cut"),
+      "blade runner 2049 director's cut",
+    );
+  });
+
+  it("preserves punctuation, numbers, and special characters while lowercasing", () => {
+    assert.strictEqual(
+      normalizeMovieTitle("  WALL-E  (2008) !  "),
+      "wall-e (2008) !",
+    );
+  });
 });
 
 describe("findMovieByNormalizedTitle", () => {
