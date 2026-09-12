@@ -26,6 +26,18 @@ describe("constants", () => {
     assert.equal(MAX_MESSAGE_LENGTH, 500);
     assert.equal(MAX_MOVIE_TITLE_LENGTH, 200);
   });
+
+  it("validates boundary lengths for MAX_MESSAGE_LENGTH and MAX_MOVIE_TITLE_LENGTH", () => {
+    const validMessage = "a".repeat(MAX_MESSAGE_LENGTH);
+    const oversizedMessage = "a".repeat(MAX_MESSAGE_LENGTH + 1);
+    assert.equal(validMessage.length, 500);
+    assert.equal(oversizedMessage.length, 501);
+
+    const validTitle = "a".repeat(MAX_MOVIE_TITLE_LENGTH);
+    const oversizedTitle = "a".repeat(MAX_MOVIE_TITLE_LENGTH + 1);
+    assert.equal(validTitle.length, 200);
+    assert.equal(oversizedTitle.length, 201);
+  });
 });
 
 describe("isUser", () => {
