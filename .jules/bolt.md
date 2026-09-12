@@ -115,3 +115,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/services/logger.ts:610`)
+- Task requested extracting the hardcoded timeout `1000` in `apps/web/src/services/logger.ts:610` to a constant variable.
+- Upon inspection of `apps/web/src/services/logger.ts`, the timeout `1000` is already extracted as constant `NAVIGATION_TIMING_DELAY_MS` (defined on line 56) and used in `setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS)` on lines 607 and 610.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
