@@ -13,6 +13,41 @@ import {
 } from "./sharedStateStore.js";
 
 describe("sharedStateStore", () => {
+  describe("isSharedStateWriteConfigured", () => {
+    it("returns false when unconfigured and true when DATABASE_URL or memory store is set", () => {
+      const originalDbUrl = process.env.DATABASE_URL;
+      try {
+        delete process.env.DATABASE_URL;
+        invalidateSharedStateCache();
+
+        // 1. Unconfigured
+        assert.strictEqual(isSharedStateWriteConfigured(), false);
+        assert.strictEqual(isSharedStateWriteConfigured(), isSharedStateConfigured());
+
+        // 2. Memory store installed
+        const store = installSharedStateMemoryStoreForTests({});
+        try {
+          assert.strictEqual(isSharedStateWriteConfigured(), true);
+          assert.strictEqual(isSharedStateWriteConfigured(), isSharedStateConfigured());
+        } finally {
+          store.dispose();
+        }
+
+        // 3. DATABASE_URL configured
+        process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db";
+        assert.strictEqual(isSharedStateWriteConfigured(), true);
+        assert.strictEqual(isSharedStateWriteConfigured(), isSharedStateConfigured());
+      } finally {
+        if (originalDbUrl !== undefined) {
+          process.env.DATABASE_URL = originalDbUrl;
+        } else {
+          delete process.env.DATABASE_URL;
+        }
+        invalidateSharedStateCache();
+      }
+    });
+  });
+
   describe("when unconfigured (no DATABASE_URL and no test store)", () => {
     it("reports configuration status as false and throws errors for file operations", async () => {
       const originalDbUrl = process.env.DATABASE_URL;
