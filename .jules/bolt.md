@@ -115,3 +115,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-09 - N+1 Mutation Operations in Promise.all in `apps/web/src/hooks/movies/index.ts:380`
+- Task requested refactoring `refreshAllMetadata` in `apps/web/src/hooks/movies/index.ts:380` to a single batched mutation to eliminate network-level N+1 calls.
+- Analyzing the backend mutation API (`api/_lib/stateScopes/movies.ts`) confirmed that the backend only supports `update_metadata` per single `movieId` payload (batching `update_metadata` is not supported in the backend state engine or agent contracts).
+- Local movie ID lookup optimization using `Set` (`currentMovieIds`) in `refreshAllMetadata` was previously completed.
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
