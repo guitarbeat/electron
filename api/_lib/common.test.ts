@@ -53,19 +53,56 @@ describe("isUser", () => {
 });
 
 describe("parseJsonContent", () => {
-  it("parses valid JSON content", () => {
-    const data = { key: "value", count: 42 };
-    const jsonString = JSON.stringify(data);
-    assert.deepStrictEqual(parseJsonContent(jsonString, "testContext"), data);
+  it("parses valid JSON content for various data types", () => {
+    const objectData = { key: "value", count: 42, nested: { active: true } };
+    assert.deepStrictEqual(parseJsonContent(JSON.stringify(objectData), "testContext"), objectData);
+
+    const arrayData = [1, "two", true, null, { id: 3 }];
+    assert.deepStrictEqual(parseJsonContent(JSON.stringify(arrayData), "testContext"), arrayData);
+
+    assert.strictEqual(parseJsonContent("123.45", "testContext"), 123.45);
+    assert.strictEqual(parseJsonContent("true", "testContext"), true);
+    assert.strictEqual(parseJsonContent("false", "testContext"), false);
+    assert.strictEqual(parseJsonContent('"hello world"', "testContext"), "hello world");
+    assert.strictEqual(parseJsonContent("null", "testContext"), null);
   });
 
-  it("throws formatted error for invalid JSON content", () => {
+  it("throws formatted error containing context when JSON syntax is invalid", () => {
     assert.throws(
       () => parseJsonContent("{ invalid json }", "movieData"),
       (err: Error) => {
-        assert.ok(err.message.includes("Failed to parse JSON in movieData:"));
+        assert.strictEqual(err instanceof Error, true);
+        assert.ok(
+          err.message.startsWith("Failed to parse JSON in movieData:"),
+          `Expected message to start with context error, got: ${err.message}`
+        );
         return true;
       },
+    );
+
+    assert.throws(
+      () => parseJsonContent("[1, 2,", "userConfig"),
+      (err: Error) => {
+        assert.ok(err.message.includes("Failed to parse JSON in userConfig:"));
+        return true;
+      },
+    );
+  });
+
+  it("handles non-Error thrown exceptions during JSON parsing", (t) => {
+    t.mock.method(JSON, "parse", () => {
+      throw "Primitive string error";
+    });
+
+    assert.throws(
+      () => parseJsonContent('{"test": true}', "customScope"),
+      (err: Error) => {
+        assert.strictEqual(
+          err.message,
+          "Failed to parse JSON in customScope: Primitive string error"
+        );
+        return true;
+      }
     );
   });
 });
