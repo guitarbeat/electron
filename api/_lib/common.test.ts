@@ -68,6 +68,24 @@ describe("parseJsonContent", () => {
       },
     );
   });
+
+  it("handles non-Error thrown values when parsing JSON fails", (t) => {
+    t.mock.method(JSON, "parse", () => {
+      throw "Raw string error";
+    });
+
+    assert.throws(
+      () => parseJsonContent("{}", "customContext"),
+      (err: Error) => {
+        assert.ok(
+          err.message.includes(
+            "Failed to parse JSON in customContext: Raw string error",
+          ),
+        );
+        return true;
+      },
+    );
+  });
 });
 
 describe("sanitizeInput", () => {
