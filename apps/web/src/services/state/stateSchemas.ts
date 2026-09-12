@@ -377,20 +377,20 @@ export const clonePinsState = (pins: PinsState): PinsState => ({ ...pins });
 
 const spinHistoryTitleFromEntry = (entry: unknown): string | null => {
   if (typeof entry === "string") {
-    const t = sanitizeInput(entry);
-    return t || null;
+    const sanitizedTitle = sanitizeInput(entry);
+    return sanitizedTitle || null;
   }
   if (!entry || typeof entry !== "object") {
     return null;
   }
-  const o = entry as { title?: unknown; movieTitle?: unknown };
-  if (typeof o.title === "string") {
-    const t = sanitizeInput(o.title);
-    return t || null;
+  const entryObject = entry as { title?: unknown; movieTitle?: unknown };
+  if (typeof entryObject.title === "string") {
+    const sanitizedTitle = sanitizeInput(entryObject.title);
+    return sanitizedTitle || null;
   }
-  if (typeof o.movieTitle === "string") {
-    const t = sanitizeInput(o.movieTitle);
-    return t || null;
+  if (typeof entryObject.movieTitle === "string") {
+    const sanitizedTitle = sanitizeInput(entryObject.movieTitle);
+    return sanitizedTitle || null;
   }
   return null;
 };
