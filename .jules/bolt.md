@@ -115,3 +115,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (IP Spoofing via X-Forwarded-For in api/agent.ts:92)
+- Task requested fixing IP spoofing via X-Forwarded-For in `api/agent.ts:92` by extracting the right-most appended proxy IP instead of the first IP.
+- Upon inspection of `api/agent.ts`, `requestIp` is already updated and extracts the right-most IP (`ips[ips.length - 1]?.trim()`), and corresponding tests in `api/agent.test.ts` already exist and pass.
+- Documented the discrepancy with no code changes needed.
