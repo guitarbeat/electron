@@ -13,6 +13,140 @@ import {
 } from "./sharedStateStore.js";
 
 describe("sharedStateStore", () => {
+  describe("isSharedStateConfigured & isSharedStateWriteConfigured", () => {
+    it("returns false when no database URL env variables are set and no test store is installed", () => {
+      const originalEnv = {
+        DATABASE_URL: process.env.DATABASE_URL,
+        POSTGRES_URL: process.env.POSTGRES_URL,
+        POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+      };
+
+      delete process.env.DATABASE_URL;
+      delete process.env.POSTGRES_URL;
+      delete process.env.POSTGRES_PRISMA_URL;
+
+      try {
+        assert.strictEqual(isSharedStateConfigured(), false);
+        assert.strictEqual(isSharedStateWriteConfigured(), false);
+      } finally {
+        for (const [key, val] of Object.entries(originalEnv)) {
+          if (val !== undefined) {
+            process.env[key] = val;
+          } else {
+            delete process.env[key];
+          }
+        }
+      }
+    });
+
+    it("returns false when database URL env variables are empty or whitespace strings", () => {
+      const originalEnv = {
+        DATABASE_URL: process.env.DATABASE_URL,
+        POSTGRES_URL: process.env.POSTGRES_URL,
+        POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+      };
+
+      process.env.DATABASE_URL = "   ";
+      process.env.POSTGRES_URL = '""';
+      process.env.POSTGRES_PRISMA_URL = "''";
+
+      try {
+        assert.strictEqual(isSharedStateConfigured(), false);
+        assert.strictEqual(isSharedStateWriteConfigured(), false);
+      } finally {
+        for (const [key, val] of Object.entries(originalEnv)) {
+          if (val !== undefined) {
+            process.env[key] = val;
+          } else {
+            delete process.env[key];
+          }
+        }
+      }
+    });
+
+    it("returns true when DATABASE_URL is set", () => {
+      const originalEnv = {
+        DATABASE_URL: process.env.DATABASE_URL,
+        POSTGRES_URL: process.env.POSTGRES_URL,
+        POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+      };
+
+      delete process.env.POSTGRES_URL;
+      delete process.env.POSTGRES_PRISMA_URL;
+      process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db";
+
+      try {
+        assert.strictEqual(isSharedStateConfigured(), true);
+        assert.strictEqual(isSharedStateWriteConfigured(), true);
+      } finally {
+        for (const [key, val] of Object.entries(originalEnv)) {
+          if (val !== undefined) {
+            process.env[key] = val;
+          } else {
+            delete process.env[key];
+          }
+        }
+      }
+    });
+
+    it("returns true when POSTGRES_URL or POSTGRES_PRISMA_URL is set", () => {
+      const originalEnv = {
+        DATABASE_URL: process.env.DATABASE_URL,
+        POSTGRES_URL: process.env.POSTGRES_URL,
+        POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+      };
+
+      delete process.env.DATABASE_URL;
+      process.env.POSTGRES_URL = "postgres://user:pass@localhost:5432/db";
+
+      try {
+        assert.strictEqual(isSharedStateConfigured(), true);
+        assert.strictEqual(isSharedStateWriteConfigured(), true);
+
+        delete process.env.POSTGRES_URL;
+        process.env.POSTGRES_PRISMA_URL = "postgres://user:pass@localhost:5432/db";
+        assert.strictEqual(isSharedStateConfigured(), true);
+        assert.strictEqual(isSharedStateWriteConfigured(), true);
+      } finally {
+        for (const [key, val] of Object.entries(originalEnv)) {
+          if (val !== undefined) {
+            process.env[key] = val;
+          } else {
+            delete process.env[key];
+          }
+        }
+      }
+    });
+
+    it("returns true when test memory store is installed even if no database URL is set", () => {
+      const originalEnv = {
+        DATABASE_URL: process.env.DATABASE_URL,
+        POSTGRES_URL: process.env.POSTGRES_URL,
+        POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+      };
+
+      delete process.env.DATABASE_URL;
+      delete process.env.POSTGRES_URL;
+      delete process.env.POSTGRES_PRISMA_URL;
+
+      const store = installSharedStateMemoryStoreForTests({});
+
+      try {
+        assert.strictEqual(isSharedStateConfigured(), true);
+        assert.strictEqual(isSharedStateWriteConfigured(), true);
+      } finally {
+        store.dispose();
+        for (const [key, val] of Object.entries(originalEnv)) {
+          if (val !== undefined) {
+            process.env[key] = val;
+          } else {
+            delete process.env[key];
+          }
+        }
+      }
+    });
+  });
+
   describe("when unconfigured (no DATABASE_URL and no test store)", () => {
     it("reports configuration status as false and throws errors for file operations", async () => {
       const originalDbUrl = process.env.DATABASE_URL;
