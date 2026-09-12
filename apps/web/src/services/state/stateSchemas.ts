@@ -402,7 +402,7 @@ export const normalizeSpinHistoryParsed = (value: unknown): string[] => {
   }
   return value
     .map((entry) => spinHistoryTitleFromEntry(entry))
-    .filter((t): t is string => Boolean(t));
+    .filter((title): title is string => Boolean(title));
 };
 
 export const normalizeSpinEntry = (value: unknown): SpinEntry | null => {
