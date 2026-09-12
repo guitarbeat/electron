@@ -115,3 +115,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Task requested replacing the slice `content[:1000]` check for `MovieEditModal` import in `scripts/maintenance/applied_patches/fix_imports.py:9` with a more robust helper or parsing method.
 - Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, commit `b0d4749fd6685158df28e459a900d3a06c997752` ("refactor: replace hacky slice import checks with robust has_import helper (#1179)") has already implemented `has_import` using regex stripping and searching.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts:56`)
+- Task requested fixing insecure database connection configuration in `api/_lib/dbCommon.ts:56` by changing `rejectUnauthorized: false` to `true`.
+- Upon inspecting `api/_lib/dbCommon.ts`, line 68 already configures `poolConfig.ssl = { rejectUnauthorized: true };`, and `api/_lib/dbCommon.test.ts` validates that `rejectUnauthorized` is `true`.
+- As per memory directives for stale/hallucinated prompts, concluding the task with no source code changes needed and documenting the discrepancy.
