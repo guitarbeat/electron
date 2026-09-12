@@ -179,6 +179,75 @@ describe("sharedStateStore", () => {
         store.dispose();
       }
     });
+
+    describe("patchSharedStateFile", () => {
+      it("updates existing files, creates new files, invalidates cache, and records patch history", async () => {
+        const store = installSharedStateMemoryStoreForTests({
+          "movies.json": '{"movies":[]}',
+        });
+
+        try {
+          // Warm up cache
+          const cached = await readSharedStateFileRecord("movies.json");
+          assert.strictEqual(cached.content, '{"movies":[]}');
+
+          // Patch existing file
+          await patchSharedStateFile("movies.json", '{"movies":[{"id":"1"}]}');
+
+          // Verify cache was invalidated and content updated
+          const updated = await readSharedStateFileRecord("movies.json");
+          assert.strictEqual(updated.content, '{"movies":[{"id":"1"}]}');
+          assert.strictEqual(store.getFile("movies.json"), '{"movies":[{"id":"1"}]}');
+
+          // Patch empty string content
+          await patchSharedStateFile("movies.json", "");
+          assert.strictEqual(await readSharedStateFile("movies.json"), "");
+
+          // Create a new file via patch
+          await patchSharedStateFile("config.json", '{"enabled":true}');
+          assert.strictEqual(await readSharedStateFile("config.json"), '{"enabled":true}');
+
+          // Check patchBodies history sequence
+          assert.deepStrictEqual(store.patchBodies, [
+            '{"movies":[{"id":"1"}]}',
+            "",
+            '{"enabled":true}',
+          ]);
+        } finally {
+          store.dispose();
+        }
+      });
+
+      it("handles nested test memory store installation and restoration", async () => {
+        const outerStore = installSharedStateMemoryStoreForTests({
+          "movies.json": '{"v":1}',
+        });
+
+        try {
+          await patchSharedStateFile("movies.json", '{"v":2}');
+          assert.deepStrictEqual(outerStore.patchBodies, ['{"v":2}']);
+
+          const innerStore = installSharedStateMemoryStoreForTests({
+            "movies.json": '{"v":10}',
+          });
+
+          try {
+            assert.strictEqual(await readSharedStateFile("movies.json"), '{"v":10}');
+            await patchSharedStateFile("movies.json", '{"v":11}');
+            assert.strictEqual(innerStore.getFile("movies.json"), '{"v":11}');
+            assert.deepStrictEqual(innerStore.patchBodies, ['{"v":11}']);
+          } finally {
+            innerStore.dispose();
+          }
+
+          // Restored to outer store state
+          assert.strictEqual(await readSharedStateFile("movies.json"), '{"v":2}');
+          assert.deepStrictEqual(outerStore.patchBodies, ['{"v":2}']);
+        } finally {
+          outerStore.dispose();
+        }
+      });
+    });
   });
 
   describe("when DATABASE_URL is set to an invalid database address", () => {
