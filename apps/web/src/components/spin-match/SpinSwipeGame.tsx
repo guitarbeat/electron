@@ -301,9 +301,9 @@ function SpinWheel({
           {kept.map((movie, i) => {
             const angle = i * segmentAngle + segmentAngle / 2;
             const rad = ((angle - 90) * Math.PI) / 180;
-            const r = 88;
-            const x = 135 + r * Math.cos(rad);
-            const y = 135 + r * Math.sin(rad);
+            const radius = 88;
+            const coordX = 135 + radius * Math.cos(rad);
+            const coordY = 135 + radius * Math.sin(rad);
             const label =
               movie.title.length > 11
                 ? `${movie.title.slice(0, 10)}…`
@@ -315,8 +315,8 @@ function SpinWheel({
                 aria-hidden
                 style={{
                   position: "absolute",
-                  left: x,
-                  top: y,
+                  left: coordX,
+                  top: coordY,
                   transform: `translate(-50%,-50%) rotate(${angle}deg)`,
                   fontSize: "0.52rem",
                   fontWeight: 700,
