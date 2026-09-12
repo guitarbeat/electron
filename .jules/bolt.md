@@ -110,3 +110,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Replacing `<DriftWall />` with a standard 2D virtualized list component (e.g. `@tanstack/react-virtual` or `react-window`) causes a severe UI/UX regression, explicitly violating the requirement to "Do NOT change functionality" and "preserve the existing card layout". Code review rejected the change on this basis.
 - The 3D continuous loop physics of `<DriftWall />` uses translated CSS columns and cannot be adapted to standard 2D windowed virtualization without fundamentally rewriting the physics engine. No standard 2D list component exists in the codebase to replace or virtualize instead.
 - As per memory directives, concluded the task with no source code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (Hardcoded Timeout in `apps/web/src/services/logger.ts:607`)
+- Task requested extracting hardcoded timeout `1000` into a named constant at `apps/web/src/services/logger.ts:607`.
+- Inspection of `apps/web/src/services/logger.ts` revealed that `NAVIGATION_TIMING_DELAY_MS = 1000` constant (line 56) has already been extracted and is being used in `setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS)` at lines 608 and 611.
+- Concluded task with no code changes needed and documented the discrepancy.
