@@ -65,7 +65,8 @@ export const MovieRecommendationComposer: React.FC<
         display: "flex",
         flexDirection: "column",
         gap: spacing.md,
-        padding: spacing.lg,
+        padding: `clamp(${spacing.md}, 4vw, ${spacing.lg})`,
+        paddingBottom: `calc(clamp(${spacing.md}, 4vw, ${spacing.lg}) + env(safe-area-inset-bottom))`,
         border: `1px solid ${colors.borderSubtle}`,
         background: `radial-gradient(circle at top right, ${colors.accentMuted} 0%, transparent 54%), linear-gradient(180deg, ${colors.surface2}, ${colors.surface1})`,
       }}

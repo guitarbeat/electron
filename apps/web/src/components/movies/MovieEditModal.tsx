@@ -127,7 +127,8 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
           display: "flex",
           flexDirection: "column",
           gap: spacing.lg,
-          padding: spacing.lg,
+          padding: `clamp(${spacing.md}, 4vw, ${spacing.lg})`,
+          paddingBottom: `calc(clamp(${spacing.md}, 4vw, ${spacing.lg}) + env(safe-area-inset-bottom))`,
         }}
       >
         <div

@@ -228,6 +228,38 @@
   padding: 0;
 }
 
+.movies-wall-container {
+  contain: layout paint;
+  isolation: isolate;
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  .card-tilt-wrap,
+  .movie-item-container,
+  .suggestion-item-card {
+    will-change: auto;
+    transform: none !important;
+  }
+
+  .card-tilt-sheen,
+  .movie-item-card,
+  .suggestion-item-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .movie-item-details-hit-area,
+  .workspace-card-action {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .movies-wall-container--mobile {
+    min-height: min(72dvh, 42rem);
+    contain: strict;
+  }
+}
+
 .workspace-card-action:hover {
   background: rgba(255, 255, 255, 0.2);
 }

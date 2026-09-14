@@ -316,6 +316,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       {unifiedCards.length > 0 ? (
         <div
           ref={wallContainerRef}
+          className={isMobile ? "movies-wall-container movies-wall-container--mobile" : "movies-wall-container"}
           style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
         >
           <DriftWall
