@@ -231,6 +231,8 @@
 .movies-wall-container {
   contain: layout paint;
   isolation: isolate;
+  content-visibility: auto;
+  contain-intrinsic-size: 100vw 900px;
 }
 
 @media (max-width: 768px), (pointer: coarse) {
