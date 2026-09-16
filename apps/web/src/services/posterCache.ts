@@ -31,7 +31,7 @@ const rememberObjectUrl = (url: string, objectUrl: string) => {
     URL.revokeObjectURL(previous);
   }
   inMemoryObjectUrls.delete(url);
-  rememberObjectUrl(url, objectUrl);
+  inMemoryObjectUrls.set(url, objectUrl);
 
   while (inMemoryObjectUrls.size > MAX_MEMORY_POSTERS) {
     const oldest = inMemoryObjectUrls.entries().next().value as
@@ -195,7 +195,10 @@ export const getCachedPosterUrlSync = (url?: string | null): string | null => {
   if (!url || !isValidPosterUrl(url)) return null;
   if (url.startsWith("data:") || url.startsWith("blob:")) return url;
   const cached = inMemoryObjectUrls.get(url);
-  if (cached) rememberObjectUrl(url, cached);
+  if (cached) {
+    inMemoryObjectUrls.delete(url);
+    inMemoryObjectUrls.set(url, cached);
+  }
   return cached || null;
 };
 
