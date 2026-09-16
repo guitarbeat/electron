@@ -159,6 +159,17 @@
   pointer-events: auto;
 }
 
+.movie-item-details-hit-area:focus-visible {
+  outline: 0.25rem solid var(--focus-ring, #7dd3fc);
+  outline-offset: -0.25rem;
+  border-radius: inherit;
+  background: rgba(125, 211, 252, 0.08);
+}
+
+.movie-item-container[aria-label] {
+  isolation: isolate;
+}
+
 /* Modifier classes */
 .movie-item-container--watched .movie-item-card {
   filter: grayscale(1);
