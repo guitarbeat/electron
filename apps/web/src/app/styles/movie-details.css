@@ -504,8 +504,9 @@
 
 @media (max-width: 768px) {
   .movie-details-modal.is-open .movie-details-modal__dialog--mobile {
-    width: calc(100vw - 1rem);
-    height: calc(100dvh - 1rem);
+    width: min(100vw - 1rem, 42rem);
+    height: min(calc(100dvh - 1rem), 54rem);
+    max-height: calc(100dvh - 1rem);
     border-radius: 1rem;
   }
 
@@ -524,7 +525,9 @@
   .movie-details-modal__content {
     height: 100%;
     overflow: auto;
-    padding: max(40vh, 16rem) 1.15rem 1.35rem;
+    padding: max(40vh, 16rem) 1.15rem calc(1.35rem + env(safe-area-inset-bottom));
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
     background: linear-gradient(to top, rgba(13, 17, 26, 1) 0%, rgba(13, 17, 26, 0.98) 40%, rgba(13, 17, 26, 0.7) 70%, transparent 100%);
   }
 

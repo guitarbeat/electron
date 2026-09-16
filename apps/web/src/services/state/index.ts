@@ -1700,7 +1700,9 @@ export const readScope = async <TScope extends StateScope>(
     );
 
     if (response.status === 401 || response.status === 403) {
-      notifySessionInvalid();
+      // A background read can legitimately race profile selection. It should
+      // report the state error without logging out a session that just became
+      // active; mutation authorization failures still invalidate the session.
       throw new StateClientError(
         "Unauthorized.",
         response.status,

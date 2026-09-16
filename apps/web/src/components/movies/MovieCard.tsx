@@ -153,6 +153,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
       <div
         className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
         data-movie-id={movie.id}
+        aria-label={`${movie.title}${movie.year ? ` (${movie.year})` : ""}`}
       >
         <CardTiltShell disabled={isCompact}>
           <Card
@@ -189,6 +190,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 onClick={handlePosterClick}
                 aria-expanded={isDetailsOpen}
                 aria-label={`View details for "${movie.title}"`}
+                aria-haspopup="dialog"
               />
             </MediaCardPosterWrap>
           </Card>

@@ -184,6 +184,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const [usersMissingPins, setUsersMissingPins] = useState<User[]>([]);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const hasHydratedSessionRef = useRef(false);
+  const sessionRefreshRef = useRef<Promise<void> | null>(null);
 
   const applySessionState = useCallback((nextState: SessionState) => {
     setHasAccess(nextState.hasAccess);
@@ -208,36 +209,46 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const refreshSession = useCallback(async () => {
-    const isInitialLoad = !hasHydratedSessionRef.current;
-    if (isInitialLoad) {
-      setIsSessionLoading(true);
-    }
-    try {
-      let response: Response;
+    if (sessionRefreshRef.current) return sessionRefreshRef.current;
+
+    const refresh = (async () => {
+      const isInitialLoad = !hasHydratedSessionRef.current;
+      if (isInitialLoad) setIsSessionLoading(true);
       try {
-        response = await fetch("/api/session", {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        });
-      } catch {
-        clearSessionState();
-        return;
-      }
+        let response: Response;
+        try {
+          response = await fetch("/api/session", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+          });
+        } catch {
+          // Keep an already-valid session during transient network failures.
+          if (isInitialLoad) clearSessionState();
+          return;
+        }
 
-      if (!response.ok) {
-        clearSessionState();
-        return;
-      }
+        if (!response.ok) {
+          // Only an explicit auth failure proves the cookie is invalid.
+          if (response.status === 401 || response.status === 403) {
+            clearSessionState();
+          }
+          return;
+        }
 
-      const session = (await response.json()) as SessionState;
-      applySessionState(session);
-    } finally {
-      if (isInitialLoad) {
-        hasHydratedSessionRef.current = true;
-        setIsSessionLoading(false);
+        const session = (await response.json()) as SessionState;
+        applySessionState(session);
+      } finally {
+        if (isInitialLoad) {
+          hasHydratedSessionRef.current = true;
+          setIsSessionLoading(false);
+        }
+        sessionRefreshRef.current = null;
       }
-    }
+    })();
+
+    sessionRefreshRef.current = refresh;
+    return refresh;
   }, [applySessionState, clearSessionState]);
 
   const logoutUser = useCallback(

@@ -214,15 +214,11 @@ async function handler(req: Request): Promise<Response> {
 
     const targetUrl = new URL(omdbApiBaseUrl);
     sourceUrl.searchParams.forEach((value, key) => {
-      targetUrl.searchParams.set(key, value);
+      if (key.toLowerCase() !== "apikey") {
+        targetUrl.searchParams.set(key, value);
+      }
     });
-    const incomingApiKey = targetUrl.searchParams.get("apikey")?.trim();
-    if (
-      (!incomingApiKey || incomingApiKey.length === 0) &&
-      omdbApiKey.length > 0
-    ) {
-      targetUrl.searchParams.set("apikey", omdbApiKey);
-    }
+    targetUrl.searchParams.set("apikey", omdbApiKey);
 
     const cacheKey = targetUrl.toString();
     const cached = omdbCache.get(cacheKey);

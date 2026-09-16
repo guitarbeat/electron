@@ -261,6 +261,17 @@ export const hasAccessSession = (req?: Request): boolean => {
   return getSessionState(req).hasAccess;
 };
 
+export const isSameOriginRequest = (req: Request): boolean => {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+  try {
+    const requestUrl = new URL(req.url, "http://localhost");
+    return new URL(origin).origin === requestUrl.origin;
+  } catch {
+    return false;
+  }
+};
+
 export const requireProfileUser = (req: Request): User | null =>
   getSessionState(req).currentUser;
 

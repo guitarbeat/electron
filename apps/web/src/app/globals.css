@@ -528,6 +528,39 @@ body.modal-open {
   overflow: hidden;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  :focus-visible {
+    outline: 0.25rem solid var(--focus-ring);
+    outline-offset: 0.375rem;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role='button'] {
+    min-block-size: 3rem;
+  }
+}
+
+@media (min-width: 960px) and (max-height: 900px) and (pointer: coarse) {
+  :focus-visible {
+    outline-width: 0.3rem;
+    outline-offset: 0.5rem;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role='button'] {
+    min-block-size: 3.25rem;
+    min-inline-size: 3.25rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

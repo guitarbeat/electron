@@ -120,6 +120,9 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     let isCancelled = false;
     setHasImageError(false);
 
+    setCachedSrc(null);
+    setCachedFallbackSrc(null);
+
     if (posterUrl) {
       const syncCached =
         getCachedObjectUrlSync(posterUrl) || getCachedPosterUrlSync(posterUrl);
@@ -192,7 +195,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [posterUrl, fallbackCatUrl, cachedFallbackSrc]);
+  }, [posterUrl, fallbackCatUrl]);
 
   // Determine active display source: prefer local cached version for offline resilience
   const primarySrc = cachedSrc || posterUrl;
@@ -265,9 +268,9 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
         alt={`${title} poster`}
         width={300}
         height={450}
-        loading="eager"
+        loading={priority ? "eager" : "lazy"}
         decoding="async"
-        fetchPriority={priority ? "high" : undefined}
+        fetchPriority={priority ? "high" : "auto"}
         className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
         onLoad={handleImageLoad}
         onError={handleImageError}
@@ -2727,9 +2730,7 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
       onClick={handleClick}
       className={`stremio-btn ${variantClass} ${className}`.trim()}
       title={
-        urls.hasDirectImdbMatch
-          ? `Launch "${movieTitle}" directly in Stremio`
-          : `Search "${movieTitle}" in Stremio`
+        `Search "${movieTitle}" in Stremio`
       }
       tabIndex={0}
     >

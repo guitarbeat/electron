@@ -145,6 +145,11 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
       </h2>
 
       <div className="watchlist-container places-container">
+        <p className="sr-only" aria-live="polite">
+          {isLoading
+            ? "Loading your movie wall."
+            : `${movies?.length ?? 0} movies loaded${pendingSuggestions.length ? `, plus ${pendingSuggestions.length} pending suggestions` : ""}.`}
+        </p>
         {isMoviesWorkspaceDegraded && (
           <SyncBanner
             isBlocked={isMoviesWorkspaceSyncBlocked}

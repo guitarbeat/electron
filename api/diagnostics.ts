@@ -26,7 +26,29 @@ export interface DiagnosticLogPayload {
   retryCount?: number;
 }
 
-const MAX_PAYLOAD_SIZE_BYTES = 65536; // 64KB cap to prevent DoS
+const MAX_PAYLOAD_SIZE_BYTES = 65536;
+const MAX_FIELD_LENGTH = 2000;
+const DIAGNOSTIC_WINDOW_MS = 60_000;
+const DIAGNOSTIC_MAX_REQUESTS = 30;
+const diagnosticRequests = new Map<string, { count: number; resetAt: number }>();
+
+const truncate = (value: unknown, max = MAX_FIELD_LENGTH): string | undefined =>
+  typeof value === "string" ? value.slice(0, max) : undefined;
+
+const getClientKey = (request: Request): string =>
+  request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+const isRateLimited = (request: Request): boolean => {
+  const now = Date.now();
+  const key = getClientKey(request);
+  const current = diagnosticRequests.get(key);
+  if (!current || current.resetAt <= now) {
+    diagnosticRequests.set(key, { count: 1, resetAt: now + DIAGNOSTIC_WINDOW_MS });
+    return false;
+  }
+  current.count += 1;
+  return current.count > DIAGNOSTIC_MAX_REQUESTS;
+};
 
 export async function diagnosticsHandler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
@@ -49,6 +71,13 @@ export async function diagnosticsHandler(req: Request): Promise<Response> {
 
   if (req.method !== "POST") {
     return methodNotAllowedResponse("GET, POST, OPTIONS");
+  }
+
+  if (isRateLimited(req)) {
+    return new Response(JSON.stringify({ error: "Too many diagnostic reports." }), {
+      status: 429,
+      headers: { "Content-Type": "application/json", "Retry-After": "60" },
+    });
   }
 
   try {
@@ -85,8 +114,9 @@ export async function diagnosticsHandler(req: Request): Promise<Response> {
 
     const logId = `diag_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const receivedAt = new Date().toISOString();
-    const moduleName = payload.module || (isMetric ? "PerformanceMetrics" : "UnknownModule");
+    const moduleName = truncate(payload.module, 120) || (isMetric ? "PerformanceMetrics" : "UnknownModule");
     const level = isMetric ? "info" : payload.level || "error";
+    message = truncate(message) || "Client diagnostic report";
 
     const diagLogger = logger.withContext({
       requestId: logId,
@@ -99,20 +129,20 @@ export async function diagnosticsHandler(req: Request): Promise<Response> {
     const details = {
       id: logId,
       receivedAt,
-      clientTimestamp: payload.timestamp,
+      clientTimestamp: truncate(payload.timestamp, 80),
       module: moduleName,
       message,
-      url: payload.url,
-      userAgent: payload.userAgent,
-      viewport: payload.viewport,
-      retryCount: payload.retryCount,
-      stack: payload.stack,
-      componentStack: payload.componentStack,
-      metricName: payload.metricName,
-      metricValue: payload.metricValue,
-      metricUnit: payload.metricUnit,
-      metrics: payload.metrics,
-      context: payload.context,
+      url: truncate(payload.url, 500),
+      userAgent: truncate(payload.userAgent, 500),
+      viewport: truncate(payload.viewport, 80),
+      retryCount: Number.isInteger(payload.retryCount) ? payload.retryCount : undefined,
+      stack: truncate(payload.stack),
+      componentStack: truncate(payload.componentStack),
+      metricName: truncate(payload.metricName, 120),
+      metricValue: typeof payload.metricValue === "number" && Number.isFinite(payload.metricValue) ? payload.metricValue : undefined,
+      metricUnit: truncate(payload.metricUnit, 40),
+      metrics: payload.metrics && typeof payload.metrics === "object" ? Object.fromEntries(Object.entries(payload.metrics).slice(0, 50).map(([key, value]) => [truncate(key, 80), typeof value === "string" ? truncate(value, 120) : value])) : undefined,
+      context: undefined,
     };
 
     if (isMetric) {

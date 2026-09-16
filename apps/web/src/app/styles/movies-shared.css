@@ -159,6 +159,17 @@
   pointer-events: auto;
 }
 
+.movie-item-details-hit-area:focus-visible {
+  outline: 0.25rem solid var(--focus-ring, #7dd3fc);
+  outline-offset: -0.25rem;
+  border-radius: inherit;
+  background: rgba(125, 211, 252, 0.08);
+}
+
+.movie-item-container[aria-label] {
+  isolation: isolate;
+}
+
 /* Modifier classes */
 .movie-item-container--watched .movie-item-card {
   filter: grayscale(1);
@@ -226,6 +237,40 @@
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
+}
+
+.movies-wall-container {
+  contain: layout paint;
+  isolation: isolate;
+  content-visibility: auto;
+  contain-intrinsic-size: 100vw 900px;
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  .card-tilt-wrap,
+  .movie-item-container,
+  .suggestion-item-card {
+    will-change: auto;
+    transform: none !important;
+  }
+
+  .card-tilt-sheen,
+  .movie-item-card,
+  .suggestion-item-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .movie-item-details-hit-area,
+  .workspace-card-action {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .movies-wall-container--mobile {
+    min-height: min(72dvh, 42rem);
+    contain: strict;
+  }
 }
 
 .workspace-card-action:hover {

@@ -11,6 +11,7 @@ import {
   buildPinAttemptCookie,
   buildProfileCookie,
   getSessionState,
+  isSameOriginRequest,
 } from "../_lib/session.js";
 import { getPinCoverageState, verifyProfilePin } from "../_lib/state.js";
 import {
@@ -60,6 +61,13 @@ export const computeNextPinAttemptState = (
 
 async function handler(req: Request): Promise<Response> {
   try {
+    if ((req.method === "POST" || req.method === "DELETE") && !isSameOriginRequest(req)) {
+      return new Response(JSON.stringify({ error: "Invalid request origin." }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     if (req.method === "DELETE") {
       let pinProtectedUsers: string[] = [];
       let usersMissingPins: string[] = [];
@@ -274,7 +282,8 @@ async function handler(req: Request): Promise<Response> {
     );
   } catch (error) {
     if (isMissingSessionSecretError(error)) {
-      return serverErrorResponse(SESSION_SECRET_CONFIG_ERROR);
+      logger.error(SESSION_SECRET_CONFIG_ERROR);
+      return serverErrorResponse("Profile login is temporarily unavailable.");
     }
 
     logger.error(

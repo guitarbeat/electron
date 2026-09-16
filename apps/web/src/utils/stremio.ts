@@ -55,7 +55,9 @@ export function getStremioUrls(
 
   const detailUrl = buildStremioDetailUrl(type, imdbId);
   const searchUrl = buildStremioSearchUrl(title);
-  const appUrl = detailUrl || searchUrl;
+  // Always use Stremio's search deep link from the UI. Detail links can open
+  // an installed app directly but do not reliably perform a title search.
+  const appUrl = searchUrl;
   const hasDirectImdbMatch = Boolean(detailUrl);
 
   return { detailUrl, searchUrl, appUrl, hasDirectImdbMatch };

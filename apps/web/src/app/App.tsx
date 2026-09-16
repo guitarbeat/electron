@@ -34,7 +34,6 @@ import {
   isLibraryWorkspaceTab,
   libraryWorkspaceStackClass,
 } from "@/utils/workspaceConfig";
-import { prefetchCatPosters } from "@/utils/catPosters";
 import { cleanupOldImages } from "@/utils/imageCache";
 import { AppProviders } from "@/app/AppProviders";
 import "./globals.css";
@@ -85,7 +84,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     stripLaunchUrlShortcuts();
-    prefetchCatPosters();
     if (typeof window !== "undefined") {
       const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS));
       scheduleIdle(() => {

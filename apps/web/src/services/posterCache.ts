@@ -22,7 +22,26 @@ export interface CachedPosterRecord {
 
 // In-memory cache mapping original URL -> resolved local object URL or data URL
 const inMemoryObjectUrls = new Map<string, string>();
+const MAX_MEMORY_POSTERS = 80;
 const inflightFetches = new Map<string, Promise<string | null>>();
+
+const rememberObjectUrl = (url: string, objectUrl: string) => {
+  const previous = inMemoryObjectUrls.get(url);
+  if (previous && previous !== objectUrl && previous.startsWith("blob:")) {
+    URL.revokeObjectURL(previous);
+  }
+  inMemoryObjectUrls.delete(url);
+  inMemoryObjectUrls.set(url, objectUrl);
+
+  while (inMemoryObjectUrls.size > MAX_MEMORY_POSTERS) {
+    const oldest = inMemoryObjectUrls.entries().next().value as
+      | [string, string]
+      | undefined;
+    if (!oldest) break;
+    inMemoryObjectUrls.delete(oldest[0]);
+    if (oldest[1].startsWith("blob:")) URL.revokeObjectURL(oldest[1]);
+  }
+};
 
 /**
  * Checks if a string is a valid URL for caching
@@ -175,7 +194,12 @@ const createSafeObjectUrl = (blob: Blob): string | null => {
 export const getCachedPosterUrlSync = (url?: string | null): string | null => {
   if (!url || !isValidPosterUrl(url)) return null;
   if (url.startsWith("data:") || url.startsWith("blob:")) return url;
-  return inMemoryObjectUrls.get(url) || null;
+  const cached = inMemoryObjectUrls.get(url);
+  if (cached) {
+    inMemoryObjectUrls.delete(url);
+    inMemoryObjectUrls.set(url, cached);
+  }
+  return cached || null;
 };
 
 /**
@@ -196,7 +220,7 @@ export const getCachedPosterUrl = async (url?: string | null): Promise<string | 
     if (blobFromIdb) {
       const objectUrl = createSafeObjectUrl(blobFromIdb);
       if (objectUrl) {
-        inMemoryObjectUrls.set(url, objectUrl);
+        rememberObjectUrl(url, objectUrl);
         return objectUrl;
       }
     }
@@ -212,7 +236,7 @@ export const getCachedPosterUrl = async (url?: string | null): Promise<string | 
       void saveToIDB(url, blobFromCache);
       const objectUrl = createSafeObjectUrl(blobFromCache);
       if (objectUrl) {
-        inMemoryObjectUrls.set(url, objectUrl);
+        rememberObjectUrl(url, objectUrl);
         return objectUrl;
       }
     }
@@ -268,7 +292,7 @@ export const cachePosterLocally = async (url?: string | null): Promise<string | 
 
           const objectUrl = createSafeObjectUrl(blob);
           if (objectUrl) {
-            inMemoryObjectUrls.set(url, objectUrl);
+            rememberObjectUrl(url, objectUrl);
             return objectUrl;
           }
           return url;

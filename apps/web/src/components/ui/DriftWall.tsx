@@ -179,9 +179,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       { length: columns },
       () => [],
     );
-    // Distribute items until we have placed at least max(safeItems.length, columns * 3) items
-    // This ensures no column is too short and items are well interleaved.
-    const totalToPlace = Math.max(safeItems.length, columns * 4);
+    // Keep enough tiles to avoid sparse columns without duplicating the entire
+    // watchlist repeatedly on memory-constrained devices.
+    const totalToPlace = Math.max(safeItems.length, columns * 3);
     for (let i = 0; i < totalToPlace; i++) {
       cols[i % columns].push(safeItems[i % safeItems.length]);
     }
@@ -205,9 +205,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       });
       const copyHeight = Math.max(tileHeight + gap, colHeight);
       // The track must cover the centered 200% height column plus scroll space
-      const copies = Math.max(
-        2,
-        Math.ceil((containerHeight * 3.5) / copyHeight) + 2,
+      const copies = Math.min(
+        4,
+        Math.max(2, Math.ceil((containerHeight * 2.5) / copyHeight) + 1),
       );
       return { copyHeight, copies };
     });
