@@ -7,10 +7,12 @@
   "scope": "/",
   "display_override": ["window-controls-overlay", "standalone"],
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "landscape",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
   "background_color": "#07091a",
   "theme_color": "#07091a",
-  "prefer_related_applications": false,
   "categories": ["entertainment", "lifestyle", "social"],
   "shortcuts": [
     {
