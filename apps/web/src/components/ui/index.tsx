@@ -2730,9 +2730,7 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
       onClick={handleClick}
       className={`stremio-btn ${variantClass} ${className}`.trim()}
       title={
-        urls.hasDirectImdbMatch
-          ? `Launch "${movieTitle}" directly in Stremio`
-          : `Search "${movieTitle}" in Stremio`
+        `Search "${movieTitle}" in Stremio`
       }
       tabIndex={0}
     >
