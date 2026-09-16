@@ -33,6 +33,7 @@ const ALLOWED_ROOT_DIRECTORIES = new Set([
   '.git',
   '.github',
   '.jules',
+  '.pnpm-store',
   '.vercel',
   'agent',
   'api',
@@ -50,6 +51,7 @@ const ALLOWED_ROOT_DIRECTORIES = new Set([
 const ALLOWED_ROOT_FILES = new Set([
   '.editorconfig',
   '.env.example',
+  '.env.development.local',
   '.gitignore',
   '.npmrc',
   '.pnpmrc',
