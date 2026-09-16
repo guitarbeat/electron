@@ -7,7 +7,6 @@
   "scope": "/",
   "display_override": ["window-controls-overlay", "standalone"],
   "display": "standalone",
-  "orientation": "landscape",
   "launch_handler": {
     "client_mode": "focus-existing"
   },
