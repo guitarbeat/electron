@@ -5,12 +5,16 @@ let criticalPreloadPromise: Promise<void> | null = null;
 
 /** Warm the active workspace tab chunk. */
 export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
-  if (tab === "messages") return import("@/components/messages");
-  return Promise.all([
-    import("@/components/library/LibraryWorkspace"),
-    import("@/components/movies"),
-    import("@/components/places"),
-  ]);
+  switch (tab) {
+    case "messages":
+      return import("@/components/messages");
+    case "movies":
+      return import("@/components/movies");
+    case "places":
+      return import("@/components/places");
+    default:
+      return Promise.resolve();
+  }
 };
 
 /** Warm the workspace shell chunk (header + bento layout). */
