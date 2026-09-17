@@ -51,6 +51,8 @@ export interface DriftWallProps {
 
 const EMPTY_ITEMS: (DriftWallItem | ReactNode)[] = [];
 
+const GLOBAL_DRIFT_START = Date.now();
+
 const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -258,12 +260,12 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       if (prevOffsets && typeof prevOffsets[c] === "number" && meta.copyHeight > 0) {
         return ((prevOffsets[c] % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
       }
-      return meta.copyHeight * ((c * 0.37) % 1);
+      return meta.copyHeight * ((c * 0.37) % 1) + ((Date.now() - GLOBAL_DRIFT_START) / 1000) * speed * columnFactor(c, variance) * (direction === "up" ? 1 : -1);
     });
     if (!velocitiesRef.current || velocitiesRef.current.length !== columnItems.length) {
       velocitiesRef.current = columnItems.map(() => 0);
     }
-  }, [columnMeta, columnItems]);
+  }, [columnMeta, columnItems, direction, speed, variance]);
 
   const applyPlaneTransform = useCallback(
     (px: number, py: number) => {
