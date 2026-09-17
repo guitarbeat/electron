@@ -137,3 +137,12 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Single-letter variable name in `apps/web/src/components/ui/PageFlip.tsx:100`)
+- Task requested renaming single-letter variable names `x` and `y` in `getShadowStyle` function.
+- Upon inspection, `getShadowStyle` has been extracted to `apps/web/src/components/ui/lib/pageFlipUtils.ts` and already uses descriptive variable names (`offsetX`, `offsetY`, `blur`, `alpha`):
+  `const offsetX = Math.round(4 * intensity);`
+  `const offsetY = Math.round(6 * intensity);`
+  `const blur = Math.round(34 * intensity);`
+  `const alpha = Math.min(0.75 * intensity, 1);`
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
