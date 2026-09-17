@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import { validateSameOriginRequest, isRateLimited, resetRateLimitsForTests } from "./omdb.js";
+import defaultHandler, { omdbHandler, validateSameOriginRequest, isRateLimited, resetRateLimitsForTests } from "./omdb.js";
 
 describe("validateSameOriginRequest", () => {
   const originalAllowedOrigins = process.env.ALLOWED_ORIGINS;
@@ -357,5 +357,167 @@ describe("isRateLimited", () => {
     assert.strictEqual(isRateLimited(ip1), true);
 
     assert.strictEqual(isRateLimited(ip2), false);
+  });
+});
+
+
+describe("omdbHandler", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+    process.env.OMDB_API_KEY = "test-key";
+    process.env.OMDB_API_URL = "https://www.omdbapi.com";
+    resetRateLimitsForTests();
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it("should reject non-GET requests with 405 Method Not Allowed", async () => {
+    for (const method of ["POST", "PUT", "DELETE", "PATCH"]) {
+      const req = new Request("http://localhost/api/omdb?s=batman", { method });
+      const res = await omdbHandler(req);
+      assert.strictEqual(res.status, 405);
+      const data = await res.json();
+      assert.strictEqual(data.error, "Method not allowed.");
+    }
+  });
+
+  it("should return 400 Bad Request if no query parameters are provided", async () => {
+    const req = new Request("http://localhost/api/omdb", { method: "GET" });
+    const res = await omdbHandler(req);
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(
+      data.error,
+      "At least one OMDb lookup parameter is required.",
+    );
+  });
+
+  it("should return 500 when OMDB_API_URL is invalid", async () => {
+    process.env.OMDB_API_URL = "invalid-url";
+    const req = new Request("http://localhost/api/omdb?s=batman", { method: "GET" });
+    const res = await omdbHandler(req);
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Invalid OMDB_API_URL configuration.");
+  });
+
+  it("should return 500 when OMDB_API_KEY is missing", async () => {
+    delete process.env.OMDB_API_KEY;
+    delete process.env.VITE_OMDB_API_KEY;
+    const req = new Request("http://localhost/api/omdb?s=batman", { method: "GET" });
+    const res = await omdbHandler(req);
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.ok(data.error.includes("OMDb is not configured"));
+  });
+
+  it("should proxy request to OMDb and return response on success", async () => {
+    const mockData = { Search: [{ Title: "Batman Begins", Year: "2005" }], Response: "True" };
+    let capturedUrl: URL | string | undefined;
+
+    const mockDeps = {
+      fetchWithRetry: async (targetUrl: URL | RequestInfo) => {
+        capturedUrl = targetUrl;
+        return new Response(JSON.stringify(mockData), {
+          status: 200,
+          statusText: "OK",
+          headers: { "content-type": "application/json" },
+        });
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=batman", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.headers.get("X-Cache"), "MISS");
+    assert.ok(capturedUrl?.toString().includes("apikey=test-key"));
+    assert.ok(capturedUrl?.toString().includes("s=batman"));
+
+    const data = await res.json();
+    assert.deepStrictEqual(data, mockData);
+  });
+
+  it("should return cached response on subsequent identical request", async () => {
+    const mockData = { Search: [{ Title: "Inception", Year: "2010" }], Response: "True" };
+    let callCount = 0;
+
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        callCount++;
+        return new Response(JSON.stringify(mockData), {
+          status: 200,
+          statusText: "OK",
+          headers: { "content-type": "application/json" },
+        });
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=inception", { method: "GET" });
+
+    const res1 = await omdbHandler(req, mockDeps);
+    assert.strictEqual(res1.status, 200);
+    assert.strictEqual(res1.headers.get("X-Cache"), "MISS");
+    assert.strictEqual(callCount, 1);
+
+    const res2 = await omdbHandler(req, mockDeps);
+    assert.strictEqual(res2.status, 200);
+    assert.strictEqual(res2.headers.get("X-Cache"), "HIT");
+    assert.strictEqual(callCount, 1);
+  });
+
+  it("should return 502 when OMDb returns 401 or credential failure body", async () => {
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        return new Response(JSON.stringify({ Response: "False", Error: "Invalid API key!" }), {
+          status: 200,
+          statusText: "OK",
+          headers: { "content-type": "application/json" },
+        });
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=test&t=invalidkey", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 502);
+    const data = await res.json();
+    assert.strictEqual(data.code, "omdb_auth");
+    assert.strictEqual(data.error, "OMDb rejected the configured API key.");
+  });
+
+  it("should catch errors in fetchWithRetry, log them, and return 500 Internal Server Error", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+    const expectedError = new Error("Network fetch error");
+
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        throw expectedError;
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=error-test", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 1);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[0].arguments[0],
+      "Error handling GET " + req.url + ":",
+    );
+    assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], expectedError);
+  });
+
+  it("should handle request via default export withWebHandler wrapper", async () => {
+    const req = new Request("http://localhost/api/omdb?s=batman", { method: "GET" });
+    const res = await defaultHandler(req);
+    assert.ok(res.status === 200 || res.status === 500 || res.status === 502);
   });
 });
