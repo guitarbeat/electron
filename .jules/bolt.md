@@ -126,3 +126,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
 - The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
 - Concluded the task with no code changes and documented the discrepancy.
+
+
+## 2026-09-17 - Stale Prompt Discrepancy (Untested JSON parsing error handling in `api/_lib/common.ts:15`)
+- Task requested testing JSON parsing error handling for `parseJsonContent` in `api/_lib/common.ts:15`.
+- Upon inspection of `api/_lib/common.test.ts`, `parseJsonContent` is already comprehensively tested, including error handling when JSON syntax is invalid as well as non-Error thrown exception handling, achieving 100% line, branch, and function statement coverage.
+- As per memory directives, concluded the task with no source or test code changes needed and documented the discrepancy.
