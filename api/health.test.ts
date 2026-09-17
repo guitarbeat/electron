@@ -136,6 +136,54 @@ describe("healthHandler", () => {
     });
   });
 
+  it("should respond with 503 when getPinCoverageState fails", async () => {
+    const deps = {
+      getStateScopeDiagnostics: async () => ({
+        expectedScopes: [],
+        missingScopes: [],
+      }),
+      getPinCoverageState: async () => {
+        throw new Error("Pin coverage service error");
+      },
+    };
+
+    const req = new Request("http://localhost/api/health?deep=1", { method: "GET" });
+    const res = await healthHandler(req, deps);
+
+    assert.strictEqual(res.status, 503);
+    const data = await res.json();
+    assert.deepStrictEqual(data, {
+      ok: false,
+      liveness: true,
+      readiness: false,
+      error: "Pin coverage service error",
+    });
+  });
+
+  it("should respond with 503 and string error message when getPinCoverageState throws a non-Error exception", async () => {
+    const deps = {
+      getStateScopeDiagnostics: async () => ({
+        expectedScopes: [],
+        missingScopes: [],
+      }),
+      getPinCoverageState: async () => {
+        throw "Pin coverage string error";
+      },
+    };
+
+    const req = new Request("http://localhost/api/health?deep=1", { method: "GET" });
+    const res = await healthHandler(req, deps);
+
+    assert.strictEqual(res.status, 503);
+    const data = await res.json();
+    assert.deepStrictEqual(data, {
+      ok: false,
+      liveness: true,
+      readiness: false,
+      error: "Pin coverage string error",
+    });
+  });
+
   it("should handle request via default export withWebHandler wrapped function", async () => {
     const req = new Request("http://localhost/api/health", { method: "GET" });
     const res = await defaultHandler(req);
