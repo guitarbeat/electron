@@ -24,6 +24,8 @@ import { cacheWatchlistPosters } from "../../services/posterCache.js";
 
 const POLLING_INTERVAL = 15000;
 const MOCK_MODE_DELAY_MS = 800;
+const AUTO_SYNC_IDLE_DELAY_MS = 500;
+const AUTO_SYNC_CONCURRENCY_LIMIT = 5;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   const { poster, year, plot, imdbRating, runtime, genre, director, type } =
@@ -424,10 +426,10 @@ export const useMovies = (
     hasAutoSyncedRef.current = true;
 
     await new Promise<void>((resolve) => {
-      scheduleIdleWork(resolve, 500);
+      scheduleIdleWork(resolve, AUTO_SYNC_IDLE_DELAY_MS);
     });
 
-    await concurrentMap(moviesMissingMetadata, 5, async (movie: Movie) => {
+    await concurrentMap(moviesMissingMetadata, AUTO_SYNC_CONCURRENCY_LIMIT, async (movie: Movie) => {
       if (!currentUser) return;
       try {
         await updateMovieMetadata(movie);
