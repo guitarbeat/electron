@@ -126,3 +126,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
 - The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
 - Concluded the task with no code changes and documented the discrepancy.
+
+## IP Spoofing Fix Investigation (`api/agent.ts:92`)
+
+- **Task**: Fix IP Spoofing via `X-Forwarded-For` in `api/agent.ts`.
+- **Finding**: Upon inspecting `api/agent.ts` and `api/agent.test.ts`, the `requestIp` function in `api/agent.ts` is already correctly updated to extract the right-most (proxy-appended) IP from the `X-Forwarded-For` header. Comprehensive unit tests covering single IP extraction, right-most IP extraction, spoofing prevention, fallback to `X-Real-IP`, empty header handling, and 128-character truncation are present and passing in `api/agent.test.ts`.
+- **Action**: Concluded task with no code modifications required.
