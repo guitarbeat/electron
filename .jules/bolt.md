@@ -126,3 +126,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
 - The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
 - Concluded the task with no code changes and documented the discrepancy.
+
+## 2026-09-12 - Stale Prompt Discrepancy (Fix implicit any for MovieSectionBody handle events in scripts/maintenance/applied_patches/fix_imports.py:43)
+- Task requested fixing implicit any types for event handlers in `scripts/maintenance/applied_patches/fix_imports.py:43` and `apps/web/src/components/movies/MoviesView.tsx`.
+- Upon inspecting `scripts/maintenance/applied_patches/fix_imports.py`, lines 43-48 already contain the regex replacements for explicit types on `handleMovieUpdate`, `handleNoteAdded`, `handleNoteEdited`, `handleNoteDeleted`, and `handleReactionToggled`.
+- Inspecting `apps/web/src/components/movies/MoviesView.tsx` and `MovieSectionBody.tsx` confirmed event handlers are already fully typed.
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
