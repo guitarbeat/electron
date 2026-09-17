@@ -137,3 +137,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Hardcoded timeout in apps/web/src/hooks/movies/index.ts:425)
+- Task requested extracting the hardcoded timeout 2000 in apps/web/src/hooks/movies/index.ts:425 to a named constant.
+- Upon inspecting apps/web/src/hooks/movies/index.ts, AUTO_SYNC_IDLE_DELAY_MS constant (value 500) is already defined on line 21 and used with scheduleIdleWork(resolve, AUTO_SYNC_IDLE_DELAY_MS) on line 429.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
