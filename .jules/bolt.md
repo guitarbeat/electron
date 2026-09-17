@@ -137,16 +137,3 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
-
-## Discrepancy Log - Single-letter variable in Quiz component
-- **Task:** Rename single-letter variable `x` and `y` in `apps/web/src/components/quiz/index.tsx` around line 701.
-- **Finding:** Inspection of `apps/web/src/components/quiz/index.tsx` revealed that line 701 (inside `calculatePosition` within `XYAxisQuestionView`) already uses descriptive variable names `normalizedX` and `normalizedY`:
-  ```typescript
-  const normalizedX = ((clientX - rect.left) / rect.width) * 2 - 1;
-  const normalizedY = 1 - ((clientY - rect.top) / rect.height) * 2;
-  return {
-    x: Math.max(-1, Math.min(1, normalizedX)),
-    y: Math.max(-1, Math.min(1, normalizedY)),
-  };
-  ```
-- **Action:** Concluded task without code modification as the refactoring was already present in the codebase.
