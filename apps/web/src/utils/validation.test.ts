@@ -56,14 +56,32 @@ describe("validation utility", () => {
     it("handles non-string raw values safely", () => {
       const validator = createValidator({
         age: { required: true, minLength: 2 },
+        active: { required: false, minLength: 4 },
+        missing: { required: false, minLength: 3 },
       });
 
-      const resultNum = validator({ age: 25 });
+      const resultNum = validator({ age: 25, active: true, missing: undefined });
       assert.equal(resultNum.isValid, true);
 
       const resultShortNum = validator({ age: 5 });
       assert.equal(resultShortNum.isValid, false);
       assert.equal(resultShortNum.errors.age, "age must be at least 2 characters");
+    });
+
+    it("sanitizes control characters before measuring minLength and maxLength", () => {
+      const validator = createValidator({
+        code: { maxLength: 3 },
+        secret: { minLength: 5 },
+      });
+
+      // "a\x00b\x01c\x02d" sanitized becomes "abcd" (len 4 -> > 3)
+      const resultMax = validator({ code: "a\x00b\x01c\x02d" });
+      assert.equal(resultMax.isValid, false);
+      assert.equal(resultMax.errors.code, "code exceeds maximum length of 3 characters");
+
+      // "  hello\x07  " sanitized becomes "hello" (len 5 -> >= 5)
+      const resultMin = validator({ secret: "  hello\x07  " });
+      assert.equal(resultMin.isValid, true);
     });
 
     it("validates maxLength", () => {
@@ -168,6 +186,38 @@ describe("validation utility", () => {
   });
 
   describe("CommonRules & Predefined Validators", () => {
+    it("validates CommonRules configurations", () => {
+      const emailValidator = createValidator({ email: CommonRules.email });
+      assert.equal(emailValidator({ email: "" }).isValid, false);
+      assert.equal(emailValidator({ email: "invalid" }).isValid, false);
+      assert.equal(
+        emailValidator({ email: "invalid" }).errors.email,
+        "Please enter a valid email address",
+      );
+      assert.equal(emailValidator({ email: "test@example.com" }).isValid, true);
+
+      const urlValidator = createValidator({ url: CommonRules.url });
+      assert.equal(urlValidator({ url: "" }).isValid, true); // not required
+      assert.equal(urlValidator({ url: "ftp://test.com" }).isValid, false);
+      assert.equal(
+        urlValidator({ url: "ftp://test.com" }).errors.url,
+        "Please enter a valid URL starting with http:// or https://",
+      );
+      assert.equal(urlValidator({ url: "https://test.com" }).isValid, true);
+
+      const usernameValidator = createValidator({ username: CommonRules.username });
+      assert.equal(usernameValidator({ username: "ab" }).isValid, false);
+      assert.equal(usernameValidator({ username: "valid123" }).isValid, true);
+
+      const passwordValidator = createValidator({ password: CommonRules.password });
+      assert.equal(passwordValidator({ password: "short" }).isValid, false);
+      assert.equal(passwordValidator({ password: "pass12345" }).isValid, true);
+
+      const notesValidator = createValidator({ notes: CommonRules.notes });
+      assert.equal(notesValidator({ notes: "" }).isValid, true);
+      assert.equal(notesValidator({ notes: "a".repeat(501) }).isValid, false);
+    });
+
     it("validates place using validatePlace", () => {
       const validPlace = validatePlace({
         name: "Cinema Paradiso",
@@ -186,7 +236,7 @@ describe("validation utility", () => {
 
     it("validates memory using validateMemory", () => {
       const validMemory = validateMemory({
-        note: "Movie night with @aaron and @electra!",
+        note: "Movie night with @aaron and @ELECTRA!",
         movieTitle: "The Matrix",
         author: "Aaron",
       });
@@ -202,6 +252,13 @@ describe("validation utility", () => {
         invalidMentionsMemory.errors.note,
         "Invalid mentions: @john. Only @aaron and @electra are allowed.",
       );
+
+      const noMentionsMemory = validateMemory({
+        note: "Just a movie night note without mentions",
+        movieTitle: "Interstellar",
+        author: "Electra",
+      });
+      assert.equal(noMentionsMemory.isValid, true);
     });
 
     it("checks limits for movieTitle, messageContent, messageAuthor", () => {
@@ -246,6 +303,22 @@ describe("validation utility", () => {
         {
           name: "Error",
           message: "Field is required!",
+        },
+      );
+    });
+
+    it("throws fallback message when validator error map is empty despite isValid being false", () => {
+      const customValidator = () => ({
+        isValid: false,
+        errors: {},
+        fieldErrors: [],
+      });
+
+      assert.throws(
+        () => validateAndThrow(customValidator, {}),
+        {
+          name: "Error",
+          message: "Validation failed",
         },
       );
     });
