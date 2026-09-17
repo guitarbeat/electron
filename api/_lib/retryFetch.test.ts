@@ -186,6 +186,48 @@ describe("fetchWithRetry", () => {
     assert.equal(calls, 1);
   });
 
+  it("aborts immediately when caller aborts during an in-flight fetch request", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    const controller = new AbortController();
+    let calls = 0;
+
+    globalThis.fetch = async (input, init) => {
+      calls++;
+      const signal = init?.signal as AbortSignal;
+      return new Promise<Response>((_, reject) => {
+        signal.addEventListener("abort", () => {
+          const err = new Error("Caller aborted in-flight request");
+          err.name = "AbortError";
+          reject(err);
+        });
+      });
+    };
+
+    const promise = fetchWithRetry(
+      "https://example.com",
+      { signal: controller.signal },
+      "abort-in-flight-ctx",
+    );
+
+    // Abort the caller signal while fetch is pending/in-flight
+    controller.abort();
+
+    const expectation = assert.rejects(
+      async () => {
+        await promise;
+      },
+      (err: Error) => {
+        assert.equal(err.name, "AbortError");
+        assert.equal(err.message, "Caller aborted in-flight request");
+        return true;
+      },
+    );
+
+    await expectation;
+    assert.equal(calls, 1);
+  });
+
   it("wraps non-Error thrown exceptions with context string", async (t) => {
     t.mock.timers.enable({ apis: ["setTimeout"] });
 
