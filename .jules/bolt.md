@@ -137,3 +137,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Missing tests for random utilities in `apps/web/src/utils/random.ts:8`)
+- Task requested adding tests for random utilities in `apps/web/src/utils/random.ts:8`.
+- Upon inspection of the codebase, `apps/web/src/utils/random.ts` is already comprehensively tested by `apps/web/src/utils/random.test.ts`.
+- The test suite covers all exported functions and utilities: `getSecureRandom` (crypto implementation, Math.random fallback, Uint32Array bounds), `clamp`, `shallowCloneArray`, `shuffleArray` (immutability, element preservation, edge cases), and `randomUtils` (`randomItem`, `randomRange`, `randomInt`, `randomBool`, `generateConfettiParticle`, `generateCursorStar`).
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
