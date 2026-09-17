@@ -126,3 +126,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
 - The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
 - Concluded the task with no code changes and documented the discrepancy.
+
+## 2026-09-16 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/app/App.tsx:88`)
+- Task requested extracting the hardcoded timeout in `apps/web/src/app/App.tsx:88` to a named constant.
+- Upon inspection of `apps/web/src/app/App.tsx`, `IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000` is already defined at module level (line 42) and used in the fallback callback on line 88: `const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS));`.
+- As per memory instructions for stale prompts, concluding the task with no source or test code changes needed.
