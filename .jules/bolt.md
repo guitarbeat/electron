@@ -137,3 +137,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/app/App.tsx:88`)
+- Task requested extracting the hardcoded timeout `2000` in `apps/web/src/app/App.tsx:88` to a meaningful constant variable.
+- Upon inspecting `apps/web/src/app/App.tsx`, constant `IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000;` is already defined on line 42 and used in line 88: `const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS));`.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
