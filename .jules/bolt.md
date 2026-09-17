@@ -137,3 +137,13 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Untested error path in health endpoint `api/health.ts:56`)
+- Task requested adding tests mocking `getScopeDiagnostics` or `getPinCoverageState` to throw an error and cover the try/catch error handling in `api/health.ts:56`.
+- Upon inspecting `api/health.ts` and `api/health.test.ts`, `api/health.test.ts` already contains comprehensive test coverage for all error paths in `api/health.ts`:
+  - `should respond with 503 when deep check fails` (testing `getStateScopeDiagnostics` throwing an `Error`)
+  - `should respond with 503 and string error message when non-Error exception is thrown during deep check` (testing non-`Error` thrown object)
+  - `should respond with 503 when getPinCoverageState fails` (testing `getPinCoverageState` throwing an `Error`)
+  - `should respond with 503 and string error message when getPinCoverageState throws a non-Error exception` (testing `getPinCoverageState` throwing non-`Error`)
+- Running `pnpm exec tsx --test --experimental-test-coverage api/health.test.ts` confirms 100% line, branch, and function coverage on `api/health.ts`.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
