@@ -137,3 +137,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Missing tests for PIN store in `api/_lib/pinAttemptStore.ts:57`)
+- Task requested adding unit tests with `pg` Pool mocking for `getPinAttemptRecord` in `api/_lib/pinAttemptStore.ts:57`.
+- Upon inspection, `api/_lib/pinAttemptStore.ts` is already fully tested in `api/_lib/pinAttemptStore.test.ts` with 12 test cases covering `getPinAttemptRecord`, `recordPinFailure`, and `clearPinAttempts` across unconfigured and configured `DATABASE_URL` states, row existence/absence, null `locked_until`, fail-closed error handling, and silent exception handling.
+- As per memory instructions, concluded the task with no source code changes needed and documented the discrepancy.
