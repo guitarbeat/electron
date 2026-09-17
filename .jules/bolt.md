@@ -137,3 +137,24 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## Discrepancy Note: Stale Prompt Code Reference
+
+- **Task**: Single-letter variable name in `apps/web/src/services/state/stateSchemas.ts:388`
+- **Prompt snippet**:
+```typescript
+  const o = entry as { title?: unknown; movieTitle?: unknown };
+  if (typeof o.title === "string") {
+    const t = sanitizeInput(o.title);
+    return t || null;
+  }
+```
+- **Observed Code**: The function `spinHistoryTitleFromEntry` in `apps/web/src/services/state/stateSchemas.ts` already uses descriptive variable names (`entryObject` and `sanitizedTitle`):
+```typescript
+  const entryObject = entry as { title?: unknown; movieTitle?: unknown };
+  if (typeof entryObject.title === "string") {
+    const sanitizedTitle = sanitizeInput(entryObject.title);
+    return sanitizedTitle || null;
+  }
+```
+- **Action Taken**: Confirmed that the issue had already been resolved in prior commits. Documented the discrepancy with no unnecessary code changes.
