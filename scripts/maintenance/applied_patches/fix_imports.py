@@ -49,3 +49,17 @@ content = re.sub(r'handleReactionToggled = \(memoryId\) =>', 'handleReactionTogg
 
 with open(os.path.join(DIR, "MovieSectionBody.tsx"), "w") as f:
     f.write(content)
+
+# Fix implicit any for MovieSectionBody handle events:
+fpath = 'apps/web/src/components/movies/MoviesView.tsx'
+if os.path.exists(fpath):
+    with open(fpath, 'r') as f:
+        mv_content = f.read()
+
+    if 'handleRemoveFromList = (item: any)' not in mv_content:
+        mv_content = mv_content.replace('handleRemoveFromList = (item)', 'handleRemoveFromList = (item: any)')
+    if 'handleMarkWatched = (item: any)' not in mv_content:
+        mv_content = mv_content.replace('handleMarkWatched = (item)', 'handleMarkWatched = (item: any)')
+
+    with open(fpath, 'w') as f:
+        f.write(mv_content)
