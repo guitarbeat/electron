@@ -33,7 +33,7 @@ type SessionPayload = ProfileSessionPayload | PinAttemptPayload;
 const clean = (value: string | undefined): string =>
   (value || "").trim().replace(/^["']|["']$/g, "");
 
-let ephemeralSecret: string | null = null;
+const STABLE_DEFAULT_SECRET = "movie-night-electron-session-secret-v1";
 
 const getSessionSigningSecret = (): string => {
   const configured = clean(
@@ -45,10 +45,8 @@ const getSessionSigningSecret = (): string => {
   if (process.env.NODE_ENV === "test") {
     return "test-session-signing-secret";
   }
-  if (!ephemeralSecret) {
-    ephemeralSecret = randomBytes(32).toString("hex");
-  }
-  return ephemeralSecret;
+  // Stable fallback secret across container recycles, SSR re-evaluations, and server restarts
+  return STABLE_DEFAULT_SECRET;
 };
 
 const base64urlEncode = (value: string): string =>
@@ -147,7 +145,7 @@ const buildCookie = (
   value: string,
   maxAge: number,
 ): string => {
-  // Vercel may pass a relative `req.url` which requires a base.
+  // Vercel / Cloud Run may pass a relative `req.url` which requires a base.
   // For cookie security, prefer forwarded protocol so `Secure` is correct on HTTPS.
   const forwardedProto = (
     req.headers.get("x-forwarded-proto") ||
@@ -159,23 +157,24 @@ const buildCookie = (
     .toLowerCase();
   const url = new URL(req.url, "http://localhost");
   const resolvedProtocol = forwardedProto ? `${forwardedProto}:` : url.protocol;
+  const isHttps = resolvedProtocol === "https:";
   const parts = [
     `${name}=${value}`,
     "Path=/",
     "HttpOnly",
-    "SameSite=Lax",
+    isHttps ? "SameSite=None" : "SameSite=Lax",
     `Max-Age=${maxAge}`,
   ];
 
-  if (resolvedProtocol === "https:") {
+  if (isHttps) {
     parts.push("Secure");
+    parts.push("Partitioned");
   }
 
   return parts.join("; ");
 };
 
-export const buildProfileCookie = (
-  req: Request,
+export const createProfileToken = (
   user: User,
   users?: User[],
 ): string => {
@@ -184,15 +183,23 @@ export const buildProfileCookie = (
       ? Array.from(new Set(users.filter(isUser)))
       : [user];
 
+  return encodeToken({
+    type: "profile",
+    user,
+    users: safeUsers,
+    exp: Math.floor(Date.now() / 1000) + PROFILE_TTL_SECONDS,
+  });
+};
+
+export const buildProfileCookie = (
+  req: Request,
+  user: User,
+  users?: User[],
+): string => {
   return buildCookie(
     req,
     PROFILE_COOKIE,
-    encodeToken({
-      type: "profile",
-      user,
-      users: safeUsers,
-      exp: Math.floor(Date.now() / 1000) + PROFILE_TTL_SECONDS,
-    }),
+    createProfileToken(user, users),
     PROFILE_TTL_SECONDS,
   );
 };
@@ -224,6 +231,22 @@ export const buildPinAttemptCookie = (
 export const buildClearPinAttemptCookie = (req: Request): string =>
   buildCookie(req, PIN_ATTEMPT_COOKIE, "", 0);
 
+export const extractSessionToken = (req: Request): string | undefined => {
+  const cookies = parseCookies(req);
+  if (cookies[PROFILE_COOKIE]) {
+    return cookies[PROFILE_COOKIE];
+  }
+  const authHeader = req.headers.get("authorization");
+  if (authHeader && authHeader.toLowerCase().startsWith("bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+  const customHeader = req.headers.get("x-session-token");
+  if (customHeader) {
+    return customHeader.trim();
+  }
+  return undefined;
+};
+
 export const getSessionState = (
   req: Request,
 ): {
@@ -231,9 +254,9 @@ export const getSessionState = (
   currentUser: User | null;
   activeUsers: User[];
 } => {
-  const cookies = parseCookies(req);
+  const token = extractSessionToken(req);
   const profile = verifyToken<ProfileSessionPayload>(
-    cookies[PROFILE_COOKIE],
+    token,
     "profile",
   );
 

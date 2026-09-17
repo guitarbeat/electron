@@ -4,4 +4,5 @@ export * from "./lazyWithRetry.js";
 export * from "./scrollStorage.js";
 export * from "./catPosters.js";
 export * from "./imageCache.js";
+export * from "./auth.js";
 export * from "../theme/tokens.js";

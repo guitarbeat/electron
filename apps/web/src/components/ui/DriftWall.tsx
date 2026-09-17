@@ -33,7 +33,7 @@ export interface DriftWallProps {
   perspective?: number;
   depth?: number;
   speed?: number;
-  direction?: "up" | "down";
+  direction?: "up" | "down" | "zigzag";
   variance?: number;
   parallax?: number;
   pauseOnHover?: boolean;
@@ -51,36 +51,29 @@ export interface DriftWallProps {
 
 const EMPTY_ITEMS: (DriftWallItem | ReactNode)[] = [];
 
-const GLOBAL_DRIFT_START = Date.now();
-
 const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const columnFactor = (index: number, variance: number) => {
-  const pseudo = ((index * 0.6180339887 + 0.35) % 1) * 2 - 1;
-  return 1 + variance * pseudo;
-};
-
 export const DriftWall: React.FC<DriftWallProps> = ({
   items = EMPTY_ITEMS,
   columns = 5,
-  tileWidth = 200,
-  tileHeight = 300,
-  gap = 8,
-  radius = 14,
-  tilt = 16,
-  turn = -14,
+  tileWidth = 140,
+  tileHeight = 210,
+  gap = 24,
+  radius = 12,
+  tilt = 0,
+  turn = 0,
   roll = 0,
-  perspective = 1200,
-  depth = 120,
-  speed = 42,
-  direction = "up",
-  variance = 0.45,
-  parallax = 0.6,
+  perspective = 1000,
+  depth = 0,
+  speed = 36,
+  direction = "zigzag",
+  variance: _variance = 0,
+  parallax = 0,
   pauseOnHover = false,
-  lift = 64,
-  fade = 0.6,
+  lift = 24,
+  fade = 0.08,
   dim = 1,
   grayscale = false,
   overlayColor = "#060010",
@@ -92,40 +85,11 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLDivElement>(null);
-  const trackRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tileRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
 
-  const offsetsRef = useRef<number[]>([]);
-  const velocitiesRef = useRef<number[]>([]);
-  
-  // Load initial offsets if a storage key is provided
-  useEffect(() => {
-    if (scrollStorageKey) {
-      const saved = scrollStorage.load<{ offsets: number[] }>(scrollStorageKey);
-      if (saved?.offsets) {
-        offsetsRef.current = saved.offsets;
-      }
-    }
-  }, [scrollStorageKey]);
-
-  // Save offsets periodically or on unmount
-  useEffect(() => {
-    if (!scrollStorageKey) return;
-    
-    const interval = setInterval(() => {
-      if (offsetsRef.current.length > 0) {
-        scrollStorage.save(scrollStorageKey, { offsets: offsetsRef.current });
-      }
-    }, 1000);
-    
-    return () => {
-      clearInterval(interval);
-      if (offsetsRef.current.length > 0) {
-        scrollStorage.save(scrollStorageKey, { offsets: offsetsRef.current });
-      }
-    };
-  }, [scrollStorageKey]);
-
+  const beltOffsetRef = useRef<number>(0);
+  const beltVelocityRef = useRef<number>(speed);
   const scrollVelocityRef = useRef<number>(0);
   const isDraggingTouchRef = useRef<boolean>(false);
   const touchLastYRef = useRef<number>(0);
@@ -144,21 +108,50 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   const lastTsRef = useRef<number | null>(null);
 
   const [containerHeight, setContainerHeight] = useState<number>(600);
+  const [containerWidth, setContainerWidth] = useState<number>(1200);
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeIdRef = useRef<string | null>(null);
   const [focusedCoord, setFocusedCoord] = useState<{ c: number; r: number } | null>(null);
+  const [reduced, setReduced] = useState<boolean>(false);
 
-  /* Roving tabindex logic for arrow-key navigation instead of tabbing through every element (WCAG 2.1 SC 2.1.1 Keyboard) */
+  // Load initial offsets if a storage key is provided
+  useEffect(() => {
+    if (scrollStorageKey) {
+      const saved = scrollStorage.load<{ offset: number }>(scrollStorageKey);
+      if (saved && typeof saved.offset === "number") {
+        beltOffsetRef.current = saved.offset;
+      }
+    }
+  }, [scrollStorageKey]);
+
+  // Save offsets periodically or on unmount
+  useEffect(() => {
+    if (!scrollStorageKey) return;
+    
+    const interval = setInterval(() => {
+      if (beltOffsetRef.current !== undefined) {
+        scrollStorage.save(scrollStorageKey, { offset: beltOffsetRef.current });
+      }
+    }, 1000);
+    
+    return () => {
+      clearInterval(interval);
+      if (beltOffsetRef.current !== undefined) {
+        scrollStorage.save(scrollStorageKey, { offset: beltOffsetRef.current });
+      }
+    };
+  }, [scrollStorageKey]);
+
+  /* Roving tabindex logic for arrow-key navigation */
   const getTabIndex = (c: number, r: number) => {
     if (!focusedCoord) {
       return c === 0 && r === 0 ? 0 : -1;
     }
     return focusedCoord.c === c && focusedCoord.r === r ? 0 : -1;
   };
-  const [reduced, setReduced] = useState<boolean>(false);
 
   // ============================================================================
-  // 1. Core State & Data Preparation
+  // 1. Core State & Belt Setup
   // ============================================================================
   useEffect(() => {
     setReduced(prefersReducedMotion());
@@ -172,51 +165,44 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     return items ?? EMPTY_ITEMS;
   }, [items]);
 
-  // Distribute items sequentially across the given number of columns
-  const columnItems = useMemo(() => {
-    if (safeItems.length === 0) {
-      return Array.from({ length: columns }, () => []);
-    }
-    const cols: (DriftWallItem | ReactNode)[][] = Array.from(
-      { length: columns },
-      () => [],
-    );
-    // Keep enough tiles to avoid sparse columns without duplicating the entire
-    // watchlist repeatedly on memory-constrained devices.
-    const totalToPlace = Math.max(safeItems.length, columns * 3);
-    for (let i = 0; i < totalToPlace; i++) {
-      cols[i % columns].push(safeItems[i % safeItems.length]);
-    }
-    return cols;
-  }, [safeItems, columns]);
+  const slotHeight = tileHeight + gap;
+  const slotWidth = tileWidth + gap;
 
-  // Pre-calculate heights and number of copies needed for infinite scroll wrapping
-  const columnMeta = useMemo(() => {
-    return columnItems.map((col) => {
-      let colHeight = 0;
-      col.forEach((item) => {
-        let hr = 1;
-        if (React.isValidElement(item)) {
-          if (item.props && 'data-height-ratio' in (item.props as Record<string, unknown>)) {
-            hr = Number((item.props as Record<string, unknown>)['data-height-ratio']) || 1;
-          }
-        } else if (item && typeof item === "object" && 'heightRatio' in (item as Record<string, unknown>)) {
-          hr = Number((item as Record<string, unknown>).heightRatio) || 1;
-        }
-        colHeight += (tileHeight * hr) + gap;
-      });
-      const copyHeight = Math.max(tileHeight + gap, colHeight);
-      // The track must cover the centered 200% height column plus scroll space
-      const copies = Math.min(
-        4,
-        Math.max(2, Math.ceil((containerHeight * 2.5) / copyHeight) + 1),
-      );
-      return { copyHeight, copies };
-    });
-  }, [columnItems, tileHeight, gap, containerHeight]);
+  const safeCols = useMemo(() => {
+    const desired = columns && columns > 0 ? columns : Math.max(3, Math.ceil((containerWidth * 1.05) / slotWidth));
+    return Math.max(2, desired % 2 === 0 ? desired : desired + 1);
+  }, [columns, containerWidth, slotWidth]);
+
+  const totalSlots = safeItems.length;
+
+  // Calculate itemsPerCol to ensure vertical center-to-center distance is always >= slotHeight (tileHeight + gap)
+  const itemsPerCol = useMemo(() => {
+    if (totalSlots === 0) return 4;
+    const minItemsForHeight = Math.ceil((containerHeight + slotHeight * 1.2) / slotHeight);
+    const itemsFromCount = Math.ceil(totalSlots / safeCols);
+    return Math.max(3, itemsFromCount, minItemsForHeight);
+  }, [totalSlots, safeCols, containerHeight, slotHeight]);
+
+  const columnHeight = useMemo(() => {
+    return itemsPerCol * slotHeight;
+  }, [itemsPerCol, slotHeight]);
+
+  const rowsPerCol = itemsPerCol;
+
+  const totalBeltLength = useMemo(() => {
+    return safeCols * columnHeight;
+  }, [safeCols, columnHeight]);
+
+  const beltTiles = useMemo(() => {
+    return safeItems.map((item, i) => ({
+      item,
+      originalIndex: i,
+      slotIndex: i,
+    }));
+  }, [safeItems]);
 
   // ============================================================================
-  // 2. Physics Configuration & Setup
+  // 2. Container Resize Tracking
   // ============================================================================
   useLayoutEffect(() => {
     if (!containerRef.current) return;
@@ -229,6 +215,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         width: rect.width || 1,
         height: rect.height || 1,
       };
+      setContainerWidth(rect.width || 1200);
       setContainerHeight(rect.height || 600);
     };
 
@@ -244,70 +231,63 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     };
   }, []);
 
-  // Determine each column's target drifting speed (alternating directions)
-  const baseVelocities = useMemo(() => {
-    const dirSign = direction === "up" ? 1 : -1;
-    return columnItems.map((_, c) => {
-      const altSign = c % 2 === 0 ? 1 : -1; // Adjacent columns drift in opposite directions
-      return speed * columnFactor(c, variance) * dirSign * altSign;
-    });
-  }, [columnItems, speed, direction, variance]);
-
-  // Preserve and smooth internal tracking values when layout/content changes
-  useEffect(() => {
-    const prevOffsets = offsetsRef.current;
-    offsetsRef.current = columnMeta.map((meta, c) => {
-      if (prevOffsets && typeof prevOffsets[c] === "number" && meta.copyHeight > 0) {
-        return ((prevOffsets[c] % meta.copyHeight) + meta.copyHeight) % meta.copyHeight;
-      }
-      return meta.copyHeight * ((c * 0.37) % 1) + ((Date.now() - GLOBAL_DRIFT_START) / 1000) * speed * columnFactor(c, variance) * (direction === "up" ? 1 : -1);
-    });
-    if (!velocitiesRef.current || velocitiesRef.current.length !== columnItems.length) {
-      velocitiesRef.current = columnItems.map(() => 0);
-    }
-  }, [columnMeta, columnItems]);
-
   const applyPlaneTransform = useCallback(
     (px: number, py: number) => {
       const plane = planeRef.current;
       if (!plane) return;
-      plane.style.transform =
-        `translate(-50%, -50%) scale(1.18) ` +
-        `rotateX(${tilt + py}deg) rotateY(${turn + px}deg) rotateZ(${roll}deg) ` +
-        `translateZ(${-depth}px)`;
+      const isFlat = tilt === 0 && turn === 0 && roll === 0 && depth === 0 && parallax === 0;
+      if (isFlat) {
+        plane.style.transform = "translate(-50%, -50%)";
+      } else {
+        plane.style.transform =
+          `translate(-50%, -50%) ` +
+          `rotateX(${tilt + py}deg) rotateY(${turn + px}deg) rotateZ(${roll}deg) ` +
+          `translateZ(${-depth}px)`;
+      }
     },
-    [tilt, turn, roll, depth],
+    [tilt, turn, roll, depth, parallax],
   );
+
+  // Position tiles initially
+  useLayoutEffect(() => {
+    if (totalSlots <= 0 || totalBeltLength <= 0) return;
+    for (let i = 0; i < totalSlots; i++) {
+      const el = tileRefs.current[i];
+      if (!el) continue;
+
+      const frac = (((i / totalSlots) + (beltOffsetRef.current / totalBeltLength)) % 1 + 1) % 1;
+      const u = frac * safeCols;
+      const colIndex = Math.floor(u) % safeCols;
+      const t_col = u - Math.floor(u);
+
+      const x = (colIndex - (safeCols - 1) / 2) * (tileWidth + gap);
+      const isEvenUp = direction !== "down";
+      const isUp = isEvenUp ? colIndex % 2 === 0 : colIndex % 2 !== 0;
+      const y = isUp ? (0.5 - t_col) * columnHeight : (t_col - 0.5) * columnHeight;
+
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+    }
+  }, [totalSlots, totalBeltLength, safeCols, tileWidth, gap, columnHeight, direction]);
 
   // ============================================================================
   // 3. User Input & Scrolling (Wheel / Touch)
   // ============================================================================
-  // Intercepts wheel events and touch drags to add momentum to the scrolling velocity.
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Ignore scroll events originating from scrollable overlays (e.g. modals)
       if (isScrollBlockedElement(e.target)) return;
 
       let delta = e.deltaY;
-      // Normalize wheel deltas depending on the input device
-      if (e.deltaMode === 1) delta *= 32; // Line mode
-      else if (e.deltaMode === 2) delta *= 600; // Page mode
+      if (e.deltaMode === 1) delta *= 32;
+      else if (e.deltaMode === 2) delta *= 600;
 
-      // Handle horizontal scrolling (trackpads) when vertical scroll is negligible
       if (Math.abs(delta) < 0.2 && Math.abs(e.deltaX) > 0.2) delta = e.deltaX;
 
-      // Add wheel delta to our running scroll velocity
       scrollVelocityRef.current += delta * 0.85;
-
-      // Cap the maximum scroll velocity to prevent erratic hyper-scrolling
       scrollVelocityRef.current = Math.max(
         -1400,
         Math.min(1400, scrollVelocityRef.current),
       );
     };
-
-
-
 
     const handleTouchStart = (e: TouchEvent) => {
       if (isScrollBlockedElement(e.target)) return;
@@ -332,16 +312,13 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         hasDraggedRef.current = true;
       }
 
-      // Accelerate the scroll velocity based on the user's drag distance
       scrollVelocityRef.current += dy * 20;
     };
-
 
     const handleTouchEnd = () => {
       isDraggingTouchRef.current = false;
     };
 
-    // Attach passive event listeners to maintain 60fps scrolling performance
     window.addEventListener("wheel", handleWheel, { passive: true });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
@@ -358,85 +335,80 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   }, []);
 
   // ============================================================================
-  // 4. Main Animation & Physics Loop
+  // 4. Main Animation Loop (Serpentine Conveyor Belt)
   // ============================================================================
-  // Runs on requestAnimationFrame to continuously update the visual state.
   useEffect(() => {
     const animate = (ts: number) => {
       if (lastTsRef.current === null) lastTsRef.current = ts;
       
-      // Calculate delta time (dt) in seconds, clamped to max 50ms to prevent huge jumps if tab is inactive
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
       lastTsRef.current = ts;
 
       // --- Part A: 3D Parallax Tilt ---
-      // We tilt the entire wall based on the user's mouse position relative to the center
       const maxTilt = parallax * 8;
       const targetX = pointerRef.current.x * maxTilt;
       const targetY = -pointerRef.current.y * maxTilt;
       
-      // High-speed, responsive damping formula for the 3D tilt
       const damp = 1 - Math.exp(-dt / 0.045);
       pointerDampedRef.current.x += (targetX - pointerDampedRef.current.x) * damp;
       pointerDampedRef.current.y += (targetY - pointerDampedRef.current.y) * damp;
       
       applyPlaneTransform(pointerDampedRef.current.x, pointerDampedRef.current.y);
 
-      // --- Part B: Scroll Velocity Decay (Friction) ---
+      // --- Part B: Scroll Friction ---
       const scrollFriction = 0.9;
       const scrollDecay = Math.pow(scrollFriction, dt * 60);
       const scrollStep = scrollVelocityRef.current * dt;
       
-      // Apply friction to slow down the manual scroll velocity over time
       scrollVelocityRef.current *= scrollDecay;
       if (Math.abs(scrollVelocityRef.current) < 0.15) {
         scrollVelocityRef.current = 0;
       }
 
-      // --- Part C: Column Drifting & Infinite Scrolling ---
-      if (!reduced) {
-        // Normal mode: columns drift organically
-        for (let c = 0; c < trackRefs.current.length; c++) {
-          const meta = columnMeta[c];
-          if (!meta) continue;
+      // --- Part C: Serpentine Belt Motion (Snake left-to-right, up and down) ---
+      if (!reduced && totalBeltLength > 0 && totalSlots > 0) {
+        const isWallPaused = isPaused || (wallHoveredRef.current && pauseOnHover);
+        const targetSpeed = isWallPaused ? 0 : speed;
+        const ease = 1 - Math.exp(-dt / (targetSpeed === 0 ? 0.2 : 0.32));
+        beltVelocityRef.current += (targetSpeed - beltVelocityRef.current) * ease;
 
-          // 1. Determine Target Speed
-          const isWallPaused = isPaused || (wallHoveredRef.current && pauseOnHover);
-          const isColHovered = hoveredColRef.current === c;
-          // Hovering a column slows it down smoothly (0.28x speed); wall pause eases to 0
-          const factor = isWallPaused ? 0 : isColHovered ? 0.28 : 1;
-          const target = baseVelocities[c] * factor;
+        let nextOffset =
+          beltOffsetRef.current +
+          beltVelocityRef.current * dt +
+          scrollStep;
 
-          // 2. Smoothly adjust current column velocity towards the target speed
-          const ease = 1 - Math.exp(-dt / (target === 0 ? 0.2 : 0.32));
-          velocitiesRef.current[c] += (target - velocitiesRef.current[c]) * ease;
+        nextOffset = ((nextOffset % totalBeltLength) + totalBeltLength) % totalBeltLength;
+        beltOffsetRef.current = nextOffset;
 
-          // 3. Compute final movement for this frame
-          // colDir alternates the manual scroll direction so adjacent columns move oppositely when scrolling
-          const colDir = c % 2 === 0 ? 1 : -0.85;
-          let next =
-            (offsetsRef.current[c] ?? 0) +
-            velocitiesRef.current[c] * dt +
-            scrollStep * colDir;
+        for (let i = 0; i < totalSlots; i++) {
+          const el = tileRefs.current[i];
+          if (!el) continue;
 
-          // 4. Wrap around for infinite scrolling (modulo by the column's total repeated height)
-          const el = trackRefs.current[c];
-          const copyH = meta.copyHeight;
-          if (copyH > 0) {
-            next = ((next % copyH) + copyH) % copyH;
-          }
-          offsetsRef.current[c] = next;
+          const frac = (((i / totalSlots) + (nextOffset / totalBeltLength)) % 1 + 1) % 1;
+          const u = frac * safeCols;
+          const colIndex = Math.floor(u) % safeCols;
+          const t_col = u - Math.floor(u);
 
-          // 5. Apply the transform
-          if (el) el.style.transform = `translate3d(0, ${-next}px, 0)`;
+          const x = (colIndex - (safeCols - 1) / 2) * (tileWidth + gap);
+          const isEvenUp = direction !== "down";
+          const isUp = isEvenUp ? colIndex % 2 === 0 : colIndex % 2 !== 0;
+          const y = isUp
+            ? (0.5 - t_col) * columnHeight
+            : (t_col - 0.5) * columnHeight;
+
+          el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
         }
-      } else {
-        // Reduced motion mode: disable auto-drifting and only allow static transforms
-        for (let c = 0; c < trackRefs.current.length; c++) {
-          const el = trackRefs.current[c];
-          const meta = columnMeta[c];
-          if (el && meta)
-            el.style.transform = `translate3d(0, ${-(offsetsRef.current[c] ?? 0)}px, 0)`;
+      } else if (reduced && totalSlots > 0) {
+        // Reduced motion: static positions
+        const totalRows = Math.ceil(totalSlots / safeCols);
+        for (let i = 0; i < totalSlots; i++) {
+          const el = tileRefs.current[i];
+          if (!el) continue;
+          const colIndex = i % safeCols;
+          const rowInCol = Math.floor(i / safeCols);
+          const x = (colIndex - (safeCols - 1) / 2) * (tileWidth + gap);
+          const y = (rowInCol - (totalRows - 1) / 2) * slotHeight;
+          el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
         }
       }
 
@@ -450,19 +422,26 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       lastTsRef.current = null;
     };
   }, [
-    baseVelocities,
-    columnMeta,
+    totalBeltLength,
+    totalSlots,
+    slotHeight,
+    rowsPerCol,
+    safeCols,
+    tileWidth,
+    gap,
+    columnHeight,
     pauseOnHover,
     parallax,
     reduced,
     applyPlaneTransform,
     isPaused,
+    speed,
+    direction,
   ]);
 
   // ============================================================================
   // 5. Event Handlers & Rendering
   // ============================================================================
-
   const activate = useCallback((id: string, index: number) => {
     activeIdRef.current = id;
     hoveredColRef.current = index;
@@ -510,7 +489,6 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         };
       }
 
-      // Fast hit testing via event target instead of synchronous document.elementFromPoint
       const target = e.target as HTMLElement | null;
       const tile = target?.closest
         ? (target.closest("[data-tile-id]") as HTMLElement | null)
@@ -573,9 +551,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     id: string,
     colIndex: number,
     originalIndex: number,
-    copyIndex: number,
+    slotIndex: number,
   ) => {
-    const r = originalIndex + copyIndex * (columnItems[colIndex]?.length || 1);
+    const r = slotIndex % rowsPerCol;
     // If item is a custom React element (like a MovieCard / PlaceCard)
     if (
       React.isValidElement(item) ||
@@ -597,13 +575,12 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       return (
         <div
           key={id}
-          /* WCAG 2.1 SC 1.3.1 Info and Relationships: gridcell semantics */
           role="gridcell"
           tabIndex={getTabIndex(colIndex, r)}
           className={`drift-wall__tile-custom${activeId === id ? " is-active" : ""}`}
           data-tile-id={id}
           data-col={colIndex}
-          style={{ "--dw-custom-h": `${tileHeight * hr}px` } as React.CSSProperties}
+          style={{ "--dw-custom-h": `${tileHeight * hr}px`, width: "100%", height: "100%" } as React.CSSProperties}
           onFocus={() => {
             activate(id, colIndex);
             setFocusedCoord({ c: colIndex, r });
@@ -644,7 +621,6 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
     const commonProps = {
       className: `drift-wall__tile${activeId === id ? " is-active" : ""}`,
-      /* WCAG 2.1 SC 1.3.1 Info and Relationships: gridcell semantics */
       role: "gridcell",
       tabIndex: getTabIndex(colIndex, r),
       "data-tile-id": id,
@@ -675,7 +651,6 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       <button
         type="button"
         key={id}
-
         aria-label={tileItem.title ?? "tile"}
         {...commonProps}
       >
@@ -703,24 +678,27 @@ export const DriftWall: React.FC<DriftWallProps> = ({
           hasDraggedRef.current = false;
         }
       }}
-
       style={cssVars}
       onPointerMove={handlePointerMove}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeaveWall}
-      /* WCAG 2.1 SC 1.3.1 Info and Relationships: semantic grid role */
       role="grid"
-      aria-label="Drifting wall of tiles"
+      aria-label="Serpentine wall of movies"
       tabIndex={-1}
       onKeyDown={(e) => {
-        if (!focusedCoord || focusedCoord === null) { if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) { setFocusedCoord({c:0,r:0}); e.preventDefault(); const el = containerRef.current?.querySelector(`[data-tile-id="0-0-0"]`) as HTMLElement | null; el?.focus(); } return; }
+        if (totalSlots === 0) return;
+        if (!focusedCoord) {
+          if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            setFocusedCoord({ c: 0, r: 0 });
+            e.preventDefault();
+            const el = containerRef.current?.querySelector(`[data-tile-id="serpentine-tile-0"]`) as HTMLElement | null;
+            el?.focus();
+          }
+          return;
+        }
         let { c, r } = focusedCoord;
-        const currentMeta = columnMeta[c];
-        if (!currentMeta) return;
-        const copies = currentMeta.copies;
-        const itemsPerCol = columnItems[c]?.length || 0;
-        const maxR = copies * itemsPerCol - 1;
-        const maxC = columnItems.length - 1;
+        const maxR = rowsPerCol - 1;
+        const maxC = safeCols - 1;
 
         let handled = true;
         if (e.key === "ArrowUp") {
@@ -729,10 +707,8 @@ export const DriftWall: React.FC<DriftWallProps> = ({
           r = Math.min(maxR, r + 1);
         } else if (e.key === "ArrowLeft") {
           c = Math.max(0, c - 1);
-          r = Math.min(r, (columnMeta[c]?.copies || 1) * (columnItems[c]?.length || 0) - 1);
         } else if (e.key === "ArrowRight") {
           c = Math.min(maxC, c + 1);
-          r = Math.min(r, (columnMeta[c]?.copies || 1) * (columnItems[c]?.length || 0) - 1);
         } else {
           handled = false;
         }
@@ -740,38 +716,37 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         if (handled) {
           e.preventDefault();
           setFocusedCoord({ c, r });
-          const copyIndex = Math.floor(r / itemsPerCol);
-          const itemIndex = r % itemsPerCol;
-          const id = `${c}-${copyIndex}-${itemIndex}`;
+          const targetSlot = (c * rowsPerCol + r) % totalSlots;
+          const id = `serpentine-tile-${targetSlot}`;
           const el = containerRef.current?.querySelector(`[data-tile-id="${id}"]`) as HTMLElement | null;
           el?.focus();
         }
       }}
     >
       <div ref={planeRef} className="drift-wall__plane">
-        {columnItems.map((col, c) => {
-          const meta = columnMeta[c];
-          const copies = Array.from({ length: meta.copies });
+        {beltTiles.map((tileData, index) => {
+          const colIndex = index % safeCols;
           return (
-            <div className="drift-wall__col" key={`col-${c}`} /* WCAG 2.1 SC 1.3.1 Info and Relationships: rows own gridcells */ role="row">
-              <div
-                className="drift-wall__track"
-                ref={(el) => {
-                  trackRefs.current[c] = el;
-                }}
-              >
-                {copies.map((_, copyIndex) =>
-                  col.map((item, itemIndex) =>
-                    renderTile(
-                      item,
-                      `${c}-${copyIndex}-${itemIndex}`,
-                      c,
-                      itemIndex,
-                      copyIndex,
-                    ),
-                  ),
-                )}
-              </div>
+            <div
+              key={`serpentine-tile-${index}`}
+              ref={(el) => {
+                tileRefs.current[index] = el;
+              }}
+              className="drift-wall__serpentine-tile"
+              style={{
+                width: tileWidth,
+                height: tileHeight,
+                marginTop: -tileHeight / 2,
+                marginLeft: -tileWidth / 2,
+              }}
+            >
+              {renderTile(
+                tileData.item,
+                `serpentine-tile-${index}`,
+                colIndex,
+                tileData.originalIndex,
+                index,
+              )}
             </div>
           );
         })}

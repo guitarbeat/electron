@@ -1,0 +1,70 @@
+name: Artifact Lifecycle Status Check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+jobs:
+  artifact-status-check:
+    name: Check Artifact Compliance & Update Badge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Validate Repository Artifacts
+        id: check
+        run: |
+          if node scripts/check-artifacts.js; then
+            echo "status=compliant" >> $GITHUB_OUTPUT
+            echo "badge_color=brightgreen" >> $GITHUB_OUTPUT
+            echo "badge_text=compliant" >> $GITHUB_OUTPUT
+          else
+            echo "status=failing" >> $GITHUB_OUTPUT
+            echo "badge_color=red" >> $GITHUB_OUTPUT
+            echo "badge_text=failing" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Ensure README Artifact Status Badge
+        if: always()
+        run: |
+          STATUS="${{ steps.check.outputs.status || 'failing' }}"
+          COLOR="${{ steps.check.outputs.badge_color || 'red' }}"
+          TEXT="${{ steps.check.outputs.badge_text || 'failing' }}"
+          BADGE="[![Artifact Lifecycle](https://img.shields.io/badge/artifacts-${TEXT}-${COLOR}?style=flat-square&logo=github)](.jules/LIFECYCLE_RULES.md)"
+          
+          if grep -q "https://img.shields.io/badge/artifacts-" README.md; then
+            sed -i -E "s|\[\!\[Artifact Lifecycle\]\(https://img\.shields\.io/badge/artifacts-[^)]+\)\]\([^)]+\)|${BADGE}|g" README.md
+          else
+            sed -i "1s|^# Collaborative Movie Night (\"Electron\").*|# Collaborative Movie Night (\"Electron\")\n\n${BADGE}|" README.md
+          fi
+
+      - name: Commit Updated Badge if Changed
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifact lifecycle compliance badge [skip ci]" && git push)

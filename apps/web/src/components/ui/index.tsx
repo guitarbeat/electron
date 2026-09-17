@@ -162,7 +162,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       setCachedSrc(null);
     }
 
-    if (!cachedFallbackSrc && fallbackCatUrl) {
+    if (fallbackCatUrl) {
       const syncFallback =
         getCachedObjectUrlSync(fallbackCatUrl) || getCachedPosterUrlSync(fallbackCatUrl);
       if (syncFallback) {

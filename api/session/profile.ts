@@ -10,6 +10,7 @@ import {
   buildClearProfileCookie,
   buildPinAttemptCookie,
   buildProfileCookie,
+  createProfileToken,
   getSessionState,
   isSameOriginRequest,
 } from "../_lib/session.js";
@@ -100,6 +101,7 @@ async function handler(req: Request): Promise<Response> {
 
       if (remainingUsers.length > 0) {
         const nextCurrentUser = remainingUsers[0];
+        const token = createProfileToken(nextCurrentUser, remainingUsers);
         return jsonResponse(
           {
             hasAccess: true,
@@ -107,6 +109,7 @@ async function handler(req: Request): Promise<Response> {
             activeUsers: remainingUsers,
             pinProtectedUsers,
             usersMissingPins,
+            token,
           },
           {
             headers: mergeHeaders(
@@ -132,6 +135,7 @@ async function handler(req: Request): Promise<Response> {
           activeUsers: [],
           pinProtectedUsers,
           usersMissingPins,
+          token: null,
         },
         {
           headers: mergeHeaders(
@@ -260,6 +264,7 @@ async function handler(req: Request): Promise<Response> {
     const nextActiveUsers = Array.from(
       new Set([...(currentSession.activeUsers || []), user]),
     );
+    const token = createProfileToken(user, nextActiveUsers);
 
     return jsonResponse(
       {
@@ -268,6 +273,7 @@ async function handler(req: Request): Promise<Response> {
         activeUsers: nextActiveUsers,
         pinProtectedUsers,
         usersMissingPins,
+        token,
       },
       {
         headers: mergeHeaders(

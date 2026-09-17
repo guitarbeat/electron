@@ -97,12 +97,45 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const dynamicColumns = React.useMemo(() => {
-    if (isMobile || viewportWidth < 640) return 4;
-    // Each column is tileWidth (120px) + gap (18px) = 138px.
-    // Bleed 35% past screen bounds so the -14deg 3D perspective turn covers both edges completely.
-    const targetCols = Math.ceil((viewportWidth * 1.35) / 138);
-    return Math.max(6, targetCols);
+  const { tileWidth, tileHeight, gap, dynamicColumns } = React.useMemo(() => {
+    if (isMobile || viewportWidth < 640) {
+      const slotW = 125; // 105px card + 20px gap
+      const targetCols = Math.max(3, Math.floor(viewportWidth / slotW));
+      return {
+        tileWidth: 105,
+        tileHeight: 158,
+        gap: 18,
+        dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
+      };
+    }
+    if (viewportWidth < 1024) {
+      const slotW = 148; // 124px card + 24px gap
+      const targetCols = Math.max(4, Math.floor(viewportWidth / slotW));
+      return {
+        tileWidth: 124,
+        tileHeight: 186,
+        gap: 22,
+        dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
+      };
+    }
+    if (viewportWidth < 1600) {
+      const slotW = 166; // 138px card + 28px gap
+      const targetCols = Math.max(6, Math.floor(viewportWidth / slotW));
+      return {
+        tileWidth: 138,
+        tileHeight: 207,
+        gap: 26,
+        dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
+      };
+    }
+    const slotW = 180; // 148px card + 32px gap
+    const targetCols = Math.max(8, Math.floor(viewportWidth / slotW));
+    return {
+      tileWidth: 148,
+      tileHeight: 222,
+      gap: 28,
+      dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
+    };
   }, [isMobile, viewportWidth]);
 
   const collectionState = getWorkspaceCollectionState({
@@ -170,8 +203,27 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       });
     }
 
-    const allPosters = [...sections.queue, ...sections.completed];
-    const suggestionCards = sections.suggestions.map((suggestion) => (
+    // Deduplicate movies across queue and completed
+    const seenMovieIds = new Set<string>();
+    const uniqueMovies: Movie[] = [];
+    for (const movie of [...sections.queue, ...sections.completed]) {
+      if (movie && movie.id && !seenMovieIds.has(movie.id)) {
+        seenMovieIds.add(movie.id);
+        uniqueMovies.push(movie);
+      }
+    }
+
+    // Deduplicate suggestions
+    const seenSuggestionIds = new Set<string>();
+    const uniqueSuggestions: MovieSuggestion[] = [];
+    for (const suggestion of sections.suggestions) {
+      if (suggestion && suggestion.id && !seenSuggestionIds.has(suggestion.id)) {
+        seenSuggestionIds.add(suggestion.id);
+        uniqueSuggestions.push(suggestion);
+      }
+    }
+
+    const suggestionCards = uniqueSuggestions.map((suggestion) => (
       <SuggestionCard
         key={`suggestion-${suggestion.id}`}
         suggestion={suggestion}
@@ -182,43 +234,44 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         isProcessing={processingSuggestionId === suggestion.id}
       />
     ));
-    const movieCards = allPosters.map(renderMovie);
+    const movieCards = uniqueMovies.map(renderMovie);
 
-    // Provide quiz and spin cards moving along with movies on the drift wall
-    const totalCount =
-      allPosters.length +
-      sections.suggestions.length +
-      (posterPlaceCards?.length || 0);
-    const bonusCardCount = totalCount > 24 ? 3 : totalCount > 10 ? 2 : 1;
+    // Provide single unique interactive cards (no duplicates)
+    const hasItems = uniqueMovies.length > 0 || uniqueSuggestions.length > 0;
+    const quizCards = hasItems
+      ? [
+          <QuizDriftCard
+            key="quiz-drift-card-unique"
+            currentUser={currentUser}
+            isCompact={isMobile}
+            isQuizCard
+            data-quiz-card
+          />,
+        ]
+      : [];
 
-    const quizCards = Array.from({ length: bonusCardCount }, (_, idx) => (
-      <QuizDriftCard
-        key={`quiz-drift-card-${idx}`}
-        currentUser={currentUser}
-        isCompact={isMobile}
-        isQuizCard
-        data-quiz-card
-      />
-    ));
+    const spinCards = hasItems
+      ? [
+          <SpinDriftCard
+            key="spin-drift-card-unique"
+            isCompact={isMobile}
+            isSpinCard
+            data-spin-card
+          />,
+        ]
+      : [];
 
-    const spinCards = Array.from({ length: bonusCardCount }, (_, idx) => (
-      <SpinDriftCard
-        key={`spin-drift-card-${idx}`}
-        isCompact={isMobile}
-        isSpinCard
-        data-spin-card
-      />
-    ));
-
-    const chatCards = Array.from({ length: bonusCardCount }, (_, idx) => (
-      <ChatDriftCard
-        key={`chat-drift-card-${idx}`}
-        currentUser={currentUser}
-        isCompact={isMobile}
-        isChatCard
-        data-chat-card
-      />
-    ));
+    const chatCards = hasItems
+      ? [
+          <ChatDriftCard
+            key="chat-drift-card-unique"
+            currentUser={currentUser}
+            isCompact={isMobile}
+            isChatCard
+            data-chat-card
+          />,
+        ]
+      : [];
 
     return interleaveCollectionItems(
       suggestionCards,
@@ -322,23 +375,23 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           <DriftWall
             items={unifiedCards}
             columns={dynamicColumns}
-            tileWidth={120}
-            tileHeight={180}
-            gap={isMobile ? 10 : 18}
+            tileWidth={tileWidth}
+            tileHeight={tileHeight}
+            gap={gap}
             tilt={0}
-            turn={-14}
+            turn={0}
             roll={0}
-            perspective={2400}
-            depth={120}
-            speed={isMobile ? 25 : 42}
+            perspective={1000}
+            depth={0}
+            speed={isMobile ? 22 : 32}
             direction="up"
-            variance={0.7}
-            parallax={0.6}
-            lift={64}
-            fade={0.12}
-            dim={0.92}
+            variance={0}
+            parallax={0}
+            lift={24}
+            fade={0.08}
+            dim={0.96}
             overlayColor="#060010"
-            radius={isMobile ? 8 : 10}
+            radius={isMobile ? 10 : 12}
             pauseOnHover
             grayscale={false}
             onTileClick={handleTileClick}
