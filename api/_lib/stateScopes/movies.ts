@@ -263,23 +263,23 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           return { ok: false, conflict: "Invalid movie title." };
         }
 
-        if (!movies.some((movie) => movie.id === movieId)) {
+        const index = movies.findIndex((movie) => movie.id === movieId);
+        if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
 
+        const updatedMovies = [...movies];
+        updatedMovies[index] = {
+          ...movies[index],
+          title,
+          ...(customPosterUrl !== undefined
+            ? { customPosterUrl: customPosterUrl || undefined }
+            : {}),
+        };
+
         return {
           ok: true,
-          data: movies.map((movie) =>
-            movie.id === movieId
-              ? {
-                  ...movie,
-                  title,
-                  ...(customPosterUrl !== undefined
-                    ? { customPosterUrl: customPosterUrl || undefined }
-                    : {}),
-                }
-              : movie,
-          ),
+          data: updatedMovies,
         };
       }
       case "toggle_watched": {
@@ -291,29 +291,25 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         );
         const targetUser = rawTargetUser && isUser(rawTargetUser) ? rawTargetUser : context.currentUser!;
 
-        const target = movies.find((movie) => movie.id === movieId);
-        if (!target) {
+        const index = movies.findIndex((movie) => movie.id === movieId);
+        if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
 
+        const target = movies[index];
+        const watchedBy = target.watchedBy.includes(targetUser)
+          ? target.watchedBy.filter((user: User) => user !== targetUser)
+          : [...target.watchedBy, targetUser];
+
+        const updatedMovies = [...movies];
+        updatedMovies[index] = {
+          ...target,
+          watchedBy,
+        };
+
         return {
           ok: true,
-          data: movies.map((movie) => {
-            if (movie.id !== movieId) {
-              return movie;
-            }
-
-            const watchedBy = movie.watchedBy.includes(targetUser)
-              ? movie.watchedBy.filter(
-                  (user: User) => user !== targetUser,
-                )
-              : [...movie.watchedBy, targetUser];
-
-            return {
-              ...movie,
-              watchedBy,
-            };
-          }),
+          data: updatedMovies,
         };
       }
       case "delete_movie": {
@@ -360,20 +356,20 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           return { ok: false, conflict: "Invalid metadata payload." };
         }
 
-        if (!movies.some((movie) => movie.id === movieId)) {
+        const index = movies.findIndex((movie) => movie.id === movieId);
+        if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
 
+        const updatedMovies = [...movies];
+        updatedMovies[index] = {
+          ...movies[index],
+          ...metadata,
+        };
+
         return {
           ok: true,
-          data: movies.map((movie) =>
-            movie.id === movieId
-              ? {
-                  ...movie,
-                  ...metadata,
-                }
-              : movie,
-          ),
+          data: updatedMovies,
         };
       }
       default:
