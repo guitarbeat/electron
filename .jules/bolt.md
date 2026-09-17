@@ -126,3 +126,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
 - The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
 - Concluded the task with no code changes and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/hooks/movies/index.ts:680`)
+- Task requested extracting the hardcoded timeout `800` in `apps/web/src/hooks/movies/index.ts:680` to a meaningful variable.
+- Upon inspection of `apps/web/src/hooks/movies/index.ts`, the delay `800` is already extracted as constant `MOCK_MODE_DELAY_MS = 800` (defined on line 26) and used in `window.setTimeout(resolve, MOCK_MODE_DELAY_MS)` on lines 632 and 682.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
