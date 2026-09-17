@@ -126,3 +126,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - Upon inspecting `api/agent.ts` and `api/agent.test.ts`, `requestIp` is already implemented to extract the right-most IP (`ips[ips.length - 1]?.trim()`) and ignore client-prepended IPs, fully mitigating IP spoofing.
 - The test suite in `api/agent.test.ts` already includes full test coverage for single IP, multiple IPs, client spoofing prevention, x-real-ip fallback, empty header handling, and 128-char truncation.
 - Concluded the task with no code changes and documented the discrepancy.
+
+## 2026-09-13 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts:56`)
+- Task requested updating `createPostgresPool` in `api/_lib/dbCommon.ts:56` to set `rejectUnauthorized` to `true` instead of `false`.
+- Upon inspection of `api/_lib/dbCommon.ts`, `createPostgresPool` is already implemented with `{ rejectUnauthorized: true }`.
+- Unit tests in `api/_lib/dbCommon.test.ts` already verify that `createPostgresPool` sets `rejectUnauthorized: true` when SSL is required.
+- Concluded the task with no code changes and documented the discrepancy.
