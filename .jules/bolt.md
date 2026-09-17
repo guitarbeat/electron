@@ -137,3 +137,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## Discrepancy Note - Task: Single-letter variable name in apps/web/src/services/state/index.ts:906
+- The prompt noted `const t = sanitizeInput(entry);` at line 906 in `spinHistoryTitleFromEntry`.
+- Inspection of `apps/web/src/services/state/index.ts` revealed that `spinHistoryTitleFromEntry` already uses `sanitizedTitle`.
+- The actual single-letter variable was found on line 931 in `normalizeSpinHistoryParsed` (`.filter((t): t is string => Boolean(t))`).
+- Renamed `t` to `title` in `normalizeSpinHistoryParsed`.
