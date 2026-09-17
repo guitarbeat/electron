@@ -195,6 +195,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     return () => {
       isCancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posterUrl, fallbackCatUrl]);
 
   // Determine active display source: prefer local cached version for offline resilience
