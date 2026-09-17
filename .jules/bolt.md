@@ -137,3 +137,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Missing tests for `buildCollectionSections` in `apps/web/src/utils/layouts.ts:22`)
+- Task requested adding missing tests for `buildCollectionSections` in `apps/web/src/utils/layouts.ts:22`.
+- Upon inspecting `apps/web/src/utils/layouts.test.ts`, comprehensive unit tests for `buildCollectionSections` (as well as `cn`, `layouts`, `getWorkspaceCollectionState`, and sorting functions) are already present and fully implemented in commit `b099c5b8cad82bd55d4866448298c7ee79ce4701` ("🧪 add tests for concurrency utilities (#1283)").
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
