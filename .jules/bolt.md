@@ -137,3 +137,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/services/logger.ts:607`)
+- Task requested extracting the hardcoded timeout `1000` in `apps/web/src/services/logger.ts:607` to a meaningful constant variable.
+- Upon inspection of `apps/web/src/services/logger.ts`, the timeout `1000` is already extracted as constant `NAVIGATION_TIMING_DELAY_MS` (defined on line 56) and used in `setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS)` on lines 608 and 611.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
