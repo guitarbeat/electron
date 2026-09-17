@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import defaultSessionHandler, { sessionHandler } from "./session.js";
 import { buildProfileCookie } from "./_lib/session.js";
+import { logger } from "./_lib/logger.js";
 
 describe("sessionHandler", () => {
   it("should reject non-GET requests with 405 Method Not Allowed", async () => {
@@ -72,11 +73,13 @@ describe("sessionHandler", () => {
     assert.deepStrictEqual(data.usersMissingPins, ["OtherUser"]);
   });
 
-  it("should return 500 with warning when getSessionState throws", async () => {
+  it("should return 500 with warning when getSessionState throws", async (t) => {
+    const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const req = new Request("http://localhost/api/session", { method: "GET" });
+    const err = new Error("Session state error");
     const deps = {
       getSessionState: () => {
-        throw new Error("Session state error");
+        throw err;
       },
       getPinCoverageState: async () => ({
         pinProtectedUsers: [],
@@ -93,10 +96,17 @@ describe("sessionHandler", () => {
     assert.deepStrictEqual(data.pinProtectedUsers, []);
     assert.deepStrictEqual(data.usersMissingPins, []);
     assert.strictEqual(data.warning, "Session state is temporarily unavailable.");
+
+    assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
+    const firstCall = loggerErrorMock.mock.calls[0];
+    assert.strictEqual(firstCall.arguments[0], "Failed to read session state during GET http://localhost/api/session:");
+    assert.strictEqual(firstCall.arguments[1], err);
   });
 
-  it("should return 500 with warning when getPinCoverageState rejects", async () => {
+  it("should return 500 with warning when getPinCoverageState rejects", async (t) => {
+    const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const req = new Request("http://localhost/api/session", { method: "GET" });
+    const err = new Error("DB PIN coverage query error");
     const deps = {
       getSessionState: () => ({
         hasAccess: false,
@@ -104,7 +114,7 @@ describe("sessionHandler", () => {
         activeUsers: [],
       }),
       getPinCoverageState: async () => {
-        throw new Error("DB PIN coverage query error");
+        throw err;
       },
     };
 
@@ -116,9 +126,15 @@ describe("sessionHandler", () => {
     assert.deepStrictEqual(data.pinProtectedUsers, []);
     assert.deepStrictEqual(data.usersMissingPins, []);
     assert.strictEqual(data.warning, "Session state is temporarily unavailable.");
+
+    assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
+    const firstCall = loggerErrorMock.mock.calls[0];
+    assert.strictEqual(firstCall.arguments[0], "Failed to read session state during GET http://localhost/api/session:");
+    assert.strictEqual(firstCall.arguments[1], err);
   });
 
-  it("should return 500 status code with warning when error occurs via default web handler", async () => {
+  it("should return 500 status code with warning when error occurs via default web handler", async (t) => {
+    const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const baseReq = new Request("http://localhost/api/session", { method: "GET" });
     const failingReq = new Proxy(baseReq, {
       get(target, prop, receiver) {
@@ -140,5 +156,7 @@ describe("sessionHandler", () => {
       data.warning,
       "Session state is temporarily unavailable.",
     );
+
+    assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
   });
 });
