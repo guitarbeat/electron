@@ -137,3 +137,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Suboptimal Array Search in Quiz Character Loop in `apps/web/src/shared/quizData.ts:342`)
+- Task requested replacing `rankedRemainders.find(...)` inside the `CHARACTERS.reduce` loop in `apps/web/src/shared/quizData.ts:342` with a `remainderMap` lookup.
+- Upon inspection of `apps/web/src/shared/quizData.ts`, `remainderMap` is already created prior to the `reduce` loop, and `remainderMap.get(character)` is already used inside `CHARACTERS.reduce`.
+- The optimization requested by the prompt was already implemented in a prior refactor.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
