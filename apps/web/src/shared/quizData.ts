@@ -337,11 +337,13 @@ export const normalizeQuizPercentages = (
     rankedRemainders.slice(0, pointsToDistribute).map((item) => item.character),
   );
 
+  const remainderMap = new Map(
+    rankedRemainders.map((item) => [item.character, item]),
+  );
+
   return CHARACTERS.reduce(
     (percentages, character) => {
-      const item = rankedRemainders.find(
-        (candidate) => candidate.character === character,
-      );
+      const item = remainderMap.get(character);
       percentages[character] =
         (item?.floor ?? 0) + (bonusCharacters.has(character) ? 1 : 0);
       return percentages;
