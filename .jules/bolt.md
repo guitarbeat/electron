@@ -13,9 +13,6 @@ Task requested optimizing bulk metadata refresh in `apps/web/src/hooks/movies/in
 ## 2026-09-03 - Stale Prompt Discrepancy (Remove Leftover Console Log in `apps/web/src/app/providers.tsx`)
 Task requested removing leftover console log / debug statement from `apps/web/src/app/providers.tsx:33`, but the file contains no `console.debug` or `debugSession` code. Documented the discrepancy with no code changes to `apps/web/src/app/providers.tsx`.
 
-## 2026-09-03 - Stale Prompt Discrepancy (Fix initial offset calculation in fix_drift_wall_sync.py)
-Task requested fixing the initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` to include elapsed time in `apps/web/src/components/ui/DriftWall.tsx`. However, `apps/web/src/components/ui/DriftWall.tsx` was already updated in a previous refactor and no longer contains the target code pattern `(_, i) => offsetsRef.current[i] ?? ...`. Documented the discrepancy with no unnecessary code changes.
-
 ## 2026-09-03 - Security Task Discrepancy (Insecure Database Connection Configuration in `api/_lib/dbCommon.ts`)
 Task requested updating `createPostgresPool` in `api/_lib/dbCommon.ts:56` to set `rejectUnauthorized` to `true`, but `api/_lib/dbCommon.ts` is already using `{ rejectUnauthorized: true }` and unit tests in `api/_lib/dbCommon.test.ts` verify this behavior. Documented the discrepancy with no additional code changes needed in `api/_lib/dbCommon.ts`.
 
@@ -137,3 +134,10 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+
+## 2026-09-17 - Stale Prompt Discrepancy (Initial Offset Calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13`)
+- Task requested fixing the initial offset calculation in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` to replace `(_, i) => offsetsRef.current[i] ?? (((i * 1.6180339887) % 1) * 0.5 + 0.5) * tileHeight * 3`.
+- Inspecting `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx` revealed that both files were already refactored in previous patches to use `meta.copyHeight * ((c * 0.37) % 1) + ...`.
+- The snippet referenced in the task prompt no longer exists.
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
