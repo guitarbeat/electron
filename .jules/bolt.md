@@ -137,3 +137,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
   `}`
 - Single-letter variable names `o` and `t` do not exist in `spinHistoryTitleFromEntry` or elsewhere in `apps/web/src/services/state/index.ts`.
 - As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
+
+## Code Health Task Discrepancy
+- **File:** `apps/web/src/hooks/movies/index.ts:630`
+- **Issue:** Hardcoded timeout
+- **Observation:** Line 634 (and line 684) in `apps/web/src/hooks/movies/index.ts` already uses the extracted constant `MOCK_MODE_DELAY_MS` (`const MOCK_MODE_DELAY_MS = 800;`).
+- **Action:** No code changes needed as the hardcoded timeout issue was previously resolved.
