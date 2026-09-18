@@ -274,6 +274,22 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
       }
     }, [isFocused, trimmed.length]);
 
+    useEffect(() => {
+      const handleGlobalKeyDown = (event: KeyboardEvent) => {
+        if (
+          (event.metaKey || event.ctrlKey) &&
+          event.key.toLowerCase() === "k"
+        ) {
+          event.preventDefault();
+          inputRef.current?.focus();
+          inputRef.current?.select();
+        }
+      };
+
+      window.addEventListener("keydown", handleGlobalKeyDown);
+      return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    }, []);
+
     const clearQuery = useCallback(() => {
       setQuery("");
       setSelection(null);
@@ -572,6 +588,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                   }}
                   buttonText={primaryLabel}
                   isBusy={isBusy}
+                  isLoading={isLoading}
                   buttonDisabled={!hasQuery}
                   placeholder="Add a movie, show, or place"
                   aria-label="Search movies, shows, and places to add"
@@ -607,10 +624,10 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                       return;
                     }
                     if (event.key === "Escape") {
-                      if (isOpen) {
-                        event.preventDefault();
-                        hideAutocomplete();
-                      }
+                      event.preventDefault();
+                      hideAutocomplete();
+                      clearQuery();
+                      inputRef.current?.blur();
                       return;
                     }
                     if (event.key === "Enter" && isOpen) {

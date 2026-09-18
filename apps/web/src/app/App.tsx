@@ -18,7 +18,7 @@ import { useViewport, useUser } from "@/app/providerContexts";
 import { ThemeProvider } from "@/app/providers";
 import { usePwaRuntime } from "@/hooks";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import { useAppTabNavigation } from "@/hooks";
+import { useAppTabNavigation, useCrtEntranceAnimation } from "@/hooks";
 import { useMediaQuery } from "@/hooks";
 import { useTvSpatialNavigation } from "@/hooks";
 
@@ -51,6 +51,7 @@ const App: React.FC = () => {
   usePwaRuntime();
   const { isMobile, isTv } = useViewport();
   useTvSpatialNavigation(isTv);
+  const { ref: crtCanvasRef } = useCrtEntranceAnimation<HTMLDivElement>();
 
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
@@ -235,7 +236,10 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
+        <div
+          ref={crtCanvasRef}
+          className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail"
+        >
           <div
             className={`app-workspace-stack ${libraryWorkspaceStackClass(activeTab)}`}
           >

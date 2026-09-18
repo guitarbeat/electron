@@ -1,5 +1,6 @@
 import React, {
   useState,
+  useEffect,
   useCallback,
   useRef,
   forwardRef,
@@ -76,6 +77,7 @@ export interface WorkspaceComboboxConfig {
 export interface WorkspaceSearchShellProps {
   icon?: ReactNode;
   isAutocompleteActive?: boolean;
+  isLoading?: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   input: ReactNode;
   autocomplete?: ReactNode;
@@ -105,6 +107,7 @@ export interface WorkspaceSearchFieldProps extends Omit<
 export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
   icon,
   isAutocompleteActive = false,
+  isLoading = false,
   onSubmit,
   input,
   autocomplete,
@@ -117,12 +120,18 @@ export const WorkspaceSearchShell: React.FC<WorkspaceSearchShellProps> = ({
   return (
     <div className="workspace-search__stage">
       <form
-        className={cn("rounded-xl bg-slate-800/80 border border-slate-700/50 shadow-lg transition-all duration-150 hover:border-indigo-500/30 focus-within:border-indigo-500/70 focus-within:bg-slate-800 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.16)]",
+        className={cn("rounded-xl bg-slate-800/80 border border-slate-700/50 shadow-lg transition-all duration-200 hover:border-indigo-500/30 focus-within:border-indigo-500/70 focus-within:bg-slate-800 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.16)] relative overflow-hidden",
           isAutocompleteActive && "is-autocomplete-active",
         )}
         onSubmit={onSubmit}
         noValidate
       >
+        {isLoading && (
+          <div className="workspace-search__shimmer-track" aria-hidden="true">
+            <div className="workspace-search__shimmer-bar" />
+          </div>
+        )}
+
         <div
           ref={shellRef as React.Ref<HTMLDivElement>}
           className={cn(
@@ -230,6 +239,35 @@ export const WorkspaceSearchField = forwardRef<
       internalRef.current?.focus();
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (onClear) {
+          onClear();
+        } else {
+          onChange?.("");
+        }
+        internalRef.current?.blur();
+      }
+      rest.onKeyDown?.(e);
+    };
+
+    useEffect(() => {
+      const handleGlobalKeyDown = (event: KeyboardEvent) => {
+        if (
+          (event.metaKey || event.ctrlKey) &&
+          event.key.toLowerCase() === "k"
+        ) {
+          event.preventDefault();
+          internalRef.current?.focus();
+          internalRef.current?.select();
+        }
+      };
+
+      window.addEventListener("keydown", handleGlobalKeyDown);
+      return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    }, []);
+
     const hasValue = Boolean(value && value.trim().length > 0);
 
     return (
@@ -239,6 +277,7 @@ export const WorkspaceSearchField = forwardRef<
           type={type}
           value={value}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           onFocus={onFocus}
           onBlur={onBlur}
           placeholder={placeholder}
@@ -306,10 +345,18 @@ export const WorkspaceAutocompletePanel = forwardRef<
         ref={ref}
         role="listbox"
         aria-label={ariaLabel || ariaLabelProp}
-        className={cn("absolute top-[calc(100%+0.5rem)] left-0 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-[100] transform transition-all duration-200 opacity-100 translate-y-0", className)}
+        className={cn(
+          "absolute top-[calc(100%+0.5rem)] left-0 w-full bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden z-[100] transition-all duration-200 ease-out origin-top",
+          className,
+        )}
+        style={{
+          animation: "searchOptionIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        }}
         {...rest}
       >
-        <div className="max-h-[28rem] overflow-y-auto overscroll-contain flex flex-col p-1.5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">{children}</div>
+        <div className="max-h-[28rem] overflow-y-auto overscroll-contain flex flex-col p-1.5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+          {children}
+        </div>
       </div>
     );
   },
@@ -318,18 +365,31 @@ WorkspaceAutocompletePanel.displayName = "WorkspaceAutocompletePanel";
 
 export const WorkspaceAutocompleteLoading: React.FC = () => (
   <div
-    className="p-6 flex flex-col items-center justify-center gap-3 text-slate-400"
+    className="workspace-search__loading-stage p-3 flex flex-col gap-2"
     role="status"
     aria-label="Searching catalog..."
   >
-    <div className="flex items-center gap-1.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/60 animate-pulse" />
+    <div className="flex items-center justify-between px-2 py-1 text-xs text-slate-400 font-medium border-b border-slate-700/40">
+      <span className="flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
+        <span className="tracking-wide uppercase text-[0.7rem] text-indigo-300/90 font-mono">
+          SCANNING CATALOG...
+        </span>
+      </span>
+      <span className="text-[0.65rem] text-slate-400 font-mono">LIVE SYNC</span>
     </div>
-    <span className="text-xs font-medium tracking-wide uppercase text-slate-500">
-      Searching catalog...
-    </span>
+    {[1, 2, 3].map((item) => (
+      <div
+        key={item}
+        className="workspace-search__skeleton-row flex items-center gap-3 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30 overflow-hidden relative"
+      >
+        <div className="w-10 h-14 rounded-md bg-slate-700/60 shrink-0 relative overflow-hidden workspace-search__shimmer-block" />
+        <div className="flex-1 flex flex-col gap-2 min-w-0">
+          <div className="h-4 w-3/4 rounded bg-slate-700/60 relative overflow-hidden workspace-search__shimmer-block" />
+          <div className="h-3 w-1/2 rounded bg-slate-700/40 relative overflow-hidden workspace-search__shimmer-block" />
+        </div>
+      </div>
+    ))}
   </div>
 );
 
@@ -342,13 +402,14 @@ export const WorkspaceAutocompleteStatus: React.FC<
   WorkspaceAutocompleteStatusProps
 > = ({ children, role = "status" }) => (
   <div
-    className={cn("p-4 text-center text-sm text-slate-400",
+    className={cn(
+      "p-4 text-center text-sm text-slate-400 transition-opacity duration-150",
       role === "alert" && "is-error",
     )}
     role={role}
   >
     {role === "alert" && (
-      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" aria-hidden="true" />
+      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2 inline-block" aria-hidden="true" />
     )}
     <span>{children}</span>
   </div>
@@ -372,8 +433,13 @@ export const WorkspaceAutocompleteOption: React.FC<
     aria-selected={isActive}
     className={cn(
       "w-full flex items-center gap-3 p-2 rounded-lg text-left cursor-pointer transition-all duration-150 select-none",
-      isActive && "bg-slate-800/80 shadow-sm border border-white/5",
+      isActive
+        ? "bg-slate-800/90 shadow-sm border border-indigo-500/30 translate-x-0.5 text-white"
+        : "hover:bg-slate-800/50 border border-transparent text-slate-200",
     )}
+    style={{
+      animation: "searchOptionIn 180ms cubic-bezier(0.16, 1, 0.3, 1) both",
+    }}
     onPointerDown={(event) => {
       event.preventDefault();
       onSelect();
@@ -383,6 +449,7 @@ export const WorkspaceAutocompleteOption: React.FC<
     {children}
   </button>
 );
+
 
 export interface WorkspaceAutocompleteCopyProps {
   title: string;

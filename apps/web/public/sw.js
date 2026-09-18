@@ -1,5 +1,5 @@
 /* Electron PWA service worker — app-shell, movie queue & offline caching strategy */
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v14';
 const STATIC_CACHE = `electron-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `electron-runtime-${CACHE_VERSION}`;
 const DATA_CACHE = `electron-data-${CACHE_VERSION}`;
@@ -18,16 +18,22 @@ const SHELL_ASSETS = [
   '/favicon-32x32.png',
   '/apple-touch-icon.png',
   '/electron-logo-mark.png',
+  '/electron-logo-source.png',
   '/aaron-avatar.png',
+  '/electra-avatar.png',
   '/electra-button.png',
+  '/movie-chat-cover.svg',
+  '/movie-quiz-cover.svg',
+  '/movie-spin-cover.svg',
   '/pwa-screenshot-queue.svg',
+  '/pwa-screenshot-memories.svg',
   '/opengraph.jpg',
 ];
 
 // Max entries for caches to prevent storage exhaustion
-const RUNTIME_CACHE_MAX_ENTRIES = 80;
-const MEDIA_CACHE_MAX_ENTRIES = 200;
-const DATA_CACHE_MAX_ENTRIES = 40;
+const RUNTIME_CACHE_MAX_ENTRIES = 100;
+const MEDIA_CACHE_MAX_ENTRIES = 250;
+const DATA_CACHE_MAX_ENTRIES = 100;
 
 // Domains allowed for cross-origin image & poster caching
 const ALLOWED_MEDIA_HOSTS = [
@@ -42,7 +48,9 @@ const ALLOWED_MEDIA_HOSTS = [
   's3.us-west-2.amazonaws.com',
   'image.tmdb.org',
   'tmdb.org',
+  'placehold.co',
 ];
+
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -211,8 +219,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2.5 Metadata API requests (/api/omdb, /api/tvmaze) -> Stale-while-revalidate with DATA_CACHE
-  if (url.pathname.startsWith('/api/omdb') || url.pathname.startsWith('/api/tvmaze')) {
+  // 2.5 Metadata API requests (/api/omdb, /api/tvmaze, /api/metadata) -> Stale-while-revalidate with DATA_CACHE
+  if (
+    url.pathname.startsWith('/api/omdb') ||
+    url.pathname.startsWith('/api/tvmaze') ||
+    url.pathname.startsWith('/api/metadata')
+  ) {
     event.respondWith(
       caches.match(req).then((cached) => {
         const fetchPromise = fetch(req)
@@ -242,6 +254,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
 
   // Other non-state /api routes (e.g. search, streaming, auth) bypass SW caching
   if (url.pathname.startsWith('/api/')) return;

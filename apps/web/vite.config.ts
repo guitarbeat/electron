@@ -46,13 +46,19 @@ const syncToRootDistPlugin = (): Plugin => ({
   closeBundle() {
     try {
       const source = path.resolve(import.meta.dirname, "dist/public");
-      const target = path.resolve(import.meta.dirname, "../../dist");
+      const rootTarget = path.resolve(import.meta.dirname, "../../dist");
+      const webDist = path.resolve(import.meta.dirname, "dist");
       if (fs.existsSync(source)) {
-        fs.mkdirSync(target, { recursive: true });
-        fs.cpSync(source, target, { recursive: true });
+        fs.mkdirSync(rootTarget, { recursive: true });
+        fs.cpSync(source, rootTarget, { recursive: true });
+        const entries = fs.readdirSync(source);
+        for (const entry of entries) {
+          if (entry === "public") continue;
+          fs.cpSync(path.join(source, entry), path.join(webDist, entry), { recursive: true });
+        }
       }
     } catch (err) {
-      console.warn("Failed to sync artifacts to root dist:", err);
+      console.warn("Failed to sync artifacts to dist targets:", err);
     }
   },
 });

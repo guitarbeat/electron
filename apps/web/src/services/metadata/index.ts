@@ -174,8 +174,9 @@ export const normalizePosterUrl = (
 export const searchOmdbMovies = async (
   query: string,
   signal?: AbortSignal,
+  type?: "movie" | "series",
 ): Promise<MovieAutocompleteResult[]> => {
-  const normKey = query.trim().toLowerCase();
+  const normKey = `${query.trim().toLowerCase()}|${type || "all"}`;
   const cached = omdbSearchCache.get(normKey);
   const now = Date.now();
   if (cached && now - cached.timestamp < AUTOCOMPLETE_CACHE_TTL_MS) {
@@ -186,7 +187,9 @@ export const searchOmdbMovies = async (
     typeof window !== "undefined" ? window.location.origin : "http://localhost";
   const url = new URL(OMDB_BASE, base);
   url.searchParams.set("s", query);
-  url.searchParams.set("type", "movie");
+  if (type) {
+    url.searchParams.set("type", type);
+  }
   if (OMDB_API_KEY.trim().length > 0) {
     url.searchParams.set("apikey", OMDB_API_KEY);
   }

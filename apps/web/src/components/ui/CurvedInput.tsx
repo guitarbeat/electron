@@ -146,6 +146,7 @@ export interface CurvedInputProps extends Omit<
   bend?: number;
   height?: number;
   isBusy?: boolean;
+  isLoading?: boolean;
   buttonDisabled?: boolean;
   combobox?: WorkspaceComboboxConfig | null;
 }
@@ -171,6 +172,7 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
       bend = 24,
       height = 62,
       isBusy = false,
+      isLoading = false,
       buttonDisabled = false,
       combobox,
       disabled,
@@ -196,6 +198,8 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     const secondaryPathId = `curved-input-sec-button-${uid}`;
     const spinPathId = `curved-input-spin-button-${uid}`;
     const clipId = `curved-input-clip-${uid}`;
+    const shimmerGradId = `curved-input-shimmer-${uid}`;
+    const isShimmering = isBusy || isLoading;
 
     useImperativeHandle(
       forwardedRef,
@@ -423,7 +427,7 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
     return (
       <form
         ref={rootRef}
-        className={`curved-input${focused ? " is-focused" : ""}${hovered ? " is-hovered" : ""}`}
+        className={`curved-input${focused ? " is-focused" : ""}${hovered ? " is-hovered" : ""}${isShimmering ? (isLoading ? " is-loading" : " is-busy") : ""}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onSubmit={(event) => {
@@ -445,14 +449,33 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
             <clipPath id={clipId}>
               <path d={clipPath} />
             </clipPath>
+            {isShimmering && (
+              <linearGradient id={shimmerGradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0" />
+                <stop offset="30%" stopColor="#818cf8" stopOpacity="0.2" />
+                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.55" />
+                <stop offset="70%" stopColor="#a855f7" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+              </linearGradient>
+            )}
           </defs>
           <path className="curved-input__focus-ring" d={bandPath} />
           <path className="curved-input__surface" d={bandPath} />
+          {isShimmering && (
+            <path
+              className="curved-input__shimmer-beam"
+              d={bandPath}
+              fill={`url(#${shimmerGradId})`}
+            />
+          )}
           <path id={textPathId} d={textPath} fill="none" />
           <g
             transform={`translate(${round(iconX)} ${round(iconY)}) rotate(${round(iconAngle)})`}
           >
-            <circle className="curved-input__icon-chip" r="16" />
+            <circle
+              className={`curved-input__icon-chip${isShimmering ? " is-busy" : ""}`}
+              r="16"
+            />
             <circle className="curved-input__lens" cx="-2" cy="-2" r="5.2" />
             <path className="curved-input__lens" d="M 2 2 L 7 7" />
           </g>

@@ -53,6 +53,48 @@
   opacity: 0;
 }
 
+.media-poster-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 0.875rem;
+  background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.08), transparent 75%),
+              linear-gradient(180deg, var(--color-surface-2, #1a1f2c) 0%, var(--color-surface-1, #0f1219) 100%);
+  text-align: center;
+  color: var(--color-text-main, #f1f5f9);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.media-poster-placeholder__icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-accent, #6366f1);
+  opacity: 0.85;
+}
+
+.media-poster-placeholder__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.media-poster-placeholder__year {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #94a3b8);
+}
+
 @keyframes posterShimmerWave {
   0% {
     transform: translateX(-60%);

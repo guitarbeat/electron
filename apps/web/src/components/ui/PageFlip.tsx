@@ -1,6 +1,7 @@
 import { getShadowStyle } from "./lib/pageFlipUtils";
 import React, { useState, useCallback, memo, useEffect, useRef, useMemo } from "react";
 import { motion, useMotionValue, useTransform, animate, type PanInfo } from "motion/react";
+import { ResilientImage } from "./Y2kImage";
 
 /* -------------------------------------------------------------------------- */
 /*                                Types & Config                              */
@@ -151,10 +152,13 @@ const LeafFace: React.FC<LeafFaceProps> = ({
   if (typeof content === "string") {
     return (
       <div className="absolute inset-0 h-full w-full overflow-hidden select-none" style={style}>
-        <img
+        <ResilientImage
           src={content}
-          alt={altText}
+          alt={altText || "Cover"}
+          title={altText || "Cover"}
+          seed={altText || "page-cover"}
           draggable={false}
+          containerClassName="absolute inset-0 h-full w-full"
           className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
         />
       </div>

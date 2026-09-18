@@ -80,6 +80,21 @@ import {
   fetchAndCacheImage,
   getCachedObjectUrlSync,
 } from "@/utils/imageCache";
+import {
+  Y2kPlaceholderGraphic,
+  ResilientImage,
+  Y2kImage,
+  type ResilientImageProps,
+  type Y2kPlaceholderGraphicProps,
+} from "./Y2kImage";
+
+export {
+  Y2kPlaceholderGraphic,
+  ResilientImage,
+  Y2kImage,
+  type ResilientImageProps,
+  type Y2kPlaceholderGraphicProps,
+};
 
 interface MediaPosterProps {
   title: string;
@@ -95,7 +110,7 @@ const CACHED_LOADED_POSTERS = new Set<string>();
 export const MediaPoster: React.FC<MediaPosterProps> = ({
   title,
   posterUrl,
-  year: _year,
+  year,
   id,
   className = "",
   priority = false,
@@ -115,10 +130,12 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   });
 
   const [hasImageError, setHasImageError] = React.useState(false);
+  const [hasFallbackError, setHasFallbackError] = React.useState(false);
 
   React.useEffect(() => {
     let isCancelled = false;
     setHasImageError(false);
+    setHasFallbackError(false);
 
     setCachedSrc(null);
     setCachedFallbackSrc(null);
@@ -241,6 +258,8 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       setHasImageError(true);
       setIsLoaded(false);
     } else {
+      // Fallback cat poster also failed - fallback to stylized visual card
+      setHasFallbackError(true);
       setIsLoaded(true);
     }
   };
@@ -259,6 +278,20 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     }
     setIsLoaded(true);
   };
+
+  // If all image sources fail or no image URL is provided and cat fallback failed, render Y2K stylized placeholder
+  if (hasFallbackError || (!activeSrc && hasImageError)) {
+    return (
+      <div className={`media-poster-wrap is-placeholder-poster ${className}`}>
+        <Y2kPlaceholderGraphic
+          title={title}
+          year={year}
+          badgeLabel="Y2K // CINEMA"
+          statusLabel="SIGNAL LOST // ARCHIVE MODE"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`media-poster-wrap ${isCatFallback ? "is-cat-poster" : ""} ${className}`}>

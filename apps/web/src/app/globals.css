@@ -463,6 +463,89 @@ p, blockquote, li, .pretty-text {
   flex-shrink: 0;
 }
 
+/* ── Search Loading Shimmer & View Transitions ───────────────────────── */
+.workspace-search__shimmer-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  border-top-left-radius: 1.15rem;
+  border-top-right-radius: 1.15rem;
+  background: rgba(99, 102, 241, 0.12);
+  z-index: 10;
+}
+
+.workspace-search__shimmer-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.4) 25%,
+    rgba(168, 85, 247, 0.9) 50%,
+    rgba(255, 255, 255, 0.95) 60%,
+    rgba(99, 102, 241, 0.4) 75%,
+    transparent 100%
+  );
+  filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.8));
+  animation: searchShimmerSweep 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes searchShimmerSweep {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.workspace-search__shimmer-block {
+  position: relative;
+  overflow: hidden;
+}
+
+.workspace-search__shimmer-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 20%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.04) 80%,
+    transparent 100%
+  );
+  animation: searchSkeletonWave 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes searchSkeletonWave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes searchOptionIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes searchFadeIn {
   from {
     opacity: 0;
@@ -473,6 +556,7 @@ p, blockquote, li, .pretty-text {
     transform: translateY(0);
   }
 }
+
 
 /* Mobile Optimizations */
 @media (max-width: 640px) {
