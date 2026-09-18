@@ -69,7 +69,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   depth = 0,
   speed = 36,
   direction = "zigzag",
-  variance: _variance = 0,
+  variance = 0,
   parallax = 0,
   pauseOnHover = false,
   lift = 24,
@@ -437,6 +437,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     isPaused,
     speed,
     direction,
+    variance,
   ]);
 
   // ============================================================================

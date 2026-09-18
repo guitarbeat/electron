@@ -71,6 +71,12 @@ export const isSharedStateWriteConfigured = (): boolean =>
 
 export const invalidateSharedStateCache = (): void => {
   fileCache.clear();
+  schemaReady = null;
+  if (pool) {
+    void pool.end().catch(() => undefined);
+    pool = null;
+    poolUrl = "";
+  }
 };
 
 export const installSharedStateMemoryStoreForTests = (
