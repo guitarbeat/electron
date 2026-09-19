@@ -298,8 +298,8 @@ function SpinWheel({
             position: "relative",
           }}
         >
-          {kept.map((movie, i) => {
-            const angle = i * segmentAngle + segmentAngle / 2;
+          {kept.map((movie, index) => {
+            const angle = index * segmentAngle + segmentAngle / 2;
             const rad = ((angle - 90) * Math.PI) / 180;
             const radius = 88;
             const coordX = 135 + radius * Math.cos(rad);
