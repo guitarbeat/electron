@@ -142,3 +142,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Authentication Bypass in State Scope Retrieval in api/_lib/session.ts)
+- Task details requested fixing `hasAccessSession` in `api/_lib/session.ts` which allegedly unconditionally returned `true`.
+- Upon inspecting `api/_lib/session.ts`, `hasAccessSession` is already properly implemented (`return getSessionState(req).hasAccess;`) and thoroughly tested in `api/_lib/session.test.ts`.
+- Concluded task with no code changes and documented the discrepancy.
