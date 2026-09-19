@@ -177,6 +177,19 @@ export const createMovieFromPayload = (
   };
 };
 
+export const findMovieIndexById = (movies: Movie[], id: string): number => {
+  if (!id) {
+    return -1;
+  }
+  const length = movies.length;
+  for (let i = 0; i < length; i++) {
+    if (movies[i].id === id) {
+      return i;
+    }
+  }
+  return -1;
+};
+
 export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
   filename: "movielist.json",
   parse: parseMovies,
@@ -192,7 +205,7 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           return { ok: false, conflict: "Invalid movie payload." };
         }
 
-        if (movies.some((entry) => entry.id === movie.id)) {
+        if (findMovieIndexById(movies, movie.id) !== -1) {
           return { ok: false, conflict: "Movie already exists." };
         }
 
@@ -263,7 +276,7 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           return { ok: false, conflict: "Invalid movie title." };
         }
 
-        const index = movies.findIndex((movie) => movie.id === movieId);
+        const index = findMovieIndexById(movies, movieId);
         if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
@@ -291,7 +304,7 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         );
         const targetUser = rawTargetUser && isUser(rawTargetUser) ? rawTargetUser : context.currentUser!;
 
-        const index = movies.findIndex((movie) => movie.id === movieId);
+        const index = findMovieIndexById(movies, movieId);
         if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
@@ -317,13 +330,17 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           (payload as { movieId?: unknown }).movieId,
         );
 
-        if (!movies.some((movie) => movie.id === movieId)) {
+        const index = findMovieIndexById(movies, movieId);
+        if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
 
+        const nextMovies = [...movies];
+        nextMovies.splice(index, 1);
+
         return {
           ok: true,
-          data: movies.filter((movie) => movie.id !== movieId),
+          data: nextMovies,
         };
       }
       case "restore_movie": {
@@ -335,7 +352,7 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           return { ok: false, conflict: "Invalid movie restore payload." };
         }
 
-        if (movies.some((movie) => movie.id === restored.id)) {
+        if (findMovieIndexById(movies, restored.id) !== -1) {
           return { ok: false, conflict: "Movie already exists." };
         }
 
@@ -356,7 +373,7 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           return { ok: false, conflict: "Invalid metadata payload." };
         }
 
-        const index = movies.findIndex((movie) => movie.id === movieId);
+        const index = findMovieIndexById(movies, movieId);
         if (index === -1) {
           return { ok: false, conflict: "Movie not found." };
         }
