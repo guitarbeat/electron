@@ -14,6 +14,12 @@ describe("concurrency utilities", () => {
       assert.deepEqual(result, []);
     });
 
+    it("handles concurrency greater than item length", async () => {
+      const items = [1, 2];
+      const result = await concurrentMap(items, 10, async (x) => x * 10);
+      assert.deepEqual(result, [10, 20]);
+    });
+
     it("enforces max concurrency limit while preserving result order", async () => {
       const items = [100, 50, 10, 80, 20];
       let activeCount = 0;
@@ -70,6 +76,16 @@ describe("concurrency utilities", () => {
 
       fn();
       assert.equal(calls, 2);
+    });
+
+    it("passes arguments correctly to throttled function", () => {
+      const argsReceived: [number, string][] = [];
+      const fn = throttle((num: number, str: string) => {
+        argsReceived.push([num, str]);
+      }, 100);
+
+      fn(42, "hello");
+      assert.deepEqual(argsReceived, [[42, "hello"]]);
     });
   });
 
@@ -132,6 +148,26 @@ describe("concurrency utilities", () => {
       fn(); // execution allowed again
       assert.equal(calls, 2);
     });
+
+    it("passes arguments and context (this) to debounced function", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let lastArgs: [number, string] | null = null;
+      let lastContext: unknown = null;
+
+      const obj = {
+        method: debounce(function (this: unknown, a: number, b: string) {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
+          lastContext = this;
+          lastArgs = [a, b];
+        }, 100),
+      };
+
+      obj.method(10, "test");
+      t.mock.timers.tick(100);
+
+      assert.equal(lastContext, obj);
+      assert.deepEqual(lastArgs, [10, "test"]);
+    });
   });
 
   describe("scheduleIdleWork", () => {
@@ -182,6 +218,27 @@ describe("concurrency utilities", () => {
         assert.equal(workDone, true);
 
         cancel();
+      } finally {
+        globalThis.window = origWindow;
+      }
+    });
+
+    it("cancels fallback setTimeout before execution", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let workDone = false;
+
+      const origWindow = globalThis.window;
+      // @ts-expect-error mocking window without requestIdleCallback
+      globalThis.window = {};
+
+      try {
+        const cancel = scheduleIdleWork(() => {
+          workDone = true;
+        }, 1000);
+
+        cancel();
+        t.mock.timers.tick(400);
+        assert.equal(workDone, false);
       } finally {
         globalThis.window = origWindow;
       }
