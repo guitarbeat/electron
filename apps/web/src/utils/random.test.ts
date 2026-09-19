@@ -88,6 +88,13 @@ describe("random utilities", () => {
       assert.strictEqual(clamp(0, 0, 100), 0);
       assert.strictEqual(clamp(100, 0, 100), 100);
     });
+
+    it("handles floating point values and identical min/max", () => {
+      assert.strictEqual(clamp(10.5, 0.1, 10.4), 10.4);
+      assert.strictEqual(clamp(-0.5, -0.4, 0.5), -0.4);
+      assert.strictEqual(clamp(5, 10, 10), 10);
+      assert.strictEqual(clamp(15, 10, 10), 10);
+    });
   });
 
   describe("shallowCloneArray", () => {
@@ -130,6 +137,10 @@ describe("random utilities", () => {
         const item = randomUtils.randomItem(arr);
         assert.ok(arr.includes(item));
       }
+    });
+
+    it("randomItem returns undefined for empty array", () => {
+      assert.strictEqual(randomUtils.randomItem([]), undefined);
     });
 
     it("randomRange returns a number within [min, max)", () => {
@@ -180,6 +191,40 @@ describe("random utilities", () => {
       assert.strictEqual(star.y, 200);
       assert.strictEqual(star.opacity, 1);
       assert.ok(star.scale >= 0.5 && star.scale < 1.5);
+    });
+
+    it("calculates deterministic range and particle outputs when mocked", () => {
+      const originalCrypto = globalThis.crypto;
+      try {
+        // Mock getSecureRandom to return 0.5
+        Object.defineProperty(globalThis, "crypto", {
+          value: {
+            getRandomValues: (arr: Uint32Array) => {
+              arr[0] = 0x80000000; // Exact 0.5
+              return arr;
+            },
+          },
+          configurable: true,
+        });
+
+        assert.strictEqual(randomUtils.randomRange(10, 20), 15);
+        assert.strictEqual(randomUtils.randomInt(10, 20), 15);
+        assert.strictEqual(randomUtils.randomBool(), false); // 0.5 > 0.5 is false
+
+        const particle = randomUtils.generateConfettiParticle(1, ["#fff"]);
+        assert.strictEqual(particle.x, 50);
+        assert.strictEqual(particle.delay, 0.25);
+        assert.strictEqual(particle.rotation, 180);
+        assert.strictEqual(particle.scale, 0.75);
+
+        const star = randomUtils.generateCursorStar(10, 20, 2);
+        assert.strictEqual(star.scale, 1.0);
+      } finally {
+        Object.defineProperty(globalThis, "crypto", {
+          value: originalCrypto,
+          configurable: true,
+        });
+      }
     });
   });
 });
