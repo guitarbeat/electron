@@ -142,3 +142,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-17 - Stale Prompt Discrepancy (Insecure Database Connection Configuration in api/_lib/dbCommon.ts:56)
+- Task requested updating `createPostgresPool` in `api/_lib/dbCommon.ts:56` to set `rejectUnauthorized` to `true` instead of `false`.
+- Upon inspecting `api/_lib/dbCommon.ts`, `createPostgresPool` already sets `poolConfig.ssl = { rejectUnauthorized: true }` when SSL is needed.
+- Unit tests in `api/_lib/dbCommon.test.ts` already verify that `rejectUnauthorized` is set to `true`.
+- Concluded the task with no source code modifications needed and documented the discrepancy.
