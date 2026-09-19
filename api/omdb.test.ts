@@ -515,6 +515,64 @@ describe("omdbHandler", () => {
     assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], expectedError);
   });
 
+  it("should catch errors when reading response body, log them, and return 500 Internal Server Error", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+    const bodyError = new Error("Failed to read response stream");
+
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          headers: new Headers({ "content-type": "application/json" }),
+          text: async () => {
+            throw bodyError;
+          },
+        } as unknown as Response;
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=body-error-test", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 1);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[0].arguments[0],
+      "Error handling GET " + req.url + ":",
+    );
+    assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], bodyError);
+  });
+
+  it("should catch non-Error thrown exceptions in catch block", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+    const thrownValue = "String error thrown";
+
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        throw thrownValue;
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=string-error-test", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 1);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[0].arguments[0],
+      "Error handling GET " + req.url + ":",
+    );
+    assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], thrownValue);
+  });
+
   it("should handle request via default export withWebHandler wrapper", async () => {
     const req = new Request("http://localhost/api/omdb?s=batman", { method: "GET" });
     const res = await defaultHandler(req);
