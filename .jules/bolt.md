@@ -142,3 +142,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-19 - Stale Prompt Discrepancy (Linear Search for Movie in State Scope `api/_lib/stateScopes/movies.ts:294`)
+- Task requested optimizing linear search `movies.find((movie) => movie.id === movieId)` in `api/_lib/stateScopes/movies.ts:294`.
+- Upon inspecting `api/_lib/stateScopes/movies.ts`, the file already uses an index-based `findMovieIndexById` helper (`for (let i = 0; i < length; i++)`) across all mutation operations (`toggle_watched`, `edit_movie`, `delete_movie`, `update_metadata`, etc.).
+- No `movies.find(...)` call exists in `api/_lib/stateScopes/movies.ts`.
+- Concluded the task with no source code changes needed and documented the discrepancy.
