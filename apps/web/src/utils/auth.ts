@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { User } from "../shared/types.js";
-import type { SessionState } from "../services/state/index.js";
+import type { SessionState as BaseSessionState } from "../services/state/index.js";
+
+type SessionState = BaseSessionState & { token?: string | null };
 import { isUser } from "./security.js";
 import { getErrorMessage, readApiErrorMessage } from "./shared.js";
 
