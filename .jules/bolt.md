@@ -142,3 +142,9 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-19 - Stale Prompt Discrepancy (MovieSectionBody handle events in `scripts/maintenance/applied_patches/fix_imports.py:43`)
+- Task requested fixing implicit any types for `handleRemoveFromList` and `handleMarkWatched` event handlers in `apps/web/src/components/movies/MoviesView.tsx` as described in `scripts/maintenance/applied_patches/fix_imports.py:43`.
+- Upon inspecting `apps/web/src/components/movies/MoviesView.tsx`, neither `handleRemoveFromList` nor `handleMarkWatched` functions exist in `MoviesView.tsx`.
+- The movie actions are managed via `useMoviesWorkspace` hook and `MovieSectionBody` props (`actions.toggleWatched`, `actions.editMovie`, `onDeleteRequest`).
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
