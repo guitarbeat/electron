@@ -142,3 +142,11 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-19 - Stale Prompt Discrepancy (Suboptimal Array Search in Quiz Character Loop in `apps/web/src/shared/quizData.ts:342`)
+- Task requested creating a lookup map for `rankedRemainders` before the `CHARACTERS.reduce` loop in `apps/web/src/shared/quizData.ts:342`.
+- Upon inspecting `apps/web/src/shared/quizData.ts`, lines 341-348 already define `remainderMap` and use `remainderMap.get(character)`:
+  `const remainderMap = new Map(rankedRemainders.map((item) => [item.character, item]));`
+  `return CHARACTERS.reduce((percentages, character) => { const item = remainderMap.get(character); ...`
+- The `rankedRemainders.find(...)` search does not exist in `apps/web/src/shared/quizData.ts`.
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
