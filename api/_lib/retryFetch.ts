@@ -34,7 +34,7 @@ const isCallerAbort = (
   callerSignal: AbortSignal | undefined,
 ): boolean => {
   if (!callerSignal?.aborted) return false;
-  if (!(error instanceof Error)) return false;
+  if (!(error instanceof Error)) return true;
   return error.name === "AbortError";
 };
 
