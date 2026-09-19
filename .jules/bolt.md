@@ -142,3 +142,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-19 - Stale Prompt Discrepancy (Untested error path in `api/session.ts:29`)
+- Task requested adding test coverage for the error handling catch block in `api/session.ts:29` by mocking internal session dependencies (e.g. `getPinCoverageState`) to throw.
+- Upon inspecting `api/session.ts` and `api/session.test.ts`, tests covering `getSessionState` throwing, `getPinCoverageState` rejecting, default web handler request errors, and default deps request errors were already implemented in `api/session.test.ts` (100% line, branch, and function coverage on `api/session.ts`).
+- As per memory directives, concluded the task with no source code changes and documented the discrepancy.
