@@ -265,7 +265,6 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     if (!velocitiesRef.current || velocitiesRef.current.length !== columnItems.length) {
       velocitiesRef.current = columnItems.map(() => 0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnMeta, columnItems]);
 
   const applyPlaneTransform = useCallback(
