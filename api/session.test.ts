@@ -159,4 +159,30 @@ describe("sessionHandler", () => {
 
     assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
   });
+  it("should return 500 status code with warning when error occurs using default deps", async (t) => {
+    const loggerErrorMock = t.mock.method(logger, "error", () => {});
+    const baseReq = new Request("http://localhost/api/session", { method: "GET" });
+    const failingReq = new Proxy(baseReq, {
+      get(target, prop, receiver) {
+        if (prop === "headers") {
+          throw new Error("Internal request error");
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+
+    const res = await sessionHandler(failingReq);
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.hasAccess, false);
+    assert.strictEqual(data.currentUser, null);
+    assert.deepStrictEqual(data.pinProtectedUsers, []);
+    assert.deepStrictEqual(data.usersMissingPins, []);
+    assert.strictEqual(
+      data.warning,
+      "Session state is temporarily unavailable.",
+    );
+
+    assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
+  });
 });
