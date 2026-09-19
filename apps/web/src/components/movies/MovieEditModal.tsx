@@ -20,6 +20,7 @@ import {
   MAX_MOVIE_TITLE_LENGTH,
   sanitizeInput,
 } from "@/utils";
+import { fetchWikipediaPosterOrSummary } from "@/services/metadata";
 
 
 
@@ -54,7 +55,29 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
   );
   const [error, setError] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isFindingPoster, setIsFindingPoster] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleAutoFindPoster = async () => {
+    if (!draftTitle.trim() || isFindingPoster) return;
+    setIsFindingPoster(true);
+    setError(null);
+    try {
+      const result = await fetchWikipediaPosterOrSummary(
+        draftTitle.trim(),
+        movie.year,
+      );
+      if (result?.posterUrl) {
+        setDraftPosterUrl(result.posterUrl);
+      } else {
+        setError("No poster found on Wikipedia for this title");
+      }
+    } catch {
+      setError("Failed to fetch poster");
+    } finally {
+      setIsFindingPoster(false);
+    }
+  };
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -159,17 +182,58 @@ export const MovieEditModal: React.FC<MovieEditModalProps> = ({
             error={error ?? undefined}
           />
 
-          <Input
-            label="Custom poster URL (optional)"
-            value={draftPosterUrl}
-            onChange={(event) => {
-              setDraftPosterUrl(event.target.value);
-              if (error) {
-                setError(null);
-              }
-            }}
-            placeholder="https://example.com/poster.jpg"
-          />
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: spacing.xs,
+              }}
+            >
+              <label
+                htmlFor="movie-custom-poster-input"
+                style={{
+                  color: colors.textSecondary,
+                  ...typography.presets.bodySm,
+                  fontWeight: 600,
+                }}
+              >
+                Poster URL (optional)
+              </label>
+              <button
+                type="button"
+                onClick={handleAutoFindPoster}
+                disabled={isFindingPoster || !draftTitle.trim()}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: "0.125rem 0.375rem",
+                  color: colors.interactive,
+                  ...typography.presets.caption,
+                  cursor: isFindingPoster || !draftTitle.trim() ? "not-allowed" : "pointer",
+                  opacity: isFindingPoster || !draftTitle.trim() ? 0.5 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: spacing.xs,
+                  fontWeight: 600,
+                }}
+              >
+                {isFindingPoster ? "Searching..." : "🔍 Auto-find poster"}
+              </button>
+            </div>
+            <Input
+              id="movie-custom-poster-input"
+              value={draftPosterUrl}
+              onChange={(event) => {
+                setDraftPosterUrl(event.target.value);
+                if (error) {
+                  setError(null);
+                }
+              }}
+              placeholder="https://example.com/poster.jpg"
+            />
+          </div>
 
           <div
             aria-live="polite"

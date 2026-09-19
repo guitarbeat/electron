@@ -95,7 +95,7 @@ const SECTION_IDS: Record<MainTab, WorkspaceSectionIds> = {
 export const workspaceSectionIds = (tab: MainTab): WorkspaceSectionIds =>
   SECTION_IDS[tab];
 
-export const MOVIES_POSTER_GRID_MIN_COL = "clamp(5rem, 21vw, 6.75rem)";
+export const MOVIES_POSTER_GRID_MIN_COL = "clamp(4.25rem, 16vw, 5.5rem)";
 export const MOVIES_POSTER_GRID_GAP = "0.25rem";
 export const PLACES_GRID_MIN_COL = MOVIES_POSTER_GRID_MIN_COL;
 export const PLACES_GRID_CLASS = "workspace-content places-grid";

@@ -1,7 +1,5 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import {
-  CardTiltShell,
-  CardTiltSheen,
   Card,
   MediaCardPosterWrap,
 } from "@/components/ui";
@@ -18,7 +16,6 @@ export interface ChatDriftCardProps {
 }
 
 export const ChatDriftCard: React.FC<ChatDriftCardProps> = ({
-  isCompact = false,
   onOpenChat,
   className = "",
 }) => {
@@ -38,16 +35,11 @@ export const ChatDriftCard: React.FC<ChatDriftCardProps> = ({
     [onOpenChat],
   );
 
-  const accentColor = "#06b6d4"; // Vibrant cyan/teal neon accent
   const messageCount = messages?.length || 0;
-  const latestMessage = useMemo(() => {
-    if (!messages || messages.length === 0) return null;
-    return messages[messages.length - 1];
-  }, [messages]);
 
   return (
     <div
-      className={`movie-item-container chat-drift-card-container ${className}`.trim()}
+      className={`movie-item-container promo-drift-card-wrap chat-drift-card-container ${className}`.trim()}
       data-chat-card="true"
       data-height-ratio="1"
       onClick={handleOpen}
@@ -62,84 +54,40 @@ export const ChatDriftCard: React.FC<ChatDriftCardProps> = ({
       }}
       style={{ cursor: "pointer" }}
     >
-      <CardTiltShell disabled={isCompact}>
-        <Card
-          variant="default"
-          className="movie-item-card chroma-card chat-drift-card"
-          onClick={handleOpen}
-          style={{
-            padding: 0,
-            overflow: "hidden",
-            borderColor: `${accentColor}55`,
-          }}
-        >
-          <CardTiltSheen />
-          <MediaCardPosterWrap className="movie-item-poster-wrap">
-            {/* Background art poster for chat */}
-            <div
-              className="chat-drift-card__art"
-              style={{
-                backgroundImage: "url(/movie-chat-cover.svg)",
-              }}
-            />
-
-            {/* Cinematic gradient overlay */}
-            <div className="chat-drift-card__vignette" />
-
-            {/* Dynamic Content Overlay */}
-            <div className="chat-drift-card__content">
-              <div className="chat-drift-card__top-badge">
-                <span
-                  className="chat-drift-card__pill"
-                  style={{
-                    borderColor: `${accentColor}88`,
-                    color: "#ffffff",
-                    backgroundColor: `${accentColor}33`,
-                  }}
-                >
-                  💬 CHAT
-                </span>
-                <span className="chat-drift-card__live-pill">
-                  {messageCount > 0 ? `${messageCount}` : "LIVE"}
-                </span>
-              </div>
-
-              <div className="chat-drift-card__bottom-info">
-                <div className="chat-drift-card__title">
-                  Movie Chat &amp; Lobby
-                </div>
-                <div className="chat-drift-card__subtitle">
-                  {latestMessage
-                    ? `${latestMessage.author}: "${latestMessage.content.slice(0, 28)}${latestMessage.content.length > 28 ? "…" : ""}"`
-                    : "Share hot takes, picks & banter"}
-                </div>
-
-                <div
-                  className="chat-drift-card__cta"
-                  style={{
-                    backgroundColor: `${accentColor}28`,
-                    borderColor: `${accentColor}77`,
-                  }}
-                >
-                  <span
-                    className="chat-drift-card__cta-dot"
-                    style={{ backgroundColor: accentColor }}
-                  />
-                  <span>Open Chat</span>
-                </div>
-              </div>
+      <Card
+        variant="default"
+        className="movie-item-card promo-drift-card chat-drift-card"
+        onClick={handleOpen}
+        style={{
+          padding: 0,
+          overflow: "hidden",
+          cursor: "pointer",
+        }}
+      >
+        <MediaCardPosterWrap className="movie-item-poster-wrap">
+          <div className="promo-drift-card__body promo-drift-card__body--chat">
+            <div className="promo-drift-card__icon-wrap">
+              <span className="promo-drift-card__emoji" aria-hidden="true">
+                💬
+              </span>
             </div>
+            <div className="promo-drift-card__text-block">
+              <span className="promo-drift-card__badge">
+                {messageCount > 0 ? `${messageCount} msgs` : "Chat"}
+              </span>
+              <div className="promo-drift-card__title">Movie Chat</div>
+              <div className="promo-drift-card__hint">Room banter & picks</div>
+            </div>
+          </div>
 
-            {/* Click Hit Area */}
-            <button
-              type="button"
-              className="movie-item-details-hit-area"
-              onClick={handleOpen}
-              aria-label="Open movie chat discussion board"
-            />
-          </MediaCardPosterWrap>
-        </Card>
-      </CardTiltShell>
+          <button
+            type="button"
+            className="movie-item-details-hit-area"
+            onClick={handleOpen}
+            aria-label="Open movie chat discussion board"
+          />
+        </MediaCardPosterWrap>
+      </Card>
     </div>
   );
 };

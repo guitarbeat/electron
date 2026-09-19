@@ -7,63 +7,42 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  transform-style: preserve-3d;
   will-change: transform;
-  transition: transform 150ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-  --mouse-x: 50%;
-  --mouse-y: 50%;
-  --sheen-x: 50%;
-  --sheen-y: 50%;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-tilt-sheen {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 6;
-  opacity: 0;
-  transition: opacity 150ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-  background: radial-gradient(
-    circle 240px at var(--sheen-x, 50%) var(--sheen-y, 50%),
-    rgba(255, 255, 255, 0.28) 0%,
-    rgba(255, 255, 255, 0.10) 32%,
-    rgba(255, 255, 255, 0) 70%
-  );
-  mix-blend-mode: overlay;
+  display: none;
 }
 
 .card-tilt-wrap:hover .card-tilt-sheen,
 .card-tilt-wrap:focus-within .card-tilt-sheen {
-  opacity: 1;
+  display: none;
 }
 
 .movie-item-container {
   position: relative;
   width: 100%;
   height: 100%;
-  /* height: 100%; removed to allow variable height */
-  perspective: 1000px;
   opacity: 1;
   filter: brightness(1) saturate(1);
   transition:
-    transform 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    opacity 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    filter 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    z-index 0s ease;
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: center center;
-  will-change: transform, opacity;
+  will-change: transform;
 }
 
 .movie-item-container:focus-within {
-  transform: scale(1.02) translateZ(0);
+  transform: translateY(-4px);
   opacity: 1 !important;
   z-index: 25;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .movie-item-container:hover {
-    transform: scale(1.02) translateZ(0);
+    transform: translateY(-4px);
     opacity: 1 !important;
     z-index: 25;
   }
@@ -76,17 +55,18 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: 8px;
-  border: none;
-  background: transparent;
-  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  transition: box-shadow 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0d111a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .card-tilt-wrap:hover .movie-item-card,
 .movie-item-container:hover .movie-item-card {
+  border-color: rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 16px 32px -8px rgba(0, 0, 0, 0.6),
-    0 8px 16px -4px rgba(0, 0, 0, 0.4);
+    0 12px 28px -4px rgba(0, 0, 0, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .movie-item-card:active {

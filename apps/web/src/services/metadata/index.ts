@@ -264,6 +264,142 @@ export const searchOmdbMovies = async (
   }
 };
 
+export interface WikipediaPosterResult {
+  posterUrl: string;
+  plot?: string;
+  title?: string;
+  description?: string;
+}
+
+const wikiPosterCache = new Map<
+  string,
+  { poster: string | null; plot?: string; timestamp: number }
+>();
+
+export const fetchWikipediaPosterOrSummary = async (
+  title: string,
+  year?: string,
+  signal?: AbortSignal,
+): Promise<WikipediaPosterResult | null> => {
+  const cleanTitle = title.trim();
+  if (!cleanTitle) return null;
+  const cacheKey = `${cleanTitle.toLowerCase()}::${year || ""}`;
+  const now = Date.now();
+  const cached = wikiPosterCache.get(cacheKey);
+  if (cached && now - cached.timestamp < 24 * 60 * 60 * 1000) {
+    return cached.poster
+      ? { posterUrl: cached.poster, plot: cached.plot }
+      : null;
+  }
+
+  const queriesToTry: string[] = [
+    cleanTitle,
+    `${cleanTitle} (film)`,
+    year ? `${cleanTitle} (${year} film)` : "",
+    `${cleanTitle} (movie)`,
+    `${cleanTitle} (TV series)`,
+    `${cleanTitle} (miniseries)`,
+  ].filter(Boolean);
+
+  for (const q of queriesToTry) {
+    try {
+      const slug = encodeURIComponent(q.trim().replace(/ /g, "_"));
+      const res = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${slug}`,
+        {
+          signal,
+          headers: { Accept: "application/json" },
+        },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as {
+          title?: string;
+          extract?: string;
+          description?: string;
+          thumbnail?: { source?: string };
+          originalimage?: { source?: string };
+        };
+        const poster = data.originalimage?.source || data.thumbnail?.source;
+        if (poster && isValidUrl(poster)) {
+          const plot = stripHtml(data.extract);
+          wikiPosterCache.set(cacheKey, { poster, plot, timestamp: now });
+          return {
+            posterUrl: poster,
+            plot,
+            title: data.title,
+            description: data.description,
+          };
+        }
+      }
+    } catch {
+      // Continue to next query candidate
+    }
+  }
+
+  // Fallback to Wikipedia search API
+  try {
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+      cleanTitle + (year ? ` ${year}` : " film"),
+    )}&format=json&origin=*`;
+    const sRes = await fetch(searchUrl, {
+      signal,
+      headers: { Accept: "application/json" },
+    });
+    if (sRes.ok) {
+      const sData = (await sRes.json()) as {
+        query?: {
+          search?: Array<{ title?: string }>;
+        };
+      };
+      const firstResult = sData.query?.search?.[0]?.title;
+      if (firstResult) {
+        const slug = encodeURIComponent(firstResult.replace(/ /g, "_"));
+        const res = await fetch(
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${slug}`,
+          {
+            signal,
+            headers: { Accept: "application/json" },
+          },
+        );
+        if (res.ok) {
+          const data = (await res.json()) as {
+            title?: string;
+            extract?: string;
+            description?: string;
+            thumbnail?: { source?: string };
+            originalimage?: { source?: string };
+          };
+          const poster = data.originalimage?.source || data.thumbnail?.source;
+          if (poster && isValidUrl(poster)) {
+            const plot = stripHtml(data.extract);
+            wikiPosterCache.set(cacheKey, { poster, plot, timestamp: now });
+            return {
+              posterUrl: poster,
+              plot,
+              title: data.title,
+              description: data.description,
+            };
+          }
+        }
+      }
+    }
+  } catch {
+    // Search lookup ignored
+  }
+
+  wikiPosterCache.set(cacheKey, { poster: null, timestamp: now });
+  return null;
+};
+
+export const fetchMoviePoster = async (
+  title: string,
+  year?: string,
+  signal?: AbortSignal,
+): Promise<string | null> => {
+  const result = await fetchWikipediaPosterOrSummary(title, year, signal);
+  return result?.posterUrl || null;
+};
+
 export const fetchOmdbMetadata = async (
   title: string,
   type?: "movie" | "series" | "youtube",
@@ -320,6 +456,27 @@ export const fetchOmdbMetadata = async (
     const data = OmdbMetadataSchema.parse(json);
     const requestedTitle = sanitizeInput(title);
     const resolvedTitle = sanitizeInput(data.Title) || requestedTitle;
+    let resolvedPoster = normalizePosterUrl(data.Poster);
+    let resolvedPlot = stripHtml(data.Plot);
+
+    // If OMDb returned no poster or "N/A", auto-enrich from Wikipedia
+    if (!resolvedPoster) {
+      try {
+        const wiki = await fetchWikipediaPosterOrSummary(
+          resolvedTitle || title,
+          data.Year,
+          signal,
+        );
+        if (wiki?.posterUrl) {
+          resolvedPoster = wiki.posterUrl;
+          if (!resolvedPlot && wiki.plot) {
+            resolvedPlot = wiki.plot;
+          }
+        }
+      } catch {
+        // Continue with available data
+      }
+    }
 
     return {
       title: resolvedTitle,
@@ -330,8 +487,8 @@ export const fetchOmdbMetadata = async (
           ? data.imdbRating
           : undefined,
       type: (data.Type?.toLowerCase() as "movie" | "series") || "movie",
-      poster: normalizePosterUrl(data.Poster),
-      plot: stripHtml(data.Plot),
+      poster: resolvedPoster,
+      plot: resolvedPlot,
       director: data.Director,
       actors: data.Actors?.split(", ").map((actor: string) =>
         sanitizeInput(actor.trim()),

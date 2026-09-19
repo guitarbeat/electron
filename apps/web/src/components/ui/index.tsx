@@ -80,6 +80,7 @@ import {
   fetchAndCacheImage,
   getCachedObjectUrlSync,
 } from "@/utils/imageCache";
+import { fetchWikipediaPosterOrSummary } from "@/services/metadata";
 import {
   Y2kPlaceholderGraphic,
   ResilientImage,
@@ -115,13 +116,17 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   className = "",
   priority = false,
 }) => {
+  const [wikiPosterUrl, setWikiPosterUrl] = React.useState<string | null>(null);
+
   const fallbackCatUrl = React.useMemo(() => {
     return getCatPosterUrl(id || title);
   }, [id, title]);
 
+  const effectivePosterUrl = posterUrl && posterUrl !== "N/A" ? posterUrl : wikiPosterUrl;
+
   const [cachedSrc, setCachedSrc] = React.useState<string | null>(() => {
-    return posterUrl
-      ? (getCachedObjectUrlSync(posterUrl) || getCachedPosterUrlSync(posterUrl))
+    return effectivePosterUrl
+      ? (getCachedObjectUrlSync(effectivePosterUrl) || getCachedPosterUrlSync(effectivePosterUrl))
       : null;
   });
 
@@ -132,6 +137,23 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   const [hasImageError, setHasImageError] = React.useState(false);
   const [hasFallbackError, setHasFallbackError] = React.useState(false);
 
+  // Auto-fetch real poster from Wikipedia when movie poster is missing or "N/A"
+  React.useEffect(() => {
+    let isCancelled = false;
+    if (!posterUrl || posterUrl === "N/A") {
+      void fetchWikipediaPosterOrSummary(title, year).then((result) => {
+        if (!isCancelled && result?.posterUrl) {
+          setWikiPosterUrl(result.posterUrl);
+        }
+      });
+    } else {
+      setWikiPosterUrl(null);
+    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [title, year, posterUrl]);
+
   React.useEffect(() => {
     let isCancelled = false;
     setHasImageError(false);
@@ -140,15 +162,15 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     setCachedSrc(null);
     setCachedFallbackSrc(null);
 
-    if (posterUrl) {
+    if (effectivePosterUrl) {
       const syncCached =
-        getCachedObjectUrlSync(posterUrl) || getCachedPosterUrlSync(posterUrl);
+        getCachedObjectUrlSync(effectivePosterUrl) || getCachedPosterUrlSync(effectivePosterUrl);
       if (syncCached) {
         setCachedSrc(syncCached);
       } else {
         setCachedSrc(null);
         // Check IndexedDB cache for poster blob before fetching from network
-        getImageBlob(posterUrl)
+        getImageBlob(effectivePosterUrl)
           .then((blob) => {
             if (isCancelled) return;
             if (blob) {
@@ -160,7 +182,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
               }
             } else {
               // Not in IndexedDB cache: check service worker cache fallback
-              void getCachedPosterUrl(posterUrl).then((cached) => {
+              void getCachedPosterUrl(effectivePosterUrl).then((cached) => {
                 if (!isCancelled && cached) {
                   setCachedSrc(cached);
                 }
@@ -169,7 +191,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
           })
           .catch(() => {
             if (!isCancelled) {
-              void getCachedPosterUrl(posterUrl).then((cached) => {
+              void getCachedPosterUrl(effectivePosterUrl).then((cached) => {
                 if (!isCancelled && cached) setCachedSrc(cached);
               });
             }
@@ -212,10 +234,10 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [posterUrl, fallbackCatUrl]);
+  }, [effectivePosterUrl, fallbackCatUrl]);
 
   // Determine active display source: prefer local cached version for offline resilience
-  const primarySrc = cachedSrc || posterUrl;
+  const primarySrc = cachedSrc || effectivePosterUrl;
   const isCatFallback = !primarySrc || hasImageError;
   const activeSrc = isCatFallback
     ? (cachedFallbackSrc || fallbackCatUrl)
@@ -234,10 +256,24 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   }, [activeSrc]);
 
   const handleImageError = async () => {
-    // If the network request failed and we haven't loaded from local cache yet, try cache lookup first
-    if (!hasImageError && posterUrl && !cachedSrc) {
+    // If primary failed and we haven't checked Wikipedia yet, try Wikipedia
+    if (!hasImageError && !wikiPosterUrl) {
       try {
-        const cachedBlob = await getImageBlob(posterUrl);
+        const wiki = await fetchWikipediaPosterOrSummary(title, year);
+        if (wiki?.posterUrl && wiki.posterUrl !== effectivePosterUrl) {
+          setWikiPosterUrl(wiki.posterUrl);
+          setIsLoaded(false);
+          return;
+        }
+      } catch {
+        // Fall through
+      }
+    }
+
+    // If the network request failed and we haven't loaded from local cache yet, try cache lookup first
+    if (!hasImageError && effectivePosterUrl && !cachedSrc) {
+      try {
+        const cachedBlob = await getImageBlob(effectivePosterUrl);
         if (cachedBlob) {
           const objectUrl = URL.createObjectURL(cachedBlob);
           setCachedSrc(objectUrl);
@@ -247,14 +283,14 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       } catch {
         // Ignore cache lookup error
       }
-      const cached = await getCachedPosterUrl(posterUrl);
+      const cached = await getCachedPosterUrl(effectivePosterUrl);
       if (cached) {
         setCachedSrc(cached);
         setIsLoaded(false);
         return;
       }
     }
-    if (!hasImageError && posterUrl) {
+    if (!hasImageError && effectivePosterUrl) {
       setHasImageError(true);
       setIsLoaded(false);
     } else {
@@ -269,9 +305,9 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
       CACHED_LOADED_POSTERS.add(activeSrc);
     }
     // Asynchronously ensure poster is cached locally for offline readiness
-    if (posterUrl && !cachedSrc && !isCatFallback) {
-      void fetchAndCacheImage(posterUrl);
-      void cachePosterLocally(posterUrl);
+    if (effectivePosterUrl && !cachedSrc && !isCatFallback) {
+      void fetchAndCacheImage(effectivePosterUrl);
+      void cachePosterLocally(effectivePosterUrl);
     } else if (isCatFallback && fallbackCatUrl && !cachedFallbackSrc) {
       void fetchAndCacheImage(fallbackCatUrl);
       void cachePosterLocally(fallbackCatUrl);

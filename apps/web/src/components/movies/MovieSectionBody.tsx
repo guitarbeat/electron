@@ -2,9 +2,6 @@ import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
-import { QuizDriftCard } from "./QuizDriftCard";
-import { SpinDriftCard } from "./SpinDriftCard";
-import { ChatDriftCard } from "./ChatDriftCard";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
@@ -99,41 +96,41 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
 
   const { tileWidth, tileHeight, gap, dynamicColumns } = React.useMemo(() => {
     if (isMobile || viewportWidth < 640) {
-      const slotW = 125; // 105px card + 20px gap
-      const targetCols = Math.max(3, Math.floor(viewportWidth / slotW));
+      const slotW = 95; // 84px card + 11px gap (4+ cols on mobile)
+      const targetCols = Math.max(4, Math.floor(viewportWidth / slotW));
       return {
-        tileWidth: 105,
-        tileHeight: 158,
-        gap: 18,
+        tileWidth: 84,
+        tileHeight: 126,
+        gap: 11,
         dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
       };
     }
     if (viewportWidth < 1024) {
-      const slotW = 148; // 124px card + 24px gap
-      const targetCols = Math.max(4, Math.floor(viewportWidth / slotW));
+      const slotW = 112; // 98px card + 14px gap (6-8 cols on tablet/small screen)
+      const targetCols = Math.max(6, Math.floor(viewportWidth / slotW));
       return {
-        tileWidth: 124,
-        tileHeight: 186,
-        gap: 22,
+        tileWidth: 98,
+        tileHeight: 147,
+        gap: 14,
         dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
       };
     }
     if (viewportWidth < 1600) {
-      const slotW = 166; // 138px card + 28px gap
-      const targetCols = Math.max(6, Math.floor(viewportWidth / slotW));
+      const slotW = 126; // 112px card + 14px gap (8-10 cols on desktop)
+      const targetCols = Math.max(8, Math.floor(viewportWidth / slotW));
       return {
-        tileWidth: 138,
-        tileHeight: 207,
-        gap: 26,
+        tileWidth: 112,
+        tileHeight: 168,
+        gap: 14,
         dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
       };
     }
-    const slotW = 180; // 148px card + 32px gap
-    const targetCols = Math.max(8, Math.floor(viewportWidth / slotW));
+    const slotW = 136; // 120px card + 16px gap (10-14+ cols on large displays)
+    const targetCols = Math.max(10, Math.floor(viewportWidth / slotW));
     return {
-      tileWidth: 148,
-      tileHeight: 222,
-      gap: 28,
+      tileWidth: 120,
+      tileHeight: 180,
+      gap: 16,
       dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
     };
   }, [isMobile, viewportWidth]);
@@ -236,50 +233,10 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     ));
     const movieCards = uniqueMovies.map(renderMovie);
 
-    // Provide single unique interactive cards (no duplicates)
-    const hasItems = uniqueMovies.length > 0 || uniqueSuggestions.length > 0;
-    const quizCards = hasItems
-      ? [
-          <QuizDriftCard
-            key="quiz-drift-card-unique"
-            currentUser={currentUser}
-            isCompact={isMobile}
-            isQuizCard
-            data-quiz-card
-          />,
-        ]
-      : [];
-
-    const spinCards = hasItems
-      ? [
-          <SpinDriftCard
-            key="spin-drift-card-unique"
-            isCompact={isMobile}
-            isSpinCard
-            data-spin-card
-          />,
-        ]
-      : [];
-
-    const chatCards = hasItems
-      ? [
-          <ChatDriftCard
-            key="chat-drift-card-unique"
-            currentUser={currentUser}
-            isCompact={isMobile}
-            isChatCard
-            data-chat-card
-          />,
-        ]
-      : [];
-
     return interleaveCollectionItems(
       suggestionCards,
       movieCards,
       posterPlaceCards,
-      quizCards,
-      spinCards,
-      chatCards,
     );
   }, [
     collectionState,

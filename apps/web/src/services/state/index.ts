@@ -375,6 +375,7 @@ export interface SessionState {
   activeUsers?: User[];
   pinProtectedUsers: User[];
   usersMissingPins: User[];
+  token?: string | null;
 }
 
 export type StateClientErrorCode =
