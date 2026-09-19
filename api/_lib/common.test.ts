@@ -93,25 +93,28 @@ describe("parseJsonContent", () => {
   });
 
   it("throws formatted error containing context when JSON syntax is invalid", () => {
-    assert.throws(
-      () => parseJsonContent("{ invalid json }", "movieData"),
-      (err: Error) => {
-        assert.strictEqual(err instanceof Error, true);
-        assert.ok(
-          err.message.startsWith("Failed to parse JSON in movieData:"),
-          `Expected message to start with context error, got: ${err.message}`
-        );
-        return true;
-      },
-    );
+    const invalidCases = [
+      { input: "", context: "emptyString" },
+      { input: "{ invalid json }", context: "movieData" },
+      { input: "[1, 2,", context: "userConfig" },
+      { input: "{\"key\": \"value\",}", context: "trailingComma" },
+      { input: "{ key: \"value\" }", context: "unquotedKey" },
+      { input: "undefined", context: "undefinedLiteral" },
+    ];
 
-    assert.throws(
-      () => parseJsonContent("[1, 2,", "userConfig"),
-      (err: Error) => {
-        assert.ok(err.message.includes("Failed to parse JSON in userConfig:"));
-        return true;
-      },
-    );
+    for (const { input, context } of invalidCases) {
+      assert.throws(
+        () => parseJsonContent(input, context),
+        (err: Error) => {
+          assert.strictEqual(err instanceof Error, true);
+          assert.ok(
+            err.message.startsWith(`Failed to parse JSON in ${context}:`),
+            `Expected message to start with context error, got: ${err.message}`
+          );
+          return true;
+        },
+      );
+    }
   });
 
   it("handles non-Error thrown exceptions during JSON parsing", (t) => {
@@ -131,18 +134,17 @@ describe("parseJsonContent", () => {
     );
   });
 
-  it("handles non-Error thrown values when parsing JSON fails", (t) => {
+  it("handles non-Error object thrown values when parsing JSON fails", (t) => {
     t.mock.method(JSON, "parse", () => {
-      throw "Raw string error";
+      throw { code: 500, detail: "Object exception" };
     });
 
     assert.throws(
-      () => parseJsonContent("{}", "customContext"),
+      () => parseJsonContent("{}", "objectContext"),
       (err: Error) => {
-        assert.ok(
-          err.message.includes(
-            "Failed to parse JSON in customContext: Raw string error",
-          ),
+        assert.strictEqual(
+          err.message,
+          "Failed to parse JSON in objectContext: [object Object]"
         );
         return true;
       },
