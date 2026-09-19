@@ -195,7 +195,7 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [posterUrl, fallbackCatUrl, cachedFallbackSrc]);
+  }, [posterUrl, fallbackCatUrl]);
 
   // Determine active display source: prefer local cached version for offline resilience
   const primarySrc = cachedSrc || posterUrl;

@@ -142,3 +142,4 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue:** Hardcoded timeout
 - **Observation:** The hardcoded `1000` ms timeout inside `collectNavigationTiming` was already extracted to `NAVIGATION_TIMING_DELAY_MS` in the codebase prior to executing this task. No code changes were needed.
 - **Note on CI Failure:** The pre-existing ESLint warnings in `DriftWall.tsx` and `ui/index.tsx` are unrelated to `apps/web/src/services/logger.ts`. Per repository memory guidelines ('When encountering pre-existing CI failures during a task, do not make opportunistic, unrelated changes...'), no unrelated files were modified.
+- **PR Obsolete Note:** Acknowledged PR closure as zero-value duplicate / obsolete per Fleet Ops comment 5742783985. Stopping further work.

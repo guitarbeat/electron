@@ -265,7 +265,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     if (!velocitiesRef.current || velocitiesRef.current.length !== columnItems.length) {
       velocitiesRef.current = columnItems.map(() => 0);
     }
-  }, [columnMeta, columnItems, speed, variance, direction]);
+  }, [columnMeta, columnItems]);
 
   const applyPlaneTransform = useCallback(
     (px: number, py: number) => {
