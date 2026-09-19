@@ -56,6 +56,29 @@ describe("concurrency utilities", () => {
         },
       );
     });
+
+    it("prevents subsequent tasks from executing after an error occurs", async () => {
+      const executed: number[] = [];
+      const items = [1, 2, 3, 4, 5, 6];
+
+      await assert.rejects(
+        async () => {
+          await concurrentMap(items, 1, async (item) => {
+            executed.push(item);
+            if (item === 2) {
+              throw new Error("Failure at item 2");
+            }
+            return item;
+          });
+        },
+        {
+          name: "Error",
+          message: "Failure at item 2",
+        },
+      );
+
+      assert.deepEqual(executed, [1, 2]);
+    });
   });
 
   describe("throttle", () => {
@@ -76,6 +99,30 @@ describe("concurrency utilities", () => {
 
       fn();
       assert.equal(calls, 2);
+    });
+
+    it("allows new execution after throttle period elapses across multiple cycles", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let calls = 0;
+      const fn = throttle(() => {
+        calls++;
+      }, 100);
+
+      fn(); // Call 1 (executes)
+      fn(); // Throttled
+      assert.equal(calls, 1);
+
+      t.mock.timers.tick(100);
+      fn(); // Call 2 (executes)
+      assert.equal(calls, 2);
+
+      t.mock.timers.tick(50);
+      fn(); // Throttled
+      assert.equal(calls, 2);
+
+      t.mock.timers.tick(50);
+      fn(); // Call 3 (executes)
+      assert.equal(calls, 3);
     });
 
     it("passes arguments correctly to throttled function", () => {
@@ -174,11 +221,13 @@ describe("concurrency utilities", () => {
     it("schedules via window.requestIdleCallback when available and cancels correctly", () => {
       let callbackInvoked = false;
       let cancelCalledWith: number | null = null;
+      let optionsPassed: { timeout?: number } | undefined;
 
       const origWindow = globalThis.window;
       // @ts-expect-error mocking window for test
       globalThis.window = {
-        requestIdleCallback: (cb: () => void) => {
+        requestIdleCallback: (cb: () => void, opts?: { timeout?: number }) => {
+          optionsPassed = opts;
           cb();
           return 123;
         },
@@ -193,6 +242,7 @@ describe("concurrency utilities", () => {
         }, 1000);
 
         assert.equal(callbackInvoked, true);
+        assert.deepEqual(optionsPassed, { timeout: 1000 });
         cancel();
         assert.equal(cancelCalledWith, 123);
       } finally {
@@ -218,6 +268,29 @@ describe("concurrency utilities", () => {
         assert.equal(workDone, true);
 
         cancel();
+      } finally {
+        globalThis.window = origWindow;
+      }
+    });
+
+    it("caps setTimeout delay to 400ms when requestIdleCallback is absent", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let workDone = false;
+
+      const origWindow = globalThis.window;
+      // @ts-expect-error mocking window without requestIdleCallback
+      globalThis.window = {};
+
+      try {
+        scheduleIdleWork(() => {
+          workDone = true;
+        }, 5000);
+
+        assert.equal(workDone, false);
+        t.mock.timers.tick(399);
+        assert.equal(workDone, false);
+        t.mock.timers.tick(1);
+        assert.equal(workDone, true);
       } finally {
         globalThis.window = origWindow;
       }
