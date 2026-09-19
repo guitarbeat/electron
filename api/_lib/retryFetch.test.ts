@@ -351,4 +351,143 @@ describe("fetchWithRetry", () => {
       "test-value",
     );
   });
+
+  it("propagates abort error when caller aborts during retry delay after 500 response", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    const controller = new AbortController();
+    let calls = 0;
+
+    globalThis.fetch = async (input, init) => {
+      calls++;
+      const signal = init?.signal;
+      if (signal?.aborted) {
+        const err = new Error("The operation was aborted");
+        err.name = "AbortError";
+        throw err;
+      }
+      return new Response("server error", { status: 500 });
+    };
+
+    const promise = fetchWithRetry(
+      "https://example.com",
+      { signal: controller.signal },
+      "abort-delay-ctx",
+    );
+
+    const expectation = assert.rejects(
+      async () => {
+        await promise;
+      },
+      (err: Error) => {
+        assert.equal(err.name, "AbortError");
+        return true;
+      },
+    );
+
+    // Allow attempt 1 fetch to settle and enter sleep
+    await new Promise((r) => setImmediate(r));
+
+    // Abort caller signal during sleep
+    controller.abort();
+
+    for (let i = 0; i < 5; i++) {
+      t.mock.timers.tick(1000);
+      await new Promise((r) => setImmediate(r));
+    }
+
+    await expectation;
+    assert.equal(calls, 2);
+  });
+
+  it("propagates abort error immediately when signal is pre-aborted before invocation", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    const controller = new AbortController();
+    controller.abort();
+    let calls = 0;
+
+    globalThis.fetch = async (input, init) => {
+      calls++;
+      const signal = init?.signal;
+      if (signal?.aborted) {
+        const err = new Error("This operation was aborted");
+        err.name = "AbortError";
+        throw err;
+      }
+      return new Response("ok", { status: 200 });
+    };
+
+    const promise = fetchWithRetry(
+      "https://example.com",
+      { signal: controller.signal },
+      "pre-aborted-ctx",
+    );
+
+    const expectation = assert.rejects(
+      async () => {
+        await promise;
+      },
+      (err: Error) => {
+        assert.equal(err.name, "AbortError");
+        return true;
+      },
+    );
+
+    for (let i = 0; i < 5; i++) {
+      t.mock.timers.tick(1000);
+      await new Promise((r) => setImmediate(r));
+    }
+
+    await expectation;
+    assert.equal(calls, 1);
+  });
+
+  it("propagates abort error when caller aborts during retry delay after network error", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    const controller = new AbortController();
+    let calls = 0;
+
+    globalThis.fetch = async (input, init) => {
+      calls++;
+      const signal = init?.signal;
+      if (signal?.aborted) {
+        const err = new Error("The operation was aborted");
+        err.name = "AbortError";
+        throw err;
+      }
+      throw new Error("Network failure");
+    };
+
+    const promise = fetchWithRetry(
+      "https://example.com",
+      { signal: controller.signal },
+      "abort-net-delay-ctx",
+    );
+
+    const expectation = assert.rejects(
+      async () => {
+        await promise;
+      },
+      (err: Error) => {
+        assert.equal(err.name, "AbortError");
+        return true;
+      },
+    );
+
+    // Allow attempt 1 catch block to run and enter sleep
+    await new Promise((r) => setImmediate(r));
+
+    // Abort caller signal during retry sleep
+    controller.abort();
+
+    for (let i = 0; i < 5; i++) {
+      t.mock.timers.tick(1000);
+      await new Promise((r) => setImmediate(r));
+    }
+
+    await expectation;
+    assert.equal(calls, 2);
+  });
 });
