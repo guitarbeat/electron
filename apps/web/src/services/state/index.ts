@@ -375,7 +375,6 @@ export interface SessionState {
   activeUsers?: User[];
   pinProtectedUsers: User[];
   usersMissingPins: User[];
-  token?: string | null;
 }
 
 export type StateClientErrorCode =
@@ -929,7 +928,7 @@ export const normalizeSpinHistoryParsed = (value: unknown): string[] => {
   }
   return value
     .map((entry) => spinHistoryTitleFromEntry(entry))
-    .filter((t): t is string => Boolean(t));
+    .filter((title): title is string => Boolean(title));
 };
 
 export const normalizeSpinEntry = (value: unknown): SpinEntry | null => {
@@ -1386,30 +1385,6 @@ const parseJsonResponse = async <T>(response: Response): Promise<T> => {
   }
 };
 
-export const SESSION_TOKEN_STORAGE_KEY = "movie_watch_session_token";
-
-export const getStoredSessionToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(SESSION_TOKEN_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-};
-
-export const setStoredSessionToken = (token: string | null): void => {
-  if (typeof window === "undefined") return;
-  try {
-    if (token) {
-      window.localStorage.setItem(SESSION_TOKEN_STORAGE_KEY, token);
-    } else {
-      window.localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
-    }
-  } catch {
-    // Ignore storage errors
-  }
-};
-
 const fetchStateFromServer = async <TScope extends StateScope>(
   scope: TScope,
   snapshot?: StoredSnapshot<StateScopeDataMap[TScope]> | null,
@@ -1417,10 +1392,6 @@ const fetchStateFromServer = async <TScope extends StateScope>(
   const headers = new Headers();
   if (snapshot?.version && !snapshot.degraded && !snapshot.warning) {
     headers.set("If-None-Match", `"${snapshot.version}"`);
-  }
-  const token = getStoredSessionToken();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
   }
 
   return fetch(buildStateUrl(scope), {
@@ -1438,23 +1409,16 @@ const postMutation = async <TScope extends StateScope>(
     op: string;
     payload: unknown;
   },
-): Promise<Response> => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  const token = getStoredSessionToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  return fetch(buildStateUrl(scope, true), {
+): Promise<Response> =>
+  fetch(buildStateUrl(scope, true), {
     method: "POST",
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+    },
     credentials: "include",
     cache: "no-store",
     body: JSON.stringify(body),
   });
-};
 
 const readOptimisticSnapshot = <TScope extends StateScope>(
   scope: TScope,
