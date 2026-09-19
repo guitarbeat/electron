@@ -142,3 +142,8 @@ Task requested adding tests for health check handler in `api/health.ts:9`. Howev
 - **Issue reported**: Hardcoded timeout `800` at `apps/web/src/hooks/movies/index.ts:680`.
 - **Finding**: Upon inspecting `apps/web/src/hooks/movies/index.ts`, the delay constant `const MOCK_MODE_DELAY_MS = 800;` is already defined at line 26 and used at line 684 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
 - **Resolution**: Stale task prompt. No code changes required.
+
+## 2026-09-19 - Stale Prompt Discrepancy (Hardcoded timeout in `apps/web/src/services/logger.ts:610`)
+- Task requested extracting hardcoded timeout `1000` in `apps/web/src/services/logger.ts:610`.
+- Upon inspecting `apps/web/src/services/logger.ts`, `const NAVIGATION_TIMING_DELAY_MS = 1000;` is already defined at line 56 and used at line 608 and line 611 (`setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS);`).
+- As per memory directives, concluded the task with no source code changes needed and documented the discrepancy.
