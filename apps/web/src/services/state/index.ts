@@ -370,6 +370,7 @@ export interface ScopeOutbox {
 }
 
 export interface SessionState {
+  token?: string | null;
   hasAccess: boolean;
   currentUser: User | null;
   activeUsers?: User[];
