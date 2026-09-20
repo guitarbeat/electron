@@ -710,7 +710,10 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       aria-label={`Poster for ${movie.title}`}
     >
       <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-3 pt-6 sm:p-4 sm:pt-8">
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div
+          data-movie-details-interactive="true"
+          style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        >
           <PageFlip
             pages={pages}
             pageWidth={bookWidth}
@@ -733,6 +736,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         <nav
           className="flex flex-col items-center gap-2 mt-4 sm:mt-5 select-none"
           aria-label="Booklet navigation"
+          data-movie-details-interactive="true"
         >
           <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/80 border border-white/15 backdrop-blur-md shadow-2xl">
             <button

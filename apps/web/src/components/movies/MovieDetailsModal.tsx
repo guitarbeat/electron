@@ -203,6 +203,21 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
   const isContainedMode = contained || Boolean(container);
 
+  const handleOutsidePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (
+      target.closest(
+        '[data-movie-details-interactive="true"], .movie-details-modal__close',
+      )
+    ) {
+      return;
+    }
+    close();
+  };
+
   const modalContent = (
     <div
       className={`movie-details-modal${isEntering ? " is-open" : ""}${isContainedMode ? " movie-details-modal--contained" : ""}`}
@@ -222,6 +237,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="movie-details-title"
+      onPointerDown={handleOutsidePointerDown}
     >
       <button
         type="button"
@@ -284,7 +300,10 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
           />
           {/* Main Details Body (Mobile Only) */}
           {isMobile && (
-            <div className="movie-details-modal__content">
+            <div
+              className="movie-details-modal__content"
+              data-movie-details-interactive="true"
+            >
               <MetadataHeader
                 movie={movie}
                 metadataItems={metadataItems}
@@ -333,4 +352,3 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
 
   return container ? createPortal(modalContent, container) : createPortal(modalContent, document.body);
 };
-

@@ -93,8 +93,14 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     });
     await expect(closeDetailsButton).toBeVisible();
 
-    // 6. Close movie details dialog
-    await closeDetailsButton.click();
+    // 6. Clicking empty wall space closes the selected movie.
+    const wall = page.locator(".movies-wall-container");
+    const wallBounds = await wall.boundingBox();
+    expect(wallBounds).not.toBeNull();
+    await page.mouse.click(
+      (wallBounds?.x ?? 0) + 12,
+      (wallBounds?.y ?? 0) + (wallBounds?.height ?? 0) - 12,
+    );
     await expect(detailsDialog).toBeHidden();
 
     // 7. Choosing a catalog result stages it without mutating shared state.
