@@ -911,13 +911,13 @@ const spinHistoryTitleFromEntry = (entry: unknown): string | null => {
   if (!entry || typeof entry !== "object") {
     return null;
   }
-  const entryObj = entry as { title?: unknown; movieTitle?: unknown };
-  if (typeof entryObj.title === "string") {
-    const sanitizedTitle = sanitizeInput(entryObj.title);
+  const entryObject = entry as { title?: unknown; movieTitle?: unknown };
+  if (typeof entryObject.title === "string") {
+    const sanitizedTitle = sanitizeInput(entryObject.title);
     return sanitizedTitle || null;
   }
-  if (typeof entryObj.movieTitle === "string") {
-    const sanitizedTitle = sanitizeInput(entryObj.movieTitle);
+  if (typeof entryObject.movieTitle === "string") {
+    const sanitizedTitle = sanitizeInput(entryObject.movieTitle);
     return sanitizedTitle || null;
   }
   return null;
