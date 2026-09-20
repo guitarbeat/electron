@@ -29,7 +29,45 @@ const MOVIE_SIGNAL =
   /\b(movie|film|series|season|episode|imdb|netflix|hulu|max)\b|\(\s*(19|20)\d{2}\s*\)|\b(19|20)\d{2}\b/i;
 
 export const normalizeLibraryQuery = (value: string): string =>
-  value.trim().toLowerCase();
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+
+const editDistance = (left: string, right: string): number => {
+  const distances = Array.from({ length: left.length + 1 }, (_, leftIndex) =>
+    Array.from({ length: right.length + 1 }, (_, rightIndex) =>
+      leftIndex === 0 ? rightIndex : leftIndex,
+    ),
+  );
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      const substitution =
+        distances[leftIndex - 1][rightIndex - 1] +
+        (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1);
+      distances[leftIndex][rightIndex] = Math.min(
+        distances[leftIndex - 1][rightIndex] + 1,
+        distances[leftIndex][rightIndex - 1] + 1,
+        substitution,
+      );
+      if (
+        leftIndex > 1 &&
+        rightIndex > 1 &&
+        left[leftIndex - 1] === right[rightIndex - 2] &&
+        left[leftIndex - 2] === right[rightIndex - 1]
+      ) {
+        distances[leftIndex][rightIndex] = Math.min(
+          distances[leftIndex][rightIndex],
+          distances[leftIndex - 2][rightIndex - 2] + 1,
+        );
+      }
+    }
+  }
+  return distances[left.length][right.length];
+};
 
 export const classifyLibraryIntent = (query: string): LibraryIntent => {
   const normalized = normalizeLibraryQuery(query);
@@ -140,15 +178,28 @@ export const scoreLibraryMatch = (name: string, query: string): number => {
     return 0;
   }
   if (normalizedName === normalizedQuery) {
-    return 3;
+    return 100;
   }
   if (normalizedName.startsWith(normalizedQuery)) {
-    return 2;
+    return 85;
   }
   if (normalizedName.includes(normalizedQuery)) {
-    return 1;
+    return 70;
   }
-  return 0;
+
+  const queryWords = normalizedQuery.split(" ");
+  const nameWords = normalizedName.split(" ");
+  const maxDistance = normalizedQuery.length <= 4 ? 1 : normalizedQuery.length <= 8 ? 2 : 3;
+  const fullDistance = editDistance(normalizedName, normalizedQuery);
+  const wordDistance = Math.max(
+    ...queryWords.map((queryWord) =>
+      Math.min(
+        ...nameWords.map((nameWord) => editDistance(nameWord, queryWord)),
+      ),
+    ),
+  );
+  const distance = Math.min(fullDistance, wordDistance);
+  return distance <= maxDistance ? 60 - distance * 5 : 0;
 };
 
 export const matchLibraryMovies = (

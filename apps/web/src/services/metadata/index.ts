@@ -604,6 +604,70 @@ export const searchTvMazeShows = async (
   }
 };
 
+export const wikipediaSearchPayloadToMovieResults = (data: {
+  query?: { search?: Array<{ title?: string }> };
+}): MovieAutocompleteResult[] => {
+  const seen = new Set<string>();
+  return (data.query?.search ?? [])
+    .map(({ title = "" }): MovieAutocompleteResult | null => {
+      if (
+        /\((?:disambiguation|soundtrack|novel|song|album)\)$/i.test(title) ||
+        /^(?:list of|awards and nominations|accolades received)/i.test(title)
+      ) {
+        return null;
+      }
+      const type = /\((?:TV|television|web) series\)$/i.test(title)
+        ? "series"
+        : "movie";
+      const year = title.match(/\((\d{4})(?:\s+(?:film|TV series))?\)$/i)?.[1];
+      const cleanTitle = title
+        .replace(/\s*\((?:\d{4}\s+)?(?:film|movie|TV series|television series|web series)\)$/i, "")
+        .trim();
+      const key = `${cleanTitle.toLowerCase()}|${type}`;
+      if (!cleanTitle || seen.has(key)) return null;
+      seen.add(key);
+      return { title: cleanTitle, year, type };
+    })
+    .filter((result): result is MovieAutocompleteResult => result !== null)
+    .slice(0, MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT);
+};
+
+const searchWikipediaMovieTitles = async (
+  query: string,
+  signal?: AbortSignal,
+): Promise<MovieAutocompleteResult[]> => {
+  type WikipediaSearchPayload = {
+    query?: {
+      searchinfo?: { suggestion?: string };
+      search?: Array<{ title?: string }>;
+    };
+  };
+  const fetchSearch = async (searchQuery: string) => {
+    const url = new URL("https://en.wikipedia.org/w/api.php");
+    url.searchParams.set("action", "query");
+    url.searchParams.set("list", "search");
+    url.searchParams.set("srsearch", searchQuery);
+    url.searchParams.set("srnamespace", "0");
+    url.searchParams.set("srlimit", "8");
+    url.searchParams.set("format", "json");
+    url.searchParams.set("origin", "*");
+    const response = await fetch(url, {
+      signal,
+      headers: { Accept: "application/json" },
+    });
+    return response.ok
+      ? ((await response.json()) as WikipediaSearchPayload)
+      : null;
+  };
+
+  const initial = await fetchSearch(`${query} film`);
+  const suggestedQuery = initial?.query?.searchinfo?.suggestion;
+  const resolved = suggestedQuery
+    ? await fetchSearch(suggestedQuery)
+    : initial;
+  return wikipediaSearchPayloadToMovieResults(resolved ?? {});
+};
+
 // OMDb Metadata Cache
 
 const MAX_CACHE_SIZE = 200;
@@ -792,13 +856,6 @@ export const searchMovieAutocomplete = async (
     searchTvMazeShows(trimmedQuery, options.signal),
   ]);
 
-  if (
-    omdbResults.status === "rejected" &&
-    tvMazeResults.status === "rejected"
-  ) {
-    throw omdbResults.reason;
-  }
-
   const successfulOmdbResults =
     omdbResults.status === "fulfilled" ? omdbResults.value : [];
   const successfulTvMazeResults =
@@ -813,11 +870,31 @@ export const searchMovieAutocomplete = async (
     MOVIE_AUTOCOMPLETE_RESULTS_PER_SOURCE_LIMIT,
   );
 
-  const merged = mergeMovieAutocompleteResults(
+  let merged = mergeMovieAutocompleteResults(
     omdbLimited,
     tvMazeLimited,
     query,
   );
+
+  if (merged.length === 0 && !options.signal?.aborted) {
+    try {
+      const wikipediaResults = await searchWikipediaMovieTitles(
+        trimmedQuery,
+        options.signal,
+      );
+      merged = mergeMovieAutocompleteResults(wikipediaResults, [], query);
+    } catch {
+      // The primary providers still determine availability; tolerant fallback is best effort.
+    }
+  }
+
+  if (
+    merged.length === 0 &&
+    omdbResults.status === "rejected" &&
+    tvMazeResults.status === "rejected"
+  ) {
+    throw omdbResults.reason;
+  }
 
   autocompleteMergedCache.set(normKey, { results: merged, timestamp: now });
   evictMapOldest(autocompleteMergedCache, MAX_AUTOCOMPLETE_CACHE_SIZE);
