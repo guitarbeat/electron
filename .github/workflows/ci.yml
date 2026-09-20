@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   typecheck-and-lint:
-    name: Type Check, Lint & Repo Hygiene
+    name: Type Check & Lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -51,7 +51,7 @@ jobs:
         run: pnpm run lint
 
   unit-tests:
-    name: Unit Tests (Node 22)
+    name: Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -80,7 +80,7 @@ jobs:
         run: pnpm run test
 
   build:
-    name: Build & Bundle Verification
+    name: Build Bundle
     needs: [typecheck-and-lint]
     runs-on: ubuntu-latest
     timeout-minutes: 15
