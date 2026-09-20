@@ -331,5 +331,107 @@ describe("pinAttemptStore", () => {
         connectMock.mock.restore();
       }
     });
+
+    it("recreates pool and resets schemaReady when DATABASE_URL changes", async () => {
+      let pool1Connects = 0;
+      let pool2Connects = 0;
+      let endCalled = false;
+
+      const endMock = mock.method(
+        pg.Pool.prototype,
+        "end",
+        async function () {
+          endCalled = true;
+        },
+      );
+
+      const connectMock = mock.method(
+        pg.Pool.prototype,
+        "connect",
+        async function () {
+          if (process.env.DATABASE_URL?.includes("db1")) {
+            pool1Connects++;
+          } else if (process.env.DATABASE_URL?.includes("db2")) {
+            pool2Connects++;
+          }
+          return {
+            query: async () => ({ rows: [] }),
+            release: () => {},
+          };
+        },
+      );
+
+      try {
+        process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db1";
+        await getPinAttemptRecord("user1");
+        assert.ok(pool1Connects > 0);
+
+        process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db2";
+        await getPinAttemptRecord("user1");
+        assert.ok(pool2Connects > 0);
+        assert.strictEqual(endCalled, true);
+      } finally {
+        endMock.mock.restore();
+        connectMock.mock.restore();
+      }
+    });
+
+    it("releases client when query execution throws an error", async () => {
+      let released = false;
+      const connectMock = mock.method(
+        pg.Pool.prototype,
+        "connect",
+        async function () {
+          return {
+            query: async (sql: string | { text: string }) => {
+              const sqlStr = typeof sql === "string" ? sql : sql?.text ?? "";
+              if (sqlStr.includes("SELECT failures")) {
+                throw new Error("Query execution failed");
+              }
+              return { rows: [] };
+            },
+            release: () => {
+              released = true;
+            },
+          };
+        },
+      );
+
+      try {
+        await getPinAttemptRecord("user1");
+        assert.strictEqual(released, true);
+      } finally {
+        connectMock.mock.restore();
+      }
+    });
+
+    it("logs error to console.error when DB queries fail", async () => {
+      const loggedErrors: any[] = [];
+      const consoleMock = mock.method(console, "error", (...args: any[]) => {
+        loggedErrors.push(args);
+      });
+
+      const connectMock = mock.method(
+        pg.Pool.prototype,
+        "connect",
+        async function () {
+          throw new Error("DB failure");
+        },
+      );
+
+      try {
+        await getPinAttemptRecord("user1");
+        await recordPinFailure("user1", 1, null);
+        await clearPinAttempts("user1");
+
+        assert.strictEqual(loggedErrors.length, 3);
+        assert.strictEqual(loggedErrors[0][0], "[pinAttemptStore] Failed to read pin attempt record:");
+        assert.strictEqual(loggedErrors[1][0], "[pinAttemptStore] Failed to record pin failure:");
+        assert.strictEqual(loggedErrors[2][0], "[pinAttemptStore] Failed to clear pin attempts:");
+      } finally {
+        consoleMock.mock.restore();
+        connectMock.mock.restore();
+      }
+    });
   });
 });
