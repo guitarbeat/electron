@@ -548,6 +548,29 @@ describe("omdbHandler", () => {
     assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], bodyError);
   });
 
+  it("should catch URL parsing errors when req.url is malformed, log them, and return 500", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+
+    const req = {
+      method: "GET",
+      headers: new Headers(),
+      url: "http://[invalid-url]",
+    } as unknown as Request;
+
+    const res = await omdbHandler(req);
+
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 1);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[0].arguments[0],
+      "Error handling GET http://[invalid-url]:",
+    );
+    assert.ok(consoleErrorMock.mock.calls[0].arguments[1] instanceof TypeError);
+  });
+
   it("should catch non-Error thrown exceptions in catch block", async (t) => {
     const consoleErrorMock = t.mock.method(console, "error", () => {});
     const thrownValue = "String error thrown";
@@ -571,6 +594,126 @@ describe("omdbHandler", () => {
       "Error handling GET " + req.url + ":",
     );
     assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], thrownValue);
+  });
+
+  it("should return 429 Too Many Requests when request from client IP is rate limited", async () => {
+    const ip = "203.0.113.1";
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        return new Response(JSON.stringify({ Response: "True", Search: [] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      },
+    };
+
+    for (let i = 0; i < 30; i++) {
+      const req = new Request(`http://localhost/api/omdb?s=movie${i}`, {
+        method: "GET",
+        headers: { "x-forwarded-for": ip },
+      });
+      const res = await omdbHandler(req, mockDeps);
+      assert.strictEqual(res.status, 200);
+    }
+
+    const rateLimitedReq = new Request("http://localhost/api/omdb?s=movie31", {
+      method: "GET",
+      headers: { "x-forwarded-for": ip },
+    });
+    const res = await omdbHandler(rateLimitedReq, mockDeps);
+    assert.strictEqual(res.status, 429);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Too many requests.");
+  });
+
+  it("should parse client IP from x-real-ip header when x-forwarded-for is missing", async () => {
+    const ip = "198.51.100.5";
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        return new Response(JSON.stringify({ Response: "True", Search: [] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      },
+    };
+
+    for (let i = 0; i < 30; i++) {
+      const req = new Request(`http://localhost/api/omdb?s=realip${i}`, {
+        method: "GET",
+        headers: { "x-real-ip": ip },
+      });
+      const res = await omdbHandler(req, mockDeps);
+      assert.strictEqual(res.status, 200);
+    }
+
+    const rateLimitedReq = new Request("http://localhost/api/omdb?s=realip31", {
+      method: "GET",
+      headers: { "x-real-ip": ip },
+    });
+    const res = await omdbHandler(rateLimitedReq, mockDeps);
+    assert.strictEqual(res.status, 429);
+  });
+
+  it("should return 502 omdb_auth when upstream returns 401 or 403 status code", async () => {
+    for (const status of [401, 403]) {
+      const mockDeps = {
+        fetchWithRetry: async () => {
+          return new Response(JSON.stringify({ Error: "Unauthorized" }), {
+            status,
+            statusText: "Unauthorized",
+            headers: { "content-type": "application/json" },
+          });
+        },
+      };
+
+      const req = new Request(`http://localhost/api/omdb?s=status${status}`, { method: "GET" });
+      const res = await omdbHandler(req, mockDeps);
+
+      assert.strictEqual(res.status, 502);
+      const data = await res.json();
+      assert.strictEqual(data.code, "omdb_auth");
+      assert.strictEqual(data.error, "OMDb rejected the configured API key.");
+    }
+  });
+
+  it("should default content-type to application/json when missing from upstream headers", async () => {
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        return {
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          headers: new Headers(),
+          text: async () => JSON.stringify({ Title: "Test", Response: "True" }),
+        } as unknown as Response;
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=nocontenttype", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.headers.get("Content-Type"), "application/json");
+  });
+
+  it("should handle non-JSON body on HTTP 200 OK without failing", async () => {
+    const nonJsonBody = "<html><body>502 Bad Gateway</body></html>";
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        return new Response(nonJsonBody, {
+          status: 200,
+          statusText: "OK",
+          headers: { "content-type": "text/html" },
+        });
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=nonjson", { method: "GET" });
+    const res = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res.status, 200);
+    const body = await res.text();
+    assert.strictEqual(body, nonJsonBody);
   });
 
   it("should handle request via default export withWebHandler wrapper", async () => {
