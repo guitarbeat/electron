@@ -32,4 +32,14 @@ describe("resolveConfig", () => {
     assert.equal(resolveConfig("   ", ""), "");
     assert.equal(resolveConfig(undefined, ""), "");
   });
+
+  it("resolves values directly from environment variable inputs", () => {
+    try {
+      process.env.TEST_RESOLVE_CONFIG_VAR = "  env_override  ";
+      assert.equal(resolveConfig(process.env.TEST_RESOLVE_CONFIG_VAR, "fallback"), "env_override");
+      assert.equal(resolveConfig(process.env.NON_EXISTENT_VAR, "fallback"), "fallback");
+    } finally {
+      delete process.env.TEST_RESOLVE_CONFIG_VAR;
+    }
+  });
 });
