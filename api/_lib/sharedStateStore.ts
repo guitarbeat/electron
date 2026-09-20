@@ -84,6 +84,7 @@ export const installSharedStateMemoryStoreForTests = (
 ): {
   setFile: (filename: string, content: string) => void;
   getFile: (filename: string) => string | undefined;
+  setFile: (filename: string, content: string) => void;
   patchBodies: string[];
   dispose: () => void;
 } => {
@@ -97,6 +98,9 @@ export const installSharedStateMemoryStoreForTests = (
 
   return {
     getFile: (filename: string) => store.get(filename),
+    setFile: (filename: string, content: string) => {
+      store.set(filename, content);
+    },
     patchBodies,
     setFile: (filename: string, content: string) => {
       store.set(filename, content);
