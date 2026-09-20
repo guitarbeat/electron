@@ -16,8 +16,8 @@ permissions:
   checks: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.client_payload.id || github.run_id }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.event.client_payload.project.name || 'manual' }}-${{ github.event.client_payload.environment || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deployment-smoke-check:

@@ -72,7 +72,7 @@ pnpm verify
 
 ### 4.2 CI Gates & Build Pipeline Integration
 - **Pre-Commit Hook**: `scripts/pre-commit.sh` and `pnpm pre-commit` execute `scripts/check-artifacts.js` to block invalid commits locally before reaching the remote repository.
-- **CI Pipelines**: In `.github/workflows/ci.yml`, the `check-artifacts` validation runs as an explicit, blocking step in both the `typecheck-and-lint` and `build` jobs. Any non-compliant or orphaned artifact immediately fails CI before build and deployment.
+- **CI Pipeline**: In `.github/workflows/ci.yml`, artifact and repository-hygiene validation run once in the blocking `Type Check & Lint` job. The bundle job performs only the production compilation, avoiding duplicate validation and TypeScript work.
 - **Local Builds**: `pnpm build` triggers `scripts/check-artifacts.js` as its first step, ensuring that production bundles cannot be generated from a dirty or non-compliant working tree.
 
 If any unauthorized artifact or forbidden pattern is introduced, the verification fails with actionable remediation instructions.

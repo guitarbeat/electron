@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+  cancel-in-progress: true
 
 jobs:
   typecheck-and-lint:
@@ -81,7 +81,6 @@ jobs:
 
   build:
     name: Build Bundle
-    needs: [typecheck-and-lint]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -104,11 +103,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate Artifact Compliance & Lifecycle
-        run: pnpm run check-artifacts
-
       - name: Build Application
-        run: pnpm run build
+        run: pnpm run build:bundle
 
       - name: Verify Build Outputs
         run: |
@@ -120,7 +116,6 @@ jobs:
 
   end-to-end-tests:
     name: Critical User Journey
-    needs: [typecheck-and-lint]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
