@@ -643,4 +643,53 @@ describe("fetchWithRetry", () => {
     await expectation;
     assert.equal(calls, 2);
   });
+  it("propagates caller abort during delayed fetch response without retrying", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+
+    const controller = new AbortController();
+    let calls = 0;
+
+    globalThis.fetch = async (input, init) => {
+      calls++;
+      const signal = init?.signal;
+      return new Promise<Response>((resolve, reject) => {
+        if (signal?.aborted) {
+          const err = new Error("The operation was aborted");
+          err.name = "AbortError";
+          reject(err);
+          return;
+        }
+        signal?.addEventListener("abort", () => {
+          const err = new Error("The operation was aborted");
+          err.name = "AbortError";
+          reject(err);
+        });
+      });
+    };
+
+    const promise = fetchWithRetry(
+      "https://example.com",
+      { signal: controller.signal },
+      "delayed-abort-ctx",
+    );
+
+    const expectation = assert.rejects(
+      async () => {
+        await promise;
+      },
+      (err: Error) => {
+        assert.equal(err.name, "AbortError");
+        return true;
+      },
+    );
+
+    // Allow fetch to start and attach listener
+    await new Promise((r) => setImmediate(r));
+
+    // Caller aborts during delayed response
+    controller.abort();
+
+    await expectation;
+    assert.equal(calls, 1);
+  });
 });
