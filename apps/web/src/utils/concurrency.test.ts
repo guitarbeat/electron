@@ -39,6 +39,19 @@ describe("concurrency utilities", () => {
       assert.deepEqual(result, [200, 100, 20, 160, 40]);
     });
 
+    it("works with concurrency equal to 1 (strictly sequential execution)", async () => {
+      const items = [1, 2, 3];
+      const executionLog: number[] = [];
+
+      const result = await concurrentMap(items, 1, async (item) => {
+        executionLog.push(item);
+        return item * 2;
+      });
+
+      assert.deepEqual(executionLog, [1, 2, 3]);
+      assert.deepEqual(result, [2, 4, 6]);
+    });
+
     it("propagates errors when a worker function throws", async () => {
       const items = [1, 2, 3, 4];
       await assert.rejects(
@@ -154,22 +167,22 @@ describe("concurrency utilities", () => {
       assert.equal(calls, 1);
     });
 
-    it("resets wait timer on repeated calls", (t) => {
+    it("resets wait timer on repeated calls and uses arguments from latest call", (t) => {
       t.mock.timers.enable({ apis: ["setTimeout"] });
-      let calls = 0;
-      const fn = debounce(() => {
-        calls++;
+      let lastCallArg = "";
+      const fn = debounce((arg: string) => {
+        lastCallArg = arg;
       }, 100);
 
-      fn();
+      fn("first");
       t.mock.timers.tick(50);
 
-      fn(); // reset timer
+      fn("second"); // reset timer
       t.mock.timers.tick(50);
-      assert.equal(calls, 0);
+      assert.equal(lastCallArg, "");
 
       t.mock.timers.tick(50);
-      assert.equal(calls, 1);
+      assert.equal(lastCallArg, "second");
     });
 
     it("executes immediately on leading edge when immediate is true", (t) => {
@@ -196,6 +209,20 @@ describe("concurrency utilities", () => {
       assert.equal(calls, 2);
     });
 
+    it("defaults immediate parameter to false when omitted", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let calls = 0;
+      const fn = debounce(() => {
+        calls++;
+      }, 100);
+
+      fn();
+      assert.equal(calls, 0); // Not immediate
+
+      t.mock.timers.tick(100);
+      assert.equal(calls, 1);
+    });
+
     it("passes arguments and context (this) to debounced function", (t) => {
       t.mock.timers.enable({ apis: ["setTimeout"] });
       let lastArgs: [number, string] | null = null;
@@ -218,6 +245,27 @@ describe("concurrency utilities", () => {
   });
 
   describe("scheduleIdleWork", () => {
+    it("schedules via window.requestIdleCallback with default timeout parameter", () => {
+      let optionsPassed: { timeout?: number } | undefined;
+
+      const origWindow = globalThis.window;
+      // @ts-expect-error mocking window for test
+      globalThis.window = {
+        requestIdleCallback: (_cb: () => void, opts?: { timeout?: number }) => {
+          optionsPassed = opts;
+          return 123;
+        },
+        cancelIdleCallback: () => {},
+      };
+
+      try {
+        scheduleIdleWork(() => {});
+        assert.deepEqual(optionsPassed, { timeout: 2000 });
+      } finally {
+        globalThis.window = origWindow;
+      }
+    });
+
     it("schedules via window.requestIdleCallback when available and cancels correctly", () => {
       let callbackInvoked = false;
       let cancelCalledWith: number | null = null;
