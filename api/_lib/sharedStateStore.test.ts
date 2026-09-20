@@ -307,7 +307,10 @@ describe("sharedStateStore", () => {
       try {
         // 1. First read populates the in-memory fileCache
         const firstRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(firstRead.content, '{"v":1}');
+        assert.deepStrictEqual(firstRead, {
+          exists: true,
+          content: '{"v":1}',
+        });
 
         // Directly mutate the underlying memory store without calling patchSharedStateFile
         // (which would normally clear the cache for that key).
@@ -316,7 +319,10 @@ describe("sharedStateStore", () => {
 
         // 2. Unexpired cache hit: returns stale cached content '{"v":1}' despite store change
         const cachedRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(cachedRead.content, '{"v":1}');
+        assert.deepStrictEqual(cachedRead, {
+          exists: true,
+          content: '{"v":1}',
+        });
 
         // 3. bypassCache: true bypasses fileCache and reads fresh content '{"v":2}' from store
         t.mock.timers.setTime(now + 10000);
