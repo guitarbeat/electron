@@ -37,17 +37,16 @@ const tests = [
     },
   },
   {
-    name: 'State sync API endpoint resolves',
+    name: 'State sync API rejects unauthenticated access',
     path: '/api/state/movies',
     validate: (res, body) => {
-      // In production or mock dev mode, /api/state/movies should respond with 200 or valid state envelope
-      if (res.status !== 200 && res.status !== 304) {
-        return `Expected HTTP 200 or 304, got ${res.status}: ${body}`;
+      if (res.status !== 401) {
+        return `Expected HTTP 401, got ${res.status}: ${body}`;
       }
       try {
         const json = JSON.parse(body);
-        if (typeof json !== 'object' || json === null) {
-          return 'Expected JSON object in state response';
+        if (json?.error !== 'Unauthorized.') {
+          return `Expected Unauthorized error envelope, got: ${body}`;
         }
       } catch (err) {
         return `Failed to parse JSON response: ${err.message}`;
