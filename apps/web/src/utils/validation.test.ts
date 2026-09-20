@@ -58,12 +58,19 @@ describe("validation utility", () => {
         age: { required: true, minLength: 2 },
         active: { required: false, minLength: 4 },
         missing: { required: false, minLength: 3 },
+        count: { required: true },
+        flag: { required: true },
       });
 
-      const resultNum = validator({ age: 25, active: true, missing: undefined });
+      const resultNum = validator({ age: 25, active: true, missing: undefined, count: 10, flag: "true" });
       assert.equal(resultNum.isValid, true);
 
-      const resultShortNum = validator({ age: 5 });
+      const resultFalsyRequired = validator({ age: 25, count: 0, flag: false });
+      assert.equal(resultFalsyRequired.isValid, false);
+      assert.equal(resultFalsyRequired.errors.count, "count is required");
+      assert.equal(resultFalsyRequired.errors.flag, "flag is required");
+
+      const resultShortNum = validator({ age: 5, count: 10, flag: "true" });
       assert.equal(resultShortNum.isValid, false);
       assert.equal(resultShortNum.errors.age, "age must be at least 2 characters");
     });
@@ -187,6 +194,10 @@ describe("validation utility", () => {
 
   describe("CommonRules & Predefined Validators", () => {
     it("validates CommonRules configurations", () => {
+      const requiredValidator = createValidator({ field: CommonRules.required });
+      assert.equal(requiredValidator({ field: "" }).isValid, false);
+      assert.equal(requiredValidator({ field: "value" }).isValid, true);
+
       const emailValidator = createValidator({ email: CommonRules.email });
       assert.equal(emailValidator({ email: "" }).isValid, false);
       assert.equal(emailValidator({ email: "invalid" }).isValid, false);
@@ -243,14 +254,14 @@ describe("validation utility", () => {
       assert.equal(validMemory.isValid, true);
 
       const invalidMentionsMemory = validateMemory({
-        note: "Hey @john and @aaron!",
+        note: "Hey @john, @bob, and @aaron!",
         movieTitle: "Inception",
         author: "Electra",
       });
       assert.equal(invalidMentionsMemory.isValid, false);
       assert.equal(
         invalidMentionsMemory.errors.note,
-        "Invalid mentions: @john. Only @aaron and @electra are allowed.",
+        "Invalid mentions: @john, @bob. Only @aaron and @electra are allowed.",
       );
 
       const noMentionsMemory = validateMemory({
