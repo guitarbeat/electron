@@ -252,5 +252,48 @@ describe("layouts utilities", () => {
       assert.deepStrictEqual(result.queue, []);
       assert.deepStrictEqual(result.completed, []);
     });
+
+    it("places all items into completed when predicate returns true for all", () => {
+      const items = [
+        { id: 1, done: true },
+        { id: 2, done: true },
+      ];
+      const result = buildCollectionSections(items, [], (item) => item.done);
+
+      assert.deepStrictEqual(result.queue, []);
+      assert.deepStrictEqual(result.completed, items);
+    });
+
+    it("places all items into queue when predicate returns false for all", () => {
+      const items = [
+        { id: 1, done: false },
+        { id: 2, done: false },
+      ];
+      const result = buildCollectionSections(items, [], (item) => item.done);
+
+      assert.deepStrictEqual(result.queue, items);
+      assert.deepStrictEqual(result.completed, []);
+    });
+
+    it("preserves relative item order within queue and completed arrays", () => {
+      const items = [
+        { id: 10, done: false },
+        { id: 20, done: true },
+        { id: 30, done: false },
+        { id: 40, done: true },
+        { id: 50, done: false },
+      ];
+
+      const result = buildCollectionSections(items, [], (item) => item.done);
+
+      assert.deepStrictEqual(
+        result.queue.map((i) => i.id),
+        [10, 30, 50],
+      );
+      assert.deepStrictEqual(
+        result.completed.map((i) => i.id),
+        [20, 40],
+      );
+    });
   });
 });
