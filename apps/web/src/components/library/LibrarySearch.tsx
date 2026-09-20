@@ -145,6 +145,13 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
     const primaryLabel = librarySubmitLabel(submitKind, isGuest);
     const hasQuery = trimmed.length > 0;
 
+    useEffect(() => {
+      if (currentUser) return;
+      setShowRecommend(false);
+      setGuestName("");
+      setRecommendReason("");
+    }, [currentUser]);
+
     const hideAutocomplete = useCallback(() => {
       setIsOpen(false);
       resetActiveIndex();
@@ -720,7 +727,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                     {librarySubmitLabel(alternateKind, isGuest)}
                   </Button>
                 ) : null}
-                {submitKind === "movie" ? (
+                {submitKind === "movie" && currentUser ? (
                   <Button
                     type="button"
                     variant="ghost"
@@ -748,7 +755,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
             </div>
           ) : null}
         </div>
-        {showRecommend && hasQuery ? (
+        {showRecommend && currentUser && hasQuery ? (
           <MovieRecommendationComposer
             currentUser={currentUser}
             movieTitle={
