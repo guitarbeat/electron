@@ -256,6 +256,24 @@ describe("profile session signing and token verification", () => {
     assert.strictEqual(hasAccessSession(invalid), false);
   });
 
+
+  it("should support multiple users, filter out invalid users, and deduplicate users in profile cookie", () => {
+    const req = new Request("http://localhost/api/test");
+    // Pass users array with duplicates and an invalid user string
+    const usersList = ["Aaron", "Electra", "Aaron", "InvalidUser" as any];
+    const cookieHeader = buildProfileCookie(req, "Aaron", usersList);
+    const cookieValue = cookieHeader.split(";")[0];
+
+    const authedReq = new Request("http://localhost/api/test", {
+      headers: { cookie: cookieValue },
+    });
+
+    const sessionState = getSessionState(authedReq);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Aaron");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Aaron", "Electra"]);
+  });
+
   it("should grant access when profile cookie is valid", () => {
     const req = new Request("http://localhost/api/state/movies");
     const cookieValue = buildProfileCookie(req, "Aaron").split(";")[0];
@@ -406,6 +424,25 @@ describe("token verification edge cases and error handling", () => {
     });
 
     assert.strictEqual(getSessionState(reqTamperedPayload).currentUser, null);
+  });
+
+
+  it("should reject tokens where exp equals current epoch timestamp (boundary condition)", () => {
+    const currentSeconds = Math.floor(Date.now() / 1000);
+    const boundaryPayload = {
+      type: "profile",
+      user: "Aaron",
+      exp: currentSeconds,
+    };
+    const enc = base64urlEncode(JSON.stringify(boundaryPayload));
+    const sig = signValue(enc);
+    const token = `${enc}.${sig}`;
+
+    const req = new Request("http://localhost/api/test", {
+      headers: { cookie: `movie_watch_profile=${token}` },
+    });
+
+    assert.strictEqual(getSessionState(req).currentUser, null);
   });
 
   it("should reject expired tokens", () => {
