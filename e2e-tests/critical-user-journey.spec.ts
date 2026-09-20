@@ -47,6 +47,11 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     // 5. Verify Movie Details dialog is opened
     const detailsDialog = page.getByRole("dialog");
     await expect(detailsDialog).toBeVisible();
+    await expect(
+      detailsDialog.getByRole("button", {
+        name: "Page 1 of 2 (turned)",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
     const closeDetailsButton = page.getByRole("button", {
       name: "Close details",
       exact: true,

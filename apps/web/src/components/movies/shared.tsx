@@ -722,6 +722,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             shadow={0.45}
             closeOnLeave={false}
             forceClose={!isOpen}
+            autoOpen={isOpen}
             maxTurnCount={1}
             turnedCount={turnedCount}
             onPageChange={(count) => setTurnedCount(count)}
