@@ -10,3 +10,13 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
    - "If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions."
    - "When encountering pre-existing CI failures during a task, do not make opportunistic, unrelated changes to core configurations (e.g., `.github/workflows/` or `package.json`) to fix them unless explicitly requested. Keep the final submitted patch strictly scoped to the primary intended change."
 4. The patch `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` is accurately and cleanly updated per the primary task instructions.
+
+## Stale Prompt Discrepancy Note
+
+### Issue
+The task prompt requested renaming a single-letter variable `t` to a descriptive name in `spinHistoryTitleFromEntry` in `apps/web/src/services/state/index.ts`.
+
+### Findings & Actions
+1. Inspected `apps/web/src/services/state/index.ts` around line 906.
+2. The variable in `spinHistoryTitleFromEntry` is already named `sanitizedTitle` (`const sanitizedTitle = sanitizeInput(...)`).
+3. Per repository guidelines for stale/hallucinated prompts, concluding the task with no code changes to source files and documenting the discrepancy here.
