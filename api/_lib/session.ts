@@ -74,7 +74,11 @@ const verifyToken = <T extends SessionPayload>(
     return null;
   }
 
-  const [encodedPayload, providedSignature] = value.split(".");
+  const tokenParts = value.split(".");
+  if (tokenParts.length !== 2) {
+    return null;
+  }
+  const [encodedPayload, providedSignature] = tokenParts;
   if (!encodedPayload || !providedSignature) {
     return null;
   }
@@ -107,7 +111,7 @@ const verifyToken = <T extends SessionPayload>(
     if (parsed.type === "pin_attempt") {
       if (
         !isUser(parsed.user) ||
-        !Number.isFinite(parsed.failures) ||
+        !Number.isInteger(parsed.failures) ||
         parsed.failures < 0 ||
         (parsed.lockUntil !== null &&
           (!Number.isFinite(parsed.lockUntil) || parsed.lockUntil <= 0))
