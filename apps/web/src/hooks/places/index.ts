@@ -61,6 +61,7 @@ export const usePlaces = (
         },
         [...places, place],
       );
+      return place;
     },
     [currentUser, performMutation, places],
   );

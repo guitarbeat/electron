@@ -19,6 +19,34 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
         }),
       });
     });
+    await page.route("**/api/omdb**", async (route) => {
+      const url = new URL(route.request().url());
+      if (url.searchParams.has("s")) {
+        await route.fulfill({
+          contentType: "application/json",
+          body: JSON.stringify({
+            Search: [
+              {
+                Title: "Flow State Test",
+                Year: "2026",
+                imdbID: "tt-flow-state-test",
+                Type: "movie",
+                Poster: "N/A",
+              },
+            ],
+            Response: "True",
+          }),
+        });
+        return;
+      }
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({ Response: "False", Error: "Movie not found!" }),
+      });
+    });
+    await page.route("**/api/tvmaze**", async (route) => {
+      await route.fulfill({ contentType: "application/json", body: "[]" });
+    });
 
     // 1. Visit the home page
     await page.goto("/");
@@ -69,9 +97,33 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     await closeDetailsButton.click();
     await expect(detailsDialog).toBeHidden();
 
-    // 7. Test Search / Suggestion interaction
-    await searchInput.fill("Interstellar");
-    const submitBtn = page.getByRole("button", { name: "Recommend" });
-    await expect(submitBtn).toBeVisible();
+    // 7. Choosing a catalog result stages it without mutating shared state.
+    await searchInput.fill("Flow State");
+    const catalogResult = page.getByRole("option", {
+      name: /Flow State Test.*Movie.*2026/i,
+    });
+    await expect(catalogResult).toBeVisible();
+    await catalogResult.click();
+    await expect(page.getByText("Selected Flow State Test")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: 'View details for "Flow State Test"' }),
+    ).toHaveCount(0);
+
+    // 8. The explicit add action saves and reveals the new title as an open book.
+    await page.getByRole("button", { name: "Add movie" }).click();
+    const addedDetails = page.getByRole("dialog");
+    await expect(addedDetails).toBeVisible();
+    await expect(
+      addedDetails.getByRole("heading", { name: "Flow State Test" }),
+    ).toBeVisible();
+    await addedDetails
+      .getByRole("button", { name: "Close details", exact: true })
+      .click();
+
+    // 9. Creation is reversible from the success toast.
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(
+      page.getByRole("button", { name: 'View details for "Flow State Test"' }),
+    ).toHaveCount(0);
   });
 });

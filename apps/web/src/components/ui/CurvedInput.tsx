@@ -586,6 +586,46 @@ export const CurvedInput = forwardRef<HTMLInputElement, CurvedInputProps>(
             </g>
           ) : null}
         </svg>
+        <button
+          type="submit"
+          className="curved-input__native-action"
+          style={{
+            left: layout.buttonStart,
+            width: layout.buttonEnd - layout.buttonStart,
+          }}
+          disabled={disabled || buttonDisabled || isBusy}
+          aria-label={isBusy ? "Saving" : buttonText}
+        />
+        {layout.hasSecondary && secondaryButtonText ? (
+          <button
+            type="button"
+            className="curved-input__native-action"
+            style={{
+              left: layout.secondaryStart,
+              width: layout.secondaryEnd - layout.secondaryStart,
+            }}
+            disabled={disabled || secondaryButtonDisabled}
+            aria-label={secondaryButtonText}
+            onPointerEnter={onSecondaryPointerEnter}
+            onFocus={onSecondaryFocus}
+            onClick={onSecondarySubmit}
+          />
+        ) : null}
+        {layout.hasSpin && spinButtonText ? (
+          <button
+            type="button"
+            className="curved-input__native-action"
+            style={{
+              left: layout.spinStart,
+              width: layout.spinEnd - layout.spinStart,
+            }}
+            disabled={disabled || spinButtonDisabled}
+            aria-label={spinButtonText}
+            onPointerEnter={onSpinPointerEnter}
+            onFocus={onSpinFocus}
+            onClick={onSpinSubmit}
+          />
+        ) : null}
         <input
           {...inputProps}
           ref={inputRef}

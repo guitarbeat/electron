@@ -91,9 +91,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
 
     const { currentUser } = useUser();
     const { showToast } = useToast();
-    const { movies, addMovie } = useMovies(currentUser);
+    const { movies, addMovie, deleteMovie } = useMovies(currentUser);
     const { addSuggestion } = useSuggestions();
-    const { places, addPlace } = usePlaces(currentUser, !isSearchActive);
+    const { places, addPlace, removePlace } = usePlaces(
+      currentUser,
+      !isSearchActive,
+    );
     const { addPlaceSuggestion } = usePlaceSuggestions(!isSearchActive);
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -197,6 +200,15 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
         hideAutocomplete();
         return;
       }
+      if (
+        selection?.kind === "movie-result" &&
+        normalizeLibraryQuery(selection.title) === normalized
+      ) {
+        requestIdRef.current += 1;
+        setIsOpen(false);
+        setIsLoading(false);
+        return;
+      }
       if (normalized.length < MOVIE_AUTOCOMPLETE_MIN_QUERY_LENGTH) {
         requestIdRef.current += 1;
         setMovieResults([]);
@@ -272,14 +284,28 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
         window.clearTimeout(timeoutId);
         abortController.abort();
       };
-    }, [hideAutocomplete, isFocused, normalized, resetActiveIndex, trimmed]);
+    }, [
+      hideAutocomplete,
+      isFocused,
+      normalized,
+      resetActiveIndex,
+      selection,
+      trimmed,
+    ]);
 
     useEffect(() => {
-      if (trimmed.length >= 2 && isFocused) {
+      if (
+        trimmed.length >= 2 &&
+        isFocused &&
+        !(
+          selection?.kind === "movie-result" &&
+          normalizeLibraryQuery(selection.title) === normalized
+        )
+      ) {
         setIsMounted(true);
         setIsOpen(true);
       }
-    }, [isFocused, trimmed.length]);
+    }, [isFocused, normalized, selection, trimmed.length]);
 
     useEffect(() => {
       const handleGlobalKeyDown = (event: KeyboardEvent) => {
@@ -321,63 +347,11 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
           return;
         }
         if (row.selection?.kind === "movie-result") {
-          const item = row.selection;
-          hideAutocomplete();
-          setIsBusy(true);
+          setSelection(row.selection);
+          setQuery(row.selection.title);
           setActionError(null);
-          try {
-            if (isGuest) {
-              const suggestion = await addSuggestion(
-                item.title,
-                undefined,
-                guestName.trim() || undefined,
-                { imdbID: item.imdbID, type: item.type },
-              );
-              showToast({
-                message: `"${item.title}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
-                type: "success",
-              });
-            } else {
-              const added = await addMovie(item.title, {
-                imdbID: item.imdbID,
-                type: item.type,
-              });
-              showToast({
-                message: `"${item.title}" added to movies!`,
-                type: "success",
-              });
-              window.requestAnimationFrame(() => {
-                const movieEl = document.querySelector(
-                  `[data-movie-id="${added.id}"]`,
-                );
-                if (movieEl) {
-                  movieEl.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                  });
-                  const hitArea = movieEl.querySelector<HTMLButtonElement>(
-                    ".movie-item-details-hit-area",
-                  );
-                  if (hitArea) {
-                    window.setTimeout(() => {
-                      hitArea.click();
-                    }, 200);
-                  }
-                }
-              });
-            }
-            clearQuery();
-            window.requestAnimationFrame(focusSearchInput);
-          } catch (error) {
-            const message =
-              error instanceof Error
-                ? error.message
-                : "Could not save that right now.";
-            setActionError(message);
-            showToast({ message, type: "error" });
-          } finally {
-            setIsBusy(false);
-          }
+          hideAutocomplete();
+          window.requestAnimationFrame(() => inputRef.current?.focus());
           return;
         }
 
@@ -387,14 +361,8 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
         inputRef.current?.focus();
       },
       [
-        addMovie,
-        addSuggestion,
         clearQuery,
-        focusSearchInput,
-        guestName,
         hideAutocomplete,
-        isGuest,
-        showToast,
       ],
     );
 
@@ -438,11 +406,24 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
               showToast({
                 message: `"${movieTitle}" added to movies!`,
                 type: "success",
+                actionLabel: "Undo",
+                onAction: () => void deleteMovie(added.id),
               });
               window.requestAnimationFrame(() => {
-                document
-                  .querySelector(`[data-movie-id="${added.id}"]`)
-                  ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                window.setTimeout(() => {
+                  const movieElement = document.querySelector(
+                    `[data-movie-id="${added.id}"]`,
+                  );
+                  movieElement?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
+                  movieElement
+                    ?.querySelector<HTMLButtonElement>(
+                      ".movie-item-details-hit-area",
+                    )
+                    ?.click();
+                }, 120);
               });
             }
           } else if (isGuest) {
@@ -452,10 +433,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
               type: "success",
             });
           } else {
-            await addPlace(placeName);
+            const added = await addPlace(placeName);
             showToast({
               message: `"${placeName}" added to places!`,
               type: "success",
+              actionLabel: "Undo",
+              onAction: () => void removePlace(added.id),
             });
             window.requestAnimationFrame(() => {
               document
@@ -482,11 +465,13 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
         addPlaceSuggestion,
         addSuggestion,
         clearQuery,
+        deleteMovie,
         focusSearchInput,
         guestName,
         hideAutocomplete,
         isBusy,
         isGuest,
+        removePlace,
         selection,
         showToast,
         trimmed,
@@ -609,7 +594,13 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                   }}
                   onFocus={() => {
                     setIsFocused(true);
-                    if (trimmed.length >= 2) {
+                    if (
+                      trimmed.length >= 2 &&
+                      !(
+                        selection?.kind === "movie-result" &&
+                        normalizeLibraryQuery(selection.title) === normalized
+                      )
+                    ) {
                       setIsMounted(true);
                       setIsOpen(true);
                     }
@@ -648,6 +639,30 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                 />
               </div>
             </div>
+            {selection?.kind === "movie-result" ? (
+              <div
+                className="curved-library-search__selection"
+                role="status"
+                aria-live="polite"
+              >
+                <span>
+                  <span aria-hidden="true">✓</span> Selected{" "}
+                  <strong>{selection.title}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelection(null);
+                    window.requestAnimationFrame(() => {
+                      inputRef.current?.focus();
+                      inputRef.current?.select();
+                    });
+                  }}
+                >
+                  Change
+                </button>
+              </div>
+            ) : null}
             {showPanel ? (
               <WorkspaceAutocompletePanel
                 id={listId}
@@ -684,6 +699,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                               key={row.id}
                               id={`${listId}-option-${index}`}
                               isActive={index === activeIndex}
+                              actionLabel={row.actionLabel}
                               onSelect={() => selectRow(row)}
                               onHover={() => setActiveIndex(index)}
                             >

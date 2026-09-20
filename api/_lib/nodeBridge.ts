@@ -4,6 +4,9 @@ export type NodeLikeRequest = {
   method?: string;
   url?: string;
   headers?: Headers | Record<string, HeaderValue>;
+  socket?: {
+    encrypted?: boolean;
+  };
   on?: (
     event: "data" | "end" | "error",
     listener: (...args: unknown[]) => void,
@@ -83,7 +86,9 @@ export const toWebRequest = async (req: NodeLikeRequest): Promise<Request> => {
   const headers = toHeaders(req.headers);
   const host =
     headers.get("x-forwarded-host") || headers.get("host") || "localhost";
-  const protocol = headers.get("x-forwarded-proto") || "https";
+  const protocol =
+    headers.get("x-forwarded-proto") ||
+    (req.socket ? (req.socket.encrypted ? "https" : "http") : "https");
   const url = new URL(req.url || "/", `${protocol}://${host}`);
   const body = await readRequestBody(req, method);
 

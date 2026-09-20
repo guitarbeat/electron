@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildLibraryAutocompleteRows,
   matchLibraryMovies,
   normalizeLibraryQuery,
   scoreLibraryMatch,
@@ -9,6 +10,22 @@ import {
 test("normalizeLibraryQuery ignores punctuation, accents, and repeated spaces", () => {
   assert.equal(normalizeLibraryQuery("  WALL·E  "), "wall e");
   assert.equal(normalizeLibraryQuery("Amélie"), "amelie");
+});
+
+test("autocomplete rows identify whether selection opens or stages an item", () => {
+  const rows = buildLibraryAutocompleteRows({
+    query: "interstelar",
+    movies: [
+      { id: "saved", title: "Interstellar", year: "2014" },
+    ],
+    places: [],
+    movieResults: [
+      { title: "Interstellar", year: "2014", type: "movie" },
+    ],
+  });
+
+  assert.equal(rows.find((row) => row.group === "saved")?.actionLabel, "Open");
+  assert.equal(rows.find((row) => row.group === "titles")?.actionLabel, "Choose");
 });
 
 test("scoreLibraryMatch tolerates common typos and transposed letters", () => {

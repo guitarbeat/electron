@@ -420,12 +420,13 @@ export interface WorkspaceAutocompleteOptionProps {
   isActive: boolean;
   onSelect: () => void;
   onHover?: () => void;
+  actionLabel?: string;
   children: React.ReactNode;
 }
 
 export const WorkspaceAutocompleteOption: React.FC<
   WorkspaceAutocompleteOptionProps
-> = ({ id, isActive, onSelect, onHover, children }) => (
+> = ({ id, isActive, onSelect, onHover, actionLabel, children }) => (
   <button
     id={id}
     type="button"
@@ -447,6 +448,18 @@ export const WorkspaceAutocompleteOption: React.FC<
     onMouseEnter={onHover}
   >
     {children}
+    {actionLabel ? (
+      <span
+        className={cn(
+          "shrink-0 rounded-full border px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] transition-colors",
+          isActive
+            ? "border-indigo-400/45 bg-indigo-400/10 text-indigo-200"
+            : "border-slate-600/70 text-slate-400",
+        )}
+      >
+        {actionLabel}
+      </span>
+    ) : null}
   </button>
 );
 

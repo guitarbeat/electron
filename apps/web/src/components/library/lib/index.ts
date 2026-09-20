@@ -165,6 +165,7 @@ export type LibraryAutocompleteRow = {
   meta: string;
   posterUrl?: string;
   icon?: string;
+  actionLabel: "Open" | "Choose";
   selection: Exclude<LibrarySelection, null>;
 };
 
@@ -223,6 +224,7 @@ export const matchLibraryMovies = (
         ? `Saved movie • ${entry.movie.year}`
         : "Saved movie",
       posterUrl: entry.movie.posterUrl,
+      actionLabel: "Open" as const,
       selection: {
         kind: "library-movie" as const,
         movieId: entry.movie.id,
@@ -251,6 +253,7 @@ export const matchLibraryPlaces = (
         title: entry.place.name,
         meta: `Saved place • ${meta.label}`,
         icon: meta.icon,
+        actionLabel: "Open" as const,
         selection: {
           kind: "library-place" as const,
           placeId: entry.place.id,
@@ -268,6 +271,7 @@ export const movieResultsToRows = (
     title: result.title,
     meta: `${result.type === "series" ? "TV series" : "Movie"}${result.year ? ` • ${result.year}` : ""}`,
     posterUrl: result.poster,
+    actionLabel: "Choose" as const,
     selection: {
       kind: "movie-result" as const,
       title: result.title,
@@ -343,6 +347,7 @@ export const buildLibraryAutocompleteRows = ({
       title: name,
       meta: `Add as a place • ${meta.label}`,
       icon: meta.icon,
+      actionLabel: "Choose",
       selection: { kind: "place-draft", name },
     });
   }
