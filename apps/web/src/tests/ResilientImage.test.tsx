@@ -142,7 +142,7 @@ describe('ResilientImage / Y2kImage Component', () => {
     // Should now show Y2K placeholder graphic
     expect(screen.getByTestId('y2k-placeholder-graphic')).toBeInTheDocument();
     expect(screen.getByText('Ultra Rare Movie')).toBeInTheDocument();
-    expect(screen.getByText('[1957]')).toBeInTheDocument();
+    expect(screen.getByText('1957')).toBeInTheDocument();
   });
 });
 
@@ -152,7 +152,7 @@ describe('Y2kPlaceholderGraphic', () => {
     vi.clearAllMocks();
   });
 
-  it('renders themed HUD scanlines, title, and year', () => {
+  it('renders an editorial pending-poster cover with title and year', () => {
     render(
       <Y2kPlaceholderGraphic
         title="Plan 9 From Outer Space"
@@ -162,8 +162,8 @@ describe('Y2kPlaceholderGraphic', () => {
     );
 
     expect(screen.getByText('Plan 9 From Outer Space')).toBeInTheDocument();
-    expect(screen.getByText('[1959]')).toBeInTheDocument();
-    expect(screen.getByText('Y2K // VHS')).toBeInTheDocument();
-    expect(screen.getByText('SIGNAL LOST // RECOVERY MODE')).toBeInTheDocument();
+    expect(screen.getByText('1959')).toBeInTheDocument();
+    expect(screen.getByText('Electron collection')).toBeInTheDocument();
+    expect(screen.getByText('Poster pending')).toBeInTheDocument();
   });
 });

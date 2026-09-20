@@ -322,8 +322,6 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
         <Y2kPlaceholderGraphic
           title={title}
           year={year}
-          badgeLabel="Y2K // CINEMA"
-          statusLabel="SIGNAL LOST // ARCHIVE MODE"
         />
       </div>
     );
@@ -4768,4 +4766,3 @@ export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({
 
 export { PageFlip } from "./PageFlip";
 export type { PageFlipProps, PageFlipLeaf, PageFlipEase } from "./PageFlip";
-

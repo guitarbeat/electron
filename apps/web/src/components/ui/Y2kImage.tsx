@@ -10,17 +10,15 @@ export interface Y2kPlaceholderGraphicProps {
   statusLabel?: string;
 }
 
-/**
- * Themed Y2K-inspired retro-futuristic placeholder graphic with CRT scanlines,
- * HUD crosshairs, glowing badge, and holographic film reel icon.
- */
+/** A restrained editorial cover for titles whose artwork is still unavailable. */
 export const Y2kPlaceholderGraphic: React.FC<Y2kPlaceholderGraphicProps> = ({
   title,
   year,
-  badgeLabel = "Y2K // CAT_NET",
   className = "",
-  statusLabel = "SIGNAL LOST // RECOVERY MODE",
 }) => {
+  const displayTitle = title?.trim() || "Untitled";
+  const monogram = displayTitle.match(/[\p{L}\p{N}]/u)?.[0]?.toUpperCase() || "•";
+
   return (
     <div
       className={`y2k-placeholder-graphic ${className}`}
@@ -28,51 +26,18 @@ export const Y2kPlaceholderGraphic: React.FC<Y2kPlaceholderGraphicProps> = ({
       role="img"
       aria-label={title ? `${title} placeholder` : "Media placeholder"}
     >
-      {/* CRT Scanlines Overlay */}
-      <div className="y2k-placeholder-graphic__scanlines" aria-hidden="true" />
-
-      {/* Cyber HUD Corner Crosshairs */}
-      <div className="y2k-placeholder-graphic__corner y2k-placeholder-graphic__corner--tl" aria-hidden="true" />
-      <div className="y2k-placeholder-graphic__corner y2k-placeholder-graphic__corner--tr" aria-hidden="true" />
-      <div className="y2k-placeholder-graphic__corner y2k-placeholder-graphic__corner--bl" aria-hidden="true" />
-      <div className="y2k-placeholder-graphic__corner y2k-placeholder-graphic__corner--br" aria-hidden="true" />
-
-      {/* Retro Status Badge */}
-      <div className="y2k-placeholder-graphic__badge">
-        <span className="y2k-placeholder-graphic__badge-dot" aria-hidden="true" />
-        <span>{badgeLabel}</span>
+      <div className="y2k-placeholder-graphic__wash" aria-hidden="true" />
+      <div className="y2k-placeholder-graphic__monogram" aria-hidden="true">
+        {monogram}
       </div>
-
-      {/* Centerpiece Vector Icon */}
-      <div className="y2k-placeholder-graphic__icon-wrap">
-        <svg
-          className="y2k-placeholder-graphic__icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {/* Retro Film Reel / Holographic Disc Graphic */}
-          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M12 3v6" />
-          <path d="M12 15v6" />
-          <path d="M3 12h6" />
-          <path d="M15 12h6" />
-          <circle cx="7" cy="7" r="1" fill="currentColor" />
-          <circle cx="17" cy="7" r="1" fill="currentColor" />
-          <circle cx="7" cy="17" r="1" fill="currentColor" />
-          <circle cx="17" cy="17" r="1" fill="currentColor" />
-        </svg>
-      </div>
-
-      {/* Body: Title and Metadata */}
       <div className="y2k-placeholder-graphic__body">
-        {title && <p className="y2k-placeholder-graphic__title">{title}</p>}
-        {year && <span className="y2k-placeholder-graphic__meta">[{year}]</span>}
-        <span className="y2k-placeholder-graphic__status-tag">{statusLabel}</span>
+        <span className="y2k-placeholder-graphic__eyebrow">Electron collection</span>
+        <p className="y2k-placeholder-graphic__title">{displayTitle}</p>
+        {year && <span className="y2k-placeholder-graphic__meta">{year}</span>}
+      </div>
+      <div className="y2k-placeholder-graphic__footer">
+        <span>Poster pending</span>
+        <span aria-hidden="true">✦</span>
       </div>
     </div>
   );
