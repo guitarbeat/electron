@@ -4150,6 +4150,10 @@ snapshots:
     dependencies:
       require-from-string: 2.0.2
 
+  bidi-js@1.1.0:
+    dependencies:
+      require-from-string: 2.0.2
+
   brace-expansion@1.1.21:
     dependencies:
       balanced-match: 1.0.2
@@ -5293,6 +5297,12 @@ snapshots:
   prelude-ls@1.2.1: {}
 
   prettier@3.9.8: {}
+
+  pretty-format@27.5.1:
+    dependencies:
+      ansi-regex: 5.0.1
+      ansi-styles: 5.2.0
+      react-is: 17.0.2
 
   pretty-format@27.5.1:
     dependencies:
