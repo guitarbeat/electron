@@ -37,20 +37,23 @@ jobs:
         id: check
         run: |
           if node scripts/check-artifacts.js; then
-            echo "status=compliant" >> $GITHUB_OUTPUT
-            echo "badge_color=brightgreen" >> $GITHUB_OUTPUT
-            echo "badge_text=compliant" >> $GITHUB_OUTPUT
+            {
+              echo "status=compliant"
+              echo "badge_color=brightgreen"
+              echo "badge_text=compliant"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "status=failing" >> $GITHUB_OUTPUT
-            echo "badge_color=red" >> $GITHUB_OUTPUT
-            echo "badge_text=failing" >> $GITHUB_OUTPUT
+            {
+              echo "status=failing"
+              echo "badge_color=red"
+              echo "badge_text=failing"
+            } >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
       - name: Ensure README Artifact Status Badge
         if: always()
         run: |
-          STATUS="${{ steps.check.outputs.status || 'failing' }}"
           COLOR="${{ steps.check.outputs.badge_color || 'red' }}"
           TEXT="${{ steps.check.outputs.badge_text || 'failing' }}"
           BADGE="[![Artifact Lifecycle](https://img.shields.io/badge/artifacts-${TEXT}-${COLOR}?style=flat-square&logo=github)](.jules/LIFECYCLE_RULES.md)"
@@ -67,4 +70,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifact lifecycle compliance badge [skip ci]" && git push)
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: update artifact lifecycle compliance badge [skip ci]"
+            git push
+          fi

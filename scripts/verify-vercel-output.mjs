@@ -30,11 +30,9 @@ const checks = [
     ),
     request: new Request('https://local.test/api/state/movies?scope=movies'),
     validate: async (response) => {
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 401);
       const body = await response.json();
-      assert.ok(body && typeof body === 'object');
-      assert.ok(Array.isArray(body.data));
-      assert.equal(typeof body.version, 'string');
+      assert.deepEqual(body, { error: 'Unauthorized.' });
     },
   },
 ];

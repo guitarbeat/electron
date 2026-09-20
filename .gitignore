@@ -73,7 +73,7 @@ pr_description.txt
 .dyad/
 
 # Playwright test artifacts
-/test-results/
+/e2e-tests/.results/
 /playwright-report/
 /playwright/.cache/
 .last-run.json
@@ -87,4 +87,3 @@ scratch.*
 test-import.*
 screenshot.js
 body.html
-

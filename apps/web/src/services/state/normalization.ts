@@ -1,4 +1,4 @@
-import { isValidUrl, sanitizeInput } from "../../utils/shared.js";
+import { isValidUrl, sanitizeInput } from "../../utils/security.js";
 
 export const normalizeRequiredString = (value: unknown): string | null => {
   if (typeof value !== "string") return null;

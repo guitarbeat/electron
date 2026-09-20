@@ -25,6 +25,7 @@
     "test": "npm run test:unit && npm run test:web",
     "test:unit": "node scripts/run-node-tests.mjs",
     "test:web": "npm run test --prefix apps/web",
+    "test:e2e": "playwright test --config playwright-dyad.config.ts",
     "test:smoke": "node scripts/smoke-test-deployment.mjs",
     "test:serverless-output": "node scripts/verify-vercel-output.mjs"
   },

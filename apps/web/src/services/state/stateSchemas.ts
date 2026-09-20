@@ -21,7 +21,7 @@ import {
   isUser,
   parseJsonContent,
   sanitizeInput,
-} from "../../utils/shared.js";
+} from "../../utils/security.js";
 import type { PinsState, QuizData } from "./stateTypes.ts";
 import {
   normalizeOptionalDate,

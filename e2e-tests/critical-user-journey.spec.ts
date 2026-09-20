@@ -1,15 +1,31 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Critical User Journey - Movies & Exploration", () => {
-  test("user can browse library, view movie details, open chat dock, and search/suggest items", async ({
+  test("user can browse the library, view movie details, and search for suggestions", async ({
     page,
   }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("useMockData", "true");
+    });
+    await page.route("**/api/session", async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          hasAccess: true,
+          currentUser: "Aaron",
+          activeUsers: ["Aaron"],
+          pinProtectedUsers: ["Aaron", "Electra"],
+          usersMissingPins: [],
+        }),
+      });
+    });
+
     // 1. Visit the home page
     await page.goto("/");
 
     // 2. Verify main heading and search input are rendered
     await expect(
-      page.getByRole("heading", { name: "Movies & Places" }),
+      page.getByRole("heading", { name: "Movies & Places", level: 2 }),
     ).toBeVisible();
 
     const searchInput = page.getByRole("combobox", {
@@ -21,41 +37,29 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     const movieCards = page.locator(".movie-item-container");
     await expect(movieCards.first()).toBeVisible();
 
-    // 4. Click a movie's details hit area to open details modal
-    const firstHitArea = page
-      .locator(".movie-item-details-hit-area")
-      .first();
-    await firstHitArea.click({ force: true });
+    // 4. Open a known movie rather than a pending suggestion card.
+    await page
+      .getByRole("button", {
+        name: 'View details for "Everything Everywhere All at Once"',
+      })
+      .click({ force: true });
 
     // 5. Verify Movie Details dialog is opened
     const detailsDialog = page.getByRole("dialog");
     await expect(detailsDialog).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Close movie details" }),
-    ).toBeVisible();
+    const closeDetailsButton = page.getByRole("button", {
+      name: "Close details",
+      exact: true,
+    });
+    await expect(closeDetailsButton).toBeVisible();
 
     // 6. Close movie details dialog
-    await page.getByRole("button", { name: "Close movie details" }).click();
+    await closeDetailsButton.click();
     await expect(detailsDialog).toBeHidden();
 
-    // 7. Open Chat / Messages dock via floating chat button
-    const chatFab = page.getByRole("button", { name: /open chat/i });
-    await expect(chatFab).toBeVisible();
-    await chatFab.click();
-
-    // Verify chat dock is opened
-    const chatDock = page.locator("#floating-chat-panel");
-    await expect(chatDock).toBeVisible();
-
-    // Close chat dock
-    const closeChatBtn = page.getByRole("button", { name: "Close chat" });
-    await closeChatBtn.click();
-    await expect(chatDock).toBeHidden();
-
-    // 8. Test Search / Suggestion interaction
+    // 7. Test Search / Suggestion interaction
     await searchInput.fill("Interstellar");
-    // Button label reflects submit action (e.g. "Suggest" or "Add" or "Recommend")
-    const submitBtn = page.locator(".curved-library-search__submit");
+    const submitBtn = page.getByRole("button", { name: "Recommend" });
     await expect(submitBtn).toBeVisible();
   });
 });

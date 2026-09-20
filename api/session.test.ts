@@ -137,11 +137,11 @@ describe("sessionHandler", () => {
     const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const baseReq = new Request("http://localhost/api/session", { method: "GET" });
     const failingReq = new Proxy(baseReq, {
-      get(target, prop, receiver) {
+      get(target, prop) {
         if (prop === "headers") {
           throw new Error("Internal request error");
         }
-        return Reflect.get(target, prop, receiver);
+        return Reflect.get(target, prop, target);
       },
     });
 
@@ -163,11 +163,11 @@ describe("sessionHandler", () => {
     const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const baseReq = new Request("http://localhost/api/session", { method: "GET" });
     const failingReq = new Proxy(baseReq, {
-      get(target, prop, receiver) {
+      get(target, prop) {
         if (prop === "headers") {
           throw new Error("Internal request error");
         }
-        return Reflect.get(target, prop, receiver);
+        return Reflect.get(target, prop, target);
       },
     });
 
