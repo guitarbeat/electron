@@ -340,12 +340,12 @@ describe("sharedStateStore", () => {
 
         // Reading after invalidateSharedStateCache fetches the newly updated content '{"v":3}'
         const postInvalidateRead = await readSharedStateFileRecord("movies.json");
-        assert.strictEqual(postInvalidateRead.content, '{"v":1}');
+        assert.strictEqual(postInvalidateRead.content, '{"v":3}');
         // readSharedStateFile with bypassCache option
         const readWithBypassContent = await readSharedStateFile("movies.json", {
           bypassCache: true,
         });
-        assert.strictEqual(readWithBypassContent, '{"v":1}');
+        assert.strictEqual(readWithBypassContent, '{"v":3}');
 
         const missingBypassContent = await readSharedStateFile("nonexistent.json", {
           bypassCache: true,

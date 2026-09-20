@@ -51,8 +51,6 @@ export interface DriftWallProps {
 
 const EMPTY_ITEMS: (DriftWallItem | ReactNode)[] = [];
 
-const GLOBAL_DRIFT_START = Date.now();
-
 const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
