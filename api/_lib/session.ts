@@ -284,8 +284,11 @@ export const requireAccessUser = (req: Request): User | null => {
 };
 
 export const hasAccessSession = (req?: Request): boolean => {
-  if (!req) return false;
-  return getSessionState(req).hasAccess;
+  if (!req) {
+    return false;
+  }
+  const sessionState = getSessionState(req);
+  return Boolean(sessionState.hasAccess && sessionState.currentUser);
 };
 
 export const isSameOriginRequest = (req: Request): boolean => {
