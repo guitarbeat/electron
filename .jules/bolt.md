@@ -10,3 +10,12 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
    - "If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions."
    - "When encountering pre-existing CI failures during a task, do not make opportunistic, unrelated changes to core configurations (e.g., `.github/workflows/` or `package.json`) to fix them unless explicitly requested. Keep the final submitted patch strictly scoped to the primary intended change."
 4. The patch `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` is accurately and cleanly updated per the primary task instructions.
+
+### Stale Prompt Discrepancy Note - single-letter variable refactoring
+
+- **Issue:** Task prompt requested refactoring single-letter variable names `x` and `y` at `apps/web/src/components/quiz/index.tsx:701`.
+- **Findings & Actions:**
+  1. `apps/web/src/components/quiz/index.tsx` was inspected.
+  2. The single-letter variables `x` and `y` in `calculatePosition` were already refactored to `normalizedX` and `normalizedY` in earlier commits.
+  3. No other single-letter variable declarations exist in `apps/web/src/components/quiz/index.tsx`.
+  4. Per repository memory guidelines ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy"), no code changes were made to `apps/web/src/components/quiz/index.tsx`.
