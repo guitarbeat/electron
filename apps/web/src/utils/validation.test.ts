@@ -150,6 +150,35 @@ describe("validation utility", () => {
       const validResult = validator({ evenNumber: "4" });
       assert.equal(validResult.isValid, true);
     });
+
+    it("sanitizes control characters before running pattern and custom checks", () => {
+      const validator = createValidator({
+        title: {
+          maxLength: 10,
+          pattern: /^[a-zA-Z\s]+$/,
+          custom: (val) => (val === "hello" ? null : "Must equal hello"),
+        },
+      });
+
+      // "  hello\x07  " is sanitized by sanitizeInput to "hello" (length 5, matching pattern)
+      const result = validator({ title: "  hello\x07  " });
+      assert.equal(result.isValid, true);
+    });
+
+    it("evaluates custom rule returning null as valid and custom rule returning string as invalid", () => {
+      const validator = createValidator({
+        username: {
+          custom: (val) => (val === "admin" ? "Reserved username" : null),
+        },
+      });
+
+      const invalidResult = validator({ username: "admin" });
+      assert.equal(invalidResult.isValid, false);
+      assert.equal(invalidResult.errors.username, "Reserved username");
+
+      const validResult = validator({ username: "john_doe" });
+      assert.equal(validResult.isValid, true);
+    });
   });
 
   describe("ValidationPatterns", () => {
@@ -229,6 +258,18 @@ describe("validation utility", () => {
       assert.equal(notesValidator({ notes: "a".repeat(501) }).isValid, false);
     });
 
+    it("validates boundary conditions for username and password rules", () => {
+      const usernameValidator = createValidator({ username: CommonRules.username });
+      assert.equal(usernameValidator({ username: "abc" }).isValid, true);
+      assert.equal(usernameValidator({ username: "a".repeat(20) }).isValid, true);
+      assert.equal(usernameValidator({ username: "a".repeat(21) }).isValid, false);
+      assert.equal(usernameValidator({ username: "user_name" }).isValid, false);
+
+      const passwordValidator = createValidator({ password: CommonRules.password });
+      assert.equal(passwordValidator({ password: "1234567" }).isValid, false);
+      assert.equal(passwordValidator({ password: "12345678" }).isValid, true);
+    });
+
     it("validates place using validatePlace", () => {
       const validPlace = validatePlace({
         name: "Cinema Paradiso",
@@ -270,6 +311,35 @@ describe("validation utility", () => {
         author: "Electra",
       });
       assert.equal(noMentionsMemory.isValid, true);
+    });
+
+    it("validates validateMemory edge cases including case insensitivity and missing required fields", () => {
+      const validCaseInsensitive = validateMemory({
+        note: "Note for @AARON and @Electra",
+        movieTitle: "Dune",
+        author: "Paul",
+      });
+      assert.equal(validCaseInsensitive.isValid, true);
+
+      const invalidMentions = validateMemory({
+        note: "Note for @unknownUser",
+        movieTitle: "Dune",
+        author: "Paul",
+      });
+      assert.equal(invalidMentions.isValid, false);
+      assert.equal(
+        invalidMentions.errors.note,
+        "Invalid mentions: @unknownUser. Only @aaron and @electra are allowed."
+      );
+
+      const missingFields = validateMemory({
+        note: "Note with no movieTitle or author",
+        movieTitle: "",
+        author: "",
+      });
+      assert.equal(missingFields.isValid, false);
+      assert.ok(missingFields.errors.movieTitle);
+      assert.ok(missingFields.errors.author);
     });
 
     it("checks limits for movieTitle, messageContent, messageAuthor", () => {
@@ -315,6 +385,21 @@ describe("validation utility", () => {
           name: "Error",
           message: "Field is required!",
         },
+      );
+    });
+
+    it("throws Error with the first error message when multiple fields fail validation", () => {
+      const multiValidator = createValidator({
+        fieldA: { required: true, message: "Field A is required" },
+        fieldB: { required: true, message: "Field B is required" },
+      });
+
+      assert.throws(
+        () => validateAndThrow(multiValidator, { fieldA: "", fieldB: "" }),
+        {
+          name: "Error",
+          message: "Field A is required",
+        }
       );
     });
 
