@@ -21,3 +21,20 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Single-letter variable name in apps/web/src/services/state/index.ts
+
+### Issue
+The task prompt reported a single-letter variable `const t = sanitizeInput(o.movieTitle);` at `apps/web/src/services/state/index.ts:918`.
+
+### Findings & Actions
+1. Inspected `apps/web/src/services/state/index.ts` around line 918 (`spinHistoryTitleFromEntry`).
+2. The code in the repository already uses the descriptive variable name `sanitizedTitle`:
+   ```typescript
+   if (typeof entryObject.movieTitle === "string") {
+     const sanitizedTitle = sanitizeInput(entryObject.movieTitle);
+     return sanitizedTitle || null;
+   }
+   ```
+3. No single-letter variable `t` or `o` exists at this location or anywhere in `spinHistoryTitleFromEntry`.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
