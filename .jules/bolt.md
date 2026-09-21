@@ -21,3 +21,14 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Untested DOM utils
+
+### Issue
+The task prompt reported `apps/web/src/utils/dom.ts` as having untested DOM utils needing tests for `copyTextToClipboard` and `window.matchMedia`.
+
+### Findings & Actions
+1. Checked `apps/web/src/utils/dom.ts` and its test suite `apps/web/src/utils/dom.test.ts`.
+2. `apps/web/src/utils/dom.test.ts` already contains comprehensive unit tests (22 tests passing across 6 sub-suites) covering all exported utilities, including `copyTextToClipboard`, `matchMedia` helpers (`prefersReducedMotion`, `hasHoverCapability`, `hasFinePointer`, `isChromaSpotlightEnabled`, `subscribeMotionPreferences`), sound preferences, `scrollToWorkspaceSection`, `loadFeatureFonts`, and `runWithViewTransition`.
+3. Running `pnpm exec tsx --test apps/web/src/utils/dom.test.ts` confirmed that all 22 tests pass cleanly.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task and documenting the discrepancy here.
