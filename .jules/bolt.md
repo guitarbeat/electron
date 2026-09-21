@@ -21,3 +21,14 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Verification Note: Hardcoded timeout in logger.ts
+
+### Issue
+The task prompt requested extracting hardcoded timeouts (`1000`) in `apps/web/src/services/logger.ts:607`.
+
+### Findings & Actions
+1. Analyzed `apps/web/src/services/logger.ts`.
+2. The hardcoded timeout issue has already been resolved in a prior refactoring. `const NAVIGATION_TIMING_DELAY_MS = 1000;` is defined at line 56, and both `setTimeout` calls in `initWebVitalsObservability` (lines 608 and 611) use `NAVIGATION_TIMING_DELAY_MS`.
+3. Verified the codebase with `pnpm verify` (linting, typechecking, tests, build). All checks passed.
+4. Concluded the task with no code changes needed.
