@@ -21,3 +21,20 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Hardcoded timeout in prefetchCatPosters / App.tsx
+
+### Issue
+The task prompt reported a hardcoded timeout in `apps/web/src/app/App.tsx:88`:
+```typescript
+    prefetchCatPosters();
+    if (typeof window !== "undefined") {
+      const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 2000));
+      scheduleIdle(() => {
+        void cleanupOldImages().catch(() => {});
+```
+
+### Findings & Actions
+1. `prefetchCatPosters()` is defined in `apps/web/src/utils/catPosters.ts` and is not called or referenced in `apps/web/src/app/App.tsx`.
+2. In `apps/web/src/app/App.tsx` line 88, `IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000` was already previously extracted and used in `setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS)`.
+3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and documenting the discrepancy here.
