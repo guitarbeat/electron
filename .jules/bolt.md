@@ -21,3 +21,13 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Linear Search for Movie in State Scope
+
+### Issue
+The task prompt requested optimizing `movies.find((movie) => movie.id === movieId)` at `api/_lib/stateScopes/movies.ts:294`.
+
+### Findings & Actions
+1. Analyzed `api/_lib/stateScopes/movies.ts`. Line 289-290 uses `findMovieIndexById(movies, movieId)` (a optimized index loop returning `-1` or index) rather than `movies.find`.
+2. No `movies.find` call exists in `api/_lib/stateScopes/movies.ts`.
+3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
