@@ -21,3 +21,13 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Single-letter variable name in `apps/web/src/components/quiz/index.tsx`
+
+### Issue
+The task prompt requested renaming single-letter variables `x` and `y` around line 701 of `apps/web/src/components/quiz/index.tsx`.
+
+### Findings & Actions
+1. Analyzed `apps/web/src/components/quiz/index.tsx` around line 701.
+2. The single-letter variables `x` and `y` have already been renamed to `normalizedX` and `normalizedY` in the codebase (`calculatePosition` function).
+3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
