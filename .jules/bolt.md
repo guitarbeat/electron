@@ -21,3 +21,13 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Single-letter variable name in SpinSwipeGame.tsx
+
+### Issue
+The task prompt reported a single-letter variable name issue at `apps/web/src/components/spin-match/SpinSwipeGame.tsx:306`, referencing `const r = 88; const x = ...; const y = ...;`.
+
+### Findings & Actions
+1. Inspected `apps/web/src/components/spin-match/SpinSwipeGame.tsx` lines 290-325.
+2. The variables are already named `radius`, `coordX`, and `coordY` (`const radius = 88; const coordX = 135 + radius * Math.cos(rad); const coordY = 135 + radius * Math.sin(rad);`).
+3. Per repository guidelines ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no source code changes and documenting the discrepancy here.
