@@ -121,6 +121,31 @@
   transition: border-color 0.2s ease;
 }
 
+.watcher-badge__status {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 0.48rem;
+  height: 0.48rem;
+  border: 2px solid #0c111d;
+  border-radius: 50%;
+  background: #61d6a4;
+  box-sizing: border-box;
+}
+
+.media-card-watcher-badge--watching .watcher-badge__avatar {
+  border-color: #f0ad5d;
+}
+
+.media-card-watcher-badge--watching .watcher-badge__status {
+  border-color: #f0ad5d;
+  background: transparent;
+}
+
+.media-card-watcher-badge--watched .watcher-badge__avatar {
+  border-color: #61d6a4;
+}
+
 .watcher-badge:hover .watcher-badge__avatar {
   border-color: var(--color-accent, #6366f1);
 }
@@ -158,16 +183,6 @@
   margin-left: 0.35rem;
   padding-right: 0.25rem;
   white-space: nowrap;
-}
-
-/* For watched movies, add an extra nice indicator to make the watched list distinct */
-.movie-item-container--watched .movie-item-poster-wrap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  pointer-events: none;
-  z-index: 2;
 }
 
 /* ── Product-wide restraint pass ────────────────────────────────────────────
@@ -276,5 +291,4 @@
   line-height: 1.25;
   margin-top: 2px;
 }
-
 

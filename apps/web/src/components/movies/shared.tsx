@@ -345,6 +345,14 @@ export const getMovieWatchStatus = (movie: Movie) => {
         : "One watch logged so far.",
     };
   }
+  if ((movie.watchingBy?.length ?? 0) > 0) {
+    const names = movie.watchingBy?.join(" & ");
+    return {
+      label: `${names} watching`,
+      title: "In progress",
+      detail: `${names} started this one but has not finished it yet.`,
+    };
+  }
   return {
     label: "Still queued",
     title: "Still sitting in the lineup",
@@ -486,17 +494,19 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         {activeUsers.length > 1 && onToggleUserWatched ? (
           activeUsers.map((user) => {
             const isWatched = movie.watchedBy.includes(user);
+            const isWatching = movie.watchingBy?.includes(user) ?? false;
+            const status = isWatched ? "Watched" : isWatching ? "Watching" : "Not watched";
             return (
               <CardActionButton
                 key={user}
-                variant={isWatched ? "primary" : "outline"}
+                variant={isWatched || isWatching ? "primary" : "outline"}
                 onClick={() => void onToggleUserWatched(user)}
-                aria-pressed={isWatched}
+                aria-label={`${user}: ${status}. Select to move to ${isWatched ? "not watched" : isWatching ? "watched" : "watching"}.`}
                 disabled={isUpdatingWatchStatus}
                 leftIcon={isWatched ? <CheckIcon /> : <PlayIcon />}
                 style={{ flex: 1, minWidth: "140px", whiteSpace: "nowrap" }}
               >
-                {isWatched ? `${user} Watched` : `Mark ${user}`}
+                {user}: {status}
               </CardActionButton>
             );
           })

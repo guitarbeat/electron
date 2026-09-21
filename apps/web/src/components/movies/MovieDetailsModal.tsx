@@ -340,6 +340,8 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({
                     ? "Watched by Aaron & Electra"
                     : movie.watchedBy.length === 1
                       ? `Watched by ${movie.watchedBy[0]}`
+                      : (movie.watchingBy?.length ?? 0) > 0
+                        ? `Watching: ${movie.watchingBy?.join(" & ")}`
                       : "Not watched yet"}
                 </span>
               </footer>

@@ -44,6 +44,7 @@ export interface Movie {
   title: string;
   addedBy: User;
   watchedBy: User[];
+  watchingBy?: User[];
   createdAt: string;
 
   // Metadata

@@ -420,6 +420,7 @@ export const MovieSchema = z
     title: z.string().min(1),
     addedBy: z.enum(["Aaron", "Electra"]).or(z.string().min(1)),
     watchedBy: z.array(z.string()).default([]),
+    watchingBy: z.array(z.string()).default([]),
     createdAt: z.string(),
     posterUrl: z.string().optional(),
     year: z.string().optional(),
@@ -429,7 +430,7 @@ export const MovieSchema = z
     genre: z.string().optional(),
     director: z.string().optional(),
     category: z.string().optional(),
-    mediaType: z.enum(["movie", "series"]).optional(),
+    mediaType: z.enum(["movie", "series", "youtube"]).optional(),
     votes: z.union([z.number(), z.record(z.any())]).optional(),
     voteCount: z.number().optional(),
   })

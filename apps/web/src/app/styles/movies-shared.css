@@ -150,11 +150,6 @@
   isolation: isolate;
 }
 
-/* Modifier classes */
-.movie-item-container--watched .movie-item-card {
-  filter: grayscale(1);
-}
-
 .suggestion-item-card__eyebrow {
   margin-bottom: 0.25rem;
   font-size: 0.7rem;

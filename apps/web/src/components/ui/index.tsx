@@ -1476,6 +1476,7 @@ export const WorkspaceTabLoading: FC<WorkspaceTabLoadingProps> = ({
 
 interface MediaCardWatcherStackProps {
   watchers: string[];
+  watching?: string[];
   size?: "sm" | "md";
   showLabel?: boolean;
   className?: string;
@@ -1483,23 +1484,29 @@ interface MediaCardWatcherStackProps {
 
 export const MediaCardWatcherStack: React.FC<MediaCardWatcherStackProps> = ({
   watchers,
+  watching = [],
   size = "md",
   showLabel = false,
   className = "",
 }) => {
-  if (watchers.length === 0) return null;
+  const people = [...new Set([...watchers, ...watching])];
+  if (people.length === 0) return null;
 
   return (
     <div className={`media-card-watchers-stack ${className}`.trim()}>
-      {watchers.map((user) => (
+      {people.map((user) => {
+        const status = watchers.includes(user) ? "watched" : "watching";
+        return (
         <WatcherBadge
           key={user}
           user={user}
           size={size}
           showLabel={showLabel}
-          className="media-card-watcher-badge"
+          className={`media-card-watcher-badge media-card-watcher-badge--${status}`}
+          status={status}
         />
-      ))}
+        );
+      })}
     </div>
   );
 };
@@ -3875,6 +3882,7 @@ export interface WatcherBadgeProps {
   variant?: "default" | "text";
   showLabel?: boolean;
   className?: string;
+  status?: "watching" | "watched";
 }
 
 export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
@@ -3883,6 +3891,7 @@ export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   variant = "default",
   showLabel = false,
   className = "",
+  status,
 }) => {
   const badgeClassName = cn(
     "watcher-badge",
@@ -3893,9 +3902,14 @@ export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
   );
 
   return (
-    <div className={badgeClassName}>
+    <div
+      className={badgeClassName}
+      aria-label={status ? `${user}: ${status}` : user}
+      title={status ? `${user}: ${status}` : user}
+    >
       <div className="watcher-badge__avatar">
         <WatcherBadgePhoto user={user} />
+        {status ? <span className="watcher-badge__status" aria-hidden="true" /> : null}
       </div>
       {showLabel ? <span className="watcher-badge__label">{user}</span> : null}
     </div>

@@ -186,4 +186,39 @@ describe("movieScopeDefinition - MAX_MOVIE_TITLE_LENGTH boundaries", () => {
       assert.equal(result.conflict, "Invalid movie title.");
     }
   });
+
+  it("cycles a viewer from not watched to watching to watched", () => {
+    const movies: Movie[] = [
+      {
+        id: "m-progress",
+        title: "The Bear",
+        addedBy: "Aaron",
+        watchedBy: [],
+        watchingBy: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    ];
+
+    const started = movieScopeDefinition.mutate(
+      movies,
+      "toggle_watched",
+      { movieId: "m-progress", targetUser: "Electra" },
+      context,
+    );
+    assert.equal(started.ok, true);
+    if (!started.ok) return;
+    assert.deepEqual(started.data[0].watchingBy, ["Electra"]);
+    assert.deepEqual(started.data[0].watchedBy, []);
+
+    const finished = movieScopeDefinition.mutate(
+      started.data,
+      "toggle_watched",
+      { movieId: "m-progress", targetUser: "Electra" },
+      context,
+    );
+    assert.equal(finished.ok, true);
+    if (!finished.ok) return;
+    assert.deepEqual(finished.data[0].watchingBy, []);
+    assert.deepEqual(finished.data[0].watchedBy, ["Electra"]);
+  });
 });

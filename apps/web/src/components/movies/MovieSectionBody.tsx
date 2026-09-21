@@ -2,6 +2,13 @@ import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
+import { MovieWallFilters } from "./MovieWallFilters";
+import {
+  DEFAULT_MOVIE_WALL_FILTERS,
+  filterMovieWall,
+  hasActiveMovieWallFilters,
+  type MovieWallFilterState,
+} from "./movieWallFilterUtils";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
@@ -68,6 +75,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   const [isUpdatingWatchStatus, setIsUpdatingWatchStatus] =
     React.useState(false);
   const [editMovie, setEditMovie] = React.useState<Movie | null>(null);
+  const [wallFilters, setWallFilters] = React.useState<MovieWallFilterState>(
+    DEFAULT_MOVIE_WALL_FILTERS,
+  );
 
   const openMovieDetails = React.useCallback(
     (movie: Movie, origin?: MovieTransitionOrigin | null) => {
@@ -154,6 +164,31 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     );
   }, [selectedMovie, sections.queue, sections.completed]);
 
+  const allMovies = React.useMemo(() => {
+    const seenMovieIds = new Set<string>();
+    return [...sections.queue, ...sections.completed].filter((movie) => {
+      if (!movie?.id || seenMovieIds.has(movie.id)) return false;
+      seenMovieIds.add(movie.id);
+      return true;
+    });
+  }, [sections.queue, sections.completed]);
+
+  const filteredMovies = React.useMemo(
+    () => filterMovieWall(allMovies, wallFilters),
+    [allMovies, wallFilters],
+  );
+  const hasActiveFilters = hasActiveMovieWallFilters(wallFilters);
+
+  React.useEffect(() => {
+    if (
+      selectedMovie &&
+      hasActiveFilters &&
+      !filteredMovies.some((movie) => movie.id === selectedMovie.id)
+    ) {
+      closeMovieDetails();
+    }
+  }, [selectedMovie, hasActiveFilters, filteredMovies, closeMovieDetails]);
+
   const unifiedCards = React.useMemo(() => {
     const renderMovie = (movie: Movie) => {
       const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
@@ -200,16 +235,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       });
     }
 
-    // Deduplicate movies across queue and completed
-    const seenMovieIds = new Set<string>();
-    const uniqueMovies: Movie[] = [];
-    for (const movie of [...sections.queue, ...sections.completed]) {
-      if (movie && movie.id && !seenMovieIds.has(movie.id)) {
-        seenMovieIds.add(movie.id);
-        uniqueMovies.push(movie);
-      }
-    }
-
     // Deduplicate suggestions
     const seenSuggestionIds = new Set<string>();
     const uniqueSuggestions: MovieSuggestion[] = [];
@@ -231,7 +256,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         isProcessing={processingSuggestionId === suggestion.id}
       />
     ));
-    const movieCards = uniqueMovies.map(renderMovie);
+    const movieCards = filteredMovies.map(renderMovie);
+
+    if (hasActiveFilters) return movieCards;
 
     return interleaveCollectionItems(
       suggestionCards,
@@ -242,8 +269,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     collectionState,
     isMobile,
     dynamicColumns,
-    sections.queue,
-    sections.completed,
+    filteredMovies,
+    hasActiveFilters,
     sections.suggestions,
     currentUser,
     activeUsers,
@@ -329,6 +356,15 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           className={isMobile ? "movies-wall-container movies-wall-container--mobile" : "movies-wall-container"}
           style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
         >
+          {collectionState !== "loading" ? (
+            <MovieWallFilters
+              movies={allMovies}
+              filters={wallFilters}
+              resultCount={filteredMovies.length}
+              onChange={setWallFilters}
+              hasSearch={Boolean(currentUser)}
+            />
+          ) : null}
           <DriftWall
             items={unifiedCards}
             columns={dynamicColumns}
@@ -363,8 +399,21 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           className="poster-wall-empty"
         >
           <MoviesEmptyIllustration />
-          <strong>No cards yet</strong>
-          <span>Add a movie, suggestion, or place to fill this wall.</span>
+          <strong>{hasActiveFilters ? "No matching titles" : "No cards yet"}</strong>
+          <span>
+            {hasActiveFilters
+              ? "Try a broader combination or clear the wall filters."
+              : "Add a movie, suggestion, or place to fill this wall."}
+          </span>
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              className="movie-wall-filters__empty-reset"
+              onClick={() => setWallFilters(DEFAULT_MOVIE_WALL_FILTERS)}
+            >
+              Clear filters
+            </button>
+          ) : null}
         </CollectionEmptyState>
       )}
 
@@ -441,4 +490,3 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     </div>
   );
 };
-

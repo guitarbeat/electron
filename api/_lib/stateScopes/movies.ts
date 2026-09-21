@@ -53,12 +53,18 @@ const normalizeMovieRecord = (value: unknown): Movie | null => {
   const watchedBy = Array.isArray(movie.watchedBy)
     ? [...new Set(movie.watchedBy.filter(isUser))]
     : [];
+  const watchingBy = Array.isArray(movie.watchingBy)
+    ? [...new Set(movie.watchingBy.filter(isUser))].filter(
+        (user) => !watchedBy.includes(user),
+      )
+    : [];
 
   return {
     id,
     title,
     addedBy: movie.addedBy,
     watchedBy,
+    watchingBy,
     createdAt,
     posterUrl: normalizePosterUrl(movie.posterUrl),
     year: normalizeOptionalString(movie.year),
@@ -68,6 +74,10 @@ const normalizeMovieRecord = (value: unknown): Movie | null => {
     genre: normalizeOptionalString(movie.genre),
     director: normalizeOptionalString(movie.director),
     category: normalizeOptionalString(movie.category),
+    mediaType:
+      movie.mediaType === "series" || movie.mediaType === "youtube"
+        ? movie.mediaType
+        : "movie",
   };
 };
 
@@ -310,14 +320,23 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         }
 
         const target = movies[index];
-        const watchedBy = target.watchedBy.includes(targetUser)
-          ? target.watchedBy.filter((user: User) => user !== targetUser)
-          : [...target.watchedBy, targetUser];
+        const watchingBy = target.watchingBy ?? [];
+        const watchedBy = watchingBy.includes(targetUser)
+          ? [...target.watchedBy, targetUser]
+          : target.watchedBy.includes(targetUser)
+            ? target.watchedBy.filter((user: User) => user !== targetUser)
+            : target.watchedBy;
+        const nextWatchingBy = target.watchedBy.includes(targetUser)
+          ? watchingBy.filter((user: User) => user !== targetUser)
+          : watchingBy.includes(targetUser)
+            ? watchingBy.filter((user: User) => user !== targetUser)
+            : [...watchingBy, targetUser];
 
         const updatedMovies = [...movies];
         updatedMovies[index] = {
           ...target,
           watchedBy,
+          watchingBy: nextWatchingBy,
         };
 
         return {

@@ -65,7 +65,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   const posterRef = React.useRef<HTMLDivElement | null>(null);
   const isMobile = isCompact;
   const isGuest = !currentUser;
-  const watchedByBoth = movie.watchedBy.length === 2;
 
   const handleOpenDetails = (e?: React.MouseEvent) => {
     if (e) {
@@ -151,7 +150,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   return (
     <>
       <div
-        className={`movie-item-container ${watchedByBoth ? "movie-item-container--watched" : ""} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
+        className={`movie-item-container ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
         data-movie-id={movie.id}
         aria-label={`${movie.title}${movie.year ? ` (${movie.year})` : ""}`}
       >
@@ -181,6 +180,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
               <MediaCardWatcherStack
                 watchers={movie.watchedBy}
+                watching={movie.watchingBy}
                 className="movie-item-watchers"
               />
 
@@ -234,4 +234,3 @@ export const MovieCard: React.FC<MovieCardProps> = ({
     </>
   );
 };
-

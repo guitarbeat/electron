@@ -309,9 +309,16 @@ export const useMovies = (
 
           return {
             ...movie,
-            watchedBy: movie.watchedBy.includes(userToToggle)
-              ? movie.watchedBy.filter((user: User) => user !== userToToggle)
-              : [...movie.watchedBy, userToToggle],
+            watchedBy: movie.watchingBy?.includes(userToToggle)
+              ? [...movie.watchedBy, userToToggle]
+              : movie.watchedBy.includes(userToToggle)
+                ? movie.watchedBy.filter((user: User) => user !== userToToggle)
+                : movie.watchedBy,
+            watchingBy: movie.watchedBy.includes(userToToggle)
+              ? (movie.watchingBy ?? []).filter((user) => user !== userToToggle)
+              : movie.watchingBy?.includes(userToToggle)
+                ? movie.watchingBy.filter((user) => user !== userToToggle)
+                : [...(movie.watchingBy ?? []), userToToggle],
           };
         }),
       );

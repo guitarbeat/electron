@@ -102,6 +102,7 @@ export const cloneMovies = (movies: Movie[]): Movie[] =>
   movies.map((movie) => ({
     ...movie,
     watchedBy: [...movie.watchedBy],
+    watchingBy: [...(movie.watchingBy ?? [])],
   }));
 
 export const normalizeMovieRecord = (value: unknown): Movie | null => {
@@ -121,12 +122,18 @@ export const normalizeMovieRecord = (value: unknown): Movie | null => {
   const watchedBy = Array.isArray(movie.watchedBy)
     ? [...new Set(movie.watchedBy.filter(isUser))]
     : [];
+  const watchingBy = Array.isArray(movie.watchingBy)
+    ? [...new Set(movie.watchingBy.filter(isUser))].filter(
+        (user) => !watchedBy.includes(user),
+      )
+    : [];
 
   return {
     id,
     title,
     addedBy: movie.addedBy,
     watchedBy,
+    watchingBy,
     createdAt,
     posterUrl: normalizePosterUrl(movie.posterUrl),
     year: normalizeOptionalString(movie.year),
@@ -136,6 +143,10 @@ export const normalizeMovieRecord = (value: unknown): Movie | null => {
     genre: normalizeOptionalString(movie.genre),
     director: normalizeOptionalString(movie.director),
     category: normalizeOptionalString(movie.category),
+    mediaType:
+      movie.mediaType === "series" || movie.mediaType === "youtube"
+        ? movie.mediaType
+        : "movie",
   };
 };
 
