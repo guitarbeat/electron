@@ -721,4 +721,57 @@ describe("omdbHandler", () => {
     const res = await defaultHandler(req);
     assert.ok(res.status === 200 || res.status === 500 || res.status === 502);
   });
+
+  it("should handle non-JSON body on HTTP 200 OK without failing and cache raw response when JSON.parse throws", async () => {
+    const nonJsonBody = "<html><body>502 Bad Gateway</body></html>";
+    let callCount = 0;
+    const mockDeps = {
+      fetchWithRetry: async () => {
+        callCount++;
+        return new Response(nonJsonBody, {
+          status: 200,
+          statusText: "OK",
+          headers: { "content-type": "text/html" },
+        });
+      },
+    };
+
+    const req = new Request("http://localhost/api/omdb?s=nonjson-parse-catch", { method: "GET" });
+    const res1 = await omdbHandler(req, mockDeps);
+
+    assert.strictEqual(res1.status, 200);
+    assert.strictEqual(res1.headers.get("X-Cache"), "MISS");
+    const body1 = await res1.text();
+    assert.strictEqual(body1, nonJsonBody);
+    assert.strictEqual(callCount, 1);
+
+    const res2 = await omdbHandler(req, mockDeps);
+    assert.strictEqual(res2.status, 200);
+    assert.strictEqual(res2.headers.get("X-Cache"), "HIT");
+    const body2 = await res2.text();
+    assert.strictEqual(body2, nonJsonBody);
+    assert.strictEqual(callCount, 1);
+  });
+
+  it("should catch fetch errors with default dependencies, log them, and return 500 Internal Server Error", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+    const fetchError = new Error("Network connection failed");
+    t.mock.method(globalThis, "fetch", async () => {
+      throw fetchError;
+    });
+
+    const req = new Request("http://localhost/api/omdb?s=default-fetch-error", { method: "GET" });
+    const res = await omdbHandler(req);
+
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 2);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[1].arguments[0],
+      "Error handling GET " + req.url + ":",
+    );
+    assert.strictEqual(consoleErrorMock.mock.calls[1].arguments[1], fetchError);
+  });
 });
