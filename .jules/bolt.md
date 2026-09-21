@@ -21,3 +21,14 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Hardcoded timeout in logger.ts
+
+### Issue
+The task prompt requested extracting the hardcoded timeout `1000` in `apps/web/src/services/logger.ts:610` into a named constant.
+
+### Findings & Actions
+1. Inspected `apps/web/src/services/logger.ts`.
+2. The constant `NAVIGATION_TIMING_DELAY_MS = 1000` is already defined at line 56 and is used in both `document.readyState === "complete"` check and `window.addEventListener("load", ...)` listener.
+3. The hardcoded timeout `1000` no longer exists in `apps/web/src/services/logger.ts`.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes to `logger.ts` and logging the discrepancy here.
