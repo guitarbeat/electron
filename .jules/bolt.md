@@ -21,3 +21,14 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Untested error path in session endpoint
+
+### Issue
+The task prompt requested adding tests for an untested error path at `api/session.ts:29` by mocking internal session dependencies (e.g. `getPinCoverageState`).
+
+### Findings & Actions
+1. Analyzed `api/session.ts` and `api/session.test.ts`.
+2. `api/session.test.ts` already contains comprehensive test cases for session errors, including when `getSessionState` throws or `getPinCoverageState` rejects.
+3. Code coverage analysis confirmed 100% line, branch, and function coverage for `api/session.ts`.
+4. Per memory guidelines regarding stale/already implemented task prompts, concluding the task with no code changes and logging the discrepancy here.
