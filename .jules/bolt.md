@@ -21,3 +21,15 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Hardcoded timeout in apps/web/src/hooks/movies/index.ts
+
+### Issue
+The task prompt requested extracting a hardcoded timeout `800` to a meaningful variable in `apps/web/src/hooks/movies/index.ts:680`.
+
+### Findings & Actions
+1. Inspected `apps/web/src/hooks/movies/index.ts`.
+2. On line 26, `const MOCK_MODE_DELAY_MS = 800;` is already defined.
+3. On lines 641 and 691, `MOCK_MODE_DELAY_MS` is already used (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`).
+4. There are no remaining hardcoded `800` timeout values in `apps/web/src/hooks/movies/index.ts`.
+5. Per repository memory guidelines ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes to the source files and documenting the discrepancy here.
