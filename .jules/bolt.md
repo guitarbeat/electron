@@ -21,3 +21,13 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Missing tests for stremio URL builder
+
+### Issue
+The task prompt reported missing tests for the stremio URL builder (`apps/web/src/utils/stremio.ts:13`).
+
+### Findings & Actions
+1. Checked `apps/web/src/utils/stremio.ts` and discovered `apps/web/src/utils/stremio.test.ts` already exists.
+2. `apps/web/src/utils/stremio.test.ts` thoroughly tests all three exported functions (`buildStremioSearchUrl`, `buildStremioDetailUrl`, and `getStremioUrls`) covering empty/whitespace inputs, formatting, special characters, movies/series types, and media objects.
+3. Per repository instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and documenting the discrepancy here.
