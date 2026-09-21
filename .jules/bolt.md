@@ -21,3 +21,14 @@ The task prompt requested fixing implicit any types for MovieSectionBody handle 
 2. `scripts/maintenance/applied_patches/fix_imports.py` already contains the logic for handling `MovieSectionBody` event replacements.
 3. The event handlers `handleRemoveFromList` and `handleMarkWatched` do not exist in `MoviesView.tsx`, `MovieSectionBody.tsx`, or anywhere else in the React codebase.
 4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Security Vulnerability Task Discrepancy Note: Insecure Database Connection Configuration
+
+### Issue
+The task prompt reported an insecure database connection configuration vulnerability in `api/_lib/dbCommon.ts:56`, alleging that `poolConfig.ssl = { rejectUnauthorized: false };` was present in `createPostgresPool`.
+
+### Findings & Actions
+1. Inspected `api/_lib/dbCommon.ts` and `api/_lib/dbCommon.test.ts`.
+2. The codebase already configures SSL securely with `poolConfig.ssl = { rejectUnauthorized: true };` in `createPostgresPool`.
+3. Existing unit tests in `api/_lib/dbCommon.test.ts` verify that `rejectUnauthorized: true` is properly set.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
