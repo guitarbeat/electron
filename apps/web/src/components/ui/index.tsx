@@ -70,16 +70,6 @@ import {
   USER_OPTIONS,
   getCatPosterUrl,
 } from "@/utils";
-import {
-  getCachedPosterUrl,
-  getCachedPosterUrlSync,
-  cachePosterLocally,
-} from "@/services/posterCache";
-import {
-  getImageBlob,
-  fetchAndCacheImage,
-  getCachedObjectUrlSync,
-} from "@/utils/imageCache";
 import { fetchWikipediaPosterOrSummary } from "@/services/metadata";
 import {
   Y2kPlaceholderGraphic,
@@ -117,22 +107,13 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   priority = false,
 }) => {
   const [wikiPosterUrl, setWikiPosterUrl] = React.useState<string | null>(null);
+  const imgRef = React.useRef<HTMLImageElement | null>(null);
 
   const fallbackCatUrl = React.useMemo(() => {
     return getCatPosterUrl(id || title);
   }, [id, title]);
 
   const effectivePosterUrl = posterUrl && posterUrl !== "N/A" ? posterUrl : wikiPosterUrl;
-
-  const [cachedSrc, setCachedSrc] = React.useState<string | null>(() => {
-    return effectivePosterUrl
-      ? (getCachedObjectUrlSync(effectivePosterUrl) || getCachedPosterUrlSync(effectivePosterUrl))
-      : null;
-  });
-
-  const [cachedFallbackSrc, setCachedFallbackSrc] = React.useState<string | null>(() => {
-    return getCachedObjectUrlSync(fallbackCatUrl) || getCachedPosterUrlSync(fallbackCatUrl);
-  });
 
   const [hasImageError, setHasImageError] = React.useState(false);
   const [hasFallbackError, setHasFallbackError] = React.useState(false);
@@ -155,101 +136,28 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   }, [title, year, posterUrl]);
 
   React.useEffect(() => {
-    let isCancelled = false;
     setHasImageError(false);
     setHasFallbackError(false);
+  }, [effectivePosterUrl]);
 
-    setCachedSrc(null);
-    setCachedFallbackSrc(null);
-
-    if (effectivePosterUrl) {
-      const syncCached =
-        getCachedObjectUrlSync(effectivePosterUrl) || getCachedPosterUrlSync(effectivePosterUrl);
-      if (syncCached) {
-        setCachedSrc(syncCached);
-      } else {
-        setCachedSrc(null);
-        // Check IndexedDB cache for poster blob before fetching from network
-        getImageBlob(effectivePosterUrl)
-          .then((blob) => {
-            if (isCancelled) return;
-            if (blob) {
-              try {
-                const objectUrl = URL.createObjectURL(blob);
-                setCachedSrc(objectUrl);
-              } catch {
-                setCachedSrc(null);
-              }
-            } else {
-              // Not in IndexedDB cache: check service worker cache fallback
-              void getCachedPosterUrl(effectivePosterUrl).then((cached) => {
-                if (!isCancelled && cached) {
-                  setCachedSrc(cached);
-                }
-              });
-            }
-          })
-          .catch(() => {
-            if (!isCancelled) {
-              void getCachedPosterUrl(effectivePosterUrl).then((cached) => {
-                if (!isCancelled && cached) setCachedSrc(cached);
-              });
-            }
-          });
-      }
-    } else {
-      setCachedSrc(null);
-    }
-
-    if (fallbackCatUrl) {
-      const syncFallback =
-        getCachedObjectUrlSync(fallbackCatUrl) || getCachedPosterUrlSync(fallbackCatUrl);
-      if (syncFallback) {
-        setCachedFallbackSrc(syncFallback);
-      } else {
-        getImageBlob(fallbackCatUrl)
-          .then((blob) => {
-            if (isCancelled) return;
-            if (blob) {
-              try {
-                const objectUrl = URL.createObjectURL(blob);
-                setCachedFallbackSrc(objectUrl);
-              } catch {
-                // Ignore object URL creation error
-              }
-            } else {
-              void getCachedPosterUrl(fallbackCatUrl).then((cached) => {
-                if (!isCancelled && cached) setCachedFallbackSrc(cached);
-              });
-            }
-          })
-          .catch(() => {
-            void getCachedPosterUrl(fallbackCatUrl).then((cached) => {
-              if (!isCancelled && cached) setCachedFallbackSrc(cached);
-            });
-          });
-      }
-    }
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [effectivePosterUrl, fallbackCatUrl]);
-
-  // Determine active display source: prefer local cached version for offline resilience
-  const primarySrc = cachedSrc || effectivePosterUrl;
+  // Determine active display source: primary URL first, then cat fallback if primary fails
+  const primarySrc = effectivePosterUrl;
   const isCatFallback = !primarySrc || hasImageError;
-  const activeSrc = isCatFallback
-    ? (cachedFallbackSrc || fallbackCatUrl)
-    : primarySrc;
+  const activeSrc = isCatFallback ? fallbackCatUrl : primarySrc;
 
   const [isLoaded, setIsLoaded] = React.useState<boolean>(() => {
     return Boolean(activeSrc && CACHED_LOADED_POSTERS.has(activeSrc));
   });
 
+  // Check if image is already cached / completed in browser memory
   React.useEffect(() => {
     if (activeSrc && CACHED_LOADED_POSTERS.has(activeSrc)) {
       setIsLoaded(true);
+      return;
+    }
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoaded(true);
+      if (activeSrc) CACHED_LOADED_POSTERS.add(activeSrc);
     } else {
       setIsLoaded(false);
     }
@@ -266,35 +174,15 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
           return;
         }
       } catch {
-        // Fall through
+        // Fall through to cat fallback
       }
     }
 
-    // If the network request failed and we haven't loaded from local cache yet, try cache lookup first
-    if (!hasImageError && effectivePosterUrl && !cachedSrc) {
-      try {
-        const cachedBlob = await getImageBlob(effectivePosterUrl);
-        if (cachedBlob) {
-          const objectUrl = URL.createObjectURL(cachedBlob);
-          setCachedSrc(objectUrl);
-          setIsLoaded(false);
-          return;
-        }
-      } catch {
-        // Ignore cache lookup error
-      }
-      const cached = await getCachedPosterUrl(effectivePosterUrl);
-      if (cached) {
-        setCachedSrc(cached);
-        setIsLoaded(false);
-        return;
-      }
-    }
-    if (!hasImageError && effectivePosterUrl) {
+    if (!hasImageError) {
       setHasImageError(true);
       setIsLoaded(false);
     } else {
-      // Fallback cat poster also failed - fallback to stylized visual card
+      // Fallback cat poster also failed - fallback to stylized vector card
       setHasFallbackError(true);
       setIsLoaded(true);
     }
@@ -303,14 +191,6 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
   const handleImageLoad = () => {
     if (activeSrc) {
       CACHED_LOADED_POSTERS.add(activeSrc);
-    }
-    // Asynchronously ensure poster is cached locally for offline readiness
-    if (effectivePosterUrl && !cachedSrc && !isCatFallback) {
-      void fetchAndCacheImage(effectivePosterUrl);
-      void cachePosterLocally(effectivePosterUrl);
-    } else if (isCatFallback && fallbackCatUrl && !cachedFallbackSrc) {
-      void fetchAndCacheImage(fallbackCatUrl);
-      void cachePosterLocally(fallbackCatUrl);
     }
     setIsLoaded(true);
   };
@@ -331,11 +211,12 @@ export const MediaPoster: React.FC<MediaPosterProps> = ({
     <div className={`media-poster-wrap ${isCatFallback ? "is-cat-poster" : ""} ${className}`}>
       {!isLoaded && <div className="media-poster-skeleton" />}
       <img
+        ref={imgRef}
         src={activeSrc}
         alt={`${title} poster`}
         width={300}
         height={450}
-        loading={priority ? "eager" : "lazy"}
+        loading="eager"
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
         className={`media-poster-img ${isLoaded ? "loaded" : ""}`}
@@ -4780,3 +4661,5 @@ export const MediaCardStatusBadge: FC<MediaCardStatusBadgeProps> = ({
 
 export { PageFlip } from "./PageFlip";
 export type { PageFlipProps, PageFlipLeaf, PageFlipEase } from "./PageFlip";
+export { FrameEffect, ViewportFrame, type FrameEffectProps } from "./FrameEffect";
+export { Vignette, type VignetteProps } from "./Vignette";

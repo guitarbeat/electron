@@ -22,9 +22,13 @@ import { useAppTabNavigation, useCrtEntranceAnimation } from "@/hooks";
 import { useMediaQuery } from "@/hooks";
 import { useTvSpatialNavigation } from "@/hooks";
 
-import { MinigameModal } from "@/components/ui";
-import { ProfilePinPanel } from "@/components/ui";
-import { WorkspaceTabFallback } from "@/components/ui";
+import {
+  MinigameModal,
+  ProfilePinPanel,
+  WorkspaceTabFallback,
+  ViewportFrame,
+  Vignette,
+} from "@/components/ui";
 import type { TogglePanel } from "@/app/AppWorkspaceShell";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 const AppWorkspaceShell = lazyWithRetry(
@@ -235,6 +239,12 @@ const App: React.FC = () => {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
+
+        {/* Viewport Frame with signature round border edge from woods.engineer */}
+        <ViewportFrame />
+
+        {/* Vignette edge lighting from woods.engineer */}
+        <Vignette top bottom left right />
 
         <div
           ref={crtCanvasRef}

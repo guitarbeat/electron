@@ -350,21 +350,22 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         gap: isMobile ? spacing.md : spacing.lg,
       }}
     >
-      {unifiedCards.length > 0 ? (
-        <div
-          ref={wallContainerRef}
-          className={isMobile ? "movies-wall-container movies-wall-container--mobile" : "movies-wall-container"}
-          style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
-        >
-          {collectionState !== "loading" ? (
-            <MovieWallFilters
-              movies={allMovies}
-              filters={wallFilters}
-              resultCount={filteredMovies.length}
-              onChange={setWallFilters}
-              hasSearch={Boolean(currentUser)}
-            />
-          ) : null}
+      <div
+        ref={wallContainerRef}
+        className={isMobile ? "movies-wall-container movies-wall-container--mobile" : "movies-wall-container"}
+        style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
+      >
+        {collectionState !== "loading" ? (
+          <MovieWallFilters
+            movies={allMovies}
+            filters={wallFilters}
+            resultCount={filteredMovies.length}
+            onChange={setWallFilters}
+            hasSearch={Boolean(currentUser)}
+          />
+        ) : null}
+
+        {unifiedCards.length > 0 ? (
           <DriftWall
             items={unifiedCards}
             columns={dynamicColumns}
@@ -392,30 +393,30 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             isPaused={Boolean(selectedMovie)}
             className={selectedMovie ? "drift-wall--modal-open" : ""}
           />
-        </div>
-      ) : (
-        <CollectionEmptyState
-          padding={isMobile ? spacing.md : spacing["3xl"]}
-          className="poster-wall-empty"
-        >
-          <MoviesEmptyIllustration />
-          <strong>{hasActiveFilters ? "No matching titles" : "No cards yet"}</strong>
-          <span>
-            {hasActiveFilters
-              ? "Try a broader combination or clear the wall filters."
-              : "Add a movie, suggestion, or place to fill this wall."}
-          </span>
-          {hasActiveFilters ? (
-            <button
-              type="button"
-              className="movie-wall-filters__empty-reset"
-              onClick={() => setWallFilters(DEFAULT_MOVIE_WALL_FILTERS)}
-            >
-              Clear filters
-            </button>
-          ) : null}
-        </CollectionEmptyState>
-      )}
+        ) : (
+          <CollectionEmptyState
+            padding={isMobile ? spacing.md : spacing["3xl"]}
+            className="poster-wall-empty"
+          >
+            <MoviesEmptyIllustration />
+            <strong>{hasActiveFilters ? "No matching titles" : "No cards yet"}</strong>
+            <span>
+              {hasActiveFilters
+                ? "Try a broader combination or clear the wall filters."
+                : "Add a movie, suggestion, or place to fill this wall."}
+            </span>
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                className="movie-wall-filters__empty-reset"
+                onClick={() => setWallFilters(DEFAULT_MOVIE_WALL_FILTERS)}
+              >
+                Clear filters
+              </button>
+            ) : null}
+          </CollectionEmptyState>
+        )}
+      </div>
 
       {resolvedSelectedMovie ? (
         <React.Suspense fallback={null}>

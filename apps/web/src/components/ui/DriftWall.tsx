@@ -175,6 +175,11 @@ export const DriftWall: React.FC<DriftWallProps> = ({
 
   const totalSlots = safeItems.length;
 
+  // Clean stale tile references when slot count changes
+  useEffect(() => {
+    tileRefs.current = [];
+  }, [totalSlots]);
+
   // Calculate itemsPerCol to ensure vertical center-to-center distance is always >= slotHeight (tileHeight + gap)
   const itemsPerCol = useMemo(() => {
     if (totalSlots === 0) return 4;

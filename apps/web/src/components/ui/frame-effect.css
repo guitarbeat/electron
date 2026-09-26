@@ -1,0 +1,52 @@
+:root {
+  --frame-border-width: 7px;
+  --frame-color: #999999;
+  --frame-border-radius: 20px;
+  --z-index-frame: 80;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --frame-border-width: 5px;
+    --frame-border-radius: 16px;
+  }
+}
+
+.viewport-frame {
+  --frame-border: var(--frame-border-width, 7px) solid var(--frame-color, #999999);
+  position: fixed;
+  inset: 0;
+  height: 100vh; /* Fallback for browsers that do not support dvh */
+  height: 100dvh; /* Dynamic viewport height - accounts for mobile browser chrome */
+  border: var(--frame-border);
+  box-sizing: border-box;
+  z-index: var(--z-index-frame, 80);
+  user-select: none;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+
+.viewport-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: var(--frame-border);
+  border-radius: var(--frame-border-radius, 20px) !important;
+  margin: calc(-1 * var(--frame-border-width, 7px));
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.frame-effect-root {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.frame-effect-content {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  width: 100%;
+  min-height: 100%;
+}

@@ -22,7 +22,7 @@ export interface CachedPosterRecord {
 
 // In-memory cache mapping original URL -> resolved local object URL or data URL
 const inMemoryObjectUrls = new Map<string, string>();
-const MAX_MEMORY_POSTERS = 80;
+const MAX_MEMORY_POSTERS = 500;
 const inflightFetches = new Map<string, Promise<string | null>>();
 
 const rememberObjectUrl = (url: string, objectUrl: string) => {

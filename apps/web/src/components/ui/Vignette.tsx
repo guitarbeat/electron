@@ -1,7 +1,10 @@
 import React from 'react';
-import './vignette.css';
 
-interface VignetteProps {
+if (typeof document !== 'undefined') {
+  void import('./vignette.css');
+}
+
+export interface VignetteProps {
   top?: boolean;
   bottom?: boolean;
   left?: boolean;
