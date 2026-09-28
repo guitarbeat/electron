@@ -43,7 +43,7 @@ describe("diagnosticsHandler", () => {
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     assert.strictEqual(data.ok, true);
-    assert.ok(typeof data.id === "string" && data.id.startsWith("diag_"));
+    assert.ok(typeof data.id === "string" && /^diag_\d+_[0-9a-f]{8}$/.test(data.id));
   });
 
   it("should reject POST without message field with 400", async () => {
