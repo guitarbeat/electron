@@ -31,3 +31,14 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Missing tests for layout utilities
+
+### Issue
+The task prompt reported missing tests for `buildCollectionSections` (and layout utilities) in `apps/web/src/utils/layouts.ts:22`.
+
+### Findings & Actions
+1. Checked `apps/web/src/utils/layouts.test.ts`.
+2. `buildCollectionSections`, `cn`, `getWorkspaceCollectionState`, `compareCreatedAtDesc`, `compareCreatedAtAsc`, `compareStringsAlpha`, and all `layouts` style generators already have full unit test coverage (20 tests covering happy paths, default parameters, custom arguments, edge cases, and empty arrays).
+3. Ran `pnpm exec tsx --test apps/web/src/utils/layouts.test.ts` and confirmed all tests pass cleanly.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task without code changes to source/test files and documenting the discrepancy here.
