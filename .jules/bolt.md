@@ -31,3 +31,13 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Single-letter variable name in spinHistoryTitleFromEntry
+
+### Issue
+The task prompt requested refactoring the single-letter variable `const t = sanitizeInput(entry)` in `apps/web/src/services/state/index.ts`.
+
+### Findings & Actions
+1. Analyzed `apps/web/src/services/state/index.ts` around `spinHistoryTitleFromEntry`.
+2. The variable `t` was already renamed to `sanitizedTitle` in a previous commit (`const sanitizedTitle = sanitizeInput(entry);`).
+3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
