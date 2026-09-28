@@ -31,3 +31,8 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy - JSON Parsing Error Handling Tests
+- **Task**: Test `parseJsonContent` JSON parsing error handling in `api/_lib/common.ts:15`.
+- **Finding**: Comprehensive test coverage for `parseJsonContent` error handling, invalid JSON inputs, context message formatting, and non-Error thrown values already exists in `api/_lib/common.test.ts`.
+- **Action**: Confirmed all existing tests pass cleanly (`pnpm exec tsx --test api/_lib/common.test.ts`). No code changes were needed.
