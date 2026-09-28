@@ -357,4 +357,34 @@ describe("withWebHandler", () => {
     const body = (await response.json()) as { error: string };
     assert.strictEqual(body.error, "Internal Server Error");
   });
+
+  it("should generate cryptographically secure unique request IDs with expected format", async () => {
+    let capturedRequestId: string | undefined;
+    const testHandler = withWebHandler(async (req) => {
+      // Intentionally throw so logger logs error with requestId in context
+      throw new Error("Test error for requestId capturing");
+    });
+
+    const request = new Request("https://example.com/api/test", { method: "GET" });
+
+    // Mock console.error to capture logged requestId
+    const originalConsoleError = console.error;
+    try {
+      console.error = (prefix: unknown, ...args: unknown[]) => {
+        if (typeof prefix === "string" && prefix.includes("[req:")) {
+          const match = prefix.match(/\[req:([^\]]+)\]/);
+          if (match) {
+            capturedRequestId = match[1];
+          }
+        }
+      };
+
+      await testHandler(request);
+    } finally {
+      console.error = originalConsoleError;
+    }
+
+    assert.ok(capturedRequestId, "Request ID should be captured in logger context");
+    assert.match(capturedRequestId, /^req_[a-z0-9]+_[a-f0-9]{12}$/);
+  });
 });

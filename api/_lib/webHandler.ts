@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { serverErrorResponse } from "./http.js";
 import { logger } from "./logger.js";
 import {
@@ -16,7 +17,7 @@ type DualModeHandler = {
 };
 
 const generateRequestId = (): string =>
-  `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  `req_${Date.now().toString(36)}_${randomBytes(6).toString("hex")}`;
 
 export function withWebHandler(handler: WebHandler): DualModeHandler {
   const dualModeHandler = async (
