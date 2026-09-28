@@ -31,3 +31,19 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Untested error path in OMDb API proxy
+
+### Issue
+The task prompt requested adding tests for the `catch (error)` error path in `api/omdb.ts` (line 283), noting that mocking fetch/fetchWithRetry to throw an error was required.
+
+### Findings & Actions
+1. Inspected `api/omdb.ts` and `api/omdb.test.ts`.
+2. `api/omdb.test.ts` already contains multiple comprehensive test cases targeting the catch block in `omdbHandler`:
+   - `should catch errors in fetchWithRetry, log them, and return 500 Internal Server Error`
+   - `should catch errors when reading response body, log them, and return 500 Internal Server Error`
+   - `should catch URL parsing errors when req.url is malformed, log them, and return 500`
+   - `should catch non-Error thrown exceptions in catch block`
+   - `should catch fetch errors with default dependencies, log them, and return 500 Internal Server Error`
+3. Running test coverage tools (`c8`) confirmed 100% statement and branch coverage on the `catch (error)` block in `api/omdb.ts`.
+4. Per repository memory guidelines ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and documenting the discrepancy here.
