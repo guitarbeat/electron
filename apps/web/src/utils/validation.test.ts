@@ -14,6 +14,44 @@ import {
 
 describe("validation utility", () => {
   describe("createValidator", () => {
+    it("handles fields not included in validation rules without errors", () => {
+      const validator = createValidator({
+        title: { required: true },
+      });
+
+      const result = validator({
+        title: "Inception",
+        untrackedField: "some extra payload value",
+        anotherUntracked: 12345,
+      });
+
+      assert.equal(result.isValid, true);
+      assert.deepEqual(result.errors, {});
+      assert.deepEqual(result.fieldErrors, []);
+    });
+
+    it("evaluates rule conditions in sequence and stops on first violation per field", () => {
+      const validator = createValidator({
+        field: {
+          required: true,
+          minLength: 5,
+          pattern: /^[a-z]+$/,
+        },
+      });
+
+      // Violates required
+      const reqResult = validator({ field: "" });
+      assert.equal(reqResult.errors.field, "field is required");
+
+      // Violates minLength (length 3 < 5)
+      const minResult = validator({ field: "abc" });
+      assert.equal(minResult.errors.field, "field must be at least 5 characters");
+
+      // Violates pattern
+      const patternResult = validator({ field: "ABCDE" });
+      assert.equal(patternResult.errors.field, "field format is invalid");
+    });
+
     it("validates required fields", () => {
       const validator = createValidator({
         title: { required: true },
@@ -182,6 +220,32 @@ describe("validation utility", () => {
   });
 
   describe("ValidationPatterns", () => {
+    it("validates ValidationPatterns edge cases", () => {
+      // Email edge cases
+      assert.equal(ValidationPatterns.email.test("user name@example.com"), false);
+      assert.equal(ValidationPatterns.email.test("user@example@com"), false);
+      assert.equal(ValidationPatterns.email.test(""), false);
+
+      // URL edge cases
+      assert.equal(ValidationPatterns.url.test("javascript:alert(1)"), false);
+      assert.equal(ValidationPatterns.url.test("//example.com"), false);
+
+      // Alphanumeric edge cases
+      assert.equal(ValidationPatterns.alphanumeric.test("abc 123"), false);
+
+      // Numeric edge cases
+      assert.equal(ValidationPatterns.numeric.test("-123"), false);
+      assert.equal(ValidationPatterns.numeric.test("12.34"), false);
+
+      // Phone edge cases
+      assert.equal(ValidationPatterns.phone.test("call-me-123"), false);
+
+      // Slug edge cases
+      assert.equal(ValidationPatterns.slug.test("-slug-start"), false);
+      assert.equal(ValidationPatterns.slug.test("slug-end-"), false);
+      assert.equal(ValidationPatterns.slug.test("slug--double"), false);
+    });
+
     it("validates email pattern correctly", () => {
       assert.ok(ValidationPatterns.email.test("user@example.com"));
       assert.ok(ValidationPatterns.email.test("a.b+c@domain.co.uk"));
@@ -222,6 +286,54 @@ describe("validation utility", () => {
   });
 
   describe("CommonRules & Predefined Validators", () => {
+    it("validates boundary conditions for validatePlace and validateMemory", () => {
+      // validatePlace boundary tests
+      const exactPlace = validatePlace({
+        name: "A".repeat(100),
+        notes: "B".repeat(500),
+      });
+      assert.equal(exactPlace.isValid, true);
+
+      const overPlace = validatePlace({
+        name: "A".repeat(101),
+        notes: "B".repeat(501),
+      });
+      assert.equal(overPlace.isValid, false);
+      assert.equal(overPlace.errors.name, "Place name must be 100 characters or less");
+      assert.equal(overPlace.errors.notes, "Notes must be 500 characters or less");
+
+      // validateMemory boundary tests
+      const exactMemory = validateMemory({
+        note: "C".repeat(500),
+        movieTitle: "D".repeat(MAX_MOVIE_TITLE_LENGTH),
+        author: "E".repeat(MAX_AUTHOR_LENGTH),
+      });
+      assert.equal(exactMemory.isValid, true);
+
+      const overMemory = validateMemory({
+        note: "C".repeat(501),
+        movieTitle: "D".repeat(MAX_MOVIE_TITLE_LENGTH + 1),
+        author: "E".repeat(MAX_AUTHOR_LENGTH + 1),
+      });
+      assert.equal(overMemory.isValid, false);
+      assert.ok(overMemory.errors.note);
+      assert.ok(overMemory.errors.movieTitle);
+      assert.ok(overMemory.errors.author);
+    });
+
+    it("validates validateMemory duplicate invalid mentions handling", () => {
+      const duplicateMentionsMemory = validateMemory({
+        note: "Hello @bad1 and @bad1 and @bad2",
+        movieTitle: "Matrix",
+        author: "Neo",
+      });
+      assert.equal(duplicateMentionsMemory.isValid, false);
+      assert.equal(
+        duplicateMentionsMemory.errors.note,
+        "Invalid mentions: @bad1, @bad1, @bad2. Only @aaron and @electra are allowed."
+      );
+    });
+
     it("validates CommonRules configurations", () => {
       const requiredValidator = createValidator({ field: CommonRules.required });
       assert.equal(requiredValidator({ field: "" }).isValid, false);
