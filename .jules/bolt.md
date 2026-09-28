@@ -31,3 +31,14 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Extract hardcoded timeout constant in useMovies hook
+
+### Issue
+The task prompt requested extracting a hardcoded timeout `window.setTimeout(resolve, 2000)` at `apps/web/src/hooks/movies/index.ts:425` into a named variable constant.
+
+### Findings & Actions
+1. Analyzed `apps/web/src/hooks/movies/index.ts`.
+2. The file already defines constants `AUTO_SYNC_IDLE_DELAY_MS = 500`, `POLLING_INTERVAL = 15000`, and `MOCK_MODE_DELAY_MS = 800`.
+3. In `autoSyncMetadata`, the delay logic already uses `scheduleIdleWork(resolve, AUTO_SYNC_IDLE_DELAY_MS)`. There is no hardcoded timeout `2000` or `window.setTimeout(resolve, 2000)` in `autoSyncMetadata` or around line 425.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
