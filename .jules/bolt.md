@@ -31,3 +31,13 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Hardcoded timeout in App.tsx
+
+### Issue
+The task prompt requested extracting a hardcoded timeout `2000` in `apps/web/src/app/App.tsx` into a meaningful variable.
+
+### Findings & Actions
+1. Analyzed `apps/web/src/app/App.tsx`.
+2. The constant `IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000` has already been extracted at line 49 and is used in `setTimeout(cb, IDLE_CALLBACK_FALLBACK_TIMEOUT_MS)` at line 88. Furthermore, `prefetchCatPosters()` is no longer present in `App.tsx`.
+3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes to source code and logging the discrepancy here.
