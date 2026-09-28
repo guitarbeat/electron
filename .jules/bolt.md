@@ -31,3 +31,12 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Pre-existing CI Failure Note: omdbHandler test failure in api/omdb.test.ts
+
+### Issue
+The unit test `should catch fetch errors with default dependencies, log them, and return 500 Internal Server Error` in `api/omdb.test.ts` fails when executed in test runner suites due to `consoleErrorMock.mock.calls.length` evaluating to 1 instead of 2.
+
+### Findings & Actions
+1. Per repository guidance ("When encountering pre-existing CI failures during a task, do not make opportunistic, unrelated changes to core configurations or unrelated test files... Keep the final submitted patch strictly scoped to the primary intended change"), this pre-existing failure in `api/omdb.test.ts` is left untouched.
+2. The primary task changes in `apps/web/src/utils/stremio.test.ts` pass all 207 web workspace tests cleanly.
