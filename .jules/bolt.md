@@ -31,3 +31,14 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Hardcoded timeout in apps/web/src/services/logger.ts
+
+### Issue
+The task prompt requested extracting the hardcoded timeout `1000` at `apps/web/src/services/logger.ts:610` to a constant variable.
+
+### Findings & Actions
+1. Analyzed `apps/web/src/services/logger.ts`.
+2. Line 56 defines `const NAVIGATION_TIMING_DELAY_MS = 1000;`.
+3. Lines 608 and 611 already utilize `NAVIGATION_TIMING_DELAY_MS` instead of a hardcoded numeric literal `1000`.
+4. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
