@@ -31,3 +31,13 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Task Discrepancy Note: Single-letter variable name in stateSchemas.ts
+
+### Issue
+The task prompt reported a single-letter variable issue in `apps/web/src/services/state/stateSchemas.ts:392` (`const t = sanitizeInput(o.movieTitle);`).
+
+### Findings & Actions
+1. Inspected `apps/web/src/services/state/stateSchemas.ts` around line 392.
+2. Found that the code at line 392 is already written cleanly as `const sanitizedTitle = sanitizeInput(entryObject.movieTitle);` and does not use single-letter variables `o` or `t`.
+3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no source code changes and documenting the discrepancy here.
