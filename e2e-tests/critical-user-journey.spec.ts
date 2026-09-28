@@ -97,10 +97,7 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     const wall = page.locator(".movies-wall-container");
     const wallBounds = await wall.boundingBox();
     expect(wallBounds).not.toBeNull();
-    await page.mouse.click(
-      (wallBounds?.x ?? 0) + 12,
-      (wallBounds?.y ?? 0) + (wallBounds?.height ?? 0) - 12,
-    );
+    await closeDetailsButton.click();
     await expect(detailsDialog).toBeHidden();
 
     // 7. Choosing a catalog result stages it without mutating shared state.
