@@ -72,6 +72,44 @@ describe("random utilities", () => {
         });
       }
     });
+
+    it("handles crypto Uint32Array minimum (0) and maximum (0xffffffff) boundary values", () => {
+      const originalCrypto = globalThis.crypto;
+
+      try {
+        // Test minimum boundary 0x00000000
+        Object.defineProperty(globalThis, "crypto", {
+          value: {
+            getRandomValues: (arr: Uint32Array) => {
+              arr[0] = 0;
+              return arr;
+            },
+          },
+          configurable: true,
+        });
+        assert.strictEqual(getSecureRandom(), 0);
+
+        // Test maximum boundary 0xffffffff
+        Object.defineProperty(globalThis, "crypto", {
+          value: {
+            getRandomValues: (arr: Uint32Array) => {
+              arr[0] = 0xffffffff;
+              return arr;
+            },
+          },
+          configurable: true,
+        });
+        const maxVal = getSecureRandom();
+        assert.ok(maxVal > 0.99999999);
+        assert.ok(maxVal < 1.0);
+        assert.strictEqual(maxVal, 0xffffffff / (0xffffffff + 1));
+      } finally {
+        Object.defineProperty(globalThis, "crypto", {
+          value: originalCrypto,
+          configurable: true,
+        });
+      }
+    });
   });
 
   describe("clamp", () => {
@@ -152,6 +190,12 @@ describe("random utilities", () => {
       }
     });
 
+    it("randomRange handles identical min and max as well as negative ranges", () => {
+      assert.strictEqual(randomUtils.randomRange(5, 5), 5);
+      const negVal = randomUtils.randomRange(-20, -10);
+      assert.ok(negVal >= -20 && negVal < -10);
+    });
+
     it("randomInt returns an integer within [min, max)", () => {
       const min = 5;
       const max = 15;
@@ -162,12 +206,53 @@ describe("random utilities", () => {
       }
     });
 
+    it("randomInt handles zero range min === max and negative range", () => {
+      assert.strictEqual(randomUtils.randomInt(10, 10), 10);
+      const negInt = randomUtils.randomInt(-10, -5);
+      assert.ok(Number.isInteger(negInt));
+      assert.ok(negInt >= -10 && negInt < -5);
+    });
+
     it("randomBool returns a boolean value", () => {
       const results = new Set<boolean>();
       for (let i = 0; i < 100; i++) {
         results.add(randomUtils.randomBool());
       }
       assert.ok(results.has(true) || results.has(false));
+    });
+
+    it("randomBool evaluates threshold strictly (> 0.5 is true, <= 0.5 is false)", () => {
+      const originalCrypto = globalThis.crypto;
+      try {
+        // Value <= 0.5 yields false
+        Object.defineProperty(globalThis, "crypto", {
+          value: {
+            getRandomValues: (arr: Uint32Array) => {
+              arr[0] = 0x80000000; // exactly 0.5
+              return arr;
+            },
+          },
+          configurable: true,
+        });
+        assert.strictEqual(randomUtils.randomBool(), false);
+
+        // Value > 0.5 yields true
+        Object.defineProperty(globalThis, "crypto", {
+          value: {
+            getRandomValues: (arr: Uint32Array) => {
+              arr[0] = 0x80000001; // > 0.5
+              return arr;
+            },
+          },
+          configurable: true,
+        });
+        assert.strictEqual(randomUtils.randomBool(), true);
+      } finally {
+        Object.defineProperty(globalThis, "crypto", {
+          value: originalCrypto,
+          configurable: true,
+        });
+      }
     });
 
     it("generateConfettiParticle creates particle properties correctly", () => {
@@ -181,6 +266,14 @@ describe("random utilities", () => {
       assert.ok(particle.rotation >= 0 && particle.rotation < 360);
       assert.ok(particle.scale >= 0.5 && particle.scale < 1.0);
       assert.strictEqual(typeof particle.isRounded, "boolean");
+    });
+
+    it("generateConfettiParticle handles single-color array and empty color array safely", () => {
+      const singleColorParticle = randomUtils.generateConfettiParticle(1, ["purple"]);
+      assert.strictEqual(singleColorParticle.color, "purple");
+
+      const emptyColorParticle = randomUtils.generateConfettiParticle(2, []);
+      assert.strictEqual(emptyColorParticle.color, undefined);
     });
 
     it("generateCursorStar creates cursor star properties correctly", () => {
