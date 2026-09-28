@@ -31,3 +31,8 @@ The task prompt requested updating `scripts/maintenance/applied_patches/fix_drif
 1. Analyzed `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`.
 2. The target pattern `(_, i) => offsetsRef.current[i] ?? ...` does not exist in `DriftWall.tsx` because `DriftWall.tsx` was refactored into a serpentine belt animation system.
 3. Per repository memory instructions ("If a task prompt references code or snippets that do not exist in the repository (a stale or hallucinated prompt), do not substitute the request by modifying other similar functions. Conclude the task with no code changes and document the discrepancy..."), concluding the task with no code changes and logging the discrepancy here.
+
+## Discrepancy Note
+- **Task**: Fix single-letter variable names `x` and `y` in `apps/web/src/components/quiz/index.tsx` around line 700.
+- **Finding**: Inspection of `apps/web/src/components/quiz/index.tsx` revealed that the variables in `calculatePosition` are already properly named `normalizedX` and `normalizedY` (`const normalizedX = ((clientX - rect.left) / rect.width) * 2 - 1;`, `const normalizedY = 1 - ((clientY - rect.top) / rect.height) * 2;`).
+- **Resolution**: Documented discrepancy; no code refactoring was required as the code already adheres to descriptive variable naming standards.
