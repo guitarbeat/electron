@@ -380,19 +380,29 @@ self.addEventListener('message', (event) => {
           )
         );
 
-        for (const targetUrl of uniqueUrls) {
-          try {
-            const existing = await cache.match(targetUrl);
-            if (!existing) {
-              const res = await fetch(targetUrl, { mode: 'no-cors' });
-              if (res.ok || res.type === 'opaque') {
-                await cache.put(targetUrl, res);
+        const PRE_WARM_CONCURRENCY = 6;
+        const queue = [...uniqueUrls];
+        const workers = Array.from(
+          { length: Math.min(PRE_WARM_CONCURRENCY, queue.length) },
+          async () => {
+            while (queue.length > 0) {
+              const targetUrl = queue.shift();
+              if (!targetUrl) break;
+              try {
+                const existing = await cache.match(targetUrl);
+                if (!existing) {
+                  const res = await fetch(targetUrl, { mode: 'no-cors' });
+                  if (res.ok || res.type === 'opaque') {
+                    await cache.put(targetUrl, res);
+                  }
+                }
+              } catch {
+                // Ignore pre-warming fetch errors for individual assets
               }
             }
-          } catch {
-            // Ignore pre-warming fetch errors for individual assets
           }
-        }
+        );
+        await Promise.all(workers);
         trimCache(MEDIA_CACHE, MEDIA_CACHE_MAX_ENTRIES);
       })
     );
