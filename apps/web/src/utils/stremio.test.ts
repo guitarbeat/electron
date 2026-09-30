@@ -24,10 +24,14 @@ describe("stremio utilities", () => {
       );
     });
 
-    it("properly URI encodes special characters", () => {
+    it("properly URI encodes special characters and unicode", () => {
       assert.strictEqual(
         buildStremioSearchUrl("Spider-Man: Into the Spider-Verse & More"),
         "stremio://search?search=Spider-Man%3A%20Into%20the%20Spider-Verse%20%26%20More",
+      );
+      assert.strictEqual(
+        buildStremioSearchUrl("   Amélie 🎬   "),
+        "stremio://search?search=Am%C3%A9lie%20%F0%9F%8E%AC",
       );
     });
   });
@@ -77,6 +81,14 @@ describe("stremio utilities", () => {
         appUrl: "stremio://search?search=Breaking%20Bad",
         hasDirectImdbMatch: true,
       });
+
+      const resultEmptyString = getStremioUrls("");
+      assert.deepStrictEqual(resultEmptyString, {
+        detailUrl: null,
+        searchUrl: "stremio://",
+        appUrl: "stremio://",
+        hasDirectImdbMatch: false,
+      });
     });
 
     it("handles media object target with title, mediaType/type, and imdbID/imdbId", () => {
@@ -101,6 +113,44 @@ describe("stremio utilities", () => {
         detailUrl: "stremio://detail/series/tt4574334",
         searchUrl: "stremio://search?search=Stranger%20Things",
         appUrl: "stremio://search?search=Stranger%20Things",
+        hasDirectImdbMatch: true,
+      });
+
+      const objMediaTypePriority = {
+        title: "Show Priority",
+        mediaType: "series",
+        type: "movie",
+        imdbId: "tt1234567",
+      };
+      assert.deepStrictEqual(getStremioUrls(objMediaTypePriority), {
+        detailUrl: "stremio://detail/series/tt1234567",
+        searchUrl: "stremio://search?search=Show%20Priority",
+        appUrl: "stremio://search?search=Show%20Priority",
+        hasDirectImdbMatch: true,
+      });
+
+      const objImdbIDPriority = {
+        title: "IMDB Priority",
+        type: "movie",
+        imdbID: "tt1111111",
+        imdbId: "tt2222222",
+      };
+      assert.deepStrictEqual(getStremioUrls(objImdbIDPriority), {
+        detailUrl: "stremio://detail/movie/tt1111111",
+        searchUrl: "stremio://search?search=IMDB%20Priority",
+        appUrl: "stremio://search?search=IMDB%20Priority",
+        hasDirectImdbMatch: true,
+      });
+
+      const objNonSeriesMediaType = {
+        title: "Other Type",
+        mediaType: "documentary",
+        imdbId: "tt9999999",
+      };
+      assert.deepStrictEqual(getStremioUrls(objNonSeriesMediaType), {
+        detailUrl: "stremio://detail/movie/tt9999999",
+        searchUrl: "stremio://search?search=Other%20Type",
+        appUrl: "stremio://search?search=Other%20Type",
         hasDirectImdbMatch: true,
       });
 
