@@ -133,6 +133,35 @@ describe("sessionHandler", () => {
     assert.strictEqual(firstCall.arguments[1], err);
   });
 
+  it("should return 500 with warning when getPinCoverageState throws synchronously or throws non-Error value", async (t) => {
+    const loggerErrorMock = t.mock.method(logger, "error", () => {});
+    const req = new Request("http://localhost/api/session", { method: "GET" });
+    const deps = {
+      getSessionState: () => ({
+        hasAccess: false,
+        currentUser: null,
+        activeUsers: [],
+      }),
+      getPinCoverageState: () => {
+        throw "String error in PIN coverage";
+      },
+    };
+
+    const res = await sessionHandler(req, deps);
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.hasAccess, false);
+    assert.strictEqual(data.currentUser, null);
+    assert.deepStrictEqual(data.pinProtectedUsers, []);
+    assert.deepStrictEqual(data.usersMissingPins, []);
+    assert.strictEqual(data.warning, "Session state is temporarily unavailable.");
+
+    assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
+    const firstCall = loggerErrorMock.mock.calls[0];
+    assert.strictEqual(firstCall.arguments[0], "Failed to read session state during GET http://localhost/api/session:");
+    assert.strictEqual(firstCall.arguments[1], "String error in PIN coverage");
+  });
+
   it("should return 500 status code with warning when error occurs via default web handler", async (t) => {
     const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const baseReq = new Request("http://localhost/api/session", { method: "GET" });
@@ -159,6 +188,7 @@ describe("sessionHandler", () => {
 
     assert.strictEqual(loggerErrorMock.mock.callCount(), 1);
   });
+
   it("should return 500 status code with warning when error occurs using default deps", async (t) => {
     const loggerErrorMock = t.mock.method(logger, "error", () => {});
     const baseReq = new Request("http://localhost/api/session", { method: "GET" });
