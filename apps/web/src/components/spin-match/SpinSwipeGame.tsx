@@ -300,10 +300,10 @@ function SpinWheel({
         >
           {kept.map((movie, index) => {
             const angle = index * segmentAngle + segmentAngle / 2;
-            const radians = ((angle - 90) * Math.PI) / 180;
+            const angleInRadians = ((angle - 90) * Math.PI) / 180;
             const radius = 88;
-            const coordX = 135 + radius * Math.cos(radians);
-            const coordY = 135 + radius * Math.sin(radians);
+            const coordX = 135 + radius * Math.cos(angleInRadians);
+            const coordY = 135 + radius * Math.sin(angleInRadians);
             const label =
               movie.title.length > 11
                 ? `${movie.title.slice(0, 10)}…`
