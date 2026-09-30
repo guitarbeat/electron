@@ -105,8 +105,7 @@ export default defineConfig(({ mode }) => {
     port,
     strictPort: true,
     host: "0.0.0.0",
-    cors: true,
-    allowedHosts: true,
+    cors: false,
     hmr: false,
     watch: {
       ignored: [
@@ -119,7 +118,7 @@ export default defineConfig(({ mode }) => {
   preview: {
     port,
     host: "0.0.0.0",
-    allowedHosts: true,
+    cors: false,
   },
   };
 });
