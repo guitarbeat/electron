@@ -39,6 +39,31 @@ describe("concurrency utilities", () => {
       assert.deepEqual(result, [200, 100, 20, 160, 40]);
     });
 
+    it("preserves exact input order even when async tasks complete out of order", async () => {
+      const items = [1, 2, 3];
+      // Item 0 takes longest, item 2 completes fastest
+      const delays = [50, 20, 5];
+
+      const result = await concurrentMap(items, 3, async (item) => {
+        const delay = delays[item - 1];
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return `result-${item}`;
+      });
+
+      assert.deepEqual(result, ["result-1", "result-2", "result-3"]);
+    });
+
+    it("correctly handles falsy return values from mapper function", async () => {
+      const items = [1, 2, 3, 4, 5];
+      const falsyValues = [0, false, null, undefined, ""];
+
+      const result = await concurrentMap(items, 2, async (item) => {
+        return falsyValues[item - 1];
+      });
+
+      assert.deepEqual(result, [0, false, null, undefined, ""]);
+    });
+
     it("works with concurrency equal to 1 (strictly sequential execution)", async () => {
       const items = [1, 2, 3];
       const executionLog: number[] = [];
@@ -114,6 +139,20 @@ describe("concurrency utilities", () => {
       assert.equal(calls, 2);
     });
 
+    it("ignores rapid burst calls within throttle window", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let calls = 0;
+      const fn = throttle(() => {
+        calls++;
+      }, 200);
+
+      for (let i = 0; i < 10; i++) {
+        fn();
+      }
+
+      assert.equal(calls, 1);
+    });
+
     it("allows new execution after throttle period elapses across multiple cycles", (t) => {
       t.mock.timers.enable({ apis: ["setTimeout"] });
       let calls = 0;
@@ -185,7 +224,26 @@ describe("concurrency utilities", () => {
       assert.equal(lastCallArg, "second");
     });
 
-    it("executes immediately on leading edge when immediate is true", (t) => {
+    it("executes immediately on leading edge when immediate is true and does not execute on trailing edge if no new calls occur", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let calls = 0;
+      const fn = debounce(
+        () => {
+          calls++;
+        },
+        100,
+        true,
+      );
+
+      fn(); // immediate execution
+      assert.equal(calls, 1);
+
+      t.mock.timers.tick(100);
+      // Trailing edge should not call again if immediate was true and no subsequent calls were made
+      assert.equal(calls, 1);
+    });
+
+    it("suppresses execution on trailing edge when immediate is true even if called during wait", (t) => {
       t.mock.timers.enable({ apis: ["setTimeout"] });
       let calls = 0;
       const fn = debounce(
@@ -205,7 +263,7 @@ describe("concurrency utilities", () => {
       t.mock.timers.tick(100);
       assert.equal(calls, 1);
 
-      fn(); // execution allowed again
+      fn(); // execution allowed again after wait elapses
       assert.equal(calls, 2);
     });
 
@@ -316,6 +374,29 @@ describe("concurrency utilities", () => {
         assert.equal(workDone, true);
 
         cancel();
+      } finally {
+        globalThis.window = origWindow;
+      }
+    });
+
+    it("uses custom timeoutMs when less than 400ms in fallback mode", (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout"] });
+      let workDone = false;
+
+      const origWindow = globalThis.window;
+      // @ts-expect-error mocking window without requestIdleCallback
+      globalThis.window = {};
+
+      try {
+        scheduleIdleWork(() => {
+          workDone = true;
+        }, 150);
+
+        assert.equal(workDone, false);
+        t.mock.timers.tick(149);
+        assert.equal(workDone, false);
+        t.mock.timers.tick(1);
+        assert.equal(workDone, true);
       } finally {
         globalThis.window = origWindow;
       }
