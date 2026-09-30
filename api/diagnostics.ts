@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import {
   badRequestResponse,
   jsonResponse,
@@ -112,7 +113,7 @@ export async function diagnosticsHandler(req: Request): Promise<Response> {
       }
     }
 
-    const logId = `diag_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const logId = `diag_${Date.now()}_${randomBytes(4).toString("hex")}`;
     const receivedAt = new Date().toISOString();
     const moduleName = truncate(payload.module, 120) || (isMetric ? "PerformanceMetrics" : "UnknownModule");
     const level = isMetric ? "info" : payload.level || "error";
