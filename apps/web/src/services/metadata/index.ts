@@ -301,7 +301,7 @@ export const fetchWikipediaPosterOrSummary = async (
     `${cleanTitle} (miniseries)`,
   ].filter(Boolean);
 
-  for (const q of queriesToTry) {
+  const fetchCandidate = async (q: string): Promise<WikipediaPosterResult | null> => {
     try {
       const slug = encodeURIComponent(q.trim().replace(/ /g, "_"));
       const res = await fetch(
@@ -322,7 +322,6 @@ export const fetchWikipediaPosterOrSummary = async (
         const poster = data.originalimage?.source || data.thumbnail?.source;
         if (poster && isValidUrl(poster)) {
           const plot = stripHtml(data.extract);
-          wikiPosterCache.set(cacheKey, { poster, plot, timestamp: now });
           return {
             posterUrl: poster,
             plot,
@@ -332,8 +331,16 @@ export const fetchWikipediaPosterOrSummary = async (
         }
       }
     } catch {
-      // Continue to next query candidate
+      // Ignore candidate error
     }
+    return null;
+  };
+
+  const results = await Promise.all(queriesToTry.map((q) => fetchCandidate(q)));
+  const match = results.find((r): r is WikipediaPosterResult => r !== null);
+  if (match) {
+    wikiPosterCache.set(cacheKey, { poster: match.posterUrl, plot: match.plot, timestamp: now });
+    return match;
   }
 
   // Fallback to Wikipedia search API
