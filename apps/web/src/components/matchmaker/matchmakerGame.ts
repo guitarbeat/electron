@@ -14,13 +14,25 @@ export const SHORT_AND_SWEET_VIBE = "Short & Sweet";
 
 const normalizeTag = (value: string): string => value.trim().toLowerCase();
 
-const getGenreAndCategoryTags = (movie: Movie): string[] =>
-  [
-    ...(movie.genre ? movie.genre.split(",") : []),
-    ...(movie.category ? [movie.category] : []),
-  ]
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+const getGenreAndCategoryTags = (movie: Movie): string[] => {
+  const tags: string[] = [];
+  if (movie.genre) {
+    const parts = movie.genre.split(",");
+    for (let i = 0; i < parts.length; i++) {
+      const trimmed = parts[i].trim();
+      if (trimmed) {
+        tags.push(trimmed);
+      }
+    }
+  }
+  if (movie.category) {
+    const trimmed = movie.category.trim();
+    if (trimmed) {
+      tags.push(trimmed);
+    }
+  }
+  return tags;
+};
 
 export const parseRuntimeMinutes = (runtime?: string): number | null => {
   if (!runtime) {
@@ -73,11 +85,13 @@ export const getAvailableMatchmakerVibes = (
 ): string[] => {
   const counts = new Map<string, number>();
 
-  movies.forEach((movie) => {
-    getGenreAndCategoryTags(movie).forEach((tag) => {
+  for (let i = 0; i < movies.length; i++) {
+    const tags = getGenreAndCategoryTags(movies[i]);
+    for (let j = 0; j < tags.length; j++) {
+      const tag = tags[j];
       counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    });
-  });
+    }
+  }
 
   return [...counts.entries()]
     .sort(
