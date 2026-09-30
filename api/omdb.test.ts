@@ -752,4 +752,26 @@ describe("omdbHandler", () => {
     assert.strictEqual(body2, nonJsonBody);
     assert.strictEqual(callCount, 1);
   });
+
+  it("should catch fetch errors with default dependencies, log them, and return 500 Internal Server Error", async (t) => {
+    const consoleErrorMock = t.mock.method(console, "error", () => {});
+    const fetchError = new Error("Network connection failed");
+    t.mock.method(globalThis, "fetch", async () => {
+      throw fetchError;
+    });
+
+    const req = new Request("http://localhost/api/omdb?s=default-fetch-error", { method: "GET" });
+    const res = await omdbHandler(req);
+
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.error, "Internal server error.");
+
+    assert.strictEqual(consoleErrorMock.mock.calls.length, 2);
+    assert.strictEqual(
+      consoleErrorMock.mock.calls[1].arguments[0],
+      "Error handling GET " + req.url + ":",
+    );
+    assert.strictEqual(consoleErrorMock.mock.calls[1].arguments[1], fetchError);
+  });
 });
