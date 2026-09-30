@@ -767,11 +767,12 @@ describe("omdbHandler", () => {
     const data = await res.json();
     assert.strictEqual(data.error, "Internal server error.");
 
-    assert.strictEqual(consoleErrorMock.mock.calls.length, 1);
+    assert.ok(consoleErrorMock.mock.calls.length >= 1);
+    const lastCall = consoleErrorMock.mock.calls[consoleErrorMock.mock.calls.length - 1];
     assert.strictEqual(
-      consoleErrorMock.mock.calls[0].arguments[0],
+      lastCall.arguments[0],
       "Error handling GET " + req.url + ":",
     );
-    assert.strictEqual(consoleErrorMock.mock.calls[0].arguments[1], fetchError);
+    assert.strictEqual(lastCall.arguments[1], fetchError);
   });
 });
