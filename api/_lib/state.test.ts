@@ -4,6 +4,7 @@ import { STATE_SCOPES } from "../../apps/web/src/services/state/stateTypes.js";
 import {
   bootstrapMissingScopeFiles,
   getScopeDefinition,
+  getStateScopeDiagnostics,
   readScopeStoredData,
 } from "./state.js";
 import * as sharedStateStore from "./sharedStateStore.js";
@@ -87,6 +88,66 @@ describe("bootstrapMissingScopeFiles", () => {
       // Verify readScopeStoredData returns the existing data
       const movieData = await readScopeStoredData("movies");
       assert.strictEqual(movieData.fileMissing, false);
+    } finally {
+      store.dispose();
+    }
+  });
+});
+
+describe("getStateScopeDiagnostics", () => {
+  it("throws an error if DATABASE_URL is not configured and memory store is not installed", async () => {
+    const originalDbUrl = process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL;
+    sharedStateStore.invalidateSharedStateCache();
+
+    try {
+      await assert.rejects(
+        async () => {
+          await getStateScopeDiagnostics();
+        },
+        {
+          name: "Error",
+          message: "DATABASE_URL is not configured.",
+        },
+      );
+    } finally {
+      if (originalDbUrl !== undefined) {
+        process.env.DATABASE_URL = originalDbUrl;
+      }
+      sharedStateStore.invalidateSharedStateCache();
+    }
+  });
+
+  it("returns all expected scopes and no missing scopes when all files exist", async () => {
+    const initialFiles: Record<string, string> = {};
+    for (const scope of STATE_SCOPES) {
+      initialFiles[getScopeDefinition(scope).filename] = "{}";
+    }
+
+    const store = sharedStateStore.installSharedStateMemoryStoreForTests(initialFiles);
+
+    try {
+      const diagnostics = await getStateScopeDiagnostics();
+
+      assert.deepStrictEqual(diagnostics.expectedScopes, [...STATE_SCOPES]);
+      assert.deepStrictEqual(diagnostics.missingScopes, []);
+    } finally {
+      store.dispose();
+    }
+  });
+
+  it("returns missing scopes when some or all files are missing from store", async () => {
+    const moviesFilename = getScopeDefinition("movies").filename;
+    const store = sharedStateStore.installSharedStateMemoryStoreForTests({
+      [moviesFilename]: "[]",
+    });
+
+    try {
+      const diagnostics = await getStateScopeDiagnostics();
+
+      assert.deepStrictEqual(diagnostics.expectedScopes, [...STATE_SCOPES]);
+      const expectedMissing = STATE_SCOPES.filter((scope) => scope !== "movies");
+      assert.deepStrictEqual(diagnostics.missingScopes, expectedMissing);
     } finally {
       store.dispose();
     }
