@@ -13,3 +13,10 @@ The task prompt requested adding unit tests for `apps/web/src/utils/validation.t
 Upon inspecting `apps/web/src/utils/validation.test.ts`, comprehensive unit test coverage for `createValidator`, `ValidationPatterns`, `CommonRules`, `validatePlace`, `validateMemory`, and `validateAndThrow` was already present and passing (31 test cases covering required fields, length limits, patterns, custom functions returning `null` vs error strings, non-string coercion, input sanitization, whitespace handling, and boundary conditions). Running `pnpm exec tsx --test apps/web/src/utils/validation.test.ts` confirmed that `validation.ts` is fully tested.
 
 As per project guidelines regarding stale task prompts, no redundant code changes were made.
+
+### Task Details vs Codebase Reality
+The task prompt requested fixing a hardcoded timeout `800` in `apps/web/src/hooks/movies/index.ts:680`.
+
+Upon inspecting `apps/web/src/hooks/movies/index.ts`, the constant `const MOCK_MODE_DELAY_MS = 800;` was already defined at line 26 and used at lines 641 and 691 (`await new Promise((resolve) => window.setTimeout(resolve, MOCK_MODE_DELAY_MS));`). No literal `800` timeout exists in the delay call.
+
+As per project guidelines regarding stale task prompts, no code changes were made to `apps/web/src/hooks/movies/index.ts`.
