@@ -222,3 +222,67 @@ describe("movieScopeDefinition - MAX_MOVIE_TITLE_LENGTH boundaries", () => {
     assert.deepEqual(finished.data[0].watchedBy, ["Electra"]);
   });
 });
+
+describe("movieScopeDefinition - update_metadata", () => {
+  it("updates metadata for a single movie", () => {
+    const movies: Movie[] = [
+      {
+        id: "m-1",
+        title: "Matrix",
+        addedBy: "Aaron",
+        watchedBy: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    ];
+
+    const result = movieScopeDefinition.mutate(
+      movies,
+      "update_metadata",
+      { movieId: "m-1", metadata: { year: "1999", genre: "Sci-Fi" } },
+      context,
+    );
+
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.equal(result.data[0].year, "1999");
+      assert.equal(result.data[0].genre, "Sci-Fi");
+    }
+  });
+
+  it("updates metadata for a batch of movies using items payload", () => {
+    const movies: Movie[] = [
+      {
+        id: "m-1",
+        title: "Matrix",
+        addedBy: "Aaron",
+        watchedBy: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+      {
+        id: "m-2",
+        title: "Inception",
+        addedBy: "Aaron",
+        watchedBy: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    ];
+
+    const result = movieScopeDefinition.mutate(
+      movies,
+      "update_metadata",
+      {
+        items: [
+          { movieId: "m-1", metadata: { year: "1999" } },
+          { movieId: "m-2", metadata: { year: "2010" } },
+        ],
+      },
+      context,
+    );
+
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.equal(result.data[0].year, "1999");
+      assert.equal(result.data[1].year, "2010");
+    }
+  });
+});

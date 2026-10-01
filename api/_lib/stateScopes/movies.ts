@@ -384,24 +384,55 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         const nextPayload = payload as {
           movieId?: unknown;
           metadata?: unknown;
+          items?: unknown;
         };
-        const movieId = extractString(nextPayload.movieId);
-        const metadata = sanitizeMovieMetadata(nextPayload.metadata);
 
-        if (!movieId || Object.keys(metadata).length === 0) {
+        const rawItems = Array.isArray(nextPayload.items)
+          ? nextPayload.items
+          : [nextPayload];
+
+        const validUpdates = rawItems
+          ? rawItems
+              .map((item) => {
+                if (typeof item !== "object" || item === null) return null;
+                const mId = extractString((item as { movieId?: unknown }).movieId);
+                const meta = sanitizeMovieMetadata(
+                  (item as { metadata?: unknown }).metadata,
+                );
+                if (!mId || Object.keys(meta).length === 0) return null;
+                return { movieId: mId, metadata: meta };
+              })
+              .filter(
+                (
+                  u,
+                ): u is {
+                  movieId: string;
+                  metadata: ReturnType<typeof sanitizeMovieMetadata>;
+                } => u !== null,
+              )
+          : [];
+
+        if (validUpdates.length === 0) {
           return { ok: false, conflict: "Invalid metadata payload." };
         }
 
-        const index = findMovieIndexById(movies, movieId);
-        if (index === -1) {
+        const updatesMap = new Map<string, ReturnType<typeof sanitizeMovieMetadata>>(
+          validUpdates.map((u) => [u.movieId, u.metadata]),
+        );
+
+        let hasChange = false;
+        const updatedMovies = movies.map((m) => {
+          const update = updatesMap.get(m.id);
+          if (update) {
+            hasChange = true;
+            return { ...m, ...update };
+          }
+          return m;
+        });
+
+        if (!hasChange) {
           return { ok: false, conflict: "Movie not found." };
         }
-
-        const updatedMovies = [...movies];
-        updatedMovies[index] = {
-          ...movies[index],
-          ...metadata,
-        };
 
         return {
           ok: true,
