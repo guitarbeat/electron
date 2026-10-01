@@ -13,3 +13,10 @@ The task prompt requested adding unit tests for `apps/web/src/utils/validation.t
 Upon inspecting `apps/web/src/utils/validation.test.ts`, comprehensive unit test coverage for `createValidator`, `ValidationPatterns`, `CommonRules`, `validatePlace`, `validateMemory`, and `validateAndThrow` was already present and passing (31 test cases covering required fields, length limits, patterns, custom functions returning `null` vs error strings, non-string coercion, input sanitization, whitespace handling, and boundary conditions). Running `pnpm exec tsx --test apps/web/src/utils/validation.test.ts` confirmed that `validation.ts` is fully tested.
 
 As per project guidelines regarding stale task prompts, no redundant code changes were made.
+
+### Task Details vs Codebase Reality
+The task prompt requested applying the fix in `scripts/maintenance/applied_patches/fix_drift_wall_sync.py:13` to include elapsed time in the initial offset calculation.
+
+Upon inspecting `scripts/maintenance/applied_patches/fix_drift_wall_sync.py` and `apps/web/src/components/ui/DriftWall.tsx`, the target string `(_, i) => offsetsRef.current[i] ?? (((i * 1.6180339887) % 1) * 0.5 + 0.5) * tileHeight * 3` does not exist in `apps/web/src/components/ui/DriftWall.tsx`. The patch script in `scripts/maintenance/applied_patches/` is an archived maintenance script from prior refactoring iterations, and `DriftWall.tsx` now uses a different calculation model (`beltOffsetRef`, `totalSlots`, `totalBeltLength`, etc.).
+
+As per project guidelines regarding stale task prompts referencing code that no longer exists, no functional code changes were made.
