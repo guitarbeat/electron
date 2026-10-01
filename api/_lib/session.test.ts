@@ -13,6 +13,7 @@ import {
   requireAccessUser,
   requireProfileUser,
   hasAccessSession,
+  isSameOriginRequest,
 } from "./session.js";
 
 const base64urlEncode = (str: string): string =>
@@ -685,6 +686,42 @@ describe("cookie generation details and clearing cookies", () => {
       assert.strictEqual(session.hasAccess, true);
       assert.strictEqual(session.currentUser, "Aaron");
       assert.strictEqual(hasAccessSession(reqWithCookie), true);
+    });
+  });
+
+  describe("isSameOriginRequest", () => {
+    it("should return true when no origin header is present", () => {
+      const req = new Request("http://localhost/api/test");
+      assert.strictEqual(isSameOriginRequest(req), true);
+    });
+
+    it("should return true when origin header matches request url origin", () => {
+      const req = new Request("http://localhost:3000/api/test", {
+        headers: { origin: "http://localhost:3000" },
+      });
+      assert.strictEqual(isSameOriginRequest(req), true);
+    });
+
+    it("should return false when origin header does not match request url origin", () => {
+      const req = new Request("http://localhost:3000/api/test", {
+        headers: { origin: "http://evil.com" },
+      });
+      assert.strictEqual(isSameOriginRequest(req), false);
+    });
+
+    it("should handle relative request url using default localhost base", () => {
+      const req = {
+        url: "/api/test",
+        headers: new Headers({ origin: "http://localhost" }),
+      } as unknown as Request;
+      assert.strictEqual(isSameOriginRequest(req), true);
+    });
+
+    it("should return false when origin header is invalid URL format", () => {
+      const req = new Request("http://localhost/api/test", {
+        headers: { origin: "not-a-valid-url" },
+      });
+      assert.strictEqual(isSameOriginRequest(req), false);
     });
   });
 });
