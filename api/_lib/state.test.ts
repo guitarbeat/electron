@@ -4,6 +4,7 @@ import { STATE_SCOPES } from "../../apps/web/src/services/state/stateTypes.js";
 import {
   bootstrapMissingScopeFiles,
   getScopeDefinition,
+  computeVersion,
   readScopeStoredData,
 } from "./state.js";
 import * as sharedStateStore from "./sharedStateStore.js";
@@ -90,5 +91,27 @@ describe("bootstrapMissingScopeFiles", () => {
     } finally {
       store.dispose();
     }
+  });
+});
+
+
+describe("computeVersion", () => {
+  it("computes deterministic sha256 hash of stringified values", () => {
+    const input = { a: 1, b: "test" };
+    const expected = "1e5d5cdc877a04ceb3d86ec5d57f088a03eef89a4d0669556f3feebfbd59868b";
+    assert.strictEqual(computeVersion(input), expected);
+  });
+
+  it("produces different hashes for different inputs", () => {
+    const v1 = computeVersion({ foo: "bar" });
+    const v2 = computeVersion({ foo: "baz" });
+    assert.notStrictEqual(v1, v2);
+  });
+
+  it("handles null and primitive values", () => {
+    assert.strictEqual(typeof computeVersion(null), "string");
+    assert.strictEqual(typeof computeVersion("hello"), "string");
+    assert.strictEqual(typeof computeVersion(12345), "string");
+    assert.strictEqual(typeof computeVersion(true), "string");
   });
 });
