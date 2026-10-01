@@ -4,6 +4,7 @@ import { STATE_SCOPES } from "../../apps/web/src/services/state/stateTypes.js";
 import {
   bootstrapMissingScopeFiles,
   getScopeDefinition,
+  parseMutationRequest,
   readScopeStoredData,
 } from "./state.js";
 import * as sharedStateStore from "./sharedStateStore.js";
@@ -90,5 +91,135 @@ describe("bootstrapMissingScopeFiles", () => {
     } finally {
       store.dispose();
     }
+  });
+});
+
+describe("parseMutationRequest", () => {
+  it("successfully parses a valid mutation request object", async () => {
+    const req = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        baseVersion: "v123",
+        op: "add_movie",
+        payload: { title: "Inception" },
+      }),
+    });
+
+    const parsed = await parseMutationRequest(req);
+    assert.deepStrictEqual(parsed, {
+      baseVersion: "v123",
+      op: "add_movie",
+      payload: { title: "Inception" },
+    });
+  });
+
+  it("throws an error when JSON parsing fails", async () => {
+    const req = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{ invalid json ",
+    });
+
+    await assert.rejects(
+      async () => {
+        await parseMutationRequest(req);
+      },
+      {
+        name: "Error",
+        message: "Invalid JSON payload.",
+      },
+    );
+  });
+
+  it("throws an error when body is null or not an object", async () => {
+    const reqNull = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "null",
+    });
+
+    await assert.rejects(
+      async () => {
+        await parseMutationRequest(reqNull);
+      },
+      {
+        name: "Error",
+        message: "Mutation requests must include baseVersion and op.",
+      },
+    );
+
+    const reqString = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: '"just a string"',
+    });
+
+    await assert.rejects(
+      async () => {
+        await parseMutationRequest(reqString);
+      },
+      {
+        name: "Error",
+        message: "Mutation requests must include baseVersion and op.",
+      },
+    );
+  });
+
+  it("throws an error when required fields baseVersion or op are missing or not strings", async () => {
+    const missingBaseVersion = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        op: "add_movie",
+      }),
+    });
+
+    await assert.rejects(
+      async () => {
+        await parseMutationRequest(missingBaseVersion);
+      },
+      {
+        name: "Error",
+        message: "Mutation requests must include baseVersion and op.",
+      },
+    );
+
+    const missingOp = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        baseVersion: "v123",
+      }),
+    });
+
+    await assert.rejects(
+      async () => {
+        await parseMutationRequest(missingOp);
+      },
+      {
+        name: "Error",
+        message: "Mutation requests must include baseVersion and op.",
+      },
+    );
+
+    const nonStringTypes = new Request("https://example.com/api/state/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        baseVersion: 123,
+        op: true,
+      }),
+    });
+
+    await assert.rejects(
+      async () => {
+        await parseMutationRequest(nonStringTypes);
+      },
+      {
+        name: "Error",
+        message: "Mutation requests must include baseVersion and op.",
+      },
+    );
   });
 });
