@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import { createHmac } from "node:crypto";
 import {
+  createProfileToken,
   hashPin,
   verifyStoredPin,
   buildProfileCookie,
@@ -686,5 +687,92 @@ describe("cookie generation details and clearing cookies", () => {
       assert.strictEqual(session.currentUser, "Aaron");
       assert.strictEqual(hasAccessSession(reqWithCookie), true);
     });
+  });
+});
+
+
+describe("createProfileToken", () => {
+  it("should create a valid profile token with default single user in safeUsers", () => {
+    const token = createProfileToken("Aaron");
+    const [encodedPayload, signature] = token.split(".");
+    assert.ok(encodedPayload);
+    assert.ok(signature);
+
+    const req = new Request("http://localhost/api/test", {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    const session = getSessionState(req);
+    assert.strictEqual(session.hasAccess, true);
+    assert.strictEqual(session.currentUser, "Aaron");
+
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf8"),
+    );
+    assert.strictEqual(payload.type, "profile");
+    assert.strictEqual(payload.user, "Aaron");
+    assert.deepStrictEqual(payload.users, ["Aaron"]);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const expectedExp = nowSeconds + 60 * 60 * 24 * 7;
+    assert.ok(
+      Math.abs(payload.exp - expectedExp) <= 5,
+      `Expected exp near ${expectedExp}, got ${payload.exp}`,
+    );
+  });
+
+  it("should deduplicate users and filter out invalid user values", () => {
+    const token = createProfileToken("Aaron", [
+      "Aaron",
+      "Electra",
+      "Aaron",
+      "NonExistentUser" as any,
+    ]);
+    const [encodedPayload] = token.split(".");
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf8"),
+    );
+
+    assert.strictEqual(payload.user, "Aaron");
+    assert.deepStrictEqual(payload.users, ["Aaron", "Electra"]);
+  });
+
+  it("should handle empty users array vs array with only invalid users", () => {
+    const tokenEmpty = createProfileToken("Electra", []);
+    const [encodedPayload1] = tokenEmpty.split(".");
+    const payload1 = JSON.parse(
+      Buffer.from(encodedPayload1, "base64url").toString("utf8"),
+    );
+    assert.deepStrictEqual(payload1.users, ["Electra"]);
+
+    const tokenInvalidOnly = createProfileToken("Electra", ["Invalid" as any]);
+    const [encodedPayload2] = tokenInvalidOnly.split(".");
+    const payload2 = JSON.parse(
+      Buffer.from(encodedPayload2, "base64url").toString("utf8"),
+    );
+    assert.deepStrictEqual(payload2.users, []);
+  });
+
+  it("should grant access when token is supplied in Authorization Bearer header", () => {
+    const token = createProfileToken("Aaron");
+    const req = new Request("http://localhost/api/test", {
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    const sessionState = getSessionState(req);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Aaron");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Aaron"]);
+  });
+
+  it("should grant access when token is supplied in x-session-token header", () => {
+    const token = createProfileToken("Electra", ["Electra", "Aaron"]);
+    const req = new Request("http://localhost/api/test", {
+      headers: { "x-session-token": token },
+    });
+
+    const sessionState = getSessionState(req);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Electra");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Electra", "Aaron"]);
   });
 });
