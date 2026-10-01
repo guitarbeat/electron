@@ -13,6 +13,7 @@ import {
   requireAccessUser,
   requireProfileUser,
   hasAccessSession,
+  extractSessionToken,
 } from "./session.js";
 
 const base64urlEncode = (str: string): string =>
@@ -686,5 +687,66 @@ describe("cookie generation details and clearing cookies", () => {
       assert.strictEqual(session.currentUser, "Aaron");
       assert.strictEqual(hasAccessSession(reqWithCookie), true);
     });
+  });
+});
+
+describe("extractSessionToken", () => {
+  it("should extract token from movie_watch_profile cookie", () => {
+    const req = new Request("http://localhost/api/test", {
+      headers: { cookie: "movie_watch_profile=cookie-token-123" },
+    });
+    assert.strictEqual(extractSessionToken(req), "cookie-token-123");
+  });
+
+  it("should extract token from Bearer Authorization header (case-insensitive with trimming)", () => {
+    const req1 = new Request("http://localhost/api/test", {
+      headers: { authorization: "Bearer auth-token-456" },
+    });
+    assert.strictEqual(extractSessionToken(req1), "auth-token-456");
+
+    const req2 = new Request("http://localhost/api/test", {
+      headers: { authorization: "bearer   auth-token-789   " },
+    });
+    assert.strictEqual(extractSessionToken(req2), "auth-token-789");
+  });
+
+  it("should ignore non-Bearer Authorization headers", () => {
+    const req = new Request("http://localhost/api/test", {
+      headers: { authorization: "Basic token123" },
+    });
+    assert.strictEqual(extractSessionToken(req), undefined);
+  });
+
+  it("should extract token from x-session-token header when no cookie or bearer auth is present", () => {
+    const req = new Request("http://localhost/api/test", {
+      headers: { "x-session-token": "  custom-header-token  " },
+    });
+    assert.strictEqual(extractSessionToken(req), "custom-header-token");
+  });
+
+  it("should prioritize cookie over Authorization header and x-session-token header", () => {
+    const req = new Request("http://localhost/api/test", {
+      headers: {
+        cookie: "movie_watch_profile=cookie-token",
+        authorization: "Bearer auth-token",
+        "x-session-token": "custom-token",
+      },
+    });
+    assert.strictEqual(extractSessionToken(req), "cookie-token");
+  });
+
+  it("should prioritize Authorization header over x-session-token header when cookie is missing", () => {
+    const req = new Request("http://localhost/api/test", {
+      headers: {
+        authorization: "Bearer auth-token",
+        "x-session-token": "custom-token",
+      },
+    });
+    assert.strictEqual(extractSessionToken(req), "auth-token");
+  });
+
+  it("should return undefined when no cookie or relevant headers are provided", () => {
+    const req = new Request("http://localhost/api/test");
+    assert.strictEqual(extractSessionToken(req), undefined);
   });
 });
