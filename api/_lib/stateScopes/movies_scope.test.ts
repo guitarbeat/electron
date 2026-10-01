@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { movieScopeDefinition } from "./movies.js";
+import { movieScopeDefinition, parseMovies } from "./movies.js";
+import { mockMovies } from "../../../apps/web/src/services/state/mockData.js";
 import type { Movie } from "../../../apps/web/src/shared/types.js";
 import type { MutationContext } from "../state.js";
 
@@ -220,5 +221,41 @@ describe("movieScopeDefinition - MAX_MOVIE_TITLE_LENGTH boundaries", () => {
     if (!finished.ok) return;
     assert.deepEqual(finished.data[0].watchingBy, []);
     assert.deepEqual(finished.data[0].watchedBy, ["Electra"]);
+  });
+});
+
+
+describe("parseMovies", () => {
+  it("returns mockMovies when content is null", () => {
+    const result = parseMovies(null);
+    assert.equal(result, mockMovies);
+  });
+
+  it("returns mockMovies when parsed content is not an array", () => {
+    const result = parseMovies("{\"key\": \"value\"}");
+    assert.equal(result, mockMovies);
+  });
+
+  it("parses and normalizes valid movie records", () => {
+    const rawMovies = [
+      {
+        id: "movie-1",
+        title: "Inception",
+        addedBy: "Aaron",
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+      {
+        invalid: "entry",
+      },
+    ];
+    const result = parseMovies(JSON.stringify(rawMovies));
+    assert.equal(result.length, 1);
+    assert.equal(result[0].id, "movie-1");
+    assert.equal(result[0].title, "Inception");
+  });
+
+  it("handles JSON parsing errors by returning mockMovies", () => {
+    const result = parseMovies("invalid json string {");
+    assert.equal(result, mockMovies);
   });
 });
