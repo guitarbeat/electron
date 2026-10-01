@@ -80,6 +80,10 @@ describe("cleanDatabaseUrl", () => {
     assert.strictEqual(parsed.searchParams.get("channel_binding"), null);
     assert.strictEqual(parsed.searchParams.get("sslmode"), "verify-full");
   });
+
+  it("should return unchanged string for invalid URLs", () => {
+    assert.strictEqual(cleanDatabaseUrl("invalid-url-string"), "invalid-url-string");
+  });
 });
 
 
