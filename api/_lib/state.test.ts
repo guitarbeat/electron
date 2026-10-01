@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import { STATE_SCOPES } from "../../apps/web/src/services/state/stateTypes.js";
 import {
   bootstrapMissingScopeFiles,
+  buildFallbackScopeData,
+  computeVersion,
   getScopeDefinition,
   readScopeStoredData,
 } from "./state.js";
@@ -90,5 +92,27 @@ describe("bootstrapMissingScopeFiles", () => {
     } finally {
       store.dispose();
     }
+  });
+});
+
+describe("buildFallbackScopeData", () => {
+  it("returns valid fallback clientData and computed version for all defined state scopes", () => {
+    for (const scope of STATE_SCOPES) {
+      const fallback = buildFallbackScopeData(scope);
+      assert.notStrictEqual(fallback.clientData, undefined);
+      assert.strictEqual(typeof fallback.version, "string");
+      assert.ok(fallback.version.length > 0);
+    }
+  });
+
+  it("produces expected fallback data and version hash for movies scope", () => {
+    const fallback = buildFallbackScopeData("movies");
+    const definition = getScopeDefinition("movies");
+    const expectedStored = definition.parse(null);
+    const expectedClientData = definition.toClient(expectedStored);
+    const expectedVersion = computeVersion(expectedClientData);
+
+    assert.deepStrictEqual(fallback.clientData, expectedClientData);
+    assert.strictEqual(fallback.version, expectedVersion);
   });
 });
