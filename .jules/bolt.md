@@ -13,3 +13,10 @@ The task prompt requested adding unit tests for `apps/web/src/utils/validation.t
 Upon inspecting `apps/web/src/utils/validation.test.ts`, comprehensive unit test coverage for `createValidator`, `ValidationPatterns`, `CommonRules`, `validatePlace`, `validateMemory`, and `validateAndThrow` was already present and passing (31 test cases covering required fields, length limits, patterns, custom functions returning `null` vs error strings, non-string coercion, input sanitization, whitespace handling, and boundary conditions). Running `pnpm exec tsx --test apps/web/src/utils/validation.test.ts` confirmed that `validation.ts` is fully tested.
 
 As per project guidelines regarding stale task prompts, no redundant code changes were made.
+
+### Task Details vs Codebase Reality
+The task prompt requested fixing a hardcoded timeout issue in `apps/web/src/services/logger.ts:607` (`setTimeout(collectNavigationTiming, 1000)`).
+
+Upon inspecting `apps/web/src/services/logger.ts`, line 57 (and lines 608 & 611) already extracts `1000` into a named constant `NAVIGATION_TIMING_DELAY_MS = 1000`, and passes `NAVIGATION_TIMING_DELAY_MS` to `setTimeout(collectNavigationTiming, NAVIGATION_TIMING_DELAY_MS)`.
+
+As per project guidelines regarding stale task prompts, no redundant code changes were made.
