@@ -388,16 +388,13 @@ export const useMovies = (
         return metadataUpdate ? { ...movie, ...metadataUpdate } : movie;
       });
 
-      await Promise.all(
-        validUpdates.map((update) =>
-          performMutationIfMoviePresent(
-            update.movieId,
-            "update_metadata",
-            { movieId: update.movieId, metadata: update.metadata },
-            () => optimisticMovies,
-          ),
-        ),
-      );
+      if (validUpdates.length > 0) {
+        await performMutation(
+          "update_metadata",
+          { items: validUpdates },
+          optimisticMovies,
+        );
+      }
 
       refresh();
       return true;
@@ -408,7 +405,7 @@ export const useMovies = (
     currentUser,
     isSubmitting,
     movies,
-    performMutationIfMoviePresent,
+    performMutation,
     refresh,
   ]);
 
