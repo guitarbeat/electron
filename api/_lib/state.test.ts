@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import { STATE_SCOPES } from "../../apps/web/src/services/state/stateTypes.js";
 import {
   bootstrapMissingScopeFiles,
+  getPinCoverageState,
+  getPinProtectedUsers,
   getScopeDefinition,
   readScopeStoredData,
 } from "./state.js";
@@ -89,6 +91,91 @@ describe("bootstrapMissingScopeFiles", () => {
       assert.strictEqual(movieData.fileMissing, false);
     } finally {
       store.dispose();
+    }
+  });
+});
+
+describe("getPinProtectedUsers and getPinCoverageState", () => {
+  it("returns empty pinProtectedUsers and correct missing users when no users have PINs set", async () => {
+    const pinsFilename = getScopeDefinition("pins").filename;
+    const store = sharedStateStore.installSharedStateMemoryStoreForTests({
+      [pinsFilename]: JSON.stringify({}),
+    });
+
+    try {
+      const coverage = await getPinCoverageState();
+      assert.deepStrictEqual(coverage.pinProtectedUsers, []);
+      assert.deepStrictEqual(coverage.usersMissingPins, ["Aaron", "Electra"]);
+      assert.strictEqual(coverage.pinCoverageComplete, false);
+
+      const protectedUsers = await getPinProtectedUsers();
+      assert.deepStrictEqual(protectedUsers, []);
+    } finally {
+      store.dispose();
+    }
+  });
+
+  it("returns partial pinProtectedUsers when only one user has a PIN set", async () => {
+    const pinsFilename = getScopeDefinition("pins").filename;
+    const store = sharedStateStore.installSharedStateMemoryStoreForTests({
+      [pinsFilename]: JSON.stringify({ Aaron: "hashed_pin_1234" }),
+    });
+
+    try {
+      const coverage = await getPinCoverageState();
+      assert.deepStrictEqual(coverage.pinProtectedUsers, ["Aaron"]);
+      assert.deepStrictEqual(coverage.usersMissingPins, ["Electra"]);
+      assert.strictEqual(coverage.pinCoverageComplete, false);
+
+      const protectedUsers = await getPinProtectedUsers();
+      assert.deepStrictEqual(protectedUsers, ["Aaron"]);
+    } finally {
+      store.dispose();
+    }
+  });
+
+  it("returns all users as protected when all users have PINs set", async () => {
+    const pinsFilename = getScopeDefinition("pins").filename;
+    const store = sharedStateStore.installSharedStateMemoryStoreForTests({
+      [pinsFilename]: JSON.stringify({
+        Aaron: "hash_aaron",
+        Electra: "hash_electra",
+      }),
+    });
+
+    try {
+      const coverage = await getPinCoverageState();
+      assert.deepStrictEqual(coverage.pinProtectedUsers, ["Aaron", "Electra"]);
+      assert.deepStrictEqual(coverage.usersMissingPins, []);
+      assert.strictEqual(coverage.pinCoverageComplete, true);
+
+      const protectedUsers = await getPinProtectedUsers();
+      assert.deepStrictEqual(protectedUsers, ["Aaron", "Electra"]);
+    } finally {
+      store.dispose();
+    }
+  });
+
+  it("falls back to empty state when readScopeStoredData throws an error", async () => {
+    const originalDbUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = "postgres://invalid:invalid@127.0.0.1:5432/invalid";
+    sharedStateStore.invalidateSharedStateCache();
+
+    try {
+      const coverage = await getPinCoverageState();
+      assert.deepStrictEqual(coverage.pinProtectedUsers, []);
+      assert.deepStrictEqual(coverage.usersMissingPins, []);
+      assert.strictEqual(coverage.pinCoverageComplete, true);
+
+      const protectedUsers = await getPinProtectedUsers();
+      assert.deepStrictEqual(protectedUsers, []);
+    } finally {
+      if (originalDbUrl !== undefined) {
+        process.env.DATABASE_URL = originalDbUrl;
+      } else {
+        delete process.env.DATABASE_URL;
+      }
+      sharedStateStore.invalidateSharedStateCache();
     }
   });
 });
