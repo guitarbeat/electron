@@ -336,11 +336,12 @@ export const fetchWikipediaPosterOrSummary = async (
     return null;
   };
 
-  const results = await Promise.all(queriesToTry.map((q) => fetchCandidate(q)));
-  const match = results.find((r): r is WikipediaPosterResult => r !== null);
-  if (match) {
-    wikiPosterCache.set(cacheKey, { poster: match.posterUrl, plot: match.plot, timestamp: now });
-    return match;
+  for (const q of queriesToTry) {
+    const match = await fetchCandidate(q);
+    if (match) {
+      wikiPosterCache.set(cacheKey, { poster: match.posterUrl, plot: match.plot, timestamp: now });
+      return match;
+    }
   }
 
   // Fallback to Wikipedia search API

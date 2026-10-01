@@ -61,6 +61,40 @@ test("fetchWikipediaPosterOrSummary fetches poster successfully and respects can
   assert.strictEqual(res?.title, "Inception (film)");
 });
 
+test("fetchWikipediaPosterOrSummary short-circuits early on first matching candidate without fetching rest", async (t) => {
+  let fetchCount = 0;
+  const requestedUrls: string[] = [];
+
+  t.mock.method(globalThis, "fetch", async (url: string | URL | Request) => {
+    fetchCount++;
+    const urlStr = url.toString();
+    requestedUrls.push(urlStr);
+
+    if (urlStr.includes("/summary/InceptionFirstCandidate")) {
+      return new Response(
+        JSON.stringify({
+          title: "InceptionFirstCandidate",
+          extract: "Match on first try",
+          originalimage: { source: "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_first.jpg" },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    return new Response(JSON.stringify({ type: "not_found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  });
+
+  const res = await fetchWikipediaPosterOrSummary("InceptionFirstCandidate", "2010");
+
+  assert.ok(res);
+  assert.strictEqual(res?.posterUrl, "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_first.jpg");
+  // Ensure only 1 fetch was made instead of sending requests for all 5 queriesToTry candidates concurrently
+  assert.strictEqual(fetchCount, 1);
+});
+
 test("fetchWikipediaPosterOrSummary performance benchmark with simulated network delay", async (t) => {
   t.mock.method(globalThis, "fetch", async (url: string | URL | Request) => {
     const urlStr = url.toString();
