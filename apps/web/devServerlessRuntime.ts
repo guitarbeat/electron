@@ -57,7 +57,7 @@ export const createServerlessRuntimeAdapter = (): Plugin => ({
         if (!res.headersSent) {
           res.statusCode = 500;
           res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ error: "Internal Server Error", details: error instanceof Error ? error.message : String(error) }));
+          res.end(JSON.stringify({ error: "Internal Server Error" }));
         }
       }
     });
