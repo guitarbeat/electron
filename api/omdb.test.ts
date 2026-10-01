@@ -1,6 +1,13 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import defaultHandler, { omdbHandler, validateSameOriginRequest, isRateLimited, resetRateLimitsForTests } from "./omdb.js";
+import defaultHandler, {
+  omdbHandler,
+  validateSameOriginRequest,
+  isRateLimited,
+  resetRateLimitsForTests,
+  ipRequestCounts,
+  RATE_LIMIT_WINDOW_MS,
+} from "./omdb.js";
 
 describe("validateSameOriginRequest", () => {
   const originalAllowedOrigins = process.env.ALLOWED_ORIGINS;
@@ -359,6 +366,69 @@ describe("isRateLimited", () => {
     assert.strictEqual(isRateLimited(ip2), false);
   });
 });
+
+describe("ipRequestCounts", () => {
+  beforeEach(() => {
+    resetRateLimitsForTests();
+  });
+
+  it("should be an instance of Map", () => {
+    assert.ok(ipRequestCounts instanceof Map);
+  });
+
+  it("should be empty initially or after resetting rate limits", () => {
+    assert.strictEqual(ipRequestCounts.size, 0);
+  });
+
+  it("should track request counts and reset time when rate limiting checks occur", () => {
+    const ip = "192.0.2.50";
+    const startTime = Date.now();
+    isRateLimited(ip);
+
+    assert.strictEqual(ipRequestCounts.has(ip), true);
+    const record = ipRequestCounts.get(ip);
+    assert.ok(record);
+    assert.strictEqual(record.count, 1);
+    assert.ok(record.resetTime >= startTime + RATE_LIMIT_WINDOW_MS);
+  });
+
+  it("should increment count in ipRequestCounts on subsequent requests from the same IP", () => {
+    const ip = "192.0.2.51";
+    isRateLimited(ip);
+    isRateLimited(ip);
+    isRateLimited(ip);
+
+    const record = ipRequestCounts.get(ip);
+    assert.ok(record);
+    assert.strictEqual(record.count, 3);
+  });
+
+  it("should be cleared when resetRateLimitsForTests is called", () => {
+    isRateLimited("192.0.2.52");
+    isRateLimited("192.0.2.53");
+    assert.ok(ipRequestCounts.size > 0);
+
+    resetRateLimitsForTests();
+    assert.strictEqual(ipRequestCounts.size, 0);
+  });
+
+  it("should reflect direct map modifications on rate limiting behavior", () => {
+    const ip = "192.0.2.54";
+    isRateLimited(ip);
+
+    const record = ipRequestCounts.get(ip);
+    if (record) {
+      record.count = 30;
+    }
+
+    assert.strictEqual(isRateLimited(ip), true);
+
+    ipRequestCounts.delete(ip);
+    assert.strictEqual(isRateLimited(ip), false);
+    assert.strictEqual(ipRequestCounts.get(ip)?.count, 1);
+  });
+});
+
 
 
 describe("omdbHandler", () => {
