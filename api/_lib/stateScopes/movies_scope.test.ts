@@ -1,7 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { movieScopeDefinition, parseMovies } from "./movies.js";
-import { mockMovies } from "../../../apps/web/src/services/state/mockData.js";
+import { movieScopeDefinition } from "./movies.js";
 import type { Movie } from "../../../apps/web/src/shared/types.js";
 import type { MutationContext } from "../state.js";
 
@@ -224,38 +223,66 @@ describe("movieScopeDefinition - MAX_MOVIE_TITLE_LENGTH boundaries", () => {
   });
 });
 
-
-describe("parseMovies", () => {
-  it("returns mockMovies when content is null", () => {
-    const result = parseMovies(null);
-    assert.equal(result, mockMovies);
-  });
-
-  it("returns mockMovies when parsed content is not an array", () => {
-    const result = parseMovies("{\"key\": \"value\"}");
-    assert.equal(result, mockMovies);
-  });
-
-  it("parses and normalizes valid movie records", () => {
-    const rawMovies = [
+describe("movieScopeDefinition - update_metadata", () => {
+  it("updates metadata for a single movie", () => {
+    const movies: Movie[] = [
       {
-        id: "movie-1",
-        title: "Inception",
+        id: "m-1",
+        title: "Matrix",
         addedBy: "Aaron",
+        watchedBy: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    ];
+
+    const result = movieScopeDefinition.mutate(
+      movies,
+      "update_metadata",
+      { movieId: "m-1", metadata: { year: "1999", genre: "Sci-Fi" } },
+      context,
+    );
+
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.equal(result.data[0].year, "1999");
+      assert.equal(result.data[0].genre, "Sci-Fi");
+    }
+  });
+
+  it("updates metadata for a batch of movies using items payload", () => {
+    const movies: Movie[] = [
+      {
+        id: "m-1",
+        title: "Matrix",
+        addedBy: "Aaron",
+        watchedBy: [],
         createdAt: "2024-01-01T00:00:00Z",
       },
       {
-        invalid: "entry",
+        id: "m-2",
+        title: "Inception",
+        addedBy: "Aaron",
+        watchedBy: [],
+        createdAt: "2024-01-01T00:00:00Z",
       },
     ];
-    const result = parseMovies(JSON.stringify(rawMovies));
-    assert.equal(result.length, 1);
-    assert.equal(result[0].id, "movie-1");
-    assert.equal(result[0].title, "Inception");
-  });
 
-  it("handles JSON parsing errors by returning mockMovies", () => {
-    const result = parseMovies("invalid json string {");
-    assert.equal(result, mockMovies);
+    const result = movieScopeDefinition.mutate(
+      movies,
+      "update_metadata",
+      {
+        items: [
+          { movieId: "m-1", metadata: { year: "1999" } },
+          { movieId: "m-2", metadata: { year: "2010" } },
+        ],
+      },
+      context,
+    );
+
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.equal(result.data[0].year, "1999");
+      assert.equal(result.data[1].year, "2010");
+    }
   });
 });
