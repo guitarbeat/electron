@@ -380,8 +380,22 @@ self.addEventListener('message', (event) => {
           )
         );
 
+        // Pre-fetch existing cache keys in bulk to avoid redundant sequential cache.match overhead
+        const existingKeys = await cache.keys();
+        const cachedUrls = new Set(existingKeys.map((req) => req.url));
+        const origin = self.location.origin;
+
+        const urlsToFetch = uniqueUrls.filter((u) => {
+          try {
+            const absUrl = new URL(u, origin).href;
+            return !cachedUrls.has(absUrl);
+          } catch {
+            return true;
+          }
+        });
+
         const PRE_WARM_CONCURRENCY = 6;
-        const queue = [...uniqueUrls];
+        const queue = [...urlsToFetch];
         const workers = Array.from(
           { length: Math.min(PRE_WARM_CONCURRENCY, queue.length) },
           async () => {
@@ -389,11 +403,14 @@ self.addEventListener('message', (event) => {
               const targetUrl = queue.shift();
               if (!targetUrl) break;
               try {
-                const existing = await cache.match(targetUrl);
-                if (!existing) {
-                  const res = await fetch(targetUrl, { mode: 'no-cors' });
-                  if (res.ok || res.type === 'opaque') {
-                    await cache.put(targetUrl, res);
+                const res = await fetch(targetUrl, { mode: 'no-cors' });
+                if (res.ok || res.type === 'opaque') {
+                  await cache.put(targetUrl, res);
+                  try {
+                    const absUrl = new URL(targetUrl, origin).href;
+                    cachedUrls.add(absUrl);
+                  } catch {
+                    // Ignore URL parsing errors
                   }
                 }
               } catch {
