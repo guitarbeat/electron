@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import { createHmac } from "node:crypto";
 import {
+  createProfileToken,
   hashPin,
   verifyStoredPin,
   buildProfileCookie,
@@ -13,7 +14,6 @@ import {
   requireAccessUser,
   requireProfileUser,
   hasAccessSession,
-  extractSessionToken,
 } from "./session.js";
 
 const base64urlEncode = (str: string): string =>
@@ -690,63 +690,89 @@ describe("cookie generation details and clearing cookies", () => {
   });
 });
 
-describe("extractSessionToken", () => {
-  it("should extract token from movie_watch_profile cookie", () => {
+
+describe("createProfileToken", () => {
+  it("should create a valid profile token with default single user in safeUsers", () => {
+    const token = createProfileToken("Aaron");
+    const [encodedPayload, signature] = token.split(".");
+    assert.ok(encodedPayload);
+    assert.ok(signature);
+
     const req = new Request("http://localhost/api/test", {
-      headers: { cookie: "movie_watch_profile=cookie-token-123" },
+      headers: { authorization: `Bearer ${token}` },
     });
-    assert.strictEqual(extractSessionToken(req), "cookie-token-123");
+    const session = getSessionState(req);
+    assert.strictEqual(session.hasAccess, true);
+    assert.strictEqual(session.currentUser, "Aaron");
+
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf8"),
+    );
+    assert.strictEqual(payload.type, "profile");
+    assert.strictEqual(payload.user, "Aaron");
+    assert.deepStrictEqual(payload.users, ["Aaron"]);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const expectedExp = nowSeconds + 60 * 60 * 24 * 7;
+    assert.ok(
+      Math.abs(payload.exp - expectedExp) <= 5,
+      `Expected exp near ${expectedExp}, got ${payload.exp}`,
+    );
   });
 
-  it("should extract token from Bearer Authorization header (case-insensitive with trimming)", () => {
-    const req1 = new Request("http://localhost/api/test", {
-      headers: { authorization: "Bearer auth-token-456" },
-    });
-    assert.strictEqual(extractSessionToken(req1), "auth-token-456");
+  it("should deduplicate users and filter out invalid user values", () => {
+    const token = createProfileToken("Aaron", [
+      "Aaron",
+      "Electra",
+      "Aaron",
+      "NonExistentUser" as any,
+    ]);
+    const [encodedPayload] = token.split(".");
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf8"),
+    );
 
-    const req2 = new Request("http://localhost/api/test", {
-      headers: { authorization: "bearer   auth-token-789   " },
-    });
-    assert.strictEqual(extractSessionToken(req2), "auth-token-789");
+    assert.strictEqual(payload.user, "Aaron");
+    assert.deepStrictEqual(payload.users, ["Aaron", "Electra"]);
   });
 
-  it("should ignore non-Bearer Authorization headers", () => {
+  it("should handle empty users array vs array with only invalid users", () => {
+    const tokenEmpty = createProfileToken("Electra", []);
+    const [encodedPayload1] = tokenEmpty.split(".");
+    const payload1 = JSON.parse(
+      Buffer.from(encodedPayload1, "base64url").toString("utf8"),
+    );
+    assert.deepStrictEqual(payload1.users, ["Electra"]);
+
+    const tokenInvalidOnly = createProfileToken("Electra", ["Invalid" as any]);
+    const [encodedPayload2] = tokenInvalidOnly.split(".");
+    const payload2 = JSON.parse(
+      Buffer.from(encodedPayload2, "base64url").toString("utf8"),
+    );
+    assert.deepStrictEqual(payload2.users, []);
+  });
+
+  it("should grant access when token is supplied in Authorization Bearer header", () => {
+    const token = createProfileToken("Aaron");
     const req = new Request("http://localhost/api/test", {
-      headers: { authorization: "Basic token123" },
+      headers: { authorization: `Bearer ${token}` },
     });
-    assert.strictEqual(extractSessionToken(req), undefined);
+
+    const sessionState = getSessionState(req);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Aaron");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Aaron"]);
   });
 
-  it("should extract token from x-session-token header when no cookie or bearer auth is present", () => {
+  it("should grant access when token is supplied in x-session-token header", () => {
+    const token = createProfileToken("Electra", ["Electra", "Aaron"]);
     const req = new Request("http://localhost/api/test", {
-      headers: { "x-session-token": "  custom-header-token  " },
+      headers: { "x-session-token": token },
     });
-    assert.strictEqual(extractSessionToken(req), "custom-header-token");
-  });
 
-  it("should prioritize cookie over Authorization header and x-session-token header", () => {
-    const req = new Request("http://localhost/api/test", {
-      headers: {
-        cookie: "movie_watch_profile=cookie-token",
-        authorization: "Bearer auth-token",
-        "x-session-token": "custom-token",
-      },
-    });
-    assert.strictEqual(extractSessionToken(req), "cookie-token");
-  });
-
-  it("should prioritize Authorization header over x-session-token header when cookie is missing", () => {
-    const req = new Request("http://localhost/api/test", {
-      headers: {
-        authorization: "Bearer auth-token",
-        "x-session-token": "custom-token",
-      },
-    });
-    assert.strictEqual(extractSessionToken(req), "auth-token");
-  });
-
-  it("should return undefined when no cookie or relevant headers are provided", () => {
-    const req = new Request("http://localhost/api/test");
-    assert.strictEqual(extractSessionToken(req), undefined);
+    const sessionState = getSessionState(req);
+    assert.strictEqual(sessionState.hasAccess, true);
+    assert.strictEqual(sessionState.currentUser, "Electra");
+    assert.deepStrictEqual(sessionState.activeUsers, ["Electra", "Aaron"]);
   });
 });
