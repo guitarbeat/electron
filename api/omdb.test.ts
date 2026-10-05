@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import defaultHandler, { omdbHandler, validateSameOriginRequest, isRateLimited, resetRateLimitsForTests } from "./omdb.js";
+import defaultHandler, { LRURateLimiter, omdbHandler, validateSameOriginRequest, isRateLimited, resetRateLimitsForTests } from "./omdb.js";
 
 describe("validateSameOriginRequest", () => {
   const originalAllowedOrigins = process.env.ALLOWED_ORIGINS;
@@ -774,5 +774,112 @@ describe("omdbHandler", () => {
       "Error handling GET " + req.url + ":",
     );
     assert.strictEqual(lastCall.arguments[1], fetchError);
+  });
+});
+
+
+describe("LRURateLimiter class", () => {
+  it("should initialize with default constructor options", () => {
+    const limiter = new LRURateLimiter();
+    assert.strictEqual(limiter.counts.size, 0);
+    assert.strictEqual(limiter.isRateLimited("127.0.0.1"), false);
+  });
+
+  it("should respect custom maxRequests and windowMs options", () => {
+    const countsMap = new Map<string, { count: number; resetTime: number }>();
+    const limiter = new LRURateLimiter(countsMap, {
+      maxEntries: 5,
+      windowMs: 5000,
+      maxRequests: 3,
+    });
+
+    const now = 1000;
+    const ip = "10.0.0.1";
+
+    assert.strictEqual(limiter.isRateLimited(ip, now), false); // count: 1
+    assert.strictEqual(limiter.isRateLimited(ip, now), false); // count: 2
+    assert.strictEqual(limiter.isRateLimited(ip, now), false); // count: 3
+    assert.strictEqual(limiter.isRateLimited(ip, now), true);  // count: 3 (rate limited)
+
+    // Advance time past window (now = 1000 + 5001 = 6001)
+    assert.strictEqual(limiter.isRateLimited(ip, 6001), false); // count reset to 1
+  });
+
+  it("should evict expired entries when capacity is reached", () => {
+    const countsMap = new Map<string, { count: number; resetTime: number }>();
+    const limiter = new LRURateLimiter(countsMap, {
+      maxEntries: 2,
+      windowMs: 1000,
+      maxRequests: 5,
+    });
+
+    limiter.isRateLimited("ip1", 100); // resetTime 1100
+    limiter.isRateLimited("ip2", 200); // resetTime 1200
+
+    assert.strictEqual(countsMap.size, 2);
+
+    // At now = 1150, ip1 is expired (1150 > 1100), ip2 is not expired (1150 < 1200)
+    // Adding ip3 should trigger cleanup and delete ip1
+    limiter.isRateLimited("ip3", 1150);
+
+    assert.strictEqual(countsMap.has("ip1"), false);
+    assert.strictEqual(countsMap.has("ip2"), true);
+    assert.strictEqual(countsMap.has("ip3"), true);
+    assert.strictEqual(countsMap.size, 2);
+  });
+
+  it("should evict oldest non-expired entry when capacity is reached and no entries are expired", () => {
+    const countsMap = new Map<string, { count: number; resetTime: number }>();
+    const limiter = new LRURateLimiter(countsMap, {
+      maxEntries: 2,
+      windowMs: 10000,
+      maxRequests: 5,
+    });
+
+    limiter.isRateLimited("ip1", 100);
+    limiter.isRateLimited("ip2", 200);
+
+    // At now = 300, neither ip1 nor ip2 is expired.
+    // Adding ip3 will trigger capacity cleanup and delete oldest entry (ip1)
+    limiter.isRateLimited("ip3", 300);
+
+    assert.strictEqual(countsMap.has("ip1"), false);
+    assert.strictEqual(countsMap.has("ip2"), true);
+    assert.strictEqual(countsMap.has("ip3"), true);
+  });
+
+  it("should re-order entry to end of insertion order when re-inserted after expiration", () => {
+    const countsMap = new Map<string, { count: number; resetTime: number }>();
+    const limiter = new LRURateLimiter(countsMap, {
+      maxEntries: 2,
+      windowMs: 1000,
+      maxRequests: 5,
+    });
+
+    limiter.isRateLimited("ip1", 100); // resetTime 1100
+    limiter.isRateLimited("ip2", 200); // resetTime 1200
+
+    // At now = 1150, ip1 is expired. Accessing ip1 resets its window and moves it to the end of insertion order.
+    limiter.isRateLimited("ip1", 1150); // new resetTime 2150
+
+    // At now = 1160, adding ip3 forces eviction.
+    // Since ip1 was re-inserted, ip2 is now the oldest entry in Map iteration order.
+    limiter.isRateLimited("ip3", 1160);
+
+    assert.strictEqual(countsMap.has("ip2"), false);
+    assert.strictEqual(countsMap.has("ip1"), true);
+    assert.strictEqual(countsMap.has("ip3"), true);
+  });
+
+  it("should clear all records when clear() is called", () => {
+    const limiter = new LRURateLimiter();
+    limiter.isRateLimited("1.1.1.1");
+    limiter.isRateLimited("2.2.2.2");
+
+    assert.strictEqual(limiter.counts.size, 2);
+
+    limiter.clear();
+
+    assert.strictEqual(limiter.counts.size, 0);
   });
 });
