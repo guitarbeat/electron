@@ -1,6 +1,98 @@
-import { describe, it } from "node:test";
+import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import { cleanEnvValue, needsSsl, createPostgresPool, cleanDatabaseUrl } from "./dbCommon.js";
+import {
+  cleanEnvValue,
+  getDatabaseUrl,
+  needsSsl,
+  createPostgresPool,
+  cleanDatabaseUrl,
+} from "./dbCommon.js";
+
+describe("getDatabaseUrl", () => {
+  let originalDatabaseUrl: string | undefined;
+  let originalPostgresUrl: string | undefined;
+  let originalPostgresPrismaUrl: string | undefined;
+
+  const restoreEnv = () => {
+    if (originalDatabaseUrl !== undefined) {
+      process.env.DATABASE_URL = originalDatabaseUrl;
+    } else {
+      delete process.env.DATABASE_URL;
+    }
+
+    if (originalPostgresUrl !== undefined) {
+      process.env.POSTGRES_URL = originalPostgresUrl;
+    } else {
+      delete process.env.POSTGRES_URL;
+    }
+
+    if (originalPostgresPrismaUrl !== undefined) {
+      process.env.POSTGRES_PRISMA_URL = originalPostgresPrismaUrl;
+    } else {
+      delete process.env.POSTGRES_PRISMA_URL;
+    }
+  };
+
+  beforeEach(() => {
+    originalDatabaseUrl = process.env.DATABASE_URL;
+    originalPostgresUrl = process.env.POSTGRES_URL;
+    originalPostgresPrismaUrl = process.env.POSTGRES_PRISMA_URL;
+  });
+
+  afterEach(() => {
+    restoreEnv();
+  });
+
+  it("should return DATABASE_URL when available", () => {
+    process.env.DATABASE_URL = "postgres://user:pass@localhost:5432/db1";
+    process.env.POSTGRES_URL = "postgres://user:pass@localhost:5432/db2";
+    process.env.POSTGRES_PRISMA_URL = "postgres://user:pass@localhost:5432/db3";
+
+    assert.strictEqual(
+      getDatabaseUrl(),
+      "postgres://user:pass@localhost:5432/db1",
+    );
+  });
+
+  it("should fallback to POSTGRES_URL when DATABASE_URL is not set", () => {
+    delete process.env.DATABASE_URL;
+    process.env.POSTGRES_URL = "postgres://user:pass@localhost:5432/db2";
+    process.env.POSTGRES_PRISMA_URL = "postgres://user:pass@localhost:5432/db3";
+
+    assert.strictEqual(
+      getDatabaseUrl(),
+      "postgres://user:pass@localhost:5432/db2",
+    );
+  });
+
+  it("should fallback to POSTGRES_PRISMA_URL when DATABASE_URL and POSTGRES_URL are not set", () => {
+    delete process.env.DATABASE_URL;
+    delete process.env.POSTGRES_URL;
+    process.env.POSTGRES_PRISMA_URL = "postgres://user:pass@localhost:5432/db3";
+
+    assert.strictEqual(
+      getDatabaseUrl(),
+      "postgres://user:pass@localhost:5432/db3",
+    );
+  });
+
+  it("should return empty string when no environment variables are set", () => {
+    delete process.env.DATABASE_URL;
+    delete process.env.POSTGRES_URL;
+    delete process.env.POSTGRES_PRISMA_URL;
+
+    assert.strictEqual(getDatabaseUrl(), "");
+  });
+
+  it("should clean quotes and trim whitespace from env values", () => {
+    process.env.DATABASE_URL = ' "postgres://user:pass@localhost:5432/db1" ';
+
+    assert.strictEqual(
+      getDatabaseUrl(),
+      "postgres://user:pass@localhost:5432/db1",
+    );
+  });
+});
 
 describe("needsSsl", () => {
   it("should return false for disabled or allowed sslmode", () => {
