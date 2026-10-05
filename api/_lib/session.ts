@@ -33,7 +33,7 @@ type SessionPayload = ProfileSessionPayload | PinAttemptPayload;
 const clean = (value: string | undefined): string =>
   (value || "").trim().replace(/^["']|["']$/g, "");
 
-const STABLE_DEFAULT_SECRET = "movie-night-electron-session-secret-v1";
+let ephemeralDefaultSecret: string | null = null;
 
 const getSessionSigningSecret = (): string => {
   const configured = clean(
@@ -45,8 +45,10 @@ const getSessionSigningSecret = (): string => {
   if (process.env.NODE_ENV === "test") {
     return "test-session-signing-secret";
   }
-  // Stable fallback secret across container recycles, SSR re-evaluations, and server restarts
-  return STABLE_DEFAULT_SECRET;
+  if (!ephemeralDefaultSecret) {
+    ephemeralDefaultSecret = randomBytes(32).toString("hex");
+  }
+  return ephemeralDefaultSecret;
 };
 
 const base64urlEncode = (value: string): string =>
