@@ -78,33 +78,32 @@ export const consumeAnonymousRateLimit = async (
     return true;
   }
   await ensureSchema();
-  const client = await getPool().connect();
-  try {
-    await client.query("BEGIN");
-    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key]);
-    await client.query("DELETE FROM agent_rate_limits WHERE occurred_at < $1", [
-      new Date(now - windowMs),
-    ]);
-    const count = await client.query<{ count: string }>(
-      "SELECT count(*)::text AS count FROM agent_rate_limits WHERE rate_key = $1 AND occurred_at >= $2",
-      [key, new Date(now - windowMs)],
-    );
-    if (Number(count.rows[0]?.count ?? 0) >= limit) {
-      await client.query("ROLLBACK");
-      return false;
-    }
-    await client.query(
-      "INSERT INTO agent_rate_limits (rate_key, occurred_at) VALUES ($1, $2)",
-      [key, new Date(now)],
-    );
-    await client.query("COMMIT");
-    return true;
-  } catch (error) {
-    await client.query("ROLLBACK").catch(() => undefined);
-    throw error;
-  } finally {
-    client.release();
-  }
+  const rows = await query<{ allowed: boolean }>(
+    `WITH lock AS (
+      SELECT pg_advisory_xact_lock(hashtext($1))
+    ),
+    cleanup AS (
+      DELETE FROM agent_rate_limits
+      WHERE occurred_at < $2
+      AND (SELECT 1 FROM lock) IS NOT NULL
+    ),
+    current_count AS (
+      SELECT count(*)::int AS cnt
+      FROM agent_rate_limits
+      WHERE rate_key = $1 AND occurred_at >= $2
+      AND (SELECT 1 FROM lock) IS NOT NULL
+    ),
+    inserted AS (
+      INSERT INTO agent_rate_limits (rate_key, occurred_at)
+      SELECT $1, $3
+      FROM current_count
+      WHERE cnt < $4
+      RETURNING 1
+    )
+    SELECT EXISTS(SELECT 1 FROM inserted) AS allowed;`,
+    [key, new Date(now - windowMs), new Date(now), limit],
+  );
+  return rows[0]?.allowed === true;
 };
 
 export const consumeConfirmation = async (
