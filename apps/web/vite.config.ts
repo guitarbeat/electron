@@ -274,22 +274,27 @@ export default defineConfig(({ mode }) => {
       port,
       strictPort: true,
       host: "0.0.0.0",
+      allowedHosts: true,
       cors: false,
-      hmr: false,
+      hmr: process.env.DISABLE_HMR !== "true",
+      watch:
+        process.env.DISABLE_HMR === "true"
+          ? null
+          : {
+              ignored: [
+                "**/.local/share/pnpm/store/**",
+                "**/node_modules/.pnpm/store/**",
+              ],
+            },
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate",
-      },
-      watch: {
-        ignored: [
-          "**/.local/share/pnpm/store/**",
-          "**/node_modules/.pnpm/store/**",
-        ],
       },
     },
     clearScreen: false,
     preview: {
       port,
       host: "0.0.0.0",
+      allowedHosts: true,
       cors: false,
     },
   };
