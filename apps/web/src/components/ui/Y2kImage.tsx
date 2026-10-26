@@ -90,6 +90,7 @@ export const ResilientImage = forwardRef<HTMLImageElement, ResilientImageProps>(
       renderFallback,
       loading = "lazy",
       decoding = "async",
+      referrerPolicy = "no-referrer",
       ...restProps
     },
     ref
@@ -151,6 +152,7 @@ export const ResilientImage = forwardRef<HTMLImageElement, ResilientImageProps>(
             alt={alt || title || "Image"}
             loading={loading}
             decoding={decoding}
+            referrerPolicy={referrerPolicy}
             className={`y2k-image-element ${stateClass} ${catClass} ${className}`}
             onLoad={handleLoad}
             onError={handleError}

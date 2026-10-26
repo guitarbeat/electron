@@ -4206,12 +4206,12 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[10100] flex items-end justify-end p-3 sm:p-5 bg-black/25 backdrop-blur-[3px] animate-in fade-in duration-200"
+      className="fixed inset-0 z-[10100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
       onClick={handleOverlayClick}
       role="presentation"
     >
       <section
-        className="w-full max-w-[21.5rem] mb-16 sm:mb-20 mr-1 sm:mr-3 p-5 rounded-3xl border border-white/15 bg-slate-950/90 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 slide-in-from-bottom-8 duration-250 outline-none"
+        className="w-full max-w-[22rem] my-auto p-5 sm:p-6 rounded-3xl border border-white/15 bg-slate-950/95 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 duration-200 outline-none max-h-[calc(100dvh-2rem)] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pin-dialog-title"

@@ -27,15 +27,67 @@ export const copyTextToClipboard = async (value: string): Promise<void> => {
   }
 };
 
-export const prefersReducedMotion = (): boolean =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+export const subscribeMediaQuery = (
+  query: string,
+  onChange: (event: MediaQueryListEvent) => void,
+): (() => void) => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return () => undefined;
+  }
 
-export const hasHoverCapability = (): boolean =>
-  typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
+  try {
+    const mq = window.matchMedia(query);
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+      return () => {
+        mq.removeEventListener("change", onChange);
+      };
+    }
+    if (typeof mq.addListener === "function") {
+      mq.addListener(onChange);
+      return () => {
+        mq.removeListener(onChange);
+      };
+    }
+  } catch {
+    // Ignore unsupported matchMedia errors on legacy embedded browsers
+  }
 
-export const hasFinePointer = (): boolean =>
-  typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
+  return () => undefined;
+};
+
+export const prefersReducedMotion = (): boolean => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+};
+
+export const hasHoverCapability = (): boolean => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  try {
+    return window.matchMedia("(hover: hover)").matches;
+  } catch {
+    return false;
+  }
+};
+
+export const hasFinePointer = (): boolean => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  try {
+    return window.matchMedia("(pointer: fine)").matches;
+  } catch {
+    return false;
+  }
+};
 
 export const isChromaSpotlightEnabled = (): boolean =>
   !prefersReducedMotion() && hasHoverCapability() && hasFinePointer();
@@ -47,14 +99,15 @@ export const subscribeMotionPreferences = (
     return () => undefined;
   }
 
-  const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const hoverMq = window.matchMedia("(hover: hover)");
-  motionMq.addEventListener("change", onChange);
-  hoverMq.addEventListener("change", onChange);
+  const unsubMotion = subscribeMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+    onChange,
+  );
+  const unsubHover = subscribeMediaQuery("(hover: hover)", onChange);
 
   return () => {
-    motionMq.removeEventListener("change", onChange);
-    hoverMq.removeEventListener("change", onChange);
+    unsubMotion();
+    unsubHover();
   };
 };
 

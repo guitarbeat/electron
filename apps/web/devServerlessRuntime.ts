@@ -102,6 +102,20 @@ export const createServerlessRuntimeAdapter = (
   name: "serverless-runtime-adapter",
   configureServer(server) {
     server.middlewares.use(async (req, res, next) => {
+      if (
+        req.url?.startsWith("/node_modules/.vite/") ||
+        req.url?.startsWith("/src/")
+      ) {
+        const origSetHeader = res.setHeader.bind(res);
+        res.setHeader = ((name: string, value: number | string | readonly string[]) => {
+          if (typeof name === "string" && name.toLowerCase() === "cache-control") {
+            return origSetHeader(name, "no-store, no-cache, must-revalidate");
+          }
+          return origSetHeader(name, value);
+        }) as typeof res.setHeader;
+        origSetHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      }
+
       if (!req.url?.startsWith("/api/")) return next();
 
       const rawOrigin = req.headers.origin;
@@ -155,8 +169,6 @@ export const createServerlessRuntimeAdapter = (
           res.end(
             JSON.stringify({
               error: "Internal Server Error",
-              details:
-                error instanceof Error ? error.message : String(error),
             }),
           );
         }

@@ -92,7 +92,7 @@ test("sorts movie list by date added, alphabetical, genre, and rating", () => {
 
   // 2. Alphabetical (Alien -> Babylon -> Zodiac)
   const byAlpha = filterMovieWall(sample, { ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: "alpha" });
-  assert.deepEqual(byAlpha.map((m) => m.id), ["m2", "m3", "m1"].sort());
+  assert.deepEqual(byAlpha.map((m) => m.id), ["m2", "m3", "m1"]);
   assert.deepEqual(byAlpha.map((m) => m.title), ["Alien", "Babylon", "Zodiac"]);
 
   // 3. Genre (Comedy -> Crime -> Sci-Fi)

@@ -35,7 +35,7 @@ const result = spawnSync(
   ['--no-warnings', tsxCli, '--test', ...files],
   {
     stdio: 'inherit',
-    env: { ...process.env, NODE_NO_WARNINGS: '1' },
+    env: { ...process.env, NODE_NO_WARNINGS: '1', NODE_ENV: process.env.NODE_ENV || 'test' },
   },
 );
 process.exit(result.status ?? 1);

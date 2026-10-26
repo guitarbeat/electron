@@ -25,6 +25,7 @@ import {
   sanitizeInput,
   runWithViewTransition,
   consoleError,
+  subscribeMediaQuery,
   subscribeMotionPreferences,
   getErrorMessage,
   isChromaSpotlightEnabled,
@@ -537,14 +538,15 @@ export function useCardTilt<T extends HTMLElement = HTMLDivElement>({
   }, [springSheenX, springSheenY]);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    prefersReduced.current = mq.matches;
-    const h = (e: MediaQueryListEvent) => {
-      prefersReduced.current = e.matches;
-    };
-    mq.addEventListener("change", h);
+    prefersReduced.current = prefersReducedMotion();
+    const unsub = subscribeMediaQuery(
+      "(prefers-reduced-motion: reduce)",
+      (e: MediaQueryListEvent) => {
+        prefersReduced.current = e.matches;
+      },
+    );
     return () => {
-      mq.removeEventListener("change", h);
+      unsub();
       if (raf.current) {
         cancelAnimationFrame(raf.current);
         raf.current = 0;
@@ -965,17 +967,20 @@ export const mediaBreakpoints = {
 
 export const useMediaQuery = (query: string): boolean => {
   const subscribe = useCallback(
-    (callback: () => void) => {
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener("change", callback);
-      return () => {
-        matchMedia.removeEventListener("change", callback);
-      };
-    },
+    (callback: () => void) => subscribeMediaQuery(query, callback),
     [query],
   );
 
-  const getSnapshot = () => window.matchMedia(query).matches;
+  const getSnapshot = () => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return false;
+    }
+    try {
+      return window.matchMedia(query).matches;
+    } catch {
+      return false;
+    }
+  };
   const getServerSnapshot = () => false;
 
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

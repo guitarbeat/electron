@@ -30,6 +30,7 @@ const violations = [];
 
 const ALLOWED_ROOT_DIRECTORIES = new Set([
   '.agents',
+  '.aistudio',
   '.git',
   '.github',
   '.jules',
@@ -44,6 +45,7 @@ const ALLOWED_ROOT_DIRECTORIES = new Set([
   'e2e-tests',
   'lib',
   'node_modules',
+  'public',
   'scripts',
   'src',
 ]);

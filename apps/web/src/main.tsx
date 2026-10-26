@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "@total-typescript/ts-reset";
 import "@/shared/pwaInstallWindow";
 import { preloadCriticalAppModules } from "@/app/preloadAppModules";
+import { GlobalErrorBoundary } from "@/app/GlobalErrorBoundary";
 import { applyTheme } from "@/theme/tokens";
 import App from "./app/App";
 
@@ -11,16 +12,26 @@ if (
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get("mock") === "1"
 ) {
-  window.localStorage.setItem("useMockData", "true");
+  try {
+    window.localStorage.setItem("useMockData", "true");
+  } catch {
+    // Ignore storage access errors in restricted/private contexts
+  }
 }
 
 applyTheme("movies");
 void preloadCriticalAppModules();
 
-const isStandalone =
-  window.matchMedia("(display-mode: standalone)").matches ||
-  (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-    true;
+let isStandalone = false;
+try {
+  isStandalone =
+    (typeof window.matchMedia === "function" &&
+      window.matchMedia("(display-mode: standalone)").matches) ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true;
+} catch {
+  isStandalone = false;
+}
 
 if (isStandalone) {
   document.documentElement.classList.add("app-standalone");
@@ -34,38 +45,19 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <GlobalErrorBoundary
+      moduleName="RootApplication"
+      fallbackTitle="APPLICATION STARTUP FAULT"
+      fallbackDescription="A critical error occurred while initializing the workspace. You can reboot the module or reload the page."
+    >
+      <App />
+    </GlobalErrorBoundary>
   </React.StrictMode>,
 );
 
 if ("serviceWorker" in navigator) {
-  const registerSW = () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        registration.addEventListener("updatefound", () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener("statechange", () => {
-              if (
-                newWorker.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
-                newWorker.postMessage({ type: "SKIP_WAITING" });
-              }
-            });
-          }
-        });
-      })
-      .catch(() => undefined);
-  };
-
-  if (import.meta.env.PROD) {
-    window.addEventListener("load", registerSW);
-  } else if (new URLSearchParams(window.location.search).get("sw") === "1") {
-    window.addEventListener("load", registerSW);
-  } else {
-    // Clean up any stale service workers in dev mode quietly without forced reloads
+  if (import.meta.env.DEV || window.location.hostname.includes("ais-dev")) {
+    // Unregister any active service worker and wipe CacheStorage in dev/preview
     navigator.serviceWorker
       .getRegistrations()
       .then((registrations) => {
@@ -74,5 +66,39 @@ if ("serviceWorker" in navigator) {
         }
       })
       .catch(() => undefined);
+
+    if ("caches" in window) {
+      caches
+        .keys()
+        .then((keys) => {
+          for (const key of keys) {
+            void caches.delete(key);
+          }
+        })
+        .catch(() => undefined);
+    }
+  } else if (import.meta.env.PROD) {
+    const registerSW = () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          registration.addEventListener("updatefound", () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener("statechange", () => {
+                if (
+                  newWorker.state === "installed" &&
+                  navigator.serviceWorker.controller
+                ) {
+                  newWorker.postMessage({ type: "SKIP_WAITING" });
+                }
+              });
+            }
+          });
+        })
+        .catch(() => undefined);
+    };
+
+    window.addEventListener("load", registerSW);
   }
 }

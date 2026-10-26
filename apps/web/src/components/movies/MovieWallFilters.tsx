@@ -56,7 +56,7 @@ const statusPresetLabels: Record<MovieStatusPreset, string> = {
   both_watched: "Both Watched",
 };
 
-export const SORT_OPTIONS: Array<{
+const SORT_OPTIONS: Array<{
   value: MovieSortOrder;
   label: string;
   shortLabel: string;

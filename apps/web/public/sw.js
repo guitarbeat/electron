@@ -133,15 +133,20 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Let Vercel Speed Insights and other platform routes bypass the SW
-  if (url.pathname.startsWith('/_vercel/')) return;
-  if (url.pathname.startsWith('/src/')) return;
-  if (url.pathname.startsWith('/@vite/')) return;
-  if (url.pathname.startsWith('/@react-refresh')) return;
-  if (url.pathname.startsWith('/@fs/')) return;
-  if (url.pathname.startsWith('/@id/')) return;
-  if (url.pathname.startsWith('/node_modules/')) return;
-  if (url.search.includes('import')) return;
+  // Completely bypass Service Worker in development/preview environments or for dev server modules
+  if (
+    self.location.hostname === 'localhost' ||
+    self.location.hostname === '127.0.0.1' ||
+    self.location.hostname.includes('ais-dev') ||
+    url.hostname.includes('ais-dev') ||
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.pathname.startsWith('/@') ||
+    url.searchParams.has('v') ||
+    url.searchParams.has('t')
+  ) {
+    return;
+  }
 
   // 1. Navigation requests (PWA shortcuts, page reload, routing) -> Network-first with static cache fallback
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {

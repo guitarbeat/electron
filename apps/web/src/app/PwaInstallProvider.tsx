@@ -44,11 +44,19 @@ export const usePwaInstall = (): PwaInstallContextValue => {
 
 // ── Helpers ────────────────────────────────────────────────────────
 
-const readStandaloneMode = (): boolean =>
-  typeof window !== "undefined" &&
-  (window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true);
+const readStandaloneMode = (): boolean => {
+  if (typeof window === "undefined") return false;
+  try {
+    return (
+      (typeof window.matchMedia === "function" &&
+        window.matchMedia("(display-mode: standalone)").matches) ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+        true
+    );
+  } catch {
+    return false;
+  }
+};
 
 /** True on iOS Safari, which doesn't fire beforeinstallprompt */
 const isIosSafari = (): boolean =>

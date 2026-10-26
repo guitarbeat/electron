@@ -65,6 +65,7 @@ export function useResilientImage(options: UseResilientImageOptions): UseResilie
   // Reset error states when primary source changes
   useEffect(() => {
     let isCancelled = false;
+    let createdObjectUrl: string | null = null;
     setHasPrimaryError(false);
     setHasFallbackError(false);
     setIsLoaded(false);
@@ -85,6 +86,7 @@ export function useResilientImage(options: UseResilientImageOptions): UseResilie
           if (blob) {
             try {
               const objUrl = URL.createObjectURL(blob);
+              createdObjectUrl = objUrl;
               setCachedSrc(objUrl);
             } catch {
               // Ignore blob URL errors and let standard img tag load
@@ -98,6 +100,13 @@ export function useResilientImage(options: UseResilientImageOptions): UseResilie
 
     return () => {
       isCancelled = true;
+      if (createdObjectUrl) {
+        try {
+          URL.revokeObjectURL(createdObjectUrl);
+        } catch {
+          // Ignore revoke errors
+        }
+      }
     };
   }, [src]);
 

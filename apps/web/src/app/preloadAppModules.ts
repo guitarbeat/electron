@@ -22,8 +22,8 @@ export const preloadAppWorkspaceShell = (): Promise<unknown> =>
   import("@/app/AppWorkspaceShell");
 
 /**
- * Warm modules for first paint. Only the workspace shell blocks readiness;
- * the active tab chunk loads in parallel via Suspense.
+ * Warm modules and critical API endpoints for first paint.
+ * Preloads the workspace shell, active tab chunk, and initial session/movies state in parallel.
  */
 export const preloadCriticalAppModules = (): Promise<void> => {
   if (criticalPreloadPromise) {
@@ -31,9 +31,34 @@ export const preloadCriticalAppModules = (): Promise<void> => {
   }
 
   const tab = readInitialMainTab();
+  const warmEndpoints = () => {
+    if (typeof window === "undefined" || typeof fetch !== "function") {
+      return Promise.resolve();
+    }
+    try {
+      if (window.localStorage.getItem("useMockData") === "true") {
+        return Promise.resolve();
+      }
+    } catch {
+      // Ignore storage access errors
+    }
+
+    return Promise.allSettled([
+      fetch("/api/session", {
+        method: "GET",
+        credentials: "include",
+      }).catch(() => undefined),
+      fetch(`/api/state/${tab === "messages" ? "messages" : "movies"}`, {
+        method: "GET",
+        credentials: "include",
+      }).catch(() => undefined),
+    ]);
+  };
+
   criticalPreloadPromise = Promise.allSettled([
     preloadAppWorkspaceShell(),
     preloadWorkspaceTab(tab),
+    warmEndpoints(),
   ]).then(() => undefined);
   return criticalPreloadPromise;
 };

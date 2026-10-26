@@ -2,6 +2,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useCallback,
   useSyncExternalStore,
@@ -140,19 +141,40 @@ export const ViewportContext = createContext<ViewportContextValue | null>(null);
 const useMediaQueryLocal = (query: string): boolean => {
   const subscribe = useCallback(
     (callback: () => void) => {
-      if (typeof window === "undefined") return () => {};
-      const matchMedia = window.matchMedia(query);
-      matchMedia.addEventListener("change", callback);
-      return () => {
-        matchMedia.removeEventListener("change", callback);
-      };
+      if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+        return () => {};
+      }
+      try {
+        const matchMedia = window.matchMedia(query);
+        if (typeof matchMedia.addEventListener === "function") {
+          matchMedia.addEventListener("change", callback);
+          return () => {
+            matchMedia.removeEventListener("change", callback);
+          };
+        }
+        if (typeof matchMedia.addListener === "function") {
+          matchMedia.addListener(callback);
+          return () => {
+            matchMedia.removeListener(callback);
+          };
+        }
+      } catch {
+        // Ignore matchMedia errors
+      }
+      return () => {};
     },
     [query],
   );
 
   const getSnapshot = () => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia(query).matches;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return false;
+    }
+    try {
+      return window.matchMedia(query).matches;
+    } catch {
+      return false;
+    }
   };
   const getServerSnapshot = () => false;
 
@@ -179,7 +201,7 @@ export const ViewportProvider: React.FC<{ children: ReactNode }> = ({
     );
   }, [isSilkBrowser]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
     if (isTv) {

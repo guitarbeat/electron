@@ -40,6 +40,7 @@ import {
 } from "@/utils/workspaceConfig";
 import { cleanupOldImages } from "@/utils/imageCache";
 import { AppProviders } from "@/app/AppProviders";
+import { GlobalErrorBoundary } from "@/app/GlobalErrorBoundary";
 import "./globals.css";
 import "./component-styles.css";
 
@@ -106,12 +107,16 @@ const App: React.FC = () => {
       return;
     }
 
-    window.localStorage.setItem(
-      APP_VIEW_STATE_KEY,
-      JSON.stringify({
-        activeTab,
-      } satisfies StoredAppViewState),
-    );
+    try {
+      window.localStorage.setItem(
+        APP_VIEW_STATE_KEY,
+        JSON.stringify({
+          activeTab,
+        } satisfies StoredAppViewState),
+      );
+    } catch {
+      // Ignore storage quota or private mode errors
+    }
   }, [activeTab]);
 
   const updateQuizCompletion = useCallback(
@@ -297,10 +302,16 @@ const App: React.FC = () => {
 };
 
 const AppWithProviders: React.FC = () => (
-  <AppProviders>
-    <App />
-    <SpeedInsights />
-  </AppProviders>
+  <GlobalErrorBoundary
+    moduleName="AppProviders"
+    fallbackTitle="PROVIDER INITIALIZATION FAULT"
+    fallbackDescription="A critical error occurred while mounting the workspace context providers."
+  >
+    <AppProviders>
+      <App />
+      <SpeedInsights />
+    </AppProviders>
+  </GlobalErrorBoundary>
 );
 
 export default AppWithProviders;

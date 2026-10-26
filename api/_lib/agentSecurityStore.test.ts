@@ -9,8 +9,16 @@ import {
 } from "./agentSecurityStore.js";
 
 describe("agentSecurityStore (in-memory mode)", () => {
+  let origEnv: string | undefined;
+
   beforeEach(() => {
+    origEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "test";
     resetAgentSecurityStoreForTests();
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = origEnv;
   });
 
   it("enforces rate limits in memory", async () => {
