@@ -14,7 +14,7 @@ import {
   unauthorizedResponse,
 } from "./http.js";
 import { patchSharedStateFile } from "./sharedStateStore.js";
-import { hasAccessSession, requireProfileUser } from "./session.js";
+import { requireProfileUser } from "./session.js";
 import {
   buildFallbackScopeData,
   computeVersion,
@@ -29,7 +29,6 @@ export const createReadHandler =
   async (request: Request): Promise<Response> => {
     try {
       if (request.method !== "GET") return methodNotAllowedResponse("GET");
-      if (!hasAccessSession(request)) return unauthorizedResponse();
 
       let clientData: StateScopeDataMap[TScope];
       let version: string;
@@ -94,7 +93,6 @@ export const createMutateHandler =
   async (request: Request): Promise<Response> => {
     try {
       if (request.method !== "POST") return methodNotAllowedResponse("POST");
-      if (!hasAccessSession(request)) return unauthorizedResponse();
 
       const definition = getScopeDefinition(scope);
       if (!definition.mutate) {

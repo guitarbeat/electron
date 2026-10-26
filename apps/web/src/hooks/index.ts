@@ -13,7 +13,10 @@ import { usePwaInstall } from "@/app/PwaInstallProvider";
 import { useToast, useAppSession, useUser } from "@/app/providerContexts";
 import {
   getOutboxStatusSummary,
+  getStoredSessionToken,
   type OutboxStatusSummary,
+  type SessionState,
+  setStoredSessionToken,
   syncOutboxStatusEvent,
   flushPendingSync,
 } from "@/services/state";
@@ -1205,13 +1208,19 @@ export const usePins = (isPaused: boolean = false) => {
       }
 
       try {
+        const token = getStoredSessionToken();
         const response = await fetch("/api/session/profile", {
           method: "POST",
           credentials: "include",
           cache: "no-store",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: token
+            ? {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              }
+            : {
+                "Content-Type": "application/json",
+              },
           body: JSON.stringify({ user, pin }),
         });
 
@@ -1223,6 +1232,15 @@ export const usePins = (isPaused: boolean = false) => {
           throw new Error(
             await readApiErrorMessage(response, "Failed to verify PIN."),
           );
+        }
+
+        try {
+          const session = (await response.json()) as SessionState;
+          if (typeof session?.token === "string" && session.token.trim()) {
+            setStoredSessionToken(session.token);
+          }
+        } catch {
+          // Ignore optional JSON parse errors if response body was empty.
         }
 
         await refreshSession();

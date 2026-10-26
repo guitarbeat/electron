@@ -14,7 +14,11 @@ import React, {
 import type { User } from "@/shared/types";
 import { applyTheme, spacing } from "@/theme/tokens";
 import { Toast } from "@/components/ui";
-import { sessionInvalidationEvent } from "@/services/state";
+import {
+  getStoredSessionToken,
+  sessionInvalidationEvent,
+  setStoredSessionToken,
+} from "@/services/state";
 import type { SessionState } from "@/services/state";
 import { getErrorMessage, readApiErrorMessage } from "@/utils";
 import {
@@ -187,6 +191,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const sessionRefreshRef = useRef<Promise<void> | null>(null);
 
   const applySessionState = useCallback((nextState: SessionState) => {
+    if (typeof nextState.token === "string" && nextState.token.trim()) {
+      setStoredSessionToken(nextState.token);
+    } else if (nextState.token === null || !nextState.hasAccess) {
+      setStoredSessionToken(null);
+    }
     setHasAccess(nextState.hasAccess);
     setCurrentUserState(nextState.currentUser);
     setActiveUsersState(
@@ -201,6 +210,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const clearSessionState = useCallback(() => {
+    setStoredSessionToken(null);
     setHasAccess(false);
     setCurrentUserState(null);
     setActiveUsersState([]);
@@ -217,10 +227,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       try {
         let response: Response;
         try {
+          const token = getStoredSessionToken();
           response = await fetch("/api/session", {
             method: "GET",
             credentials: "include",
             cache: "no-store",
+            ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
           });
         } catch {
           // Keep an already-valid session during transient network failures.
@@ -257,10 +269,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         const url = user
           ? `/api/session/profile?user=${encodeURIComponent(user)}`
           : "/api/session/profile";
+        const token = getStoredSessionToken();
         const response = await fetch(url, {
           method: "DELETE",
           credentials: "include",
           cache: "no-store",
+          ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
         });
 
         if (!response.ok) {
@@ -320,13 +334,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
           return logoutUser(null);
         }
         try {
+          const token = getStoredSessionToken();
           const response = await fetch("/api/session/profile", {
             method: "POST",
             credentials: "include",
             cache: "no-store",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: token
+              ? {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                }
+              : {
+                  "Content-Type": "application/json",
+                },
             body: JSON.stringify({ user, ...(pin ? { pin } : {}) }),
           });
 

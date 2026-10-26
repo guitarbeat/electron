@@ -46,7 +46,10 @@ const getSessionSigningSecret = (): string => {
     return "test-session-signing-secret";
   }
   if (!ephemeralDefaultSecret) {
-    ephemeralDefaultSecret = randomBytes(32).toString("hex");
+    const fallbackSeed = clean(process.env.DATABASE_URL) || "electron-default-session-secret";
+    ephemeralDefaultSecret = createHmac("sha256", "electron-session-signing-key")
+      .update(fallbackSeed)
+      .digest("hex");
   }
   return ephemeralDefaultSecret;
 };
@@ -297,8 +300,22 @@ export const isSameOriginRequest = (req: Request): boolean => {
   const origin = req.headers.get("origin");
   if (!origin) return true;
   try {
+    const originUrl = new URL(origin);
     const requestUrl = new URL(req.url, "http://localhost");
-    return new URL(origin).origin === requestUrl.origin;
+    if (originUrl.origin === requestUrl.origin) {
+      return true;
+    }
+    const forwardedHost = (
+      req.headers.get("x-forwarded-host") ||
+      req.headers.get("host") ||
+      ""
+    )
+      .split(",")[0]
+      .trim();
+    if (forwardedHost && originUrl.host === forwardedHost) {
+      return true;
+    }
+    return false;
   } catch {
     return false;
   }

@@ -1387,6 +1387,36 @@ const parseJsonResponse = async <T>(response: Response): Promise<T> => {
   }
 };
 
+const SESSION_TOKEN_STORAGE_KEY = "movie_watch_session_token";
+
+export const getStoredSessionToken = (): string | null => {
+  if (!isBrowser()) {
+    return null;
+  }
+  try {
+    const token = window.localStorage.getItem(SESSION_TOKEN_STORAGE_KEY)?.trim();
+    return token || null;
+  } catch {
+    return null;
+  }
+};
+
+export const setStoredSessionToken = (token: string | null | undefined): void => {
+  if (!isBrowser()) {
+    return;
+  }
+  try {
+    const cleaned = token?.trim();
+    if (cleaned) {
+      window.localStorage.setItem(SESSION_TOKEN_STORAGE_KEY, cleaned);
+    } else {
+      window.localStorage.removeItem(SESSION_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    // Ignore storage quota / privacy mode errors.
+  }
+};
+
 const fetchStateFromServer = async <TScope extends StateScope>(
   scope: TScope,
   snapshot?: StoredSnapshot<StateScopeDataMap[TScope]> | null,
@@ -1394,6 +1424,10 @@ const fetchStateFromServer = async <TScope extends StateScope>(
   const headers = new Headers();
   if (snapshot?.version && !snapshot.degraded && !snapshot.warning) {
     headers.set("If-None-Match", `"${snapshot.version}"`);
+  }
+  const sessionToken = getStoredSessionToken();
+  if (sessionToken) {
+    headers.set("Authorization", `Bearer ${sessionToken}`);
   }
 
   return fetch(buildStateUrl(scope), {
@@ -1411,16 +1445,23 @@ const postMutation = async <TScope extends StateScope>(
     op: string;
     payload: unknown;
   },
-): Promise<Response> =>
-  fetch(buildStateUrl(scope, true), {
+): Promise<Response> => {
+  const sessionToken = getStoredSessionToken();
+  return fetch(buildStateUrl(scope, true), {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: sessionToken
+      ? {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken}`,
+        }
+      : {
+          "Content-Type": "application/json",
+        },
     credentials: "include",
     cache: "no-store",
     body: JSON.stringify(body),
   });
+};
 
 const readOptimisticSnapshot = <TScope extends StateScope>(
   scope: TScope,
