@@ -79,3 +79,28 @@ test("handles status presets (queue, both_watched, in_progress)", () => {
   assert.deepEqual(bothResult.map((m) => m.id), ["w1"]);
 });
 
+test("sorts movie list by date added, alphabetical, genre, and rating", () => {
+  const sample = [
+    { id: "m1", title: "Zodiac", createdAt: "2026-01-01", genre: "Crime, Mystery", imdbRating: "7.7", watchedBy: [] },
+    { id: "m2", title: "Alien", createdAt: "2026-01-03", genre: "Sci-Fi, Horror", imdbRating: "8.5", watchedBy: [] },
+    { id: "m3", title: "Babylon", createdAt: "2026-01-02", genre: "Comedy, Drama", imdbRating: "7.1", watchedBy: [] },
+  ] as Movie[];
+
+  // 1. Date added (most recent first: m2 -> m3 -> m1)
+  const byDate = filterMovieWall(sample, { ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: "recent" });
+  assert.deepEqual(byDate.map((m) => m.id), ["m2", "m3", "m1"]);
+
+  // 2. Alphabetical (Alien -> Babylon -> Zodiac)
+  const byAlpha = filterMovieWall(sample, { ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: "alpha" });
+  assert.deepEqual(byAlpha.map((m) => m.id), ["m2", "m3", "m1"].sort());
+  assert.deepEqual(byAlpha.map((m) => m.title), ["Alien", "Babylon", "Zodiac"]);
+
+  // 3. Genre (Comedy -> Crime -> Sci-Fi)
+  const byGenre = filterMovieWall(sample, { ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: "genre" });
+  assert.deepEqual(byGenre.map((m) => m.title), ["Babylon", "Zodiac", "Alien"]);
+
+  // 4. IMDb Rating (8.5 -> 7.7 -> 7.1)
+  const byRating = filterMovieWall(sample, { ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: "rating" });
+  assert.deepEqual(byRating.map((m) => m.id), ["m2", "m1", "m3"]);
+});
+

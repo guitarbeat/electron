@@ -4,6 +4,7 @@ export type MovieFormatFilter = "all" | "movie" | "series" | "youtube";
 export type MovieProgressFilter = "all" | "unwatched" | "watching" | "watched";
 export type MovieAddedByFilter = "all" | User;
 export type MovieStatusPreset = "all" | "queue" | "both_watched" | "in_progress";
+export type MovieSortOrder = "recent" | "alpha" | "genre" | "rating";
 
 export interface MovieWallFilterState {
   format: MovieFormatFilter;
@@ -13,6 +14,7 @@ export interface MovieWallFilterState {
   addedBy: MovieAddedByFilter;
   query?: string;
   statusPreset?: MovieStatusPreset;
+  sortBy?: MovieSortOrder;
 }
 
 export const DEFAULT_MOVIE_WALL_FILTERS: MovieWallFilterState = {
@@ -23,6 +25,7 @@ export const DEFAULT_MOVIE_WALL_FILTERS: MovieWallFilterState = {
   addedBy: "all",
   query: "",
   statusPreset: "all",
+  sortBy: "recent",
 };
 
 export const splitGenres = (genre?: string): string[] =>
@@ -100,11 +103,52 @@ export const getActiveFilterCount = (filters: MovieWallFilterState): number => {
   return count;
 };
 
+export const sortMovieList = (
+  movies: Movie[],
+  sortBy: MovieSortOrder = "recent",
+): Movie[] => {
+  const sorted = [...movies];
+  switch (sortBy) {
+    case "alpha":
+      return sorted.sort((a, b) =>
+        (a.title || "").localeCompare(b.title || "", undefined, {
+          sensitivity: "base",
+        }),
+      );
+    case "genre":
+      return sorted.sort((a, b) => {
+        const genreA = (a.genre || "").trim().toLowerCase();
+        const genreB = (b.genre || "").trim().toLowerCase();
+        if (genreA !== genreB) {
+          if (!genreA) return 1;
+          if (!genreB) return -1;
+          return genreA.localeCompare(genreB);
+        }
+        return (a.title || "").localeCompare(b.title || "", undefined, {
+          sensitivity: "base",
+        });
+      });
+    case "rating":
+      return sorted.sort((a, b) => {
+        const ratingA = parseFloat(a.imdbRating ?? "0") || 0;
+        const ratingB = parseFloat(b.imdbRating ?? "0") || 0;
+        return ratingB - ratingA;
+      });
+    case "recent":
+    default:
+      return sorted.sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+  }
+};
+
 export const filterMovieWall = (
   movies: Movie[],
   filters: MovieWallFilterState,
-): Movie[] =>
-  movies.filter((movie) => {
+): Movie[] => {
+  const filtered = movies.filter((movie) => {
     // 1. Text search query
     if (filters.query?.trim()) {
       const q = filters.query.trim().toLowerCase();
@@ -162,4 +206,7 @@ export const filterMovieWall = (
 
     return true;
   });
+
+  return sortMovieList(filtered, filters.sortBy ?? "recent");
+};
 
