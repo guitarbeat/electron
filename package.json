@@ -18,7 +18,7 @@
     "pre-commit": "node scripts/check-artifacts.js",
     "build": "npm run check-artifacts && npm run typecheck && npm run build --prefix apps/web && node scripts/prepare-dist.mjs",
     "build:bundle": "npm run build --prefix apps/web && node scripts/prepare-dist.mjs",
-    "typecheck:libs": "tsc --build --force",
+    "typecheck:libs": "tsc --build",
     "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
     "typecheck": "npm run typecheck:libs && npm run typecheck:api && npm run typecheck --prefix apps/web",
     "check-types": "npm run typecheck",

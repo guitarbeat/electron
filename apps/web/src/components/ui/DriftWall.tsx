@@ -278,6 +278,9 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   // 3. User Input & Scrolling (Wheel / Touch)
   // ============================================================================
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const handleWheel = (e: WheelEvent) => {
       if (isScrollBlockedElement(e.target)) return;
 
@@ -299,7 +302,10 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       if (e.touches.length === 1) {
         isDraggingTouchRef.current = true;
         touchLastYRef.current = e.touches[0].clientY;
-        touchStartPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchStartPosRef.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        };
         hasDraggedRef.current = false;
       }
     };
@@ -313,27 +319,44 @@ export const DriftWall: React.FC<DriftWallProps> = ({
       const dy = touchLastYRef.current - currentY;
       touchLastYRef.current = currentY;
 
-      if (Math.abs(currentY - touchStartPosRef.current.y) > 10 || Math.abs(currentX - touchStartPosRef.current.x) > 10) {
+      if (
+        Math.abs(currentY - touchStartPosRef.current.y) > 10 ||
+        Math.abs(currentX - touchStartPosRef.current.x) > 10
+      ) {
         hasDraggedRef.current = true;
       }
 
-      scrollVelocityRef.current += dy * 20;
+      scrollVelocityRef.current += dy * 3.5;
+      scrollVelocityRef.current = Math.max(
+        -1400,
+        Math.min(1400, scrollVelocityRef.current),
+      );
     };
 
     const handleTouchEnd = () => {
       isDraggingTouchRef.current = false;
+      if (hasDraggedRef.current) {
+        // Keep hasDragged active briefly to suppress any subsequent synthetic click
+        window.setTimeout(() => {
+          hasDraggedRef.current = false;
+        }, 200);
+      }
     };
 
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    container.addEventListener("wheel", handleWheel, { passive: true });
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    container.addEventListener("touchmove", handleTouchMove, { passive: true });
+    container.addEventListener("touchend", handleTouchEnd, { passive: true });
+    container.addEventListener("touchcancel", handleTouchEnd, { passive: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
     window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
 
     return () => {
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("wheel", handleWheel);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
+      container.removeEventListener("touchcancel", handleTouchEnd);
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("touchcancel", handleTouchEnd);
     };
@@ -593,7 +616,16 @@ export const DriftWall: React.FC<DriftWallProps> = ({
           }}
           onBlur={release}
           onClick={
-            onTileClick ? () => onTileClick(item, originalIndex) : undefined
+            onTileClick
+              ? (e) => {
+                  if (hasDraggedRef.current) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                  }
+                  onTileClick(item, originalIndex);
+                }
+              : undefined
           }
           onKeyDown={
             onTileClick
@@ -636,7 +668,14 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         setFocusedCoord({ c: colIndex, r });
       },
       onBlur: release,
-      onClick: () => onTileClick?.(tileItem, originalIndex),
+      onClick: (e: React.MouseEvent) => {
+        if (hasDraggedRef.current) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        onTileClick?.(tileItem, originalIndex);
+      },
     };
 
     if (tileItem.href) {

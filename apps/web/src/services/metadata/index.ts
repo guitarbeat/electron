@@ -223,6 +223,15 @@ export const searchOmdbMovies = async (
       ) {
         throw new Error("OMDb key was rejected");
       }
+      if (
+        response.status === 500 &&
+        json &&
+        typeof json === "object" &&
+        "code" in json &&
+        json.code === "omdb_config"
+      ) {
+        return [];
+      }
       throw new Error(`OMDb search failed with status ${response.status}`);
     }
 
@@ -455,6 +464,21 @@ export const fetchOmdbMetadata = async (
           json.code === "omdb_auth")
       ) {
         throw new Error("OMDb key was rejected");
+      }
+      if (
+        response.status === 500 &&
+        json &&
+        typeof json === "object" &&
+        "code" in json &&
+        json.code === "omdb_config"
+      ) {
+        const wiki = await fetchWikipediaPosterOrSummary(title, undefined, signal);
+        return {
+          title,
+          poster: wiki?.posterUrl ?? undefined,
+          plot: wiki?.plot ?? undefined,
+          type: type || "movie",
+        };
       }
       throw new Error(
         `OMDb metadata fetch failed with status ${response.status}`,

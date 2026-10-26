@@ -43,6 +43,8 @@ export const PlaceCard: React.FC<{
   return (
     <>
       <div
+        id={`place-card-${place.id}`}
+        data-place-id={place.id}
         className={`movie-item-container ${place.visitedAt ? "movie-item-container--watched" : ""}`}
       >
         <CardTiltShell>
