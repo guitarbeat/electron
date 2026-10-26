@@ -236,7 +236,7 @@
   position: absolute;
   top: 1rem;
   left: 1rem;
-  z-index: 85;
+  z-index: 500;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -248,6 +248,8 @@
 .movie-wall-filters__trigger,
 .movie-wall-filters__quick-clear,
 .movie-wall-sort__trigger {
+  position: relative;
+  z-index: 10;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -274,6 +276,7 @@
 
 .movie-wall-sort {
   position: relative;
+  z-index: 10;
   display: inline-flex;
 }
 
@@ -309,7 +312,7 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   left: 0;
-  z-index: 100;
+  z-index: 600;
   min-width: 14rem;
   padding: 0.45rem;
   border-radius: 0.85rem;
@@ -522,7 +525,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  z-index: 100;
+  z-index: 600;
 }
 
 .movie-wall-filters__heading {
