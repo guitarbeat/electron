@@ -29,11 +29,7 @@ import {
   ViewportFrame,
   Vignette,
 } from "@/components/ui";
-import type { TogglePanel } from "@/app/AppWorkspaceShell";
-import { lazyWithRetry } from "@/utils/lazyWithRetry";
-const AppWorkspaceShell = lazyWithRetry(
-  () => import("@/app/AppWorkspaceShell"),
-);
+import AppWorkspaceShell, { type TogglePanel } from "@/app/AppWorkspaceShell";
 import {
   isLibraryWorkspaceTab,
   libraryWorkspaceStackClass,

@@ -190,7 +190,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   }, [selectedMovie, hasActiveFilters, filteredMovies, closeMovieDetails]);
 
   const unifiedCards = React.useMemo(() => {
-    const renderMovie = (movie: Movie) => {
+    const renderMovie = (movie: Movie, index: number) => {
       const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
       const element = (
         <MovieCard
@@ -208,6 +208,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           onDelete={() => onDeleteRequest(movie)}
           isHighlighted={successMovieId === movie.id}
           onOpenDetails={openMovieDetails}
+          priorityPoster={index < (isMobile ? 6 : 8)}
         />
       );
       return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);

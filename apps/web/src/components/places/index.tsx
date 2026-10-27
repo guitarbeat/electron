@@ -29,6 +29,7 @@ export const PlaceCard: React.FC<{
     updates: { name: string; imageUrl?: string },
   ) => Promise<void>;
   isMobile: boolean;
+  priorityPoster?: boolean;
 }> = ({
   place,
   canEdit,
@@ -37,6 +38,7 @@ export const PlaceCard: React.FC<{
   onMarkUnvisited,
   onEdit,
   isMobile,
+  priorityPoster = false,
 }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -59,6 +61,7 @@ export const PlaceCard: React.FC<{
                 title={place.name}
                 posterUrl={place.imageUrl}
                 id={place.id}
+                priority={priorityPoster}
               />
               <button
                 type="button"
@@ -284,7 +287,7 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({
             className="watchlist-content places-grid"
             minColumnWidth={PLACES_GRID_MIN_COL}
           >
-            {allPlaces.map((place: Place) => (
+            {allPlaces.map((place: Place, index: number) => (
               <div key={place.id}>
                 <PlaceCard
                   place={place}
@@ -294,6 +297,7 @@ export const PlacesList: React.FC<{ isPaused?: boolean }> = ({
                   onDelete={setPlaceToDelete}
                   onEdit={updatePlace}
                   isMobile={isMobile}
+                  priorityPoster={index < (isMobile ? 6 : 8)}
                 />
               </div>
             ))}
