@@ -30,16 +30,6 @@
     "test:serverless-output": "node scripts/verify-vercel-output.mjs"
   },
   "private": true,
-  "pnpm": {
-    "autoInstallPeers": false,
-    "strictPeerDependencies": false,
-    "overrides": {
-      "react": "19.1.0",
-      "react-dom": "19.1.0",
-      "@types/react": "19.1.0",
-      "@types/react-dom": "19.1.0"
-    }
-  },
   "overrides": {
     "react": "19.1.0",
     "react-dom": "19.1.0",

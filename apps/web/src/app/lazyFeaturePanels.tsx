@@ -1,10 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
+import LibraryWorkspace from "@/components/library/LibraryWorkspace";
 
 export { lazyWithRetry };
 
-export const LibraryWorkspacePanel = lazyWithRetry(
-  () => import("@/components/library/LibraryWorkspace"),
-);
+export const LibraryWorkspacePanel = LibraryWorkspace;
 
 export const MessageBoardPanel = lazyWithRetry(() =>
   import("@/components/messages").then((m) => ({ default: m.MessageBoard })),

@@ -17,9 +17,9 @@ export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
   }
 };
 
-/** Warm the workspace shell chunk (header + bento layout). */
+/** Workspace shell is statically bundled in App.tsx for instant paint. */
 export const preloadAppWorkspaceShell = (): Promise<unknown> =>
-  import("@/app/AppWorkspaceShell");
+  Promise.resolve();
 
 /**
  * Warm modules and critical API endpoints for first paint.

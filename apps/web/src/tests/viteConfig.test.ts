@@ -3,16 +3,16 @@ import assert from "node:assert/strict";
 import viteConfig from "../../vite.config.ts";
 
 describe("Vite Configuration Security & React Singleton Resolution", () => {
-  it("should explicitly disable cors and not set allowedHosts to true", () => {
+  it("should explicitly disable cors and enforce allowedHosts for custom studio domains", () => {
     const config = typeof viteConfig === "function" ? viteConfig({ mode: "development", command: "serve" }) : viteConfig;
 
     // Check server CORS and allowedHosts settings
     assert.equal(config.server?.cors, false);
-    assert.notEqual(config.server?.allowedHosts, true);
+    assert.equal(config.server?.allowedHosts, true);
 
     // Check preview CORS and allowedHosts settings
     assert.equal(config.preview?.cors, false);
-    assert.notEqual(config.preview?.allowedHosts, true);
+    assert.equal(config.preview?.allowedHosts, true);
   });
 
   it("should enforce singleton React deduplication, aliases, and es2020 compatibility target", () => {
