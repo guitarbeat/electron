@@ -21,10 +21,11 @@
     <meta name="twitter:image" content="/opengraph.jpg" />
     <title>Immersive Workspace Applet</title>
     <style>
-      body{background:#07091a;margin:0;}
-      #root:empty{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;}
-      #root:empty::after{content:'';width:36px;height:36px;border:3px solid rgba(244,114,182,0.25);border-top-color:#f472b6;border-radius:50%;animation:spin .7s linear infinite;}
-      @keyframes spin{to{transform:rotate(360deg)}}
+      body{background:#07091a;margin:0;overflow:hidden;}
+      #root:empty{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;background:radial-gradient(circle at 50% 50%,rgba(56,189,248,0.08) 0%,rgba(244,114,182,0.05) 35%,transparent 70%),#07091a;}
+      #root:empty::before{content:'AARON  +  ELECTRA';display:flex;align-items:center;justify-content:center;width:min(21.5rem,calc(100vw - 2.5rem));height:13.5rem;box-sizing:border-box;border:7px solid #999999;border-radius:24px;background:rgba(9,14,28,0.88);box-shadow:0 24px 60px rgba(0,0,0,0.75),inset 0 1px 0 rgba(255,255,255,0.18);color:#e0f2fe;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;animation:bootPulse 1.2s ease-in-out infinite alternate;}
+      @media(max-width:768px){#root:empty::before{width:min(18.5rem,calc(100vw - 2rem));height:12.25rem;border-width:5px;border-radius:20px;}}
+      @keyframes bootPulse{from{opacity:0.78;transform:scale(0.992)}to{opacity:1;transform:scale(1)}}
     </style>
     <link rel="dns-prefetch" href="https://www.omdbapi.com" />
     <link rel="dns-prefetch" href="https://api.tvmaze.com" />

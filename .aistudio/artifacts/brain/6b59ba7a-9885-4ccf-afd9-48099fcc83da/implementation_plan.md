@@ -1,105 +1,107 @@
-# High-Impact Interaction & Search Bug Remediation Plan
+# Frost-Clear Command Bar & Expanding Difference-Frame Entrance Sequence
 
-Resolves critical touch and pointer interaction bugs in the cinema DriftWall (touch-drag scrolling with drag-threshold tap protection, event listener scoping, and double-event suppression), fixes the broken search reveal navigation for saved places, adds resilient offline and zero-config fallbacks for movie search, and streamlines workspace typecheck performance.
+Elevate the Unified Retro Y2K Command Bar above the top frost glow so controls stay razor-sharp, upgrade the initial loading experience with an Aaron & Electra retro arcade center badge, and choreograph the `mix-blend-mode: difference` border frame to wrap the center loading badge at launch before expanding outward to the viewport edges once the collection is ready.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Based on your clarifications, our top execution priority is eliminating high-impact interaction and search navigation bugs, with mobile touch configured for smooth drag-to-scroll and swipe-tap protection.
+> All core design and choreography choices have been confirmed from your answers:
 
-- **Confirmed Decision 1 (Remediation Scope)**: Target all high-impact interaction and search navigation bugs first, specifically DriftWall touch mechanics, event scoping, double-click suppression, place search navigation, and search fallback resiliency.
-- **Confirmed Decision 2 (Mobile Touch Mechanics)**: Retain continuous serpentine auto-drift on desktop while enabling natural touch-drag velocity scrolling with strict drag-distance threshold protection ($>10\text{px}$) on mobile to completely prevent accidental movie modal popups when swiping.
-- **Confirmed Decision 3 (Scoped Pointer & Gesture Boundaries)**: Confine all wheel and touch-event listeners to the `DriftWall` container element rather than `window`, preventing the movie canvas from hijacking scrolling across modals, navigation rails, and message boards.
-- **Confirmed Decision 4 (Place Card Search Navigation)**: Add canonical `id="place-card-${place.id}"` and `data-place-id` DOM attributes to `PlaceCard` so `LibrarySearch` autocomplete instantly scrolls to and highlights the target place.
+- **Difference Border Origin & Choreography**: The `mix-blend-mode: difference` border frame starts tightly wrapped around the central loading badge in the middle of the screen, then expands smoothly outward to the full viewport edges.
+- **Retro Arcade Loading Badge**: Inside the initial center frame, Aaron and Electra's pixel/cutout avatars appear side-by-side with a retro Y2K arcade progress indicator and status readout while the poster wall prepares in the background.
+- **Trigger Timing**: The outward frame expansion and badge dissolve trigger as soon as the app shell and poster collection are ready (with a brief minimum beat on cached loads so the expansion transition always feels intentional and smooth).
+- **Command Bar Above Frost Glow**: The top frost vignette blurs only the drifting poster wall beneath it, while the Unified Y2K Frosted Capsule Command Bar and bottom profile dock sit on a higher elevation plane completely free of edge-blur distortion.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Hardens the multi-user cinema, place curation, and multimedia workspace by eliminating frustrating touch mis-taps, fixing broken search navigation, and preventing build verification timeouts.
-- **Target Audience / Persona**: Aaron and Electra using the shared workspace on smartphones, tablets, laptops, and living-room smart TVs.
-- **Key Value**: Swiping the movie wall on mobile feels fluid and never accidentally pops open cards; clicking a search result for a saved place reliably navigates to it; movie search remains resilient even without an OMDb API key; and builds compile cleanly without gateway timeouts.
+- **What It Does**:
+  1. **Frost-Clear Command Bar Layering**: Restructures the viewport elevation stack so the edge frost glow (`Vignette`) applies strictly to the drifting poster wall canvas (`z-index: 15`), while the Unified Y2K Command Bar (`z-index: 60`) and quick profile dock (`z-index: 65`) float crisp and unblurred above it.
+  2. **Aaron & Electra Retro Arcade Loading Screen**: Replaces the generic loading spinner and bare skeleton tiles with a cohesive Y2K arcade loading stage featuring Aaron and Electra's avatars, a dual-player ready indicator, a segmented phosphor progress bar, and ambient shimmering poster columns.
+  3. **Expanding `mix-blend-mode: difference` Frame Sequence**: Turns the signature inverted viewport border into a living entrance animation—starting as the glowing `mix-blend-mode: difference` border around the center Aaron & Electra arcade badge during load, then sweeping outward across the poster wall to lock into the full-viewport frame once ready.
+- **Target Audience / Persona**: Aaron and Electra opening their shared movie & place collection on desktop or mobile.
+- **Key Value**: Eliminates the washed-out blur over the top command bar and transforms initial site load into a playful, custom couple's arcade intro.
 
 ---
 
 ## 2. User Experience & Visual Design
 
 - **Key User Flows**:
-  1. **Mobile Touch Wall Browsing**: On touchscreens, the user touches and drags vertically to flick through drifting cards. If the touch travel exceeds $10\text{px}$, tap gestures are suppressed so lifting a finger never accidentally opens a modal. Tapping directly without dragging ($<10\text{px}$) cleanly opens the Movie Details sheet.
-  2. **Isolated Scrolling & Modal Isolation**: When a modal or side drawer is open, or when scrolling other tabs (Messages, Places list, Spin wheel), the DriftWall ignores external scroll/wheel inputs completely.
-  3. **Instant Search-to-Place Navigation**: Typing a place name in the search bar (e.g. "The Cozy Bookstore") displays it in the autocomplete dropdown. Selecting it smoothly centers the exact place card in the viewport and triggers a brief sheen highlight.
-  4. **Resilient Movie Search Fallback**: When searching for movies without an configured `OMDB_API_KEY`, the search seamlessly combines TVMaze and Wikipedia REST API summaries without presenting hard 500 server error toasts.
+  1. **Pre-Mount & Initial Load (Center Badge Framed)**:
+     - Immediately on page load, the dark midnight canvas (`#07091a`) displays a centered Y2K arcade loading badge (`~320px × 208px` on desktop, `~276px × 192px` on mobile).
+     - The `mix-blend-mode: difference` border (`#999999`, `7px` desktop / `5px` mobile, `24px` corner radius) wraps tightly around the perimeter of this center badge.
+     - Inside the badge, Aaron and Electra's avatars sit side-by-side above a `"LOADING COLLECTION"` readout and a segmented cyan/pink arcade progress bar while softly shimmering poster silhouettes drift behind the frost vignette.
+  2. **Outward Difference-Border Expansion (Ready Reveal)**:
+     - As soon as the app shell and collection data are ready, the center arcade badge flashes a brief `"READY"` highlight and scales/fades out (`scale(1.06)`, `opacity: 0` over `280ms`).
+     - Simultaneously, the `mix-blend-mode: difference` border expands outward from the center badge geometry to the full viewport edges (`100vw × 100dvh`, `20px` corner radius) over `650ms` using an expressive spring-out curve (`cubic-bezier(0.16, 1, 0.3, 1)`).
+     - As the thick difference border travels across the emerging poster tiles and top command bar, it dynamically inverts the colors beneath it before settling into the outer viewport frame.
+  3. **Active Browsing Above the Frost Glow**:
+     - Once settled, the drifting poster wall glides underneath the top/bottom/side frost glow (`Vignette`), while the Unified Y2K Frosted Capsule Command Bar at the top remains crystal-clear with sharp typography, high-contrast sky-blue accents, and unblurred filter/sort popovers.
+
 - **Visual Identity & Theme**:
-  - *Aesthetic Direction*: Retains the signature cyber-retro obsidian workspace aesthetic (`#050814` canvas, CRT entrance scanline, cyan `#00f0ff` and amber highlights).
-  - *Touch Target Compliance*: All interactive hitboxes on mobile cards and controls adhere to $\ge 44 \times 44\text{px}$ touch targets.
+  - *Aesthetic Direction*: Y2K Couple's Arcade & Tactile Frosted Glass.
+  - *Color Palette & Mood*:
+    - `--background`: `#07091a` (deep midnight arcade canvas)
+    - `--surface-dock`: `rgba(9, 14, 28, 0.86)` with `backdrop-filter: blur(22px) saturate(180%)`
+    - `--primary` / `--accent`: `#38bdf8` (luminous sky cyan) paired with `#f472b6` (arcade rose) for dual-partner avatar accents
+    - `--frame-color`: `#999999` with `mix-blend-mode: difference`
+  - *Typography & Hierarchy*:
+    - Arcade badge header & status: `Plus Jakarta Sans` / `JetBrains Mono` (`0.75rem`, `700` weight, `0.08em` tracking, tabular numerals).
+    - Command bar input & controls: `0.9rem` medium-semibold (`550–700`) with crisp contrast above the frost layer.
+
 - **Interactive Feedback & Motion**:
-  - Smooth kinetic deceleration curves ($e^{-dt / \tau}$) for touch scrolling with natural momentum that gently blends back into the serpentine drift when released.
-  - Single-fire modal transitions: Click events are deduplicated so modal mount animations trigger exactly once per user action.
+  - Outward frame expansion animates smoothly from center badge inset to `inset: 0` using hardware-accelerated geometry/clip-path transitions.
+  - Users with `prefers-reduced-motion: reduce` enabled bypass the expansion sweep and see the full-viewport frame immediately.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Container-Scoped Event Listeners & Drag Guard in DriftWall**
-  - *Chosen Approach*: Bind `wheel`, `touchstart`, `touchmove`, and `touchend` directly to `containerRef.current` (with `hasDraggedRef` tracking displacement $>10\text{px}$), and verify `!hasDraggedRef.current` before dispatching `onTileClick`.
-  - *Why*: Eliminates window-level scroll hijacking and prevents accidental modal openings when swiping on mobile.
-  - *Alternatives Considered*: Disabling drift entirely on mobile was rejected because users appreciate the kinetic ambient motion when idling.
-- **Decision 2: Place Card DOM Identity & Search Pinpointing**
-  - *Chosen Approach*: Assign `id={`place-card-${place.id}`}` and `data-place-id={place.id}` to `PlaceCard` in `apps/web/src/components/places/index.tsx`.
-  - *Why*: Directly satisfies `LibrarySearch`'s `revealLibraryItem` query contract (`document.getElementById("place-card-" + selection.placeId)`).
-- **Decision 3: Single-Origin Click Dispatching in MovieCard**
-  - *Chosen Approach*: Let `MovieCard` stop event propagation or delegate tile activation cleanly through `onTileClick` without double-firing internal poster click and external custom-tile click handlers.
-  - *Why*: Fixes redundant state updates and animation glitches during modal transitions.
-- **Decision 4: Typecheck Optimization in Root Build Script**
-  - *Chosen Approach*: Adjust `package.json` build scripts so incremental typechecks avoid redundant `--force` rebuilds of unchanged library references during standard app compilation.
-  - *Why*: Prevents Cloud Run / Vite gateway timeouts (504s) during automated verification.
+- **Decision 1: Dissolving Stacking-Context Traps to Elevate the Command Bar Above `Vignette`**
+  - *Chosen Approach*: Lower the `Vignette` edge-blur layer (`z-index: 15`) and inner viewport shadow so they sit directly above the drifting poster wall (`z-index: 1`), while removing the intermediate `z-index: 1` stacking-context lock on the workspace containers and positioning the Unified Y2K Command Bar at `z-index: 60`.
+  - *Why*: Previously, the workspace wrapper created a root stacking context at `z-index: 1`, trapping every child inside it (even those with `z-index: 520`) underneath the root `Vignette` (`z-index: 50`). Separating the poster wall plane (`z-index: 1`) from the HUD plane (`z-index: 60`) lets the top frost glow blur the scrolling posters behind the search bar while keeping the search bar itself 100% sharp.
+  - *Alternatives Considered*: Reducing the blur strength of `.vignette-top` was rejected because the strong edge frost looks great on the scrolling posters; the command bar simply needed to sit above that blur plane.
+
+- **Decision 2: Unified Center-to-Edge `ViewportFrame` State Machine**
+  - *Chosen Approach*: Enhance `ViewportFrame` (`FrameEffect`) with an optional `expanded` / entrance state driven by workspace readiness while keeping its default static render markup unchanged when no entrance props are active.
+  - *Why*: Using the actual `ViewportFrame` element to frame the center Aaron & Electra loading badge and then expand to the viewport perimeter guarantees a seamless single-element morph with authentic `mix-blend-mode: difference` inversion across the entire reveal, while preserving backward compatibility with all existing unit tests.
 
 ---
 
-## 4. Technical Architecture & Data Strategy
+## 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
 - **Architecture & Component Diagram**:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Library Workspace & Search Layer                     │
-│  ┌───────────────────────┐         ┌─────────────────────────────────┐  │
-│  │     CurvedInput       │         │        LibrarySearch            │  │
-│  │ (Search Query String) │ ──────► │ (Autocomplete + Intent Routing) │  │
-│  └───────────────────────┘         └────────────────┬────────────────┘  │
-│                                                     │                   │
-│                        ┌────────────────────────────┴─────────────────┐ │
-│                        ▼                                              ▼ │
-│          ┌───────────────────────────┐                  ┌─────────────┴─┐
-│          │    revealLibraryItem()    │                  │  OMDb/TVMaze  │
-│          │ • #place-card-{id} [FIX]  │                  │ Proxy & Fall- │
-│          │ • Movie Details Hit-Area  │                  │ back Adapter  │
-│          └─────────────┬─────────────┘                  └───────────────┘
-└────────────────────────┼────────────────────────────────────────────────┘
-                         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                  Cinema & DriftWall Interaction Canvas                  │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │ containerRef (Scoped wheel / touch / pointer event listeners)     │  │
-│  │                                                                   │  │
-│  │  • touchStartPos ──► touchMove ──► hasDragged (dx/dy > 10px)      │  │
-│  │  • momentum scroll decay ──► blend into serpentine drift offset   │  │
-│  │  • touchend / click ──► guarded if (hasDragged) : SUPPRESS CLICK   │  │
-│  │                                                                   │  │
-│  │  ┌─────────────────────────┐     ┌─────────────────────────────┐  │  │
-│  │  │   drift-wall__tile      │     │  MovieCard / PlaceCard      │  │  │
-│  │  │   • data-tile-id        │     │  • id="place-card-{id}"     │  │  │
-│  │  │   • Single-fire onClick │     │  • stopPropagation on tap   │  │  │
-│  │  └─────────────────────────┘     └─────────────────────────────┘  │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                           Root App Shell (z-stack)                        │
+├───────────────────────────────────────────────────────────────────────────┤
+│                                                                           │
+│  [z-index: 80]  ViewportFrame (mix-blend-mode: difference)                │
+│                 ├─ Load State: Wraps Center Arcade Badge (21rem × 13.5rem)│
+│                 └─ Ready State: Expands outward to Full Viewport (inset:0)│
+│                                                                           │
+│  [z-index: 75]  Center Arcade Loading Badge (Aaron & Electra Avatars)     │
+│                 └─ Dissolves & scales out as ViewportFrame expands        │
+│                                                                           │
+│  [z-index: 60]  Unified Y2K Command Bar & Profile Dock (Above Frost!)     │
+│                 ├─ Search Capsule + Add Movie / Place                     │
+│                 └─ Docked Filter Popover + Sort Menu                      │
+│                                                                           │
+│  [z-index: 15]  Vignette Frost Glow (Top / Bottom / Left / Right)         │
+│                 └─ Blurs only the poster wall drifting underneath         │
+│                                                                           │
+│  [z-index: 1]   DriftWall Poster Canvas                                   │
+│                 └─ Ambient scrolling movie, suggestion, and place cards   │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
 - **Data Model & State**:
-  - **Touch & Gesture State**: Tracks `{ touchStartX, touchStartY, hasDragged, lastTouchY, scrollVelocity }` scoped strictly to the wall container ref.
-  - **Tile Identity Mapping**: Explicit DOM `id` attributes assigned to place cards to mirror movie card data-attribute conventions.
+  - `isEntranceReady`: Boolean state derived from workspace mount + collection readiness (with a short minimum initial frame hold of `~420ms` so the center badge frame is visibly established before expanding outward).
+  - `FrameStage`: `'compact' | 'expanding' | 'expanded'` state controlling the `.viewport-frame` CSS classes (`viewport-frame--compact`, `viewport-frame--expanding`) so the frame transitions cleanly from the center badge dimensions (`width: min(21rem, 86vw); height: 13.25rem`) to full viewport (`width: 100vw; height: 100dvh; inset: 0`).
+
 - **Interactive Component & State Mapping**:
-  - **`DriftWall.tsx`**: Attaches listeners to `containerRef.current` with passive flags; scales touch delta smoothly (`dy * 4` instead of `dy * 20`); blocks tile click events when `hasDraggedRef.current === true`.
-  - **`MovieSectionBody.tsx` & `MovieCard.tsx`**: Harmonizes tile-level clicks so opening details executes once per user action.
-  - **`places/index.tsx`**: Adds `id={`place-card-${place.id}`}` to enable search reveal navigation.
-  - **`package.json`**: Optimizes `npm run build` and `typecheck` pipelines to prevent compilation timeouts.
+  - **Initial HTML Shell (`#root:empty`)**: Displays a matching centered arcade frame silhouette so there is zero jarring flash before React mounts.
+  - **Center Arcade Loading Badge**: Renders Aaron (`/aaron-avatar.png`) and Electra (`/electra-button.png`) avatars, partner tags, and a segmented arcade progress bar inside the exact bounding box framed by `.viewport-frame--compact`.
+  - **Outward Expansion Trigger**: When `collectionState !== "loading"` (or after fallback timeout so a slow network never traps the user), transitions `.viewport-frame` to full screen while fading out the center badge and sliding in the frost-clear Y2K Command Bar.

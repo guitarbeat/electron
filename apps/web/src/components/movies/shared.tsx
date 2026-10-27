@@ -24,6 +24,7 @@ import {
   StremioButton,
   YoutubeButton,
   CardActionButton,
+  UserAvatar,
   PageFlip,
   type PageFlipLeaf,
   type BentoSortChipConfig,
@@ -412,7 +413,7 @@ interface MetadataHeaderProps {
 export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
   movie,
   metadataItems,
-  isWatchedByCurrentUser,
+  isWatchedByCurrentUser: _isWatchedByCurrentUser,
   isUpdatingWatchStatus,
   onToggleWatched,
   onToggleUserWatched,
@@ -485,42 +486,86 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         aria-label="Movie actions"
         style={{ flexWrap: "wrap" }}
       >
+        <div
+          className="movie-details-modal__avatar-toggles"
+          role="group"
+          aria-label="Mark watch status for Aaron and Electra"
+        >
+          {USERS.map((user) => {
+            const isWatched = movie.watchedBy.includes(user);
+            const isWatching = movie.watchingBy?.includes(user) ?? false;
+            const status = isWatched
+              ? "Watched"
+              : isWatching
+                ? "Watching"
+                : "Not watched";
+            const nextStatus = isWatched
+              ? "not watched"
+              : isWatching
+                ? "watched"
+                : "watching";
+            const stateClass = isWatched
+              ? "is-watched"
+              : isWatching
+                ? "is-watching"
+                : "is-unwatched";
+
+            const handleAvatarToggle = () => {
+              if (onToggleUserWatched) {
+                void onToggleUserWatched(user);
+                return;
+              }
+              if (onToggleWatched && (activeUsers.includes(user) || activeUsers.length === 0)) {
+                void onToggleWatched();
+                return;
+              }
+              document
+                .querySelector<HTMLButtonElement>(
+                  `.profile-switcher-btn--${user.toLowerCase()}`,
+                )
+                ?.click();
+            };
+
+            return (
+              <button
+                key={user}
+                type="button"
+                className={`flipbook-avatar-btn flipbook-avatar-btn--${user.toLowerCase()} ${stateClass}`}
+                onClick={handleAvatarToggle}
+                disabled={isUpdatingWatchStatus}
+                aria-pressed={isWatched || isWatching}
+                aria-label={`${user}: ${status}. Tap to mark as ${nextStatus}.`}
+                title={`${user}: ${status} (Tap to cycle to ${nextStatus})`}
+              >
+                <span className="flipbook-avatar-btn__face">
+                  <UserAvatar user={user} />
+                  <span
+                    className="flipbook-avatar-btn__badge"
+                    aria-hidden="true"
+                  >
+                    {isWatched ? (
+                      <CheckIcon size={10} />
+                    ) : isWatching ? (
+                      <PlayIcon size={10} />
+                    ) : (
+                      "+"
+                    )}
+                  </span>
+                </span>
+                <span className="flipbook-avatar-btn__info">
+                  <span className="flipbook-avatar-btn__name">{user}</span>
+                  <span className="flipbook-avatar-btn__status">{status}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {movie.mediaType === "youtube" && movie.youtubeUrl ? (
           <YoutubeButton url={movie.youtubeUrl} movieTitle={movie.title} variant="full" />
         ) : (
           <StremioButton movie={movie} variant="full" />
         )}
-
-        {activeUsers.length > 1 && onToggleUserWatched ? (
-          activeUsers.map((user) => {
-            const isWatched = movie.watchedBy.includes(user);
-            const isWatching = movie.watchingBy?.includes(user) ?? false;
-            const status = isWatched ? "Watched" : isWatching ? "Watching" : "Not watched";
-            return (
-              <CardActionButton
-                key={user}
-                variant={isWatched || isWatching ? "primary" : "outline"}
-                onClick={() => void onToggleUserWatched(user)}
-                aria-label={`${user}: ${status}. Select to move to ${isWatched ? "not watched" : isWatching ? "watched" : "watching"}.`}
-                disabled={isUpdatingWatchStatus}
-                leftIcon={isWatched ? <CheckIcon /> : <PlayIcon />}
-                style={{ flex: 1, minWidth: "140px", whiteSpace: "nowrap" }}
-              >
-                {user}: {status}
-              </CardActionButton>
-            );
-          })
-        ) : onToggleWatched ? (
-          <CardActionButton
-            variant={isWatchedByCurrentUser ? "primary" : "outline"}
-            onClick={() => void onToggleWatched()}
-            aria-pressed={isWatchedByCurrentUser}
-            disabled={isUpdatingWatchStatus}
-            leftIcon={isWatchedByCurrentUser ? <CheckIcon /> : <PlayIcon />}
-          >
-            {isWatchedByCurrentUser ? "Watched" : "Mark as Watched"}
-          </CardActionButton>
-        ) : null}
 
         {onEdit && (
           <CardActionButton

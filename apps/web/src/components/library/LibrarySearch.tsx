@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { PlusIcon } from "@/common/Icons";
 import { useUser, useToast } from "@/app/providerContexts";
@@ -24,7 +25,7 @@ import {
 } from "@/components/movies";
 
 import { MovieRecommendationComposer } from "@/components/movies";
-import { WorkspaceSearchActions, CurvedInput } from "@/components/ui";
+import { WorkspaceSearchActions } from "@/components/ui";
 import {
   WorkspaceAutocompleteCopy,
   WorkspaceAutocompleteGroup,
@@ -58,6 +59,10 @@ export interface LibrarySearchHandle {
   focusSearchInput: () => void;
 }
 
+export interface LibrarySearchProps {
+  filterSlot?: React.ReactNode;
+}
+
 const revealLibraryItem = (selection: LibrarySelection) => {
   if (selection?.kind === "library-movie") {
     const movieElement = document.querySelector(
@@ -83,8 +88,8 @@ const revealLibraryItem = (selection: LibrarySelection) => {
   }
 };
 
-const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
-  (_, forwardedRef) => {
+const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
+  ({ filterSlot }, forwardedRef) => {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const isSearchActive = isFocused || query.length > 0;
@@ -553,116 +558,226 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
 
     return (
       <>
-        <div className="workspace-search__stage curved-library-search">
+        <div className="workspace-search__stage curved-library-search y2k-command-dock">
           <div
             ref={autocompleteRegionRef}
-            className={`curved-library-search__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}`}
+            className={`curved-library-search__boundary y2k-command-dock__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}${isFocused ? " is-focused" : ""}`}
             onFocusCapture={onFocusCapture}
             onBlurCapture={onBlurCapture}
           >
-            <div className="curved-library-search__row">
-              <div className="curved-library-search__input-wrap">
-                <CurvedInput
-                  ref={inputRef}
-                  value={query}
-                  onChange={(nextValue) => {
-                    setQuery(nextValue);
-                    setSelection(null);
-                    setActionError(null);
-                    setShowRecommend(false);
-                  }}
-                  onSubmit={() => {
-                    if (isBusy || !hasQuery) return;
-                    clearFocusBoundaryCheck();
-                    hideAutocomplete();
-                    inputRef.current?.blur();
-                    handlePrimary();
-                  }}
-                  buttonText={primaryLabel}
-                  isBusy={isBusy}
-                  isLoading={isLoading}
-                  buttonDisabled={!hasQuery}
-                  placeholder="Add a movie, show, or place"
-                  aria-label="Search movies, shows, and places to add"
-                  combobox={{
-                    expanded: isOpen,
-                    controlsId: listId,
-                    activeDescendantId:
+            <div className="y2k-command-dock__bar">
+              <form
+                className="y2k-search-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (isBusy || !hasQuery) return;
+                  clearFocusBoundaryCheck();
+                  hideAutocomplete();
+                  inputRef.current?.blur();
+                  handlePrimary();
+                }}
+              >
+                <div
+                  className={`y2k-search-capsule${isFocused ? " is-focused" : ""}${isLoading || isBusy ? " is-loading" : ""}`}
+                >
+                  <span
+                    className="y2k-search-capsule__icon"
+                    aria-hidden="true"
+                  >
+                    {isLoading || isBusy ? (
+                      <Sparkles size={15} strokeWidth={2.3} />
+                    ) : (
+                      <Search size={15} strokeWidth={2.4} />
+                    )}
+                  </span>
+
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="y2k-search-capsule__input"
+                    value={query}
+                    onChange={(event) => {
+                      setQuery(event.target.value);
+                      setSelection(null);
+                      setActionError(null);
+                      setShowRecommend(false);
+                    }}
+                    placeholder="Add a movie, show, or place..."
+                    aria-label="Search movies, shows, and places to add"
+                    role="combobox"
+                    aria-expanded={isOpen}
+                    aria-controls={listId}
+                    aria-activedescendant={
                       isOpen && activeIndex >= 0
                         ? `${listId}-option-${activeIndex}`
-                        : undefined,
-                  }}
-                  onFocus={() => {
-                    setIsFocused(true);
-                    if (
-                      trimmed.length >= 2 &&
-                      !(
-                        selection?.kind === "movie-result" &&
-                        normalizeLibraryQuery(selection.title) === normalized
-                      )
-                    ) {
-                      setIsMounted(true);
-                      setIsOpen(true);
+                        : undefined
                     }
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.nativeEvent.isComposing) return;
-                    if (event.key === "ArrowDown") {
-                      if (rows.length === 0) return;
-                      event.preventDefault();
-                      setIsOpen(true);
-                      moveActiveIndex("next", rows.length);
-                      return;
-                    }
-                    if (event.key === "ArrowUp") {
-                      if (rows.length === 0) return;
-                      event.preventDefault();
-                      setIsOpen(true);
-                      moveActiveIndex("previous", rows.length);
-                      return;
-                    }
-                    if (event.key === "Escape") {
-                      event.preventDefault();
-                      hideAutocomplete();
-                      clearQuery();
-                      inputRef.current?.blur();
-                      return;
-                    }
-                    if (event.key === "Enter" && isOpen) {
-                      const selectedIndex = getEnterSelectionIndex(rows.length);
-                      if (selectedIndex >= 0 && rows[selectedIndex]) {
-                        event.preventDefault();
-                        selectRow(rows[selectedIndex]);
+                    aria-autocomplete="list"
+                    autoComplete="off"
+                    spellCheck={false}
+                    onFocus={() => {
+                      setIsFocused(true);
+                      if (
+                        trimmed.length >= 2 &&
+                        !(
+                          selection?.kind === "movie-result" &&
+                          normalizeLibraryQuery(selection.title) === normalized
+                        )
+                      ) {
+                        setIsMounted(true);
+                        setIsOpen(true);
                       }
-                    }
-                  }}
-                />
-              </div>
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.nativeEvent.isComposing) return;
+                      if (event.key === "ArrowDown") {
+                        if (rows.length === 0) return;
+                        event.preventDefault();
+                        setIsOpen(true);
+                        moveActiveIndex("next", rows.length);
+                        return;
+                      }
+                      if (event.key === "ArrowUp") {
+                        if (rows.length === 0) return;
+                        event.preventDefault();
+                        setIsOpen(true);
+                        moveActiveIndex("previous", rows.length);
+                        return;
+                      }
+                      if (event.key === "Escape") {
+                        event.preventDefault();
+                        hideAutocomplete();
+                        clearQuery();
+                        inputRef.current?.blur();
+                        return;
+                      }
+                      if (event.key === "Enter" && isOpen) {
+                        const selectedIndex = getEnterSelectionIndex(rows.length);
+                        if (selectedIndex >= 0 && rows[selectedIndex]) {
+                          event.preventDefault();
+                          selectRow(rows[selectedIndex]);
+                        }
+                      }
+                    }}
+                  />
+
+                  {hasQuery ? (
+                    <button
+                      type="button"
+                      className="y2k-search-capsule__clear"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        clearQuery();
+                        window.requestAnimationFrame(() =>
+                          inputRef.current?.focus(),
+                        );
+                      }}
+                      aria-label="Clear search query"
+                      title="Clear search"
+                    >
+                      <X size={13} strokeWidth={2.5} />
+                    </button>
+                  ) : (
+                    <kbd
+                      className="y2k-search-capsule__kbd"
+                      aria-hidden="true"
+                      title="Press / or Cmd+K to search"
+                    >
+                      /
+                    </kbd>
+                  )}
+
+                  <button
+                    type="submit"
+                    className={`y2k-search-capsule__submit${hasQuery ? " is-ready" : " is-idle"}`}
+                    disabled={isBusy || !hasQuery}
+                  >
+                    <span>{isBusy ? "Saving…" : primaryLabel}</span>
+                  </button>
+                </div>
+              </form>
+
+              {filterSlot ? (
+                <>
+                  <div
+                    className="y2k-command-dock__divider"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="y2k-command-dock__filters"
+                    onPointerDown={() => {
+                      if (isOpen) {
+                        hideAutocomplete();
+                      }
+                    }}
+                  >
+                    {filterSlot}
+                  </div>
+                </>
+              ) : null}
             </div>
-            {selection?.kind === "movie-result" ? (
-              <div
-                className="curved-library-search__selection"
-                role="status"
-                aria-live="polite"
-              >
-                <span>
-                  <span aria-hidden="true">✓</span> Selected{" "}
-                  <strong>{selection.title}</strong>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelection(null);
-                    window.requestAnimationFrame(() => {
-                      inputRef.current?.focus();
-                      inputRef.current?.select();
-                    });
-                  }}
-                >
-                  Change
-                </button>
+
+            {selection?.kind === "movie-result" ||
+            (hasQuery && (alternateKind || submitKind === "movie")) ? (
+              <div className="y2k-command-dock__subbar">
+                {selection?.kind === "movie-result" ? (
+                  <div
+                    className="curved-library-search__selection"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span>
+                      <span aria-hidden="true">✓</span> Selected{" "}
+                      <strong>{selection.title}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelection(null);
+                        window.requestAnimationFrame(() => {
+                          inputRef.current?.focus();
+                          inputRef.current?.select();
+                        });
+                      }}
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : null}
+
+                {hasQuery && (alternateKind || submitKind === "movie") ? (
+                  <WorkspaceSearchActions className="curved-library-search__secondary-actions">
+                    {alternateKind ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={isBusy}
+                        onClick={() => void submitKindAction(alternateKind)}
+                      >
+                        {librarySubmitLabel(alternateKind, isGuest)}
+                      </Button>
+                    ) : null}
+                    {submitKind === "movie" && currentUser ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={isBusy}
+                        leftIcon={<PlusIcon />}
+                        onClick={() => {
+                          hideAutocomplete();
+                          setShowRecommend(true);
+                        }}
+                      >
+                        Recommend
+                      </Button>
+                    ) : null}
+                  </WorkspaceSearchActions>
+                ) : null}
               </div>
             ) : null}
+
             {showPanel ? (
               <WorkspaceAutocompletePanel
                 id={listId}
@@ -729,36 +844,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle>(
                     ))
                   : null}
               </WorkspaceAutocompletePanel>
-            ) : null}
-            {hasQuery && (alternateKind || submitKind === "movie") ? (
-              <WorkspaceSearchActions className="curved-library-search__secondary-actions">
-                {alternateKind ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="md"
-                    disabled={isBusy}
-                    onClick={() => void submitKindAction(alternateKind)}
-                  >
-                    {librarySubmitLabel(alternateKind, isGuest)}
-                  </Button>
-                ) : null}
-                {submitKind === "movie" && currentUser ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="md"
-                    disabled={isBusy}
-                    leftIcon={<PlusIcon />}
-                    onClick={() => {
-                      hideAutocomplete();
-                      setShowRecommend(true);
-                    }}
-                  >
-                    Recommend
-                  </Button>
-                ) : null}
-              </WorkspaceSearchActions>
             ) : null}
           </div>
           {actionError ? (

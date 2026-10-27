@@ -34,7 +34,7 @@
   --vignette-gradient-dark-end: rgba(0, 0, 0, 1);
   --vignette-gradient-dark-middle: rgba(0, 0, 0, 0.8);
 
-  --vignette-z-index: 50;
+  --vignette-z-index: 15;
 }
 
 .vignette-top,

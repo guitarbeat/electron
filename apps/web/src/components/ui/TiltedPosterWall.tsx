@@ -99,12 +99,14 @@ const skeletonItems = Array.from({ length: skeletonCount }, (_, i) => {
         direction="up"
       />
 
-      <div className="drift-wall-loading__status" aria-hidden="true" style={{ bottom: fullViewport ? "2.5rem" : "1.5rem" }}>
-        <span />
-        <span />
-        <span />
-        <small>Loading collection</small>
-      </div>
+      {!fullViewport ? (
+        <div className="drift-wall-loading__status" aria-hidden="true" style={{ bottom: "1.5rem" }}>
+          <span />
+          <span />
+          <span />
+          <small>Loading collection</small>
+        </div>
+      ) : null}
     </div>
   );
 };

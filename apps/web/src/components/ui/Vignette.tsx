@@ -20,7 +20,7 @@ export const Vignette: React.FC<VignetteProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`pointer-events-none fixed inset-0 z-50 ${className}`}>
+    <div className={`pointer-events-none fixed inset-0 z-[15] ${className}`}>
       {top && <div className="vignette-top" aria-hidden="true" />}
       {bottom && <div className="vignette-bottom" aria-hidden="true" />}
       {left && <div className="vignette-left" aria-hidden="true" />}

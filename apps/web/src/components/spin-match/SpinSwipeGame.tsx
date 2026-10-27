@@ -493,8 +493,8 @@ function ResultScreen({
 }
 
 const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
-  const { currentUser } = useUser();
-  const { movies, isLoading } = useMovies(currentUser, false);
+  const { currentUser, activeUsers } = useUser();
+  const { movies, isLoading, toggleWatched } = useMovies(currentUser, false);
 
   const [phase, setPhase] = useState<Phase>("swipe");
   const [kept, setKept] = useState<Movie[]>([]);
@@ -748,8 +748,26 @@ const SpinSwipeGame: React.FC<SpinSwipeGameProps> = ({ onSpinningChange }) => {
         {modalMovie && (
           <React.Suspense fallback={null}>
             <MovieDetailsModal
-              movie={modalMovie}
+              movie={movies.find((m) => m.id === modalMovie.id) ?? modalMovie}
               isOpen={!!modalMovie}
+              currentUser={currentUser}
+              activeUsers={activeUsers}
+              onToggleWatched={
+                currentUser
+                  ? () => void toggleWatched(modalMovie.id, currentUser)
+                  : undefined
+              }
+              onToggleUserWatched={
+                currentUser || activeUsers.length > 0
+                  ? (targetUser) => void toggleWatched(modalMovie.id, targetUser)
+                  : undefined
+              }
+              isWatchedByCurrentUser={Boolean(
+                currentUser &&
+                  (movies.find((m) => m.id === modalMovie.id) ?? modalMovie).watchedBy.includes(
+                    currentUser,
+                  ),
+              )}
               onClose={() => setModalMovie(null)}
             />
           </React.Suspense>

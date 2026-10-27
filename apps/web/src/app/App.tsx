@@ -18,7 +18,7 @@ import { useViewport, useUser } from "@/app/providerContexts";
 import { ThemeProvider } from "@/app/providers";
 import { usePwaRuntime } from "@/hooks";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
-import { useAppTabNavigation, useCrtEntranceAnimation } from "@/hooks";
+import { useAppTabNavigation } from "@/hooks";
 import { useMediaQuery } from "@/hooks";
 import { useTvSpatialNavigation } from "@/hooks";
 
@@ -41,6 +41,9 @@ import "./globals.css";
 import "./component-styles.css";
 
 const IDLE_CALLBACK_FALLBACK_TIMEOUT_MS = 2000;
+const MIN_ARCADE_INTRO_MS = 560;
+const MAX_ARCADE_WAIT_MS = 2200;
+const ARCADE_EXIT_DURATION_MS = 720;
 
 const modalBodyStyle = {
   flex: 1,
@@ -52,7 +55,6 @@ const App: React.FC = () => {
   usePwaRuntime();
   const { isMobile, isTv } = useViewport();
   useTvSpatialNavigation(isTv);
-  const { ref: crtCanvasRef } = useCrtEntranceAnimation<HTMLDivElement>();
 
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
@@ -64,6 +66,13 @@ const App: React.FC = () => {
     prefersReducedMotion,
     isMobile,
   });
+  const [isFrameCompact, setIsFrameCompact] = useState<boolean>(
+    () => !prefersReducedMotion,
+  );
+  const [isBadgeExiting, setIsBadgeExiting] = useState<boolean>(false);
+  const [isIntroMounted, setIsIntroMounted] = useState<boolean>(
+    () => !prefersReducedMotion,
+  );
   const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
     readQuizCompletionState(currentUser),
   );
@@ -71,6 +80,73 @@ const App: React.FC = () => {
   const [showQuizExperience, setShowQuizExperience] = useState(false);
   const [showSpinMatch, setShowSpinMatch] = useState(false);
   const [openPanels, setOpenPanels] = useState<Set<TogglePanel>>(new Set());
+
+  useEffect(() => {
+    if (prefersReducedMotion || typeof window === "undefined") {
+      setIsFrameCompact(false);
+      setIsBadgeExiting(true);
+      setIsIntroMounted(false);
+      return undefined;
+    }
+
+    let minTimeElapsed = false;
+    let collectionReady =
+      Boolean(
+        (window as unknown as { __electronCollectionReady?: boolean })
+          .__electronCollectionReady,
+      ) || !isLibraryWorkspaceTab(activeTab);
+    let hasTriggeredExpand = false;
+    let unmountTimerId: number | undefined;
+
+    const triggerExpansion = () => {
+      if (hasTriggeredExpand) return;
+      hasTriggeredExpand = true;
+      setIsFrameCompact(false);
+      setIsBadgeExiting(true);
+      unmountTimerId = window.setTimeout(() => {
+        setIsIntroMounted(false);
+      }, ARCADE_EXIT_DURATION_MS);
+    };
+
+    const maybeTrigger = () => {
+      if (minTimeElapsed && collectionReady) {
+        triggerExpansion();
+      }
+    };
+
+    const handleCollectionReady = () => {
+      collectionReady = true;
+      maybeTrigger();
+    };
+
+    window.addEventListener(
+      "workspace-collection-ready",
+      handleCollectionReady,
+    );
+
+    const minTimerId = window.setTimeout(() => {
+      minTimeElapsed = true;
+      maybeTrigger();
+    }, MIN_ARCADE_INTRO_MS);
+
+    const maxWaitTimerId = window.setTimeout(() => {
+      minTimeElapsed = true;
+      collectionReady = true;
+      triggerExpansion();
+    }, MAX_ARCADE_WAIT_MS);
+
+    return () => {
+      window.removeEventListener(
+        "workspace-collection-ready",
+        handleCollectionReady,
+      );
+      window.clearTimeout(minTimerId);
+      window.clearTimeout(maxWaitTimerId);
+      if (unmountTimerId !== undefined) {
+        window.clearTimeout(unmountTimerId);
+      }
+    };
+  }, [prefersReducedMotion, activeTab]);
 
   const togglePanel = useCallback((panel: TogglePanel) => {
     setOpenPanels((prev) => {
@@ -241,16 +317,84 @@ const App: React.FC = () => {
           Skip to content
         </a>
 
-        {/* Viewport Frame with signature round border edge from woods.engineer */}
-        <ViewportFrame />
+        {/* Viewport Frame with signature round border edge — starts wrapping center arcade badge, then expands outward */}
+        <ViewportFrame
+          className={isFrameCompact ? "viewport-frame--compact" : ""}
+        />
+
+        {/* Center Aaron & Electra Retro Arcade Loading Badge framed by ViewportFrame */}
+        {isIntroMounted ? (
+          <div
+            className={`y2k-arcade-loader${isBadgeExiting ? " is-exiting" : ""}`}
+            role="status"
+            aria-live="polite"
+            aria-label="Loading Aaron and Electra movie collection"
+          >
+            <div className="y2k-arcade-loader__card">
+              <div className="y2k-arcade-loader__header">
+                <span>CINEMA ARCADE</span>
+                <span className="y2k-arcade-loader__tag">2P CO-OP</span>
+              </div>
+
+              <div className="y2k-arcade-loader__players">
+                <div className="y2k-arcade-loader__player y2k-arcade-loader__player--aaron">
+                  <div className="y2k-arcade-loader__avatar-ring">
+                    <img
+                      src="/aaron-avatar.png"
+                      alt="Aaron"
+                      className="y2k-arcade-loader__avatar-img"
+                      draggable={false}
+                    />
+                  </div>
+                  <span className="y2k-arcade-loader__player-name">Aaron</span>
+                </div>
+
+                <span className="y2k-arcade-loader__versus" aria-hidden="true">
+                  +
+                </span>
+
+                <div className="y2k-arcade-loader__player y2k-arcade-loader__player--electra">
+                  <div className="y2k-arcade-loader__avatar-ring">
+                    <img
+                      src="/electra-button.png"
+                      alt="Electra"
+                      className="y2k-arcade-loader__avatar-img"
+                      draggable={false}
+                    />
+                  </div>
+                  <span className="y2k-arcade-loader__player-name">
+                    Electra
+                  </span>
+                </div>
+              </div>
+
+              <div className="y2k-arcade-loader__footer">
+                <div className="y2k-arcade-loader__bar" aria-hidden="true">
+                  {Array.from({ length: 8 }, (_, idx) => (
+                    <span
+                      key={idx}
+                      className="y2k-arcade-loader__segment"
+                      style={
+                        { "--seg-idx": idx } as React.CSSProperties
+                      }
+                    />
+                  ))}
+                </div>
+                <div className="y2k-arcade-loader__status">
+                  <span>
+                    {isBadgeExiting ? "READY TO WATCH" : "LOADING COLLECTION"}
+                  </span>
+                  <span>{isBadgeExiting ? "100%" : "SYNCING"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* Vignette edge lighting from woods.engineer */}
         <Vignette top bottom left right />
 
-        <div
-          ref={crtCanvasRef}
-          className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail"
-        >
+        <div className="app-shell__canvas app-shell__canvas--main app-shell__canvas--with-rail">
           <div
             className={`app-workspace-stack ${libraryWorkspaceStackClass(activeTab)}`}
           >

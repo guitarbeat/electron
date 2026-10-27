@@ -3,6 +3,7 @@ import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
 import { MovieWallFilters } from "./MovieWallFilters";
+import LibrarySearch from "@/components/library/LibrarySearch";
 import {
   DEFAULT_MOVIE_WALL_FILTERS,
   filterMovieWall,
@@ -189,6 +190,13 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     }
   }, [selectedMovie, hasActiveFilters, filteredMovies, closeMovieDetails]);
 
+  React.useEffect(() => {
+    if (collectionState !== "loading" && typeof window !== "undefined") {
+      (window as unknown as { __electronCollectionReady?: boolean }).__electronCollectionReady = true;
+      window.dispatchEvent(new CustomEvent("workspace-collection-ready"));
+    }
+  }, [collectionState]);
+
   const unifiedCards = React.useMemo(() => {
     const renderMovie = (movie: Movie, index: number) => {
       const hasPoster = Boolean(movie.posterUrl || movie.customPosterUrl);
@@ -227,6 +235,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
               {
                 "--loading-tile": Math.floor(i / dynamicColumns),
                 "--loading-column": i % dynamicColumns,
+                "--loading-tone": i % 6,
                 width: "100%",
                 height: "100%",
               } as React.CSSProperties
@@ -246,14 +255,15 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       }
     }
 
+    const hasLoggedInUser = Boolean(currentUser || activeUsers.length > 0);
     const suggestionCards = uniqueSuggestions.map((suggestion) => (
       <SuggestionCard
         key={`suggestion-${suggestion.id}`}
         suggestion={suggestion}
         onAccept={() => void onAcceptSuggestion(suggestion)}
         onReject={() => void onRejectSuggestion(suggestion)}
-        canRespond={Boolean(currentUser)}
-        disableActions={!currentUser}
+        canRespond={hasLoggedInUser}
+        disableActions={!hasLoggedInUser}
         isProcessing={processingSuggestionId === suggestion.id}
       />
     ));
@@ -341,6 +351,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     openMovieDetails(movie, origin);
   };
 
+  const hasLoggedInUser = Boolean(currentUser || activeUsers.length > 0);
+
   // ── Full section body ─────────────────────────────────────────────────────
   return (
     <div
@@ -356,15 +368,17 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         className={isMobile ? "movies-wall-container movies-wall-container--mobile" : "movies-wall-container"}
         style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
       >
-        {collectionState !== "loading" ? (
-          <MovieWallFilters
-            movies={allMovies}
-            filters={wallFilters}
-            resultCount={filteredMovies.length}
-            onChange={setWallFilters}
-            hasSearch={Boolean(currentUser)}
-          />
-        ) : null}
+        <LibrarySearch
+          filterSlot={
+            <MovieWallFilters
+              movies={allMovies}
+              filters={wallFilters}
+              resultCount={filteredMovies.length}
+              onChange={setWallFilters}
+              hasSearch={false}
+            />
+          }
+        />
 
         {unifiedCards.length > 0 ? (
           <DriftWall
@@ -435,7 +449,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             )}
             isUpdatingWatchStatus={isUpdatingWatchStatus}
             onToggleWatched={
-              currentUser
+              hasLoggedInUser
                 ? async () => {
                     setIsUpdatingWatchStatus(true);
                     try {
@@ -447,7 +461,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
                 : undefined
             }
             onToggleUserWatched={
-              activeUsers.length > 0
+              hasLoggedInUser
                 ? async (user) => {
                     setIsUpdatingWatchStatus(true);
                     try {
@@ -462,7 +476,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
                 : undefined
             }
             onEdit={
-              currentUser
+              hasLoggedInUser
                 ? () => {
                     setEditMovie(resolvedSelectedMovie);
                   }

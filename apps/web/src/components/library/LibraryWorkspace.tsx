@@ -1,8 +1,6 @@
 import React, { memo } from "react";
 import type { MainTab } from "@/shared/types";
-import { useUser } from "@/app/providerContexts";
 import { MoviesView } from "@/components/movies";
-import LibrarySearch from "./LibrarySearch";
 
 interface UnifiedLibraryProps {
   isInteractionStatic: boolean;
@@ -19,12 +17,8 @@ interface LibraryWorkspaceProps {
 }
 
 const LibraryWorkspace: React.FC<LibraryWorkspaceProps> = () => {
-  const { currentUser, activeUsers } = useUser();
-  const hasLoggedInUser = Boolean(currentUser || (activeUsers && activeUsers.length > 0));
-
   return (
-    <div className={`library-workspace${hasLoggedInUser ? " has-search" : ""}`}>
-      {hasLoggedInUser && <LibrarySearch />}
+    <div className="library-workspace has-search">
       <React.Suspense fallback={null}>
         <UnifiedLibrary isInteractionStatic={false} />
       </React.Suspense>

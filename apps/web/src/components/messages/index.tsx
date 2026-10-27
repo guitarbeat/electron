@@ -615,7 +615,7 @@ export const MessageList: React.FC<MessageListProps> = ({
               message={message}
               currentUser={currentUser}
               showSenderName={showSenderName}
-              canDelete={Boolean(currentUser && message.author === currentUser)}
+              canDelete={Boolean(currentUser)}
               onDelete={onDelete}
             />
           ))}

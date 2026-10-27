@@ -215,10 +215,7 @@
 }
 
 .movies-wall-container {
-  contain: layout paint;
-  isolation: isolate;
-  content-visibility: auto;
-  contain-intrinsic-size: 100vw 900px;
+  position: relative;
 }
 
 @media (max-width: 768px), (pointer: coarse) {
@@ -244,7 +241,6 @@
 
   .movies-wall-container--mobile {
     min-height: min(72dvh, 42rem);
-    contain: strict;
   }
 }
 

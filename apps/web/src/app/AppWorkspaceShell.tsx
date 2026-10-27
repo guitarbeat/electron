@@ -217,7 +217,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         {/* Primary workspace content */}
         <section
           className={`workspace-surface workspace-surface--${isLibraryWorkspaceTab(activeTab) ? "movies" : activeTab}`}
-          style={{ position: "relative", zIndex: 1, minWidth: 0 }}
+          style={{ position: "relative", minWidth: 0 }}
           aria-label={
             isLibraryWorkspaceTab(activeTab)
               ? "Movies and places workspace"

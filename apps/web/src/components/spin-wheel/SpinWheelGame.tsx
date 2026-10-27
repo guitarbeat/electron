@@ -392,75 +392,51 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
 
         <div className="spin-wheel-panel">
           {selectedMovie ? (
-            (() => {
-              const isWatchedByCurrentUser = currentUser
-                ? selectedMovie.watchedBy.includes(currentUser)
-                : false;
-              return (
-                <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
-                  <p className="spin-wheel-panel__eyebrow">
-                    Tonight&apos;s Pick
-                  </p>
-                  <h3 className="current-movie-title current-movie-title--result">
-                    {selectedMovie.title}
-                  </h3>
-                  <p className="spin-wheel-panel__meta">
-                    {selectedMovie.year || "Unknown year"}{" "}
-                    {selectedMovie.genre ? `· ${selectedMovie.genre}` : ""}
-                  </p>
-                  <p className="spin-wheel-panel__status">
-                    {selectedMovieStatus}
-                  </p>
-                  {renderPoster(selectedMovie, "spin-wheel-panel__poster")}
-                  {selectedMovie.plot ? (
-                    <p className="spin-wheel-panel__copy">
-                      {selectedMovie.plot}
-                    </p>
-                  ) : null}
-                  {activeUsers.length > 1 ? (
-                    <div className="flex gap-2 w-full mt-2">
-                      {activeUsers.map((user) => {
-                        const isWatched = selectedMovie.watchedBy.includes(user);
-                        return (
-                          <Button
-                            key={user}
-                            variant={isWatched ? "danger" : "primary"}
-                            size="sm"
-                            isLoading={isTogglingWatched}
-                            disabled={isTogglingWatched}
-                            onClick={() => void toggleWatchedForUser(user)}
-                            className={`spin-result-action flex-1 ${
-                              isWatched
-                                ? "spin-result-action--undo"
-                                : "spin-result-action--mark"
-                            }`}
-                          >
-                            {isWatched ? `${user} Watched` : `Mark ${user}`}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  ) : currentUser ? (
-                    <Button
-                      variant={isWatchedByCurrentUser ? "danger" : "primary"}
-                      size="sm"
-                      isLoading={isTogglingWatched}
-                      disabled={isTogglingWatched}
-                      onClick={() => void toggleWatchedForUser(currentUser)}
-                      className={`spin-result-action mt-2 ${
-                        isWatchedByCurrentUser
-                          ? "spin-result-action--undo"
-                          : "spin-result-action--mark"
-                      }`}
-                    >
-                      {isWatchedByCurrentUser
-                        ? `Undo watched for ${currentUser}`
-                        : `Mark watched by ${currentUser}`}
-                    </Button>
-                  ) : null}
+            <div className="result-display-container spin-wheel-panel__card spin-wheel-panel__card--result">
+              <p className="spin-wheel-panel__eyebrow">
+                Tonight&apos;s Pick
+              </p>
+              <h3 className="current-movie-title current-movie-title--result">
+                {selectedMovie.title}
+              </h3>
+              <p className="spin-wheel-panel__meta">
+                {selectedMovie.year || "Unknown year"}{" "}
+                {selectedMovie.genre ? `· ${selectedMovie.genre}` : ""}
+              </p>
+              <p className="spin-wheel-panel__status">
+                {selectedMovieStatus}
+              </p>
+              {renderPoster(selectedMovie, "spin-wheel-panel__poster")}
+              {selectedMovie.plot ? (
+                <p className="spin-wheel-panel__copy">
+                  {selectedMovie.plot}
+                </p>
+              ) : null}
+              {currentUser || activeUsers.length > 0 ? (
+                <div className="flex gap-2 w-full mt-2">
+                  {(["Aaron", "Electra"] as User[]).map((user) => {
+                    const isWatched = selectedMovie.watchedBy.includes(user);
+                    return (
+                      <Button
+                        key={user}
+                        variant={isWatched ? "danger" : "primary"}
+                        size="sm"
+                        isLoading={isTogglingWatched}
+                        disabled={isTogglingWatched}
+                        onClick={() => void toggleWatchedForUser(user)}
+                        className={`spin-result-action flex-1 ${
+                          isWatched
+                            ? "spin-result-action--undo"
+                            : "spin-result-action--mark"
+                        }`}
+                      >
+                        {isWatched ? `${user} Watched` : `Mark ${user}`}
+                      </Button>
+                    );
+                  })}
                 </div>
-              );
-            })()
+              ) : null}
+            </div>
           ) : (
             <div className="spin-wheel-panel__card spin-wheel-panel__card--info">
               <p className="spin-wheel-panel__eyebrow">
@@ -568,8 +544,14 @@ const SpinWheelGame: React.FC<SpinWheelGameProps> = ({ onSpinningChange }) => {
             isOpen={!!modalMovie}
             currentUser={currentUser}
             activeUsers={activeUsers}
-            onToggleWatched={currentUser ? () => toggleWatchedForUser(currentUser) : undefined}
-            onToggleUserWatched={activeUsers.length > 0 ? toggleWatchedForUser : undefined}
+            onToggleWatched={
+              currentUser ? () => toggleWatchedForUser(currentUser) : undefined
+            }
+            onToggleUserWatched={
+              currentUser || activeUsers.length > 0
+                ? toggleWatchedForUser
+                : undefined
+            }
             isWatchedByCurrentUser={Boolean(
               currentUser && modalMovie.watchedBy.includes(currentUser),
             )}

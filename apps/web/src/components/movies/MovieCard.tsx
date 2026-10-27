@@ -64,7 +64,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   const cardRef = React.useRef<HTMLDivElement | null>(null);
   const posterRef = React.useRef<HTMLDivElement | null>(null);
   const isMobile = isCompact;
-  const isGuest = !currentUser;
+  const isGuest = !currentUser && activeUsers.length === 0;
 
   const handleOpenDetails = (e?: React.MouseEvent) => {
     if (e) {
@@ -215,8 +215,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           origin={detailsOrigin}
           currentUser={currentUser}
           activeUsers={activeUsers}
-          onToggleWatched={currentUser ? handleToggle : undefined}
-          onToggleUserWatched={activeUsers.length > 0 ? handleToggleUser : undefined}
+          onToggleWatched={!isGuest ? handleToggle : undefined}
+          onToggleUserWatched={!isGuest ? handleToggleUser : undefined}
           isWatchedByCurrentUser={Boolean(
             currentUser && movie.watchedBy.includes(currentUser),
           )}
