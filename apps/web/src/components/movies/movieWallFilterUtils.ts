@@ -103,6 +103,107 @@ export const getActiveFilterCount = (filters: MovieWallFilterState): number => {
   return count;
 };
 
+const PROGRESS_CYCLE_ORDER: readonly MovieProgressFilter[] = [
+  "all",
+  "unwatched",
+  "watching",
+  "watched",
+];
+
+export const cycleProgressFilter = (
+  current: MovieProgressFilter,
+): MovieProgressFilter => {
+  const index = PROGRESS_CYCLE_ORDER.indexOf(current);
+  if (index === -1) return "unwatched";
+  return PROGRESS_CYCLE_ORDER[(index + 1) % PROGRESS_CYCLE_ORDER.length];
+};
+
+export interface MovieWallOptionCounts {
+  total: number;
+  formats: Record<MovieFormatFilter, number>;
+  presets: Record<MovieStatusPreset, number>;
+  viewers: Record<User, Record<MovieProgressFilter, number>>;
+  addedBy: Record<MovieAddedByFilter, number>;
+}
+
+export const getMovieWallOptionCounts = (
+  movies: Movie[],
+): MovieWallOptionCounts => {
+  const counts: MovieWallOptionCounts = {
+    total: movies.length,
+    formats: {
+      all: movies.length,
+      movie: 0,
+      series: 0,
+      youtube: 0,
+    },
+    presets: {
+      all: movies.length,
+      queue: 0,
+      in_progress: 0,
+      both_watched: 0,
+    },
+    viewers: {
+      Aaron: {
+        all: movies.length,
+        unwatched: 0,
+        watching: 0,
+        watched: 0,
+      },
+      Electra: {
+        all: movies.length,
+        unwatched: 0,
+        watching: 0,
+        watched: 0,
+      },
+    },
+    addedBy: {
+      all: movies.length,
+      Aaron: 0,
+      Electra: 0,
+    },
+  };
+
+  for (const movie of movies) {
+    const isTv = isTvSeriesItem(movie);
+    const isYt = isYouTubeItem(movie);
+    if (isTv) counts.formats.series++;
+    if (isYt) counts.formats.youtube++;
+    if (!isTv && !isYt) counts.formats.movie++;
+
+    const watchedCount = movie.watchedBy.length;
+    const isAnyWatching = (movie.watchingBy?.length ?? 0) > 0;
+    if (watchedCount === 0 && !isAnyWatching) counts.presets.queue++;
+    if (isAnyWatching) counts.presets.in_progress++;
+    if (watchedCount >= 2) counts.presets.both_watched++;
+
+    for (const user of ["Aaron", "Electra"] as const) {
+      const isWatched = movie.watchedBy.some(
+        (u) => u.toLowerCase() === user.toLowerCase(),
+      );
+      const isWatching = (movie.watchingBy ?? []).some(
+        (u) => u.toLowerCase() === user.toLowerCase(),
+      );
+      if (isWatched) {
+        counts.viewers[user].watched++;
+      } else if (isWatching) {
+        counts.viewers[user].watching++;
+      } else {
+        counts.viewers[user].unwatched++;
+      }
+
+      if (
+        movie.addedBy &&
+        movie.addedBy.toLowerCase() === user.toLowerCase()
+      ) {
+        counts.addedBy[user]++;
+      }
+    }
+  }
+
+  return counts;
+};
+
 export const sortMovieList = (
   movies: Movie[],
   sortBy: MovieSortOrder = "recent",

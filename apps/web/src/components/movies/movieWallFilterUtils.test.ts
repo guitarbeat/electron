@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { Movie } from "@/shared/types";
 import {
+  cycleProgressFilter,
   DEFAULT_MOVIE_WALL_FILTERS,
   filterMovieWall,
   getMovieWallGenres,
+  getMovieWallOptionCounts,
 } from "./movieWallFilterUtils";
 
 const movies: Movie[] = [
@@ -103,4 +105,26 @@ test("sorts movie list by date added, alphabetical, genre, and rating", () => {
   const byRating = filterMovieWall(sample, { ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: "rating" });
   assert.deepEqual(byRating.map((m) => m.id), ["m2", "m1", "m3"]);
 });
+
+test("computes live option counts and cycles progress filters", () => {
+  const sample = [
+    { id: "1", title: "Film A", addedBy: "Aaron", watchedBy: [], createdAt: "2026-01-01", mediaType: "movie" },
+    { id: "2", title: "Show B", addedBy: "Electra", watchedBy: ["Aaron", "Electra"], createdAt: "2026-01-02", mediaType: "series" },
+    { id: "3", title: "Essay C", addedBy: "Electra", watchedBy: [], watchingBy: ["Aaron"], createdAt: "2026-01-03", mediaType: "youtube" },
+  ] as Movie[];
+
+  const counts = getMovieWallOptionCounts(sample);
+  assert.equal(counts.total, 3);
+  assert.deepEqual(counts.formats, { all: 3, movie: 1, series: 1, youtube: 1 });
+  assert.deepEqual(counts.presets, { all: 3, queue: 1, in_progress: 1, both_watched: 1 });
+  assert.deepEqual(counts.viewers.Aaron, { all: 3, unwatched: 1, watching: 1, watched: 1 });
+  assert.deepEqual(counts.viewers.Electra, { all: 3, unwatched: 2, watching: 0, watched: 1 });
+  assert.deepEqual(counts.addedBy, { all: 3, Aaron: 1, Electra: 2 });
+
+  assert.equal(cycleProgressFilter("all"), "unwatched");
+  assert.equal(cycleProgressFilter("unwatched"), "watching");
+  assert.equal(cycleProgressFilter("watching"), "watched");
+  assert.equal(cycleProgressFilter("watched"), "all");
+});
+
 

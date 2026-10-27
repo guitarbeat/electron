@@ -43,15 +43,25 @@ export const preloadCriticalAppModules = (): Promise<void> => {
       // Ignore storage access errors
     }
 
+    const fetchWithTimeout = (url: string) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        return fetch(url, {
+          method: "GET",
+          credentials: "include",
+          signal: controller.signal,
+        })
+          .finally(() => clearTimeout(timeoutId))
+          .catch(() => undefined);
+      } catch {
+        return Promise.resolve();
+      }
+    };
+
     return Promise.allSettled([
-      fetch("/api/session", {
-        method: "GET",
-        credentials: "include",
-      }).catch(() => undefined),
-      fetch(`/api/state/${tab === "messages" ? "messages" : "movies"}`, {
-        method: "GET",
-        credentials: "include",
-      }).catch(() => undefined),
+      fetchWithTimeout("/api/session"),
+      fetchWithTimeout(`/api/state/${tab === "messages" ? "messages" : "movies"}`),
     ]);
   };
 

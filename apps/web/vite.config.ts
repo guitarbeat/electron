@@ -166,6 +166,9 @@ export default defineConfig(({ mode }) => {
   const envRoot = loadEnv(mode, rootDir, "");
   const envLocal = loadEnv(mode, import.meta.dirname, "");
   Object.assign(process.env, envRoot, envLocal);
+  if (!process.env.DISABLE_HMR) {
+    process.env.DISABLE_HMR = "true";
+  }
 
   return {
     base: basePath,
@@ -277,15 +280,7 @@ export default defineConfig(({ mode }) => {
       allowedHosts: true,
       cors: false,
       hmr: process.env.DISABLE_HMR !== "true",
-      watch:
-        process.env.DISABLE_HMR === "true"
-          ? null
-          : {
-              ignored: [
-                "**/.local/share/pnpm/store/**",
-                "**/node_modules/.pnpm/store/**",
-              ],
-            },
+      watch: process.env.DISABLE_HMR === "true" ? null : {},
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate",
       },

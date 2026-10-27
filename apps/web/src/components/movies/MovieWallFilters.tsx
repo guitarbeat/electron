@@ -1,27 +1,38 @@
 import React from "react";
 import {
   ArrowDownAZ,
-  ArrowUpDown,
   Calendar,
   Check,
   ChevronDown,
+  Clock,
+  Eye,
   Film,
+  Flame,
+  Gamepad2,
+  Heart,
+  Layers,
+  Popcorn,
   RotateCcw,
   Search,
   SlidersHorizontal,
+  Sparkles,
   Star,
   Tag,
   Tv,
   Video,
   X,
 } from "lucide-react";
-import type { Movie } from "@/shared/types";
+import type { Movie, User } from "@/shared/types";
 import {
+  cycleProgressFilter,
   DEFAULT_MOVIE_WALL_FILTERS,
   getActiveFilterCount,
   getMovieWallGenreCounts,
   getMovieWallGenres,
+  getMovieWallOptionCounts,
   hasActiveMovieWallFilters,
+  type MovieFormatFilter,
+  type MovieProgressFilter,
   type MovieSortOrder,
   type MovieStatusPreset,
   type MovieWallFilterState,
@@ -35,25 +46,93 @@ interface MovieWallFiltersProps {
   hasSearch?: boolean;
 }
 
-const formatLabels = {
-  all: "All formats",
+const formatLabels: Record<MovieFormatFilter, string> = {
+  all: "All Formats",
   movie: "Films",
-  series: "TV shows",
+  series: "TV Shows",
   youtube: "YouTube",
-} as const;
+};
 
-const progressLabels = {
+const progressLabels: Record<MovieProgressFilter, string> = {
   all: "Any",
   unwatched: "Queue",
   watching: "Watching",
-  watched: "Watched",
-} as const;
+  watched: "Seen",
+};
 
 const statusPresetLabels: Record<MovieStatusPreset, string> = {
-  all: "Any status",
-  queue: "In Queue",
-  in_progress: "In Progress",
-  both_watched: "Both Watched",
+  all: "All Titles",
+  queue: "Movie Night Queue",
+  in_progress: "Finish Watching",
+  both_watched: "Watched Together",
+};
+
+const COUPLE_PRESET_CARDS: Array<{
+  value: MovieStatusPreset;
+  title: string;
+  subtitle: string;
+  tone: "queue" | "progress" | "together" | "all";
+  icon: typeof Popcorn;
+}> = [
+  {
+    value: "queue",
+    title: "Movie Night Queue",
+    subtitle: "Unwatched by both of you",
+    tone: "queue",
+    icon: Popcorn,
+  },
+  {
+    value: "in_progress",
+    title: "Finish Watching",
+    subtitle: "Started by Aaron or Electra",
+    tone: "progress",
+    icon: Flame,
+  },
+  {
+    value: "both_watched",
+    title: "Watched Together",
+    subtitle: "Completed by both of you",
+    tone: "together",
+    icon: Heart,
+  },
+  {
+    value: "all",
+    title: "All Titles",
+    subtitle: "Every status in library",
+    tone: "all",
+    icon: Sparkles,
+  },
+];
+
+const FORMAT_CARTRIDGES: Array<{
+  value: MovieFormatFilter;
+  label: string;
+  icon: typeof Layers;
+}> = [
+  { value: "all", label: "All", icon: Layers },
+  { value: "movie", label: "Films", icon: Film },
+  { value: "series", label: "Shows", icon: Tv },
+  { value: "youtube", label: "YouTube", icon: Video },
+];
+
+const PARTNER_CONFIG: Record<
+  User,
+  {
+    playerTag: string;
+    avatarSrc: string;
+    toneClass: string;
+  }
+> = {
+  Aaron: {
+    playerTag: "P1",
+    avatarSrc: "/aaron-avatar.png",
+    toneClass: "is-aaron",
+  },
+  Electra: {
+    playerTag: "P2",
+    avatarSrc: "/electra-button.png",
+    toneClass: "is-electra",
+  },
 };
 
 const SORT_OPTIONS: Array<{
@@ -87,7 +166,7 @@ const SORT_OPTIONS: Array<{
   {
     value: "rating",
     label: "IMDb Rating",
-    shortLabel: "Rating",
+    shortLabel: "IMDb",
     description: "Highest rated titles first",
     icon: Star,
   },
@@ -111,6 +190,10 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     () => getMovieWallGenreCounts(movies),
     [movies],
   );
+  const optionCounts = React.useMemo(
+    () => getMovieWallOptionCounts(movies),
+    [movies],
+  );
 
   const isActive = hasActiveMovieWallFilters(filters);
   const activeCount = getActiveFilterCount(filters);
@@ -118,6 +201,12 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
   const currentSort = filters.sortBy ?? "recent";
   const activeSortConfig =
     SORT_OPTIONS.find((opt) => opt.value === currentSort) ?? SORT_OPTIONS[0];
+  const ActiveSortIcon = activeSortConfig.icon;
+
+  const isAaronFiltered =
+    filters.Aaron !== "all" || filters.addedBy === "Aaron";
+  const isElectraFiltered =
+    filters.Electra !== "all" || filters.addedBy === "Electra";
 
   React.useEffect(() => {
     if (!isOpen && !isSortOpen) return;
@@ -151,6 +240,47 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     onChange({ ...filters, [key]: value });
   };
 
+  const handleSelectCouplePreset = (preset: MovieStatusPreset) => {
+    const currentPreset = filters.statusPreset ?? "all";
+    const nextPreset =
+      preset !== "all" && currentPreset === preset ? "all" : preset;
+    onChange({
+      ...filters,
+      statusPreset: nextPreset,
+      // Clear individual viewer progress overrides so the couple preset applies cleanly
+      Aaron: "all",
+      Electra: "all",
+    });
+  };
+
+  const handleSelectViewerProgress = (
+    user: User,
+    status: MovieProgressFilter,
+  ) => {
+    const nextStatus =
+      status !== "all" && filters[user] === status ? "all" : status;
+    onChange({
+      ...filters,
+      [user]: nextStatus,
+      // Clear couple preset if setting individual viewer progress
+      statusPreset: "all",
+    });
+  };
+
+  const handleCycleViewerProgress = (user: User) => {
+    const nextStatus = cycleProgressFilter(filters[user]);
+    onChange({
+      ...filters,
+      [user]: nextStatus,
+      statusPreset: "all",
+    });
+  };
+
+  const handleToggleAddedBy = (user: User) => {
+    const nextAddedBy = filters.addedBy === user ? "all" : user;
+    update("addedBy", nextAddedBy);
+  };
+
   const handleSelectSort = (sortValue: MovieSortOrder) => {
     update("sortBy", sortValue);
     setIsSortOpen(false);
@@ -160,6 +290,8 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
   const activeTags: Array<{
     id: string;
     label: string;
+    tone: "default" | "aaron" | "electra" | "couple" | "format";
+    avatarSrc?: string;
     onRemove: () => void;
   }> = [];
 
@@ -167,23 +299,8 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     activeTags.push({
       id: "query",
       label: `"${filters.query.trim()}"`,
+      tone: "default",
       onRemove: () => update("query", ""),
-    });
-  }
-
-  if (filters.format !== "all") {
-    activeTags.push({
-      id: "format",
-      label: formatLabels[filters.format],
-      onRemove: () => update("format", "all"),
-    });
-  }
-
-  if (filters.genre !== "all") {
-    activeTags.push({
-      id: "genre",
-      label: filters.genre,
-      onRemove: () => update("genre", "all"),
     });
   }
 
@@ -191,6 +308,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     activeTags.push({
       id: "statusPreset",
       label: statusPresetLabels[filters.statusPreset],
+      tone: "couple",
       onRemove: () => update("statusPreset", "all"),
     });
   }
@@ -199,6 +317,8 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     activeTags.push({
       id: "Aaron",
       label: `Aaron: ${progressLabels[filters.Aaron]}`,
+      tone: "aaron",
+      avatarSrc: PARTNER_CONFIG.Aaron.avatarSrc,
       onRemove: () => update("Aaron", "all"),
     });
   }
@@ -207,15 +327,38 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     activeTags.push({
       id: "Electra",
       label: `Electra: ${progressLabels[filters.Electra]}`,
+      tone: "electra",
+      avatarSrc: PARTNER_CONFIG.Electra.avatarSrc,
       onRemove: () => update("Electra", "all"),
     });
   }
 
   if (filters.addedBy !== "all") {
+    const addedUser = filters.addedBy;
     activeTags.push({
       id: "addedBy",
-      label: `Added by ${filters.addedBy}`,
+      label: `Picked by ${addedUser}`,
+      tone: addedUser === "Aaron" ? "aaron" : "electra",
+      avatarSrc: PARTNER_CONFIG[addedUser].avatarSrc,
       onRemove: () => update("addedBy", "all"),
+    });
+  }
+
+  if (filters.format !== "all") {
+    activeTags.push({
+      id: "format",
+      label: formatLabels[filters.format],
+      tone: "format",
+      onRemove: () => update("format", "all"),
+    });
+  }
+
+  if (filters.genre !== "all") {
+    activeTags.push({
+      id: "genre",
+      label: filters.genre,
+      tone: "default",
+      onRemove: () => update("genre", "all"),
     });
   }
 
@@ -224,10 +367,10 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
       ref={rootRef}
       className={`movie-wall-filters${hasSearch ? " movie-wall-filters--below-search" : ""}`}
     >
-      {/* Filter modal trigger button */}
+      {/* Tactile Y2K Filter Deck trigger button */}
       <button
         type="button"
-        className={`movie-wall-filters__trigger${isActive ? " is-active" : ""}`}
+        className={`movie-wall-filters__trigger${isActive ? " is-active" : ""}${isOpen ? " is-open" : ""}`}
         aria-expanded={isOpen}
         aria-controls="movie-wall-filter-panel"
         onClick={() => {
@@ -235,20 +378,49 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           setIsSortOpen(false);
         }}
       >
-        <SlidersHorizontal size={14} aria-hidden="true" />
-        <span className="movie-wall-filters__trigger-label">
-          {isActive ? `${resultCount} matching` : `Filter (${movies.length})`}
-        </span>
-        {activeCount > 0 ? (
+        <SlidersHorizontal
+          size={14}
+          aria-hidden="true"
+          className="movie-wall-filters__trigger-icon"
+        />
+        <span className="movie-wall-filters__trigger-label">Filter</span>
+
+        {/* Mini avatar pips when Aaron or Electra filters are active */}
+        {isAaronFiltered || isElectraFiltered ? (
           <span
-            className="movie-wall-filters__badge"
-            aria-label={`${activeCount} active ${activeCount === 1 ? "filter" : "filters"}`}
+            className="movie-wall-filters__trigger-avatars"
+            aria-hidden="true"
           >
-            {activeCount}
+            {isAaronFiltered ? (
+              <img
+                src={PARTNER_CONFIG.Aaron.avatarSrc}
+                alt=""
+                className="movie-wall-filters__trigger-avatar is-aaron"
+              />
+            ) : null}
+            {isElectraFiltered ? (
+              <img
+                src={PARTNER_CONFIG.Electra.avatarSrc}
+                alt=""
+                className="movie-wall-filters__trigger-avatar is-electra"
+              />
+            ) : null}
           </span>
         ) : null}
+
+        <span
+          className={`movie-wall-filters__count-pill${isActive ? " is-active" : ""}`}
+          aria-label={
+            isActive
+              ? `${resultCount} of ${movies.length} titles matching (${activeCount} active ${activeCount === 1 ? "filter" : "filters"})`
+              : `${movies.length} total titles`
+          }
+        >
+          {isActive ? `${resultCount}/${movies.length}` : movies.length}
+        </span>
+
         <ChevronDown
-          size={14}
+          size={13}
           aria-hidden="true"
           className={`movie-wall-filters__chevron${isOpen ? " is-open" : ""}`}
         />
@@ -258,7 +430,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
       <div className="movie-wall-sort" ref={sortRef}>
         <button
           type="button"
-          className={`movie-wall-sort__trigger${isSortOpen ? " is-open" : ""}`}
+          className={`movie-wall-sort__trigger${isSortOpen ? " is-open" : ""}${currentSort !== "recent" ? " is-customized" : ""}`}
           aria-haspopup="listbox"
           aria-expanded={isSortOpen}
           aria-label={`Sort watchlist by: ${activeSortConfig.label}`}
@@ -267,9 +439,14 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             setIsOpen(false);
           }}
         >
-          <ArrowUpDown size={13} aria-hidden="true" />
+          <ActiveSortIcon
+            size={13}
+            aria-hidden="true"
+            className="movie-wall-sort__trigger-icon"
+          />
           <span className="movie-wall-sort__label">
-            Sort: <strong>{activeSortConfig.shortLabel}</strong>
+            <span className="movie-wall-sort__label-prefix">Sort:</span>{" "}
+            <strong>{activeSortConfig.shortLabel}</strong>
           </span>
           <ChevronDown
             size={13}
@@ -285,7 +462,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             aria-label="Sort watchlist by"
           >
             <div className="movie-wall-sort__header">
-              <span>Sort Order</span>
+              <span>Order Watchlist By</span>
             </div>
             {SORT_OPTIONS.map((option) => {
               const Icon = option.icon;
@@ -299,13 +476,25 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                   className={`movie-wall-sort__option${isSelected ? " is-selected" : ""}`}
                   onClick={() => handleSelectSort(option.value)}
                 >
-                  <Icon size={14} className="movie-wall-sort__option-icon" aria-hidden="true" />
+                  <Icon
+                    size={15}
+                    className="movie-wall-sort__option-icon"
+                    aria-hidden="true"
+                  />
                   <div className="movie-wall-sort__option-text">
-                    <span className="movie-wall-sort__option-title">{option.label}</span>
-                    <span className="movie-wall-sort__option-desc">{option.description}</span>
+                    <span className="movie-wall-sort__option-title">
+                      {option.label}
+                    </span>
+                    <span className="movie-wall-sort__option-desc">
+                      {option.description}
+                    </span>
                   </div>
                   {isSelected ? (
-                    <Check size={14} className="movie-wall-sort__option-check" aria-hidden="true" />
+                    <Check
+                      size={14}
+                      className="movie-wall-sort__option-check"
+                      aria-hidden="true"
+                    />
                   ) : null}
                 </button>
               );
@@ -318,26 +507,40 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
         <button
           type="button"
           className="movie-wall-filters__quick-clear"
-          onClick={() => onChange({ ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: filters.sortBy })}
+          onClick={() =>
+            onChange({ ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: filters.sortBy })
+          }
           aria-label="Clear all movie filters"
-          title="Clear all filters"
+          title="Reset all filters"
         >
-          <X size={13} aria-hidden="true" />
+          <RotateCcw size={13} aria-hidden="true" />
         </button>
       ) : null}
 
-      {/* Active tags row (visible when filters are applied) */}
+      {/* Color-coded active tags ribbon below the command dock */}
       {activeTags.length > 0 ? (
-        <div className="movie-wall-filters__tags" role="list" aria-label="Active filters">
+        <div
+          className="movie-wall-filters__tags"
+          role="list"
+          aria-label="Active filters"
+        >
           {activeTags.map((tag) => (
             <button
               key={tag.id}
               type="button"
-              className="movie-wall-filters__tag"
+              className={`movie-wall-filters__tag movie-wall-filters__tag--${tag.tone}`}
               onClick={tag.onRemove}
               title={`Remove ${tag.label} filter`}
               aria-label={`Remove ${tag.label} filter`}
             >
+              {tag.avatarSrc ? (
+                <img
+                  src={tag.avatarSrc}
+                  alt=""
+                  className="movie-wall-filters__tag-avatar"
+                  aria-hidden="true"
+                />
+              ) : null}
               <span>{tag.label}</span>
               <X size={11} aria-hidden="true" />
             </button>
@@ -346,11 +549,17 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             <button
               type="button"
               className="movie-wall-filters__tag movie-wall-filters__tag--clear-all"
-              onClick={() => onChange({ ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: filters.sortBy })}
+              onClick={() =>
+                onChange({
+                  ...DEFAULT_MOVIE_WALL_FILTERS,
+                  sortBy: filters.sortBy,
+                })
+              }
               title="Clear all filters"
               aria-label="Clear all filters"
             >
-              Clear all
+              <RotateCcw size={11} aria-hidden="true" />
+              <span>Reset</span>
             </button>
           ) : null}
         </div>
@@ -361,22 +570,27 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           id="movie-wall-filter-panel"
           className="movie-wall-filters__panel"
           role="dialog"
-          aria-label="Filter collection"
+          aria-label="Arcade Filter Deck"
         >
-          {/* Header */}
+          {/* Arcade Deck Header */}
           <div className="movie-wall-filters__heading">
             <div className="movie-wall-filters__heading-info">
               <div className="movie-wall-filters__title-row">
-                <SlidersHorizontal size={14} aria-hidden="true" />
-                <strong>Filter Collection</strong>
-                {activeCount > 0 ? (
-                  <span className="movie-wall-filters__panel-badge">
-                    {activeCount} active
-                  </span>
-                ) : null}
+                <span
+                  className="movie-wall-filters__deck-icon"
+                  aria-hidden="true"
+                >
+                  <Gamepad2 size={14} />
+                </span>
+                <strong>Arcade Filter Deck</strong>
+                <span
+                  className={`movie-wall-filters__panel-badge${isActive ? " is-active" : ""}`}
+                >
+                  {resultCount} / {movies.length} matching
+                </span>
               </div>
               <span className="movie-wall-filters__subtitle">
-                {resultCount} of {movies.length} titles matching
+                Mix couple presets, tap partner avatars, or pick a cartridge
               </span>
             </div>
             <div className="movie-wall-filters__heading-actions">
@@ -384,7 +598,12 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                 <button
                   type="button"
                   className="movie-wall-filters__reset-btn"
-                  onClick={() => onChange({ ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: filters.sortBy })}
+                  onClick={() =>
+                    onChange({
+                      ...DEFAULT_MOVIE_WALL_FILTERS,
+                      sortBy: filters.sortBy,
+                    })
+                  }
                 >
                   <RotateCcw size={12} aria-hidden="true" />
                   Reset
@@ -401,14 +620,18 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             </div>
           </div>
 
-          {/* Quick Search */}
+          {/* Quick Keyword Filter */}
           <div className="movie-wall-filters__search-wrap">
-            <Search size={14} className="movie-wall-filters__search-icon" aria-hidden="true" />
+            <Search
+              size={14}
+              className="movie-wall-filters__search-icon"
+              aria-hidden="true"
+            />
             <input
               ref={searchInputRef}
               type="text"
               className="movie-wall-filters__search-input"
-              placeholder="Search title, director, keyword..."
+              placeholder="Filter wall by title, director, or plot keyword..."
               value={filters.query ?? ""}
               onChange={(e) => update("query", e.target.value)}
               aria-label="Filter by title, director, or keyword"
@@ -425,138 +648,244 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             ) : null}
           </div>
 
-          {/* Sort By Section in Filter Panel */}
+          {/* 1. Couple Presets (2x2 Arcade Mode Cards) */}
           <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-title">Order Watchlist By</div>
-            <div className="movie-wall-filters__pills-row">
-              {SORT_OPTIONS.map((opt) => (
+            <div className="movie-wall-filters__section-header">
+              <span className="movie-wall-filters__section-title">
+                Couple Movie Night Modes
+              </span>
+              {(filters.statusPreset ?? "all") !== "all" ? (
                 <button
-                  key={opt.value}
                   type="button"
-                  className={`movie-wall-filters__pill${currentSort === opt.value ? " is-active" : ""}`}
-                  onClick={() => update("sortBy", opt.value)}
+                  className="movie-wall-filters__sub-reset"
+                  onClick={() => update("statusPreset", "all")}
                 >
-                  <opt.icon size={12} aria-hidden="true" />
-                  <span>{opt.label}</span>
+                  Show all statuses
                 </button>
-              ))}
+              ) : null}
             </div>
-          </div>
+            <div className="movie-wall-filters__preset-grid">
+              {COUPLE_PRESET_CARDS.map((card) => {
+                const Icon = card.icon;
+                const currentPreset = filters.statusPreset ?? "all";
+                const isSelected =
+                  card.value === "all"
+                    ? currentPreset === "all" &&
+                      filters.Aaron === "all" &&
+                      filters.Electra === "all"
+                    : currentPreset === card.value;
+                const count = optionCounts.presets[card.value];
 
-          {/* Media Format */}
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-title">Format</div>
-            <div className="movie-wall-filters__pills-grid">
-              <button
-                type="button"
-                className={`movie-wall-filters__pill${filters.format === "all" ? " is-active" : ""}`}
-                onClick={() => update("format", "all")}
-              >
-                All Formats
-              </button>
-              <button
-                type="button"
-                className={`movie-wall-filters__pill${filters.format === "movie" ? " is-active" : ""}`}
-                onClick={() => update("format", "movie")}
-              >
-                <Film size={12} aria-hidden="true" />
-                Films
-              </button>
-              <button
-                type="button"
-                className={`movie-wall-filters__pill${filters.format === "series" ? " is-active" : ""}`}
-                onClick={() => update("format", "series")}
-              >
-                <Tv size={12} aria-hidden="true" />
-                TV Series
-              </button>
-              <button
-                type="button"
-                className={`movie-wall-filters__pill${filters.format === "youtube" ? " is-active" : ""}`}
-                onClick={() => update("format", "youtube")}
-              >
-                <Video size={12} aria-hidden="true" />
-                YouTube
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Status Presets */}
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-title">Watch Status</div>
-            <div className="movie-wall-filters__pills-row">
-              {(
-                [
-                  { value: "all", label: "Any status" },
-                  { value: "queue", label: "In Queue" },
-                  { value: "in_progress", label: "In Progress" },
-                  { value: "both_watched", label: "Both Watched" },
-                ] as const
-              ).map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={`movie-wall-filters__pill${(filters.statusPreset ?? "all") === value ? " is-active" : ""}`}
-                  onClick={() => update("statusPreset", value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Viewer Watch Progress */}
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-title">Progress by Viewer</div>
-            <div className="movie-wall-filters__viewers-grid">
-              {(["Aaron", "Electra"] as const).map((user) => (
-                <div key={user} className="movie-wall-filters__viewer-row">
-                  <span className="movie-wall-filters__viewer-name">{user}</span>
-                  <div className="movie-wall-filters__segmented">
-                    {(["all", "unwatched", "watching", "watched"] as const).map((status) => (
-                      <button
-                        key={status}
-                        type="button"
-                        className={`movie-wall-filters__segment-btn${filters[user] === status ? " is-active" : ""}`}
-                        onClick={() => update(user, status)}
+                return (
+                  <button
+                    key={card.value}
+                    type="button"
+                    className={`movie-wall-filters__preset-card movie-wall-filters__preset-card--${card.tone}${isSelected ? " is-active" : ""}`}
+                    onClick={() => handleSelectCouplePreset(card.value)}
+                    aria-pressed={isSelected}
+                  >
+                    <div className="movie-wall-filters__preset-top">
+                      <span
+                        className="movie-wall-filters__preset-icon"
+                        aria-hidden="true"
                       >
-                        {status === "all" ? "Any" : progressLabels[status]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                        <Icon size={14} />
+                      </span>
+                      <span className="movie-wall-filters__preset-count">
+                        {count}
+                      </span>
+                    </div>
+                    <span className="movie-wall-filters__preset-title">
+                      {card.title}
+                    </span>
+                    <span className="movie-wall-filters__preset-sub">
+                      {card.subtitle}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Added By */}
+          {/* 2. Interactive Partner Avatar Player Cards (Aaron P1 & Electra P2) */}
           <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-title">Added by</div>
-            <div className="movie-wall-filters__pills-row">
-              {(
-                [
-                  { value: "all", label: "Everyone" },
-                  { value: "Aaron", label: "Aaron" },
-                  { value: "Electra", label: "Electra" },
-                ] as const
-              ).map(({ value, label }) => (
+            <div className="movie-wall-filters__section-header">
+              <span className="movie-wall-filters__section-title">
+                Player Filters · Tap Avatar to Cycle Status
+              </span>
+              {filters.Aaron !== "all" ||
+              filters.Electra !== "all" ||
+              filters.addedBy !== "all" ? (
                 <button
-                  key={value}
                   type="button"
-                  className={`movie-wall-filters__pill${filters.addedBy === value ? " is-active" : ""}`}
-                  onClick={() => update("addedBy", value)}
+                  className="movie-wall-filters__sub-reset"
+                  onClick={() =>
+                    onChange({
+                      ...filters,
+                      Aaron: "all",
+                      Electra: "all",
+                      addedBy: "all",
+                    })
+                  }
                 >
-                  {label}
+                  Reset players
                 </button>
-              ))}
+              ) : null}
+            </div>
+
+            <div className="movie-wall-filters__players-grid">
+              {(["Aaron", "Electra"] as const).map((user) => {
+                const cfg = PARTNER_CONFIG[user];
+                const currentStatus = filters[user];
+                const isPickedByUser = filters.addedBy === user;
+                const isPlayerActive =
+                  currentStatus !== "all" || isPickedByUser;
+
+                return (
+                  <div
+                    key={user}
+                    className={`movie-wall-filters__player-card ${cfg.toneClass}${isPlayerActive ? " is-active" : ""}`}
+                  >
+                    <div className="movie-wall-filters__player-header">
+                      <button
+                        type="button"
+                        className={`movie-wall-filters__player-avatar-btn status-${currentStatus}`}
+                        onClick={() => handleCycleViewerProgress(user)}
+                        title={`Tap to cycle ${user}'s watch filter (${progressLabels[currentStatus]})`}
+                        aria-label={`Cycle ${user} watch status filter. Currently ${progressLabels[currentStatus]}`}
+                      >
+                        <span className="movie-wall-filters__player-avatar-wrap">
+                          <img
+                            src={cfg.avatarSrc}
+                            alt={user}
+                            className="movie-wall-filters__player-avatar"
+                          />
+                          <span className="movie-wall-filters__player-tag">
+                            {cfg.playerTag}
+                          </span>
+                        </span>
+                        <span className="movie-wall-filters__player-identity">
+                          <span className="movie-wall-filters__player-name">
+                            {user}
+                          </span>
+                          <span className="movie-wall-filters__player-cycle-hint">
+                            {currentStatus === "all"
+                              ? "Tap to cycle"
+                              : progressLabels[currentStatus]}
+                          </span>
+                        </span>
+                      </button>
+
+                      {/* 1-tap "Picked by" toggle pill */}
+                      <button
+                        type="button"
+                        className={`movie-wall-filters__picked-btn${isPickedByUser ? " is-active" : ""}`}
+                        onClick={() => handleToggleAddedBy(user)}
+                        aria-pressed={isPickedByUser}
+                        title={`Filter titles added by ${user} (${optionCounts.addedBy[user]})`}
+                      >
+                        <Star size={11} aria-hidden="true" />
+                        <span>Picked ({optionCounts.addedBy[user]})</span>
+                      </button>
+                    </div>
+
+                    {/* 4-button status strip with live counts */}
+                    <div
+                      className="movie-wall-filters__player-segments"
+                      role="group"
+                      aria-label={`${user} watch status`}
+                    >
+                      {(
+                        [
+                          { status: "all", label: "Any", icon: null },
+                          { status: "unwatched", label: "Queue", icon: Clock },
+                          { status: "watching", label: "Watching", icon: Eye },
+                          { status: "watched", label: "Seen", icon: Check },
+                        ] as const
+                      ).map(({ status, label }) => {
+                        const isSegActive = currentStatus === status;
+                        const statusCount = optionCounts.viewers[user][status];
+                        return (
+                          <button
+                            key={status}
+                            type="button"
+                            className={`movie-wall-filters__player-seg-btn${isSegActive ? " is-active" : ""}`}
+                            onClick={() =>
+                              handleSelectViewerProgress(user, status)
+                            }
+                            aria-pressed={isSegActive}
+                          >
+                            <span className="movie-wall-filters__player-seg-label">
+                              {label}
+                            </span>
+                            {status !== "all" ? (
+                              <span className="movie-wall-filters__player-seg-count">
+                                {statusCount}
+                              </span>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Genre Cloud */}
+          {/* 3. Format Cartridges (4-column tactile buttons with live counts) */}
+          <div className="movie-wall-filters__section">
+            <div className="movie-wall-filters__section-header">
+              <span className="movie-wall-filters__section-title">
+                Format Cartridges
+              </span>
+              {filters.format !== "all" ? (
+                <button
+                  type="button"
+                  className="movie-wall-filters__sub-reset"
+                  onClick={() => update("format", "all")}
+                >
+                  All formats
+                </button>
+              ) : null}
+            </div>
+            <div className="movie-wall-filters__format-grid">
+              {FORMAT_CARTRIDGES.map(({ value, label, icon: Icon }) => {
+                const isSelected = filters.format === value;
+                const count = optionCounts.formats[value];
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`movie-wall-filters__format-btn${isSelected ? " is-active" : ""}`}
+                    onClick={() =>
+                      update(
+                        "format",
+                        value !== "all" && isSelected ? "all" : value,
+                      )
+                    }
+                    aria-pressed={isSelected}
+                  >
+                    <Icon size={14} aria-hidden="true" />
+                    <span className="movie-wall-filters__format-label">
+                      {label}
+                    </span>
+                    <span className="movie-wall-filters__format-count">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Genre Cloud & Sort Strip */}
           {genres.length > 0 ? (
             <div className="movie-wall-filters__section">
               <div className="movie-wall-filters__section-header">
-                <span className="movie-wall-filters__section-title">Genres</span>
+                <span className="movie-wall-filters__section-title">
+                  Genre Chips
+                </span>
                 {filters.genre !== "all" ? (
                   <button
                     type="button"
@@ -573,7 +902,10 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                   className={`movie-wall-filters__genre-chip${filters.genre === "all" ? " is-active" : ""}`}
                   onClick={() => update("genre", "all")}
                 >
-                  All ({movies.length})
+                  <span>All Genres</span>
+                  <span className="movie-wall-filters__genre-count">
+                    {movies.length}
+                  </span>
                 </button>
                 {genreCounts.map(({ genre, count }) => {
                   const isSelected =
@@ -583,16 +915,44 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                       key={genre}
                       type="button"
                       className={`movie-wall-filters__genre-chip${isSelected ? " is-active" : ""}`}
-                      onClick={() => update("genre", isSelected ? "all" : genre)}
+                      onClick={() =>
+                        update("genre", isSelected ? "all" : genre)
+                      }
                     >
                       <span>{genre}</span>
-                      <span className="movie-wall-filters__genre-count">{count}</span>
+                      <span className="movie-wall-filters__genre-count">
+                        {count}
+                      </span>
                     </button>
                   );
                 })}
               </div>
             </div>
           ) : null}
+
+          {/* 5. Compact Sort Order Strip */}
+          <div className="movie-wall-filters__section">
+            <div className="movie-wall-filters__section-title">
+              Order Watchlist By
+            </div>
+            <div className="movie-wall-filters__sort-grid">
+              {SORT_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = currentSort === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`movie-wall-filters__pill${isSelected ? " is-active" : ""}`}
+                    onClick={() => update("sortBy", opt.value)}
+                  >
+                    <Icon size={12} aria-hidden="true" />
+                    <span>{opt.shortLabel}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Footer Action */}
           <div className="movie-wall-filters__footer">
@@ -614,3 +974,4 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
 };
 
 export default MovieWallFilters;
+
