@@ -1559,12 +1559,13 @@
   z-index: 2;
 }
 
-.library-workspace > .workspace-search__stage {
-  position: absolute;
-  top: 1.15rem;
+.library-workspace > .workspace-search__stage,
+.workspace-search__stage.y2k-command-dock {
+  position: fixed;
+  top: 1rem;
   left: 50%;
-  z-index: 100;
-  width: min(48rem, calc(100vw - 2rem));
+  z-index: 1100;
+  width: min(56rem, calc(100vw - 2rem));
   padding: 0;
   transform: translate3d(-50%, 0, 0);
   opacity: 1;
@@ -1578,8 +1579,10 @@
 }
 
 .library-workspace > .workspace-search__stage:focus-within,
-.library-workspace > .workspace-search__stage:has(.is-autocomplete-active) {
-  z-index: 550;
+.library-workspace > .workspace-search__stage:has(.is-autocomplete-active),
+.workspace-search__stage.y2k-command-dock:focus-within,
+.workspace-search__stage.y2k-command-dock:has(.is-autocomplete-active) {
+  z-index: 1250;
 }
 
 @keyframes searchBarSlideIn {

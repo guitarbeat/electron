@@ -32,6 +32,7 @@
   },
   "private": true,
   "overrides": {
+    "esbuild@<=0.24.2": "^0.25.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "@types/react": "19.1.0",

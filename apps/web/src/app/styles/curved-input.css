@@ -6,7 +6,7 @@
   position: fixed;
   top: 1rem;
   left: 50%;
-  z-index: 60;
+  z-index: 1100;
   width: min(56rem, calc(100vw - 2rem));
   transform: translate3d(-50%, 0, 0);
   pointer-events: auto;
@@ -17,7 +17,7 @@
 .y2k-command-dock:has(.is-autocomplete-active),
 .y2k-command-dock:has(.movie-wall-filters__panel),
 .y2k-command-dock:has(.movie-wall-sort__dropdown) {
-  z-index: 65;
+  z-index: 1250;
 }
 
 .y2k-command-dock__boundary {

@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { PlusIcon } from "@/common/Icons";
@@ -556,10 +557,9 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         Boolean(fetchError) ||
         trimmed.length >= 2);
 
-    return (
-      <>
-        <div className="workspace-search__stage curved-library-search y2k-command-dock">
-          <div
+    const commandDock = (
+      <div className="workspace-search__stage curved-library-search y2k-command-dock">
+        <div
             ref={autocompleteRegionRef}
             className={`curved-library-search__boundary y2k-command-dock__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}${isFocused ? " is-focused" : ""}`}
             onFocusCapture={onFocusCapture}
@@ -856,6 +856,13 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
             </div>
           ) : null}
         </div>
+      );
+
+    return (
+      <>
+        {isMounted && typeof document !== "undefined"
+          ? createPortal(commandDock, document.body)
+          : commandDock}
         {showRecommend && currentUser && hasQuery ? (
           <MovieRecommendationComposer
             currentUser={currentUser}
