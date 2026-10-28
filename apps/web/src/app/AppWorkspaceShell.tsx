@@ -16,7 +16,6 @@ import { BentoSlotContext } from "./providerContexts";
 import type { RegisteredBentoSlotConfig } from "./providerContexts";
 import { isLibraryWorkspaceTab } from "../utils/workspaceConfig";
 import LibraryWorkspace from "../components/library/LibraryWorkspace";
-import { BuildInfoBadge } from "./BuildInfoBadge";
 import {
   MessageBoardPanel as MessageBoard,
   SpinSwipeGamePanel as SpinSwipeGame,
@@ -269,7 +268,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           role="region"
           aria-label="Quick profile controls"
         >
-          <BuildInfoBadge />
           <div className="floating-dock-cluster__profiles">
             <ProfileMenu />
           </div>

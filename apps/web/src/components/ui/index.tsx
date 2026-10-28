@@ -4663,3 +4663,4 @@ export { PageFlip } from "./PageFlip";
 export type { PageFlipProps, PageFlipLeaf, PageFlipEase } from "./PageFlip";
 export { FrameEffect, ViewportFrame, type FrameEffectProps } from "./FrameEffect";
 export { Vignette, type VignetteProps } from "./Vignette";
+export { AppLoadingScreen, type AppLoadingScreenProps, type LoaderDesign } from "./AppLoadingScreen";

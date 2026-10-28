@@ -28,6 +28,7 @@ import {
   WorkspaceTabFallback,
   ViewportFrame,
   Vignette,
+  AppLoadingScreen,
 } from "@/components/ui";
 import AppWorkspaceShell, { type TogglePanel } from "@/app/AppWorkspaceShell";
 import {
@@ -322,73 +323,9 @@ const App: React.FC = () => {
           className={isFrameCompact ? "viewport-frame--compact" : ""}
         />
 
-        {/* Center Aaron & Electra Retro Arcade Loading Badge framed by ViewportFrame */}
+        {/* Loading Screen with selectable UI/UX designs */}
         {isIntroMounted ? (
-          <div
-            className={`y2k-arcade-loader${isBadgeExiting ? " is-exiting" : ""}`}
-            role="status"
-            aria-live="polite"
-            aria-label="Loading Aaron and Electra movie collection"
-          >
-            <div className="y2k-arcade-loader__card">
-              <div className="y2k-arcade-loader__header">
-                <span>CINEMA ARCADE</span>
-                <span className="y2k-arcade-loader__tag">2P CO-OP</span>
-              </div>
-
-              <div className="y2k-arcade-loader__players">
-                <div className="y2k-arcade-loader__player y2k-arcade-loader__player--aaron">
-                  <div className="y2k-arcade-loader__avatar-ring">
-                    <img
-                      src="/aaron-avatar.png"
-                      alt="Aaron"
-                      className="y2k-arcade-loader__avatar-img"
-                      draggable={false}
-                    />
-                  </div>
-                  <span className="y2k-arcade-loader__player-name">Aaron</span>
-                </div>
-
-                <span className="y2k-arcade-loader__versus" aria-hidden="true">
-                  +
-                </span>
-
-                <div className="y2k-arcade-loader__player y2k-arcade-loader__player--electra">
-                  <div className="y2k-arcade-loader__avatar-ring">
-                    <img
-                      src="/electra-button.png"
-                      alt="Electra"
-                      className="y2k-arcade-loader__avatar-img"
-                      draggable={false}
-                    />
-                  </div>
-                  <span className="y2k-arcade-loader__player-name">
-                    Electra
-                  </span>
-                </div>
-              </div>
-
-              <div className="y2k-arcade-loader__footer">
-                <div className="y2k-arcade-loader__bar" aria-hidden="true">
-                  {Array.from({ length: 8 }, (_, idx) => (
-                    <span
-                      key={idx}
-                      className="y2k-arcade-loader__segment"
-                      style={
-                        { "--seg-idx": idx } as React.CSSProperties
-                      }
-                    />
-                  ))}
-                </div>
-                <div className="y2k-arcade-loader__status">
-                  <span>
-                    {isBadgeExiting ? "READY TO WATCH" : "LOADING COLLECTION"}
-                  </span>
-                  <span>{isBadgeExiting ? "100%" : "SYNCING"}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AppLoadingScreen isExiting={isBadgeExiting} />
         ) : null}
 
         {/* Vignette edge lighting from woods.engineer */}
