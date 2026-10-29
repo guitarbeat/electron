@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan to fix dev server instability, eliminating constant disconnect and reconnect loops on initial page load by disabling failing HMR WebSockets, stabilizing Vite server configuration, and streamlining startup asset loading.",
-  "updatedAt":  "2026-10-27T13:41:43.265043797Z",
+  "summary":  "Implementation plan for adding visual watch-status treatments (color-coded glowing borders, corner mini-avatars with status rings, dimmed watched posters, and clean unseen posters) to the moving movie poster wall.",
+  "updatedAt":  "2026-10-29T05:08:09.555083257Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

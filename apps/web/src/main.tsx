@@ -56,49 +56,23 @@ root.render(
 );
 
 if ("serviceWorker" in navigator) {
-  if (import.meta.env.DEV || window.location.hostname.includes("ais-dev")) {
-    // Unregister any active service worker and wipe CacheStorage in dev/preview
-    navigator.serviceWorker
-      .getRegistrations()
-      .then((registrations) => {
-        for (const registration of registrations) {
-          void registration.unregister();
+  navigator.serviceWorker
+    .getRegistrations()
+    .then((registrations) => {
+      for (const registration of registrations) {
+        void registration.unregister();
+      }
+    })
+    .catch(() => undefined);
+
+  if ("caches" in window) {
+    caches
+      .keys()
+      .then((keys) => {
+        for (const key of keys) {
+          void caches.delete(key);
         }
       })
       .catch(() => undefined);
-
-    if ("caches" in window) {
-      caches
-        .keys()
-        .then((keys) => {
-          for (const key of keys) {
-            void caches.delete(key);
-          }
-        })
-        .catch(() => undefined);
-    }
-  } else if (import.meta.env.PROD) {
-    const registerSW = () => {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => {
-          registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener("statechange", () => {
-                if (
-                  newWorker.state === "installed" &&
-                  navigator.serviceWorker.controller
-                ) {
-                  newWorker.postMessage({ type: "SKIP_WAITING" });
-                }
-              });
-            }
-          });
-        })
-        .catch(() => undefined);
-    };
-
-    window.addEventListener("load", registerSW);
   }
 }

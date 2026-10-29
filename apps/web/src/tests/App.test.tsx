@@ -26,11 +26,6 @@ import {
 } from '@/app/appViewState';
 import type { QuizResult } from '@/shared/types';
 
-// Mock SpeedInsights to prevent external network interactions during test
-vi.mock('@vercel/speed-insights/react', () => ({
-  SpeedInsights: () => null,
-}));
-
 // Mock lazy feature panels to prevent unmounted asynchronous imports in tests
 vi.mock('@/app/lazyFeaturePanels', () => ({
   LibraryWorkspacePanel: () => <div data-testid="mock-library-panel" />,

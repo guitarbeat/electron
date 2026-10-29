@@ -147,19 +147,35 @@ export const MovieCard: React.FC<MovieCardProps> = ({
     }
   };
 
+  const watchingCount = movie.watchingBy?.length ?? 0;
+  const watchedCount = movie.watchedBy.length;
+  const isWatching = watchingCount > 0;
+  const isWatched = !isWatching && watchedCount > 0;
+  const isBothWatched = watchedCount >= 2;
+  const watchState: "unwatched" | "watching" | "watched" | "watched-both" =
+    isWatching
+      ? "watching"
+      : isWatched
+        ? isBothWatched
+          ? "watched-both"
+          : "watched"
+        : "unwatched";
+
   return (
     <>
       <div
-        className={`movie-item-container ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
+        className={`movie-item-container movie-item-container--${watchState} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
         data-movie-id={movie.id}
+        data-watch-state={watchState}
         aria-label={`${movie.title}${movie.year ? ` (${movie.year})` : ""}`}
       >
         <CardTiltShell disabled={isCompact}>
           <Card
             ref={cardRef}
             variant="default"
-            className="movie-item-card chroma-card"
+            className={`movie-item-card movie-item-card--${watchState} chroma-card`}
             data-added-by={movie.addedBy}
+            data-watch-state={watchState}
             style={{
               padding: 0,
               overflow: "hidden",
@@ -178,11 +194,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 priority={priorityPoster}
               />
 
-              <MediaCardWatcherStack
-                watchers={movie.watchedBy}
-                watching={movie.watchingBy}
-                className="movie-item-watchers"
-              />
+              {watchState !== "unwatched" && (
+                <MediaCardWatcherStack
+                  watchers={movie.watchedBy}
+                  watching={movie.watchingBy}
+                  className="movie-item-watchers"
+                />
+              )}
 
               <button
                 type="button"

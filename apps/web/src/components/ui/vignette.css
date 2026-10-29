@@ -2,37 +2,37 @@
   --vignette-blur-strength: 70px;
   --vignette-blur-saturation: 2.2;
   --vignette-blur-fallback-opacity: 0.6;
-  --vignette-blur-glow-color: rgba(255, 255, 255, 0.2);
+  --vignette-blur-glow-color: rgba(255, 255, 255, 0.14);
 
-  --vignette-top-height-desktop: 8rem;
-  --vignette-top-height-mobile: 5rem;
-  --vignette-top-blur-strength: 70px;
-  --vignette-top-gradient-stop: 80%;
-  --vignette-top-opacity: 0.9;
+  --vignette-top-height-desktop: 9.5rem;
+  --vignette-top-height-mobile: 6.75rem;
+  --vignette-top-blur-strength: 56px;
+  --vignette-top-gradient-stop: 58%;
+  --vignette-top-opacity: 1;
 
   --vignette-bottom-height-desktop: 3rem;
   --vignette-bottom-height-mobile: 2rem;
-  --vignette-bottom-blur-strength: 70px;
+  --vignette-bottom-blur-strength: 48px;
   --vignette-bottom-gradient-stop: 80%;
-  --vignette-bottom-opacity: 0.9;
+  --vignette-bottom-opacity: 1;
 
   --vignette-left-width-desktop: 2rem;
   --vignette-left-width-mobile: 1rem;
-  --vignette-left-blur-strength: 70px;
+  --vignette-left-blur-strength: 48px;
   --vignette-left-gradient-stop: 80%;
-  --vignette-left-opacity: 0.9;
+  --vignette-left-opacity: 1;
 
   --vignette-right-width-desktop: 2rem;
   --vignette-right-width-mobile: 1rem;
-  --vignette-right-blur-strength: 70px;
+  --vignette-right-blur-strength: 48px;
   --vignette-right-gradient-stop: 80%;
-  --vignette-right-opacity: 0.9;
+  --vignette-right-opacity: 1;
 
   --vignette-gradient-light-start: rgba(255, 255, 255, 0);
   --vignette-gradient-light-end: rgba(255, 255, 255, 1);
   --vignette-gradient-dark-start: rgba(0, 0, 0, 0);
   --vignette-gradient-dark-end: rgba(0, 0, 0, 1);
-  --vignette-gradient-dark-middle: rgba(0, 0, 0, 0.8);
+  --vignette-gradient-dark-middle: rgba(0, 0, 0, 0.92);
 
   --vignette-z-index: 15;
 }
@@ -58,11 +58,58 @@
   content: "";
   position: absolute;
   inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 13, 22, 0.68) 0%,
+    rgba(9, 13, 22, 0.48) 52%,
+    rgba(9, 13, 22, 0) 100%
+  );
+  -webkit-backdrop-filter: blur(var(--vignette-top-blur-strength)) saturate(var(--vignette-blur-saturation));
   backdrop-filter: blur(var(--vignette-top-blur-strength)) saturate(var(--vignette-blur-saturation));
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  mask-image: linear-gradient(to top, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-top-gradient-stop), var(--vignette-gradient-dark-end));
-  -webkit-mask-image: linear-gradient(to top, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-top-gradient-stop), var(--vignette-gradient-dark-end));
-  opacity: var(--vignette-top-opacity);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #000000 var(--vignette-top-gradient-stop),
+    rgba(0, 0, 0, 0.55) 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #000000 var(--vignette-top-gradient-stop),
+    rgba(0, 0, 0, 0.55) 78%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.vignette-top::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--frame-border-top-width, 4.65rem) + var(--frame-border-radius, 20px));
+  background: linear-gradient(
+    180deg,
+    rgba(12, 18, 32, 0.52) 0%,
+    rgba(12, 18, 32, 0.34) 72%,
+    rgba(12, 18, 32, 0) 100%
+  );
+  -webkit-backdrop-filter: blur(36px) saturate(1.9);
+  backdrop-filter: blur(36px) saturate(1.9);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #000000 76%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000000 0%,
+    #000000 76%,
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 .vignette-bottom {
@@ -76,11 +123,11 @@
   content: "";
   position: absolute;
   inset: 0;
+  -webkit-backdrop-filter: blur(var(--vignette-bottom-blur-strength)) saturate(var(--vignette-blur-saturation));
   backdrop-filter: blur(var(--vignette-bottom-blur-strength)) saturate(var(--vignette-blur-saturation));
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
-  opacity: var(--vignette-bottom-opacity);
+  mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
 }
 
 .vignette-left {
@@ -94,11 +141,11 @@
   content: "";
   position: absolute;
   inset: 0;
+  -webkit-backdrop-filter: blur(var(--vignette-left-blur-strength)) saturate(var(--vignette-blur-saturation));
   backdrop-filter: blur(var(--vignette-left-blur-strength)) saturate(var(--vignette-blur-saturation));
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
-  opacity: var(--vignette-left-opacity);
+  mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
 }
 
 .vignette-right {
@@ -112,11 +159,11 @@
   content: "";
   position: absolute;
   inset: 0;
+  -webkit-backdrop-filter: blur(var(--vignette-right-blur-strength)) saturate(var(--vignette-blur-saturation));
   backdrop-filter: blur(var(--vignette-right-blur-strength)) saturate(var(--vignette-blur-saturation));
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
   -webkit-mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
-  opacity: var(--vignette-right-opacity);
+  mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
 }
 
 @keyframes vignette-slide-down {

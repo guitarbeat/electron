@@ -9,11 +9,8 @@ export const preloadWorkspaceTab = (tab: MainTab): Promise<unknown> => {
     case "messages":
       return import("@/components/messages");
     case "movies":
-      return import("@/components/movies");
-    case "places":
-      return import("@/components/places");
     default:
-      return Promise.resolve();
+      return import("@/components/movies");
   }
 };
 

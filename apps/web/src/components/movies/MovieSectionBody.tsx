@@ -67,7 +67,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onDeleteRequest,
   onToggleError,
   actions,
-  posterPlaceCards = [],
 }) => {
   const wallContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
@@ -274,7 +273,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     return interleaveCollectionItems(
       suggestionCards,
       movieCards,
-      posterPlaceCards,
     );
   }, [
     collectionState,
@@ -289,7 +287,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     successMovieId,
     onAcceptSuggestion,
     onRejectSuggestion,
-    posterPlaceCards,
     actions,
     onDeleteRequest,
     onToggleError,
@@ -302,27 +299,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
 
     const props = item.props as {
       movie?: Movie;
-      "data-quiz-card"?: boolean;
-      isQuizCard?: boolean;
-      "data-spin-card"?: boolean;
-      isSpinCard?: boolean;
       "data-chat-card"?: boolean;
       isChatCard?: boolean;
     };
-
-    if (props["data-quiz-card"] || props.isQuizCard) {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("open-quiz-experience"));
-      }
-      return;
-    }
-
-    if (props["data-spin-card"] || props.isSpinCard) {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("open-spin-experience"));
-      }
-      return;
-    }
 
     if (props["data-chat-card"] || props.isChatCard) {
       if (typeof window !== "undefined") {
@@ -414,11 +393,11 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             className="poster-wall-empty"
           >
             <MoviesEmptyIllustration />
-            <strong>{hasActiveFilters ? "No matching titles" : "No cards yet"}</strong>
+            <strong>{hasActiveFilters ? "No matching titles" : "No movies yet"}</strong>
             <span>
               {hasActiveFilters
                 ? "Try a broader combination or clear the wall filters."
-                : "Add a movie, suggestion, or place to fill this wall."}
+                : "Add a movie or suggestion to fill this wall."}
             </span>
             {hasActiveFilters ? (
               <button

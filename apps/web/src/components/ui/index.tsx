@@ -1376,16 +1376,16 @@ export const MediaCardWatcherStack: React.FC<MediaCardWatcherStackProps> = ({
   return (
     <div className={`media-card-watchers-stack ${className}`.trim()}>
       {people.map((user) => {
-        const status = watchers.includes(user) ? "watched" : "watching";
+        const status = watching.includes(user) ? "watching" : "watched";
         return (
-        <WatcherBadge
-          key={user}
-          user={user}
-          size={size}
-          showLabel={showLabel}
-          className={`media-card-watcher-badge media-card-watcher-badge--${status}`}
-          status={status}
-        />
+          <WatcherBadge
+            key={user}
+            user={user}
+            size={size}
+            showLabel={showLabel}
+            className={`media-card-watcher-badge media-card-watcher-badge--${status}`}
+            status={status}
+          />
         );
       })}
     </div>
@@ -2475,6 +2475,8 @@ export const UserAvatar: FC<Props_UserAvatar> = ({ user }) => {
       <img
         src={photoUrl}
         alt=""
+        width={56}
+        height={56}
         className="app-header__avatar-image"
         draggable="false"
         onError={() => setImgFailed(true)}
@@ -3750,6 +3752,8 @@ const WatcherBadgePhoto: React.FC<WatcherBadgePhotoProps> = ({ user }) => {
     <img
       src={sources[index]}
       alt={user}
+      width={32}
+      height={32}
       className="watcher-badge__avatar-photo"
       onError={handleError}
       draggable={false}
@@ -3779,18 +3783,49 @@ export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
     `watcher-badge--${variant}`,
     `watcher-badge--${size}`,
     `watcher-badge--${user.toLowerCase()}`,
+    status && `watcher-badge--status-${status}`,
     className,
   );
 
   return (
     <div
       className={badgeClassName}
+      data-status={status}
       aria-label={status ? `${user}: ${status}` : user}
       title={status ? `${user}: ${status}` : user}
     >
       <div className="watcher-badge__avatar">
         <WatcherBadgePhoto user={user} />
-        {status ? <span className="watcher-badge__status" aria-hidden="true" /> : null}
+        {status ? (
+          <span
+            className={`watcher-badge__status watcher-badge__status--${status}`}
+            aria-hidden="true"
+          >
+            {status === "watched" ? (
+              <svg
+                viewBox="0 0 12 12"
+                width="10"
+                height="10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="2 6.5 4.8 9.2 10 3" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 12 12"
+                width="9"
+                height="9"
+                fill="currentColor"
+              >
+                <path d="M3 2L10.2 6L3 10V2Z" />
+              </svg>
+            )}
+          </span>
+        ) : null}
       </div>
       {showLabel ? <span className="watcher-badge__label">{user}</span> : null}
     </div>
@@ -4663,4 +4698,3 @@ export { PageFlip } from "./PageFlip";
 export type { PageFlipProps, PageFlipLeaf, PageFlipEase } from "./PageFlip";
 export { FrameEffect, ViewportFrame, type FrameEffectProps } from "./FrameEffect";
 export { Vignette, type VignetteProps } from "./Vignette";
-export { AppLoadingScreen, type AppLoadingScreenProps, type LoaderDesign } from "./AppLoadingScreen";

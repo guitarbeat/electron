@@ -36,9 +36,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-img {
-  content-visibility: auto;
-}
+/* Avoid global content-visibility: auto on img so small avatar & badge PNGs never skip painting */
 
 /* ── Modern Typography (text-wrap balance & pretty) ──────────────── */
 h1, h2, h3, h4, h5, h6 {

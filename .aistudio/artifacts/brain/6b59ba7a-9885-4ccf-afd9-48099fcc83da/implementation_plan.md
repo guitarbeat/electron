@@ -1,67 +1,90 @@
-# Dev Server & Initial Load Stabilization Plan
+# Moving Wall Watch Status Indicators
 
-## Overview
-The user reported that the website experiences constant dev server disconnects and reconnects immediately upon initial site load. 
+Add instant visual recognition for **Watched**, **Currently Watching**, and **Not Yet Seen** movies directly on the moving poster wall so Aaron and Electra can scan the drifting grid at a glance without opening individual movie cards.
 
-### Root Cause Analysis
-1. **Vite HMR WebSocket Loop in Cloud Preview Environment**:
-   - In `apps/web/vite.config.ts`, HMR is currently evaluated as `hmr: process.env.DISABLE_HMR !== "true"`. In the AI Studio container environment, `DISABLE_HMR` is not set by default, so Vite injects the `@vite/client` runtime which immediately attempts a WebSocket connection to `wss://ais-dev-*.run.app:3000`.
-   - The Cloud Run preview ingress proxy does not support raw HMR WebSockets, causing the WebSocket connection to immediately fail with connection resets.
-   - When Vite client detects WebSocket loss, it triggers `[vite] server disconnected. polling for restart...` and forces a browser reload (`location.reload()`). On reload, the exact same failure occurs instantly, resulting in an infinite reload and disconnect/reconnect loop on startup.
-   - The environment constraints explicitly dictate: *"- HMR: Disabled. Ignore WebSocket errors."*
-2. **File Watcher & Container Process Churn**:
-   - When Vite's file watcher is active in large monorepos with deep `node_modules`, it consumes file descriptors and CPU, triggering container throttles.
-3. **Startup Script & Service Worker Race Conditions**:
-   - Startup scripts in `index.html` aggressively unregister service workers and purge caches while assets are actively being fetched, causing transient network aborts during first paint.
+## User Review & Critical Decisions
+
+> [!IMPORTANT]
+> The visual treatments below incorporate all three preferences confirmed during planning:
+> - **Confirmed Decision 1 (Watched & Watching Indicators)**: Combine color-coded glowing poster borders, compact corner mini-avatars with color-coded status rings, and dimmed/desaturated artwork for already-watched posters.
+> - **Confirmed Decision 2 (Unseen Poster Treatment)**: Keep movies that have not yet been seen completely clean with full-brightness artwork and zero badge clutter.
+> - **Confirmed Decision 3 (Filter Controls)**: Keep status filtering inside the existing Filter popover menu without adding extra quick-toggle pills to the top command bar.
 
 ---
 
-## User Review Required
-> [!NOTE]
-> Disabling HMR WebSockets in the development preview container stops the browser from continuously disconnecting and auto-reloading on load. When code changes are made, page updates will refresh reliably without infinite reconnect loops.
+## 1. Overview & Core Concept
+
+- **What It Does**: Gives every poster on the moving wall (`DriftWall`) a distinct, immediate visual signature based on whether either partner is currently watching it, has already watched it, or hasn't seen it yet.
+- **Target Audience / Persona**: Aaron and Electra browsing the moving poster wall together to pick their next watch or see what is currently in progress.
+- **Key Value**: Eliminates guesswork while panning across dozens of moving posters—unwatched discoveries pop at full vibrancy, in-progress titles glow warmly, and completed watches recede subtly while showing who watched them.
 
 ---
 
-## Proposed Changes
+## 2. User Experience & Visual Design
 
-### 1. Stabilize Vite Dev Server Configuration
-#### `apps/web/vite.config.ts`
-- Update `server.hmr` to default to `false` in cloud/container preview environments (`hmr: false` or `hmr: process.env.DISABLE_HMR === "false"`), completely eliminating the failing WebSocket reconnection loop.
-- Set `server.watch: null` when HMR is disabled to eliminate unnecessary file watcher process churn and CPU spikes.
-- Ensure `server.cors: true` and appropriate allowed host configurations (`allowedHosts: true`).
-- Ensure port 3000 is strictly bound and `clearScreen: false` remains active.
+- **Key User Flows**:
+  1. **Scanning the Moving Wall**:
+     - **Not Yet Seen (Unwatched)**: Renders at 100% poster vibrancy with a clean border and zero corner badges so discovery remains uncluttered.
+     - **Currently Watching**: Stands out with a warm amber/gold glowing border (`#f59e0b` / `rgba(251, 191, 36, 0.78)`), a subtle ambient outer halo, and compact circular mini-avatars in the bottom-right corner ringed in glowing amber with a mini play/watching status badge.
+     - **Already Watched**: Recedes visually with desaturated, dimmed poster artwork (`saturate(0.38) brightness(0.68)` and reduced base opacity), paired with an emerald-green status border (`#10b981` / `rgba(52, 211, 153, 0.55)`) and corner mini-avatars ringed in emerald green with a crisp checkmark status badge.
+  2. **Hover & Focus Inspection**:
+     - Hovering or focusing any dimmed **Watched** poster smoothly restores full poster brightness and color saturation so artwork and details remain effortless to inspect.
+  3. **Toggling Status from Detail Modal**:
+     - Marking a movie as *Watching* or *Watched* inside the detail modal immediately updates the poster's border glow, artwork saturation, and corner watcher badges on the moving wall.
 
-### 2. Environment Configuration
-#### `.env` and `.env.example`
-- Add `DISABLE_HMR=true` to guarantee HMR WebSockets are explicitly disabled across all sub-processes and Vite configurations.
-
-### 3. Dev Script Alignment
-#### `apps/web/package.json` & `package.json`
-- Ensure `apps/web/package.json` `"dev"` script specifies `--port=3000 --host=0.0.0.0` per the Golden Path framework guidelines.
-- Confirm root `package.json` calls `npm --prefix apps/web run dev` cleanly without nested loops.
-
-### 4. Startup Module & Asset Loading Resilience
-#### `apps/web/src/app/preloadAppModules.ts`
-- Wrap initial `/api/session` and `/api/state` warming calls with an explicit abort timeout (e.g. 4000ms) and silent fallback, so any slow container responses or network hiccups never hang the initial paint or trigger error boundaries.
-
-#### `apps/web/index.html`
-- Guard the development service worker cleanup so it runs asynchronously after the main application shell has finished mounting (`window.addEventListener('load', ...)`), preventing asset fetch cancellation during first paint.
+- **Visual Identity & Theme**:
+  - *Aesthetic Direction*: Cinematic dark glassmorphism consistent with the existing synthwave/editorial poster wall.
+  - *Color Palette & Status Tokens*:
+    - **Watching Accent**: Warm Amber (`#f59e0b`, border glow `rgba(251, 191, 36, 0.72)`, outer halo `rgba(245, 158, 11, 0.28)`).
+    - **Watched Accent**: Emerald Teal (`#10b981`, border glow `rgba(52, 211, 153, 0.52)`, subtle inner frame).
+    - **Unwatched Surface**: Existing clean glass frame (`var(--color-border)`) at full contrast.
+  - *Corner Mini-Avatar Stack*:
+    - Positioned in the bottom-right corner of the poster (`28px` circular avatars with slight horizontal overlap when both Aaron and Electra appear).
+    - Dark glass backing (`rgba(12, 10, 18, 0.88)`), `2px` color-coded status ring (amber for watching, emerald for watched), and a `12px` corner status indicator dot (`▶` pulse dot for watching, `✓` check for watched).
 
 ---
 
-## Verification Plan
+## 3. Key Product Decisions & Trade-Offs
 
-### Automated Verification
-1. **Compilation Check**: Run `compile_applet` to verify that the Vite configuration and web package compile cleanly with zero errors.
-2. **Code Hygiene & Linting**: Run `lint_applet` to ensure zero ESLint warnings or syntax errors.
-3. **Test Suite**: Run `npm run test:unit` via `run_command` to verify all 659 unit tests continue passing.
+- **Decision 1: Three-Signal Hierarchy (Border + Dimming + Corner Avatar Ring)**
+  - *Chosen Approach*: Combine poster-level treatments (glowing status border + watched desaturation) with person-level treatments (compact ringed mini-avatars in the corner).
+  - *Why*: During fast panning or zoomed-out views on the moving wall, border color and poster brightness are readable from afar, while the corner mini-avatars answer *who* watched or is watching up close.
+  - *Alternatives Considered*: Text ribbon banners across the top of posters were passed over because they obscure poster typography and add visual noise.
+- **Decision 2: Zero-Clutter Unseen Posters**
+  - *Chosen Approach*: Render no corner badges, status pills, or extra rings when `watchedBy` and `watchingBy` are both empty.
+  - *Why*: Since the primary goal of the wall is discovering what to watch next, unseen posters should command the strongest visual contrast and cleanest presentation.
 
-### Manual Verification Walkthrough
-1. **Dev Server Restart & Stability**:
-   - Restart the dev server with `restart_dev_server`.
-   - Open the development app URL (`https://ais-dev-pu3pqujtddceme4x44d6xb-21866646657.us-east1.run.app`).
-   - Verify in browser dev tools / console that there are NO repeated `[vite] server disconnected` or WebSocket connection retry loops.
-2. **Initial Load Experience**:
-   - Refresh the page and confirm the Aaron + Electra loading sequence displays smoothly and transitions to the poster wall without unexpected disconnects, freezes, or reloads.
-3. **Interactive Features**:
-   - Verify movie posters load, search and filter bars work, and navigation between tabs functions stably.
+---
+
+## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+
+- **Architecture & Component Diagram**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Moving Poster Wall                              │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │ Movie item state derivation (watchedBy[] + watchingBy[])          │  │
+│  │  ├─ "watching"     (watchingBy.length > 0)                        │  │
+│  │  ├─ "watched-both" (watchingBy.length === 0 && watchedBy >= 2)    │  │
+│  │  ├─ "watched"      (watchingBy.length === 0 && watchedBy === 1)   │  │
+│  │  └─ "unwatched"    (both empty)                                   │  │
+│  └───────────────┬───────────────────────────────────┬───────────────┘  │
+│                  │                                   │                  │
+│                  ▼                                   ▼                  │
+│  ┌───────────────────────────────┐   ┌───────────────────────────────┐  │
+│  │ Poster Frame & Artwork Layer  │   │ Corner Watcher Avatar Stack   │  │
+│  │  • Status border & outer glow │   │  • Hidden when "unwatched"    │  │
+│  │  • Dim/desaturate on watched  │   │  • 28px circular avatar photo │  │
+│  │  • Full vibrancy on hover     │   │  • Status ring (Amber/Green)  │  │
+│  └───────────────────────────────┘   └───────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Data Model & State**:
+  - Uses existing movie fields (`watchedBy: User[]` and `watchingBy?: User[]`) with no schema migrations required.
+  - Derives a deterministic `watchState` attribute (`"unwatched" | "watching" | "watched" | "watched-both"`) on each poster card container.
+- **Interactive Component & State Mapping**:
+  - **Poster Container (`data-watch-state`)**: Drives hardware-accelerated CSS border glow, ambient shadow, and poster image filter transitions (`filter`, `opacity`, `border-color`, `box-shadow`).
+  - **Watcher Stack & Mini-Avatar Badges**: Renders only when at least one user is in `watchingBy` or `watchedBy`. Each avatar displays a circular clipped photo (with initial fallback), a status-colored ring (`watching` vs `watched`), and a micro status badge in the lower-right corner of the avatar.

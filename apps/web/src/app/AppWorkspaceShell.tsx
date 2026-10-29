@@ -18,7 +18,6 @@ import { isLibraryWorkspaceTab } from "../utils/workspaceConfig";
 import LibraryWorkspace from "../components/library/LibraryWorkspace";
 import {
   MessageBoardPanel as MessageBoard,
-  SpinSwipeGamePanel as SpinSwipeGame,
 } from "./lazyFeaturePanels";
 import {
   GlobalErrorBoundary,
@@ -79,14 +78,8 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     <MessageBoard />
   );
   const isChatOpen = openPanels.has("messages");
-  const hasInlinePanels = openPanels.has("spin");
   const [chatRendered, setChatRendered] = useState(isChatOpen);
   const [chatClosing, setChatClosing] = useState(false);
-
-  // Initialize Web Vitals and initial navigation timing observability on shell mount
-  useEffect(() => {
-    logger.initWebVitalsObservability("AppWorkspaceShell:WebVitals");
-  }, []);
 
   // Performance timer observing tab transition and initial render responsiveness
   const prevTabRef = useRef<MainTab>(activeTab);
@@ -169,12 +162,12 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   return (
     <BentoSlotContext.Provider value={contextValue}>
       <h1 className="sr-only">
-        {isLibraryWorkspaceTab(activeTab) ? "Movies & Places" : "Message Board"}
+        {isLibraryWorkspaceTab(activeTab) ? "Movies" : "Message Board"}
       </h1>
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {isLibraryWorkspaceTab(activeTab)
-          ? "Movies and places workspace"
+          ? "Movies workspace"
           : "Messages workspace"}
       </p>
 
@@ -184,42 +177,13 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         className="workspace-stage workspace-stage--simplified workspace-stage--fullbleed"
         tabIndex={-1}
       >
-        {/* Toggle panels — inline, all can be open simultaneously */}
-        {hasInlinePanels && (
-          <div className="toggle-panels">
-            {openPanels.has("spin") && (
-              <section
-                className="toggle-panel toggle-panel--spin"
-                aria-label="Spin"
-              >
-                <div className="toggle-panel__header">
-                  <h2 className="toggle-panel__title">Spin</h2>
-                  <button
-                    type="button"
-                    className="toggle-panel__close"
-                    onClick={() => handleTogglePanel("spin")}
-                    aria-label="Close spin"
-                  >
-                    ×
-                  </button>
-                </div>
-                <GlobalErrorBoundary moduleName="SpinWheelGame">
-                  <React.Suspense fallback={null}>
-                    <SpinSwipeGame />
-                  </React.Suspense>
-                </GlobalErrorBoundary>
-              </section>
-            )}
-          </div>
-        )}
-
         {/* Primary workspace content */}
         <section
           className={`workspace-surface workspace-surface--${isLibraryWorkspaceTab(activeTab) ? "movies" : activeTab}`}
           style={{ position: "relative", minWidth: 0 }}
           aria-label={
             isLibraryWorkspaceTab(activeTab)
-              ? "Movies and places workspace"
+              ? "Movies workspace"
               : "Messages workspace"
           }
         >

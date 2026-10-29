@@ -14,7 +14,6 @@ import { PlusIcon } from "@/common/Icons";
 import { useUser, useToast } from "@/app/providerContexts";
 import { useMovies } from "@/hooks/movies";
 import { useSuggestions } from "@/hooks/suggestions";
-import { usePlaces, usePlaceSuggestions } from "@/hooks/places";
 import {
   searchMovieAutocomplete,
   getCachedMovieAutocomplete,
@@ -42,11 +41,8 @@ import {
   useWorkspaceAutocompleteNavigation,
   useWorkspaceSearchInputHandle,
 } from "@/components/ui/lib/workspaceListAutocomplete";
-import { LIBRARY_PLACES_ANCHOR_ID } from "@/utils/workspaceConfig";
 import {
   buildLibraryAutocompleteRows,
-  classifyLibraryIntent,
-  libraryAlternateKind,
   libraryAutocompleteGroupLabel,
   librarySubmitLabel,
   normalizeLibraryQuery,
@@ -80,12 +76,6 @@ const revealLibraryItem = (selection: LibrarySelection) => {
         }, 150);
       }
     }
-    return;
-  }
-  if (selection?.kind === "library-place") {
-    document
-      .getElementById(`place-card-${selection.placeId}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 };
 
@@ -93,17 +83,11 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
   ({ filterSlot }, forwardedRef) => {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
-    const isSearchActive = isFocused || query.length > 0;
 
     const { currentUser } = useUser();
     const { showToast } = useToast();
     const { movies, addMovie, deleteMovie } = useMovies(currentUser);
     const { addSuggestion } = useSuggestions();
-    const { places, addPlace, removePlace } = usePlaces(
-      currentUser,
-      !isSearchActive,
-    );
-    const { addPlaceSuggestion } = usePlaceSuggestions(!isSearchActive);
 
     const inputRef = useRef<HTMLInputElement>(null);
     const autocompleteRegionRef = useRef<HTMLDivElement>(null);
@@ -140,17 +124,24 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         buildLibraryAutocompleteRows({
           query: trimmed,
           movies,
-          places,
+          places: [],
           movieResults,
-        }),
-      [movieResults, movies, places, trimmed],
+        }).filter(
+          (row) =>
+            row.selection?.kind !== "place-draft" &&
+            row.selection?.kind !== "library-place",
+        ),
+      [movieResults, movies, trimmed],
     );
-    const submitKind = resolveLibrarySubmitKind({
+    const rawSubmitKind = resolveLibrarySubmitKind({
       query: trimmed,
       selection,
       movieResultCount: movieResults.length,
     });
-    const alternateKind = libraryAlternateKind(submitKind);
+    const submitKind: LibrarySubmitKind =
+      rawSubmitKind === "place" || rawSubmitKind === "show-place"
+        ? "movie"
+        : rawSubmitKind;
     const primaryLabel = librarySubmitLabel(submitKind, isGuest);
     const hasQuery = trimmed.length > 0;
 
@@ -220,15 +211,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         setMovieResults([]);
         setFetchError(null);
         setIsLoading(false);
-        return;
-      }
-      if (classifyLibraryIntent(trimmed) === "place") {
-        requestIdRef.current += 1;
-        setMovieResults([]);
-        setFetchError(null);
-        setIsLoading(false);
-        setIsMounted(true);
-        setIsOpen(true);
         return;
       }
 
@@ -346,12 +328,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
           clearQuery();
           return;
         }
-        if (row.selection?.kind === "library-place") {
-          revealLibraryItem(row.selection);
-          hideAutocomplete();
-          clearQuery();
-          return;
-        }
         if (row.selection?.kind === "movie-result") {
           setSelection(row.selection);
           setQuery(row.selection.title);
@@ -392,64 +368,41 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
             selection?.kind === "movie-result"
               ? { imdbID: selection.imdbID, type: selection.type }
               : undefined;
-          const placeName =
-            selection?.kind === "place-draft" ? selection.name : trimmed;
 
-          if (kind === "movie") {
-            if (isGuest) {
-              const suggestion = await addSuggestion(
-                movieTitle,
-                undefined,
-                guestName.trim() || undefined,
-                movieMeta,
-              );
-              showToast({
-                message: `"${movieTitle}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
-                type: "success",
-              });
-            } else {
-              const added = await addMovie(movieTitle, movieMeta);
-              showToast({
-                message: `"${movieTitle}" added to movies!`,
-                type: "success",
-                actionLabel: "Undo",
-                onAction: () => void deleteMovie(added.id),
-              });
-              window.requestAnimationFrame(() => {
-                window.setTimeout(() => {
-                  const movieElement = document.querySelector(
-                    `[data-movie-id="${added.id}"]`,
-                  );
-                  movieElement?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                  });
-                  movieElement
-                    ?.querySelector<HTMLButtonElement>(
-                      ".movie-item-details-hit-area",
-                    )
-                    ?.click();
-                }, 120);
-              });
-            }
-          } else if (isGuest) {
-            await addPlaceSuggestion(placeName);
+          if (isGuest) {
+            const suggestion = await addSuggestion(
+              movieTitle,
+              undefined,
+              guestName.trim() || undefined,
+              movieMeta,
+            );
             showToast({
-              message: `"${placeName}" suggested as a place!`,
+              message: `"${movieTitle}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
               type: "success",
             });
           } else {
-            const added = await addPlace(placeName);
+            const added = await addMovie(movieTitle, movieMeta);
             showToast({
-              message: `"${placeName}" added to places!`,
+              message: `"${movieTitle}" added to movies!`,
               type: "success",
               actionLabel: "Undo",
-              onAction: () => void removePlace(added.id),
+              onAction: () => void deleteMovie(added.id),
             });
             window.requestAnimationFrame(() => {
-              document
-                .getElementById(LIBRARY_PLACES_ANCHOR_ID)
-                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              window.setTimeout(() => {
+                const movieElement = document.querySelector(
+                  `[data-movie-id="${added.id}"]`,
+                );
+                movieElement?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+                movieElement
+                  ?.querySelector<HTMLButtonElement>(
+                    ".movie-item-details-hit-area",
+                  )
+                  ?.click();
+              }, 120);
             });
           }
           clearQuery();
@@ -467,8 +420,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
       },
       [
         addMovie,
-        addPlace,
-        addPlaceSuggestion,
         addSuggestion,
         clearQuery,
         deleteMovie,
@@ -477,7 +428,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         hideAutocomplete,
         isBusy,
         isGuest,
-        removePlace,
         selection,
         showToast,
         trimmed,
@@ -602,8 +552,8 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                       setActionError(null);
                       setShowRecommend(false);
                     }}
-                    placeholder="Add a movie, show, or place..."
-                    aria-label="Search movies, shows, and places to add"
+                    placeholder="Add a movie or show..."
+                    aria-label="Search movies and shows to add"
                     role="combobox"
                     aria-expanded={isOpen}
                     aria-controls={listId}
@@ -718,7 +668,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
             </div>
 
             {selection?.kind === "movie-result" ||
-            (hasQuery && (alternateKind || submitKind === "movie")) ? (
+            (hasQuery && submitKind === "movie" && currentUser) ? (
               <div className="y2k-command-dock__subbar">
                 {selection?.kind === "movie-result" ? (
                   <div
@@ -745,34 +695,21 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   </div>
                 ) : null}
 
-                {hasQuery && (alternateKind || submitKind === "movie") ? (
+                {hasQuery && submitKind === "movie" && currentUser ? (
                   <WorkspaceSearchActions className="curved-library-search__secondary-actions">
-                    {alternateKind ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={isBusy}
-                        onClick={() => void submitKindAction(alternateKind)}
-                      >
-                        {librarySubmitLabel(alternateKind, isGuest)}
-                      </Button>
-                    ) : null}
-                    {submitKind === "movie" && currentUser ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={isBusy}
-                        leftIcon={<PlusIcon />}
-                        onClick={() => {
-                          hideAutocomplete();
-                          setShowRecommend(true);
-                        }}
-                      >
-                        Recommend
-                      </Button>
-                    ) : null}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isBusy}
+                      leftIcon={<PlusIcon />}
+                      onClick={() => {
+                        hideAutocomplete();
+                        setShowRecommend(true);
+                      }}
+                    >
+                      Recommend
+                    </Button>
                   </WorkspaceSearchActions>
                 ) : null}
               </div>
@@ -782,7 +719,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               <WorkspaceAutocompletePanel
                 id={listId}
                 isOpen={isOpen}
-                ariaLabel="Movie, show, and place suggestions"
+                ariaLabel="Movie and show suggestions"
                 onPointerDown={() => {
                   dropdownInteractionPendingRef.current = true;
                   window.setTimeout(() => {
@@ -798,7 +735,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                 ) : null}
                 {!isLoading && rows.length === 0 && trimmed.length >= 2 ? (
                   <WorkspaceAutocompleteStatus>
-                    No matches yet — add this as a movie or a place.
+                    No matches yet — press Enter to add this movie.
                   </WorkspaceAutocompleteStatus>
                 ) : null}
                 {!isLoading

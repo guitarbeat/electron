@@ -39,8 +39,6 @@ import { MovieSectionBody } from "./MovieSectionBody";
 export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   isPaused = false,
   hideSearch: _hideSearch = false,
-  posterPlaceCards = [],
-  
 }) => {
   const { currentUser, activeUsers } = useUser();
   const { registerTabConfig } = useBentoSlot();
@@ -135,11 +133,11 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
   }, [resetRecommendationComposer, searchQuery, setSelectedAutocompleteResult]);
 
   return (
-    <section className="library-movies" aria-label="Movies and places">
+    <section className="library-movies" aria-label="Movies">
       <h2 className="workspace-section-heading library-movies-heading">
         <span className="workspace-section-heading__content">
           <span className="workspace-section-heading__label">
-            Movies & Places
+            Movies
           </span>
         </span>
       </h2>
@@ -179,7 +177,6 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
             toggleWatched,
             editMovie,
           }}
-          posterPlaceCards={posterPlaceCards}
         />
         {movieToDelete && (
           <ConfirmDialog
