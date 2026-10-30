@@ -73,6 +73,7 @@ const normalizeMovieRecord = (value: unknown): Movie | null => {
     runtime: normalizeOptionalString(movie.runtime),
     genre: normalizeOptionalString(movie.genre),
     director: normalizeOptionalString(movie.director),
+    actors: normalizeOptionalString(movie.actors),
     category: normalizeOptionalString(movie.category),
     mediaType:
       movie.mediaType === "series" || movie.mediaType === "youtube"
@@ -114,7 +115,7 @@ export const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
   const assignString = (
     key: keyof Pick<
       Movie,
-      "year" | "plot" | "imdbRating" | "runtime" | "genre" | "director"
+      "year" | "plot" | "imdbRating" | "runtime" | "genre" | "director" | "actors"
     >,
     nextValue: unknown,
   ) => {
@@ -132,6 +133,7 @@ export const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
   assignString("runtime", metadata.runtime);
   assignString("genre", metadata.genre);
   assignString("director", metadata.director);
+  assignString("actors", metadata.actors);
 
   if (typeof metadata.posterUrl === "string") {
     const normalized = sanitizeInput(metadata.posterUrl);

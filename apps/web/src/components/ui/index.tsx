@@ -10,6 +10,8 @@ import React, {
 } from "react";
 import type { FC, ReactNode, CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import { useTopFrame } from "@/app/TopFramePanels";
+import { WatchStatusArtwork } from "@/components/movies/WatchStatusArtwork";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { motion, useInView } from "motion/react";
 
@@ -791,6 +793,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
               className={`profile-switcher-btn profile-switcher-btn--${profile.toLowerCase()}${isProfileLoggedIn ? " is-active is-logged-in" : " is-logged-out"}${isMenuTarget ? " is-menu-open" : ""}`}
               onClick={() => handleProfileClick(profile)}
               disabled={isDisabled}
+              data-current={currentUser === profile}
               aria-expanded={isProfileLoggedIn ? isMenuTarget : undefined}
               aria-haspopup={isProfileLoggedIn ? "menu" : undefined}
               aria-label={
@@ -805,6 +808,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
                 <UserAvatar user={profile} />
               </div>
               <span className="profile-switcher-name sr-only">{profile}</span>
+              <span className="profile-switcher-label" aria-hidden="true">{profile}</span>
             </button>
           );
         })}
@@ -3704,7 +3708,7 @@ export function MagicToggle<T extends string>({
 
 const WATCHER_USER_PHOTOS: Record<string, string[]> = {
   Aaron: [
-    "/aaron-avatar.png",
+    "/avatars/aaron-avatar-eyes.png",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2Qa_ao3GRvb5R5TyT7lET-s_0iqlHUxWMg&s",
     "https://i.pinimg.com/236x/3e/5b/8d/3e5b8d5105f7570eac355fea06998ba0.jpg",
     "https://preview.redd.it/rbdzmbhsxbw11.png?width=315&format=png&auto=webp&s=6282a8216d66d51684af9efc992b8b423463c941",
@@ -3795,7 +3799,9 @@ export const WatcherBadge: React.FC<WatcherBadgeProps> = ({
       title={status ? `${user}: ${status}` : user}
     >
       <div className="watcher-badge__avatar">
-        <WatcherBadgePhoto user={user} />
+        {status && (user === "Aaron" || user === "Electra") ? (
+          <WatchStatusArtwork user={user} status={status === "watched" ? "seen" : "watching"} className="watcher-badge__avatar-photo" />
+        ) : <WatcherBadgePhoto user={user} />}
         {status ? (
           <span
             className={`watcher-badge__status watcher-badge__status--${status}`}
@@ -4045,10 +4051,25 @@ export const PinDialog: React.FC<PinDialogProps> = ({
   isLoading = false,
   isRequiredSetup = false,
 }) => {
+  const { accountTarget: frameTarget, setModalOpen } = useTopFrame();
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [flow, dispatch] = useReducer(pinFlowReducer, mode, createPinFlowState);
   const { playKeypad, playError } = useAudio();
+
+  useEffect(() => {
+    if (!isOpen || !frameTarget) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const workspace = document.getElementById("root");
+    const wasInert = workspace?.inert ?? false;
+    if (workspace) workspace.inert = true;
+    setModalOpen(true);
+    return () => {
+      if (workspace) workspace.inert = wasInert;
+      setModalOpen(false);
+      window.requestAnimationFrame(() => opener?.focus());
+    };
+  }, [isOpen, frameTarget, setModalOpen]);
 
   useEffect(() => {
     dispatch({ type: "reset", mode });
@@ -4241,10 +4262,11 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[10100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      className={frameTarget ? "account-corner-pin-sheet" : "fixed inset-0 z-[10100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"}
       onClick={handleOverlayClick}
       role="presentation"
     >
+      {frameTarget ? <div className="account-pin-shield" aria-hidden="true" /> : null}
       <section
         className="w-full max-w-[22rem] my-auto p-5 sm:p-6 rounded-3xl border border-white/15 bg-slate-950/95 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 duration-200 outline-none max-h-[calc(100dvh-2rem)] overflow-y-auto"
         role="dialog"
@@ -4305,7 +4327,11 @@ export const PinDialog: React.FC<PinDialogProps> = ({
               return (
                 <div
                   key={index}
+                  data-filled={filled}
+                  data-active={active}
+                  data-error={Boolean(flow.error)}
                   className={[
+                    "pin-digit-slot",
                     "w-11 h-12 rounded-xl border-[1.5px] border-slate-700 bg-slate-800/60 flex items-center justify-center transition-all duration-200 shadow-inner",
                     filled ? "border-indigo-500/65 bg-indigo-500/20" : "",
                     active ? "border-indigo-500 bg-indigo-500/10 shadow-[0_0_0_3px_rgba(99,102,241,0.25)] -translate-y-[2px]" : "",
@@ -4446,7 +4472,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
         </form>
       </section>
     </div>,
-    document.body,
+    frameTarget ?? document.body,
   );
 };
 

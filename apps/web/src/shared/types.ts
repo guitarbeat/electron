@@ -1,7 +1,7 @@
 export type User = "Aaron" | "Electra";
 
 export const USER_PHOTOS: Record<User, string> = {
-  Aaron: "/aaron-avatar.png",
+  Aaron: "/avatars/aaron-avatar-eyes.png",
   Electra: "/electra-button.png",
 };
 
@@ -56,6 +56,7 @@ export interface Movie {
   runtime?: string;
   genre?: string;
   director?: string;
+  actors?: string;
   category?: string; // e.g. "Humor", "Action", "Drama"
   mediaType?: "movie" | "series" | "youtube";
   youtubeUrl?: string;

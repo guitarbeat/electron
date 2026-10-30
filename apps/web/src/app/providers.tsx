@@ -12,7 +12,8 @@ import React, {
   ReactNode,
 } from "react";
 import type { User } from "@/shared/types";
-import { applyTheme, spacing } from "@/theme/tokens";
+import { createPortal } from "react-dom";
+import { applyTheme } from "@/theme/tokens";
 import { Toast } from "@/components/ui";
 import {
   getStoredSessionToken,
@@ -24,6 +25,7 @@ import { getErrorMessage, readApiErrorMessage } from "@/utils";
 import {
   ThemeContext,
   ToastContext,
+  ToastViewportContext,
   UserContext,
   type ToastInput,
 } from "./providerContexts";
@@ -91,6 +93,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [toasts, setToasts] = useState<ToastRecord[]>([]);
+  const [toastViewport, setToastViewport] = useState<HTMLDivElement | null>(null);
 
   const dismissToast = useCallback((id: string) => {
     setToasts((current) => current.filter((toast) => toast.id !== id));
@@ -130,46 +133,26 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ToastContext.Provider value={value}>
-      {children}
-      <div
-        aria-live="polite"
-        aria-atomic="false"
-        style={{
-          position: "fixed",
-          top: spacing.md,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 250,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: spacing.sm,
-          width: "min(720px, calc(100vw - 1rem))",
-          pointerEvents: "none",
-        }}
-      >
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            style={{
-              pointerEvents: "auto",
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              duration={toast.duration}
-              persistent={toast.persistent}
-              onDismiss={() => dismissToast(toast.id)}
-              actionLabel={toast.actionLabel}
-              onAction={toast.onAction}
-            />
-          </div>
-        ))}
-      </div>
+      <ToastViewportContext.Provider value={setToastViewport}>
+        {children}
+        {toastViewport && toasts.length > 0 ? createPortal(
+          <div className="navbar-toast-stack" aria-live="polite" aria-atomic="false">
+            {toasts.map((toast) => (
+              <Toast
+                key={toast.id}
+                message={toast.message}
+                type={toast.type}
+                duration={toast.duration}
+                persistent={toast.persistent}
+                onDismiss={() => dismissToast(toast.id)}
+                actionLabel={toast.actionLabel}
+                onAction={toast.onAction}
+              />
+            ))}
+          </div>,
+          toastViewport,
+        ) : null}
+      </ToastViewportContext.Provider>
     </ToastContext.Provider>
   );
 };

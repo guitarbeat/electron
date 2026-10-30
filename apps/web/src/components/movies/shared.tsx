@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useMemo, useState } from "react";
+import { WatchStatusArtwork } from "./WatchStatusArtwork";
 import type {
   Movie,
   User,
@@ -24,7 +25,6 @@ import {
   StremioButton,
   YoutubeButton,
   CardActionButton,
-  UserAvatar,
   PageFlip,
   type PageFlipLeaf,
   type BentoSortChipConfig,
@@ -538,7 +538,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
                 title={`${user}: ${status} (Tap to cycle to ${nextStatus})`}
               >
                 <span className="flipbook-avatar-btn__face">
-                  <UserAvatar user={user} />
+                  <WatchStatusArtwork user={user} status={isWatched ? "seen" : isWatching ? "watching" : "queue"} className="watch-expression-art" />
                   <span
                     className="flipbook-avatar-btn__badge"
                     aria-hidden="true"

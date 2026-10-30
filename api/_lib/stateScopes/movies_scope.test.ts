@@ -286,3 +286,16 @@ describe("movieScopeDefinition - update_metadata", () => {
     }
   });
 });
+
+describe("movie cast metadata", () => {
+  it("preserves cast through metadata updates and stored-state parsing", () => {
+    const movies: Movie[] = [{ id: "cast", title: "Arrival", addedBy: "Aaron", watchedBy: [], createdAt: context.now }];
+    const result = movieScopeDefinition.mutate(movies, "update_metadata", {
+      movieId: "cast", metadata: { actors: "Amy Adams, Jeremy Renner" },
+    }, context);
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.data[0].actors, "Amy Adams, Jeremy Renner");
+    assert.equal(movieScopeDefinition.parse(JSON.stringify(result.data))[0].actors, "Amy Adams, Jeremy Renner");
+  });
+});

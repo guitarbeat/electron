@@ -429,6 +429,7 @@ export const MovieSchema = z
     runtime: z.string().optional(),
     genre: z.string().optional(),
     director: z.string().optional(),
+    actors: z.string().optional(),
     category: z.string().optional(),
     mediaType: z.enum(["movie", "series", "youtube"]).optional(),
     votes: z.union([z.number(), z.record(z.any())]).optional(),

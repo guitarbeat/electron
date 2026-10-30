@@ -62,6 +62,13 @@ export const ToastContext = createContext<ToastContextType | undefined>(
   undefined,
 );
 
+export const ToastViewportContext = createContext<(element: HTMLDivElement | null) => void>(() => {});
+
+export const NavbarToastViewport = () => {
+  const registerViewport = useContext(ToastViewportContext);
+  return <div ref={registerViewport} className="navbar-toast-viewport" aria-label="Notifications" />;
+};
+
 export const useToast = (): ToastContextType => {
   const context = useContext(ToastContext);
   if (!context) {

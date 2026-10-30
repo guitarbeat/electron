@@ -29,50 +29,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.65rem;
   width: 100%;
-  padding: 0.35rem 0.45rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-top-color: rgba(186, 230, 253, 0.52);
-  border-bottom-color: rgba(15, 23, 42, 0.9);
-  background:
-    repeating-linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.018) 0px,
-      rgba(255, 255, 255, 0.018) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.015) 44%,
-      rgba(6, 10, 22, 0.45) 100%
-    ),
-    rgba(9, 14, 28, 0.84);
-  box-shadow:
-    0 18px 42px -10px rgba(2, 6, 23, 0.82),
-    0 4px 16px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -1px 0 rgba(56, 189, 248, 0.16);
-  -webkit-backdrop-filter: blur(28px) saturate(185%);
-  backdrop-filter: blur(28px) saturate(185%);
-  transition:
-    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 180ms ease;
-}
-
-.y2k-command-dock__boundary.is-focused .y2k-command-dock__bar,
-.y2k-command-dock__boundary.is-autocomplete-active .y2k-command-dock__bar {
-  border-color: rgba(56, 189, 248, 0.62);
-  border-top-color: rgba(224, 242, 254, 0.88);
-  box-shadow:
-    0 20px 46px -10px rgba(2, 6, 23, 0.88),
-    0 0 26px rgba(56, 189, 248, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 0 14px rgba(56, 189, 248, 0.1);
+  min-height: 4.65rem;
+  padding: 0.2rem 0.75rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .y2k-search-form {
@@ -337,7 +301,6 @@
     align-items: stretch;
     gap: 0.4rem;
     padding: 0.45rem;
-    border-radius: 1.35rem;
   }
 
   .y2k-command-dock__divider {
@@ -400,4 +363,496 @@
 .confirm-dialog-content {
   border-radius: 0.75rem;
   box-shadow: var(--shadow-floating);
+}
+
+/* Independent library search and catalog add controls share the recovered dock. */
+.y2k-command-dock__bar {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.y2k-symbol-control {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  transition: border-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.y2k-symbol-control.is-expanded {
+  flex: 1 1 17rem;
+  padding-right: 0.3rem;
+}
+
+.y2k-symbol-control:focus-within {
+  box-shadow: inset 0 -2px 0 #0c4a6e;
+}
+
+.y2k-symbol-control__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: #0b0f19;
+  mix-blend-mode: normal;
+  cursor: pointer;
+  transition: transform 160ms ease-out, background-color 160ms ease-out;
+}
+
+.y2k-symbol-control.is-expanded .y2k-symbol-control__trigger {
+  background: transparent;
+  color: #0b0f19;
+  mix-blend-mode: normal;
+}
+
+.y2k-symbol-control__trigger:focus-visible,
+.y2k-search-capsule__clear:focus-visible,
+.y2k-search-capsule__submit:focus-visible {
+  outline: 2px solid #bae6fd;
+  outline-offset: 2px;
+}
+
+.y2k-symbol-control__field {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  gap: 0.35rem;
+  min-width: 0;
+  animation: commandFieldReveal 160ms ease-out;
+}
+
+.y2k-symbol-control__field[hidden] {
+  display: none;
+}
+
+.y2k-add-form .y2k-search-capsule {
+  gap: 0;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.y2k-symbol-control .y2k-search-capsule__input {
+  width: 100%;
+  font-size: 1rem;
+  color: #0b0f19;
+}
+
+.y2k-symbol-control .y2k-search-capsule__input::placeholder {
+  color: #293544;
+}
+
+.y2k-symbol-control input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+
+.y2k-symbol-control .y2k-search-capsule__clear {
+  width: 2.25rem;
+  height: 2.25rem;
+  transition: color 140ms ease-out, background-color 140ms ease-out;
+}
+
+.y2k-symbol-control .y2k-search-capsule__submit {
+  gap: 0.4rem;
+  height: 2.25rem;
+}
+
+.y2k-command-dock__profiles {
+  flex: 0 0 auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .y2k-symbol-control__trigger:hover {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes commandFieldReveal {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 720px) {
+  .y2k-command-dock__bar {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .y2k-symbol-control.is-expanded {
+    flex-basis: calc(100% - 4rem);
+  }
+
+  .y2k-command-dock__filters {
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .y2k-symbol-control,
+  .y2k-symbol-control__trigger {
+    transition: none;
+  }
+  .y2k-symbol-control__field {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .y2k-command-dock__profiles {
+    order: 1;
+    margin-left: auto;
+  }
+  .y2k-command-dock__filters {
+    order: 2;
+    flex-basis: 100%;
+  }
+}
+
+/* The paired artwork is a full set of dock filter buttons, not poster badges. */
+.y2k-command-dock__filters {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.y2k-command-dock .movie-wall-filters {
+  flex-wrap: wrap;
+  justify-content: center;
+  min-width: 0;
+}
+
+.movie-wall-status-buttons {
+  display: flex;
+  align-items: stretch;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+
+.movie-wall-status-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  position: relative;
+  min-width: 6rem;
+  min-height: 4.5rem;
+  padding: 0.2rem 0.35rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #171717;
+  cursor: pointer;
+  transition: border-color 160ms ease-out, background-color 160ms ease-out;
+}
+
+.movie-wall-status-button__art {
+  display: block;
+  width: 5rem;
+  height: 2.75rem;
+  pointer-events: none;
+}
+
+.movie-wall-status-button__label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.movie-wall-status-button__count {
+  color: #35332e;
+  font-variant-numeric: tabular-nums;
+}
+
+.movie-wall-status-button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0.15rem;
+  left: 32%;
+  right: 32%;
+  height: 2px;
+  border-radius: 2px;
+  background: #f5c451;
+}
+
+.movie-wall-status-button:focus-visible {
+  outline: 2px solid #5e4b22;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .movie-wall-status-button:hover {
+    background: rgba(23, 23, 23, 0.05);
+  }
+}
+
+@media (max-width: 720px) {
+  .movie-wall-status-buttons {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .movie-wall-status-button {
+    flex: 1 1 0;
+    max-width: 6.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-wall-status-button { transition: none; }
+}
+
+/* Notifications live inside the command bar rather than floating over the wall. */
+.navbar-toast-viewport {
+  order: 10;
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+.navbar-toast-viewport:empty {
+  display: none;
+}
+
+.navbar-toast-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: min(12rem, 30dvh);
+  overflow-y: auto;
+  padding: 0.2rem;
+}
+
+.navbar-toast-stack .toast-notification {
+  width: 100% !important;
+  padding: 0.5rem 0.75rem !important;
+  border-width: 1px !important;
+  border-radius: 0.8rem;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork {
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 0.15rem 0.3rem;
+  min-width: 4rem;
+  min-height: 3.65rem;
+  padding: 0.15rem 0.3rem 0.3rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #0b0f19;
+  font-size: 0.68rem;
+}
+
+.movie-wall-filters__trigger-art {
+  display: block;
+  flex: 0 0 100%;
+  width: 2.75rem;
+  height: 1.8rem;
+  pointer-events: none;
+}
+
+.movie-wall-filters__trigger--artwork {
+  width: 4rem;
+  flex: 0 0 4rem;
+}
+
+.movie-wall-filters__trigger--artwork .movie-wall-filters__count-pill {
+  height: 1rem;
+  min-width: 1.5rem;
+  font-size: 0.6rem;
+}
+
+/* Flat controls sit directly on the thick top edge of the viewport frame. */
+.y2k-command-dock .movie-wall-filters__count-pill {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #344151;
+}
+
+.y2k-command-dock .y2k-command-dock__profiles {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (max-width: 720px) {
+  .y2k-command-dock__bar { min-height: 4.25rem; }
+}
+
+.y2k-symbol-control__trigger.y2k-symbol-control__trigger--artwork {
+  flex: 0 0 3.5rem;
+  width: 3.5rem;
+  height: 3.65rem;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.frame-command-art {
+  display: block;
+  width: 2.75rem;
+  height: 1.8rem;
+  pointer-events: none;
+}
+
+.frame-command-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.y2k-symbol-control.is-expanded .y2k-symbol-control__trigger--artwork {
+  flex-basis: 3.25rem;
+  width: 3.25rem;
+}
+
+.y2k-symbol-control.is-expanded .frame-command-art {
+  width: 3rem;
+}
+
+.y2k-symbol-control.is-expanded .frame-command-label {
+  display: none;
+}
+
+.y2k-command-dock .y2k-command-dock__profiles {
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+/* All expanded controls participate in the height of the difference-blended frame. */
+.top-frame-panels {
+  position: relative;
+  width: 100%;
+  max-height: min(72dvh, calc(100dvh - var(--frame-toolbar-height, 4.65rem) - 0.75rem));
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 0;
+  border-radius: 1.75rem;
+  background: rgba(220, 214, 196, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(40, 36, 28, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.top-frame-panels__content {
+  display: flow-root;
+}
+
+.top-frame-panels[data-expanded="false"] { pointer-events: none; box-shadow: none; }
+
+.top-frame-panel {
+  padding: 0.75rem;
+  transform-origin: top center;
+  animation: topFrameReveal 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.top-frame-panels .movie-wall-filters__panel,
+.top-frame-panels [role="listbox"] {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+  animation: none !important;
+}
+
+.top-frame-panels [role="listbox"] > div {
+  max-height: none;
+  overflow: visible;
+}
+
+.frame-picker-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 4.5rem;
+  min-height: 3.65rem;
+  padding: 0.2rem;
+  border: 0;
+  background: transparent;
+  color: #0b0f19;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.frame-picker-trigger:focus-visible {
+  outline: 2px solid #0c4a6e;
+  outline-offset: 2px;
+}
+
+.frame-picker-art {
+  display: block;
+  width: 5rem;
+  height: 3rem;
+  pointer-events: none;
+}
+
+.frame-movie-picker {
+  background: transparent;
+  color: #171717;
+  padding: 0.75rem;
+}
+
+.frame-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.frame-panel-heading h2 { font-size: 1rem; margin: 0; }
+.frame-panel-heading button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.top-frame-panels[data-modal-open="true"] .top-frame-panel { display: none; }
+
+@keyframes topFrameReveal {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes topFrameFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-frame-panel { animation: none; }
 }

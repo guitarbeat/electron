@@ -227,7 +227,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         ) : null}
 
         {/* Floating Quick Controls (Profile Logins & Build Info) */}
-        <div
+        {!isLibraryWorkspaceTab(activeTab) ? <div
           className="floating-dock-cluster"
           role="region"
           aria-label="Quick profile controls"
@@ -235,7 +235,7 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
           <div className="floating-dock-cluster__profiles">
             <ProfileMenu />
           </div>
-        </div>
+        </div> : null}
       </main>
     </BentoSlotContext.Provider>
   );

@@ -1,6 +1,7 @@
 import React, { ReactNode, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider, ThemeProvider } from "@/app/providers";
+import { TopFrameProvider } from "@/app/TopFramePanels";
 import { ProfilePinProvider } from "@/app/ProfilePinContext";
 import { ToastProvider } from "@/app/providers";
 import { PwaInstallProvider } from "@/app/PwaInstallProvider";
@@ -32,6 +33,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
 
   return (
     <QueryClientProvider client={queryClient}>
+      <TopFrameProvider>
       <UserProvider>
         <ProfilePinProvider>
           <ToastProvider>
@@ -43,6 +45,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
           </ToastProvider>
         </ProfilePinProvider>
       </UserProvider>
+      </TopFrameProvider>
     </QueryClientProvider>
   );
 };

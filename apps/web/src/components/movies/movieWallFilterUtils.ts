@@ -255,9 +255,10 @@ export const filterMovieWall = (
       const q = filters.query.trim().toLowerCase();
       const titleMatch = movie.title?.toLowerCase().includes(q);
       const directorMatch = movie.director?.toLowerCase().includes(q);
+      const actorMatch = movie.actors?.toLowerCase().includes(q);
       const genreMatch = movie.genre?.toLowerCase().includes(q);
       const plotMatch = movie.plot?.toLowerCase().includes(q);
-      if (!titleMatch && !directorMatch && !genreMatch && !plotMatch) {
+      if (!titleMatch && !directorMatch && !actorMatch && !genreMatch && !plotMatch) {
         return false;
       }
     }

@@ -128,3 +128,15 @@ test("computes live option counts and cycles progress filters", () => {
 });
 
 
+
+test("searches cast names case-insensitively and intersects with status filters", () => {
+  const castMovies = [
+    { id: "cast-1", title: "Arrival", actors: "Amy Adams, Jeremy Renner", watchedBy: [], addedBy: "Aaron", createdAt: "2026-01-01" },
+    { id: "cast-2", title: "Other", actors: "Amy Adams", watchedBy: ["Aaron", "Electra"], addedBy: "Electra", createdAt: "2026-01-02" },
+  ] as Movie[];
+  assert.deepEqual(
+    filterMovieWall(castMovies, { ...DEFAULT_MOVIE_WALL_FILTERS, query: "  AMY ADAMS  ", statusPreset: "queue" }).map((movie) => movie.id),
+    ["cast-1"],
+  );
+  assert.equal(filterMovieWall(castMovies, { ...DEFAULT_MOVIE_WALL_FILTERS, query: "no such actor" }).length, 0);
+});

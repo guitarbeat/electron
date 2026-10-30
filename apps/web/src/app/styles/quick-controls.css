@@ -20,9 +20,35 @@
   pointer-events: auto;
 }
 
-.floating-dock-cluster__profiles {
+:is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) {
   display: flex;
   align-items: center;
+  min-height: 2.75rem;
+  padding: 0.2rem 0.4rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  background: rgba(11, 15, 25, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+:is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profiles-switcher-row {
+  gap: 0.35rem;
+}
+
+:is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profile-switcher-btn {
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 50%;
+}
+
+:is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profile-switcher-btn .profile-switcher-face-wrap,
+:is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profile-switcher-btn .profile-switcher-face-wrap img {
+  width: 2.15rem;
+  height: 2.15rem;
+  object-fit: contain !important;
 }
 
 .floating-dock-cluster .inline-profiles-container {

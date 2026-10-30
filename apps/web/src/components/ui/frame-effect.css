@@ -3,6 +3,10 @@
   --frame-border-top-width: 4.65rem;
   --frame-color: #999999;
   --frame-border-radius: 20px;
+  --frame-account-width: 9rem;
+  --frame-account-height: 4.5rem;
+  --frame-account-taper: 20px;
+  --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 120Q20 120 20 100V50Q20 20 50 20H180Q200 20 200 0V120Z'/%3E%3C/svg%3E");
   --z-index-frame: 80;
   --loader-badge-width: min(21.5rem, calc(100vw - 2.5rem));
   --loader-badge-height: 13.5rem;
@@ -44,6 +48,7 @@
     bottom 720ms cubic-bezier(0.16, 1, 0.3, 1),
     left 720ms cubic-bezier(0.16, 1, 0.3, 1),
     height 720ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-top-width 260ms cubic-bezier(0.16, 1, 0.3, 1),
     border-radius 720ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -57,6 +62,19 @@
   box-sizing: border-box;
   pointer-events: none;
   transition: border-radius 720ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* A corner extension joins the account controls to the same blended outline. */
+body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: calc(var(--frame-account-width) + var(--frame-account-taper));
+  height: calc(var(--frame-account-height) + var(--frame-account-taper));
+  -webkit-mask: var(--frame-account-shape) 0 0 / 100% 100% no-repeat;
+  mask: var(--frame-account-shape) 0 0 / 100% 100% no-repeat;
+  background: var(--frame-color);
 }
 
 /* Initial compact state: wraps the center Aaron & Electra arcade loading badge */
@@ -673,4 +691,15 @@
   pointer-events: auto;
   width: 100%;
   min-height: 100%;
+}
+
+body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before {
+  transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), height 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before { transition: none; }
+}
+
+:root:has(.account-pin-viewport:not(:empty)) {
+  --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 404 628' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 628Q20 628 20 608V50Q20 20 50 20H384Q404 20 404 0V628Z'/%3E%3C/svg%3E");
 }

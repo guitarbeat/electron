@@ -6,16 +6,16 @@ import { preloadCriticalAppModules } from "@/app/preloadAppModules";
 import { GlobalErrorBoundary } from "@/app/GlobalErrorBoundary";
 import { applyTheme } from "@/theme/tokens";
 import App from "./app/App";
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 
-// Dev convenience: ?mock=1 in URL sets mock data mode
-if (
-  import.meta.env.DEV &&
-  new URLSearchParams(window.location.search).get("mock") === "1"
-) {
+// Explicit local preview switch; mock=0 returns a previously seeded browser to real data.
+if (import.meta.env.DEV) {
+  const mockMode = new URLSearchParams(window.location.search).get("mock");
   try {
-    window.localStorage.setItem("useMockData", "true");
+    if (mockMode === "1") window.localStorage.setItem("useMockData", "true");
+    else if (mockMode === "0") window.localStorage.removeItem("useMockData");
   } catch {
-    // Ignore storage access errors in restricted/private contexts
+    // Storage may be unavailable in restricted/private contexts.
   }
 }
 
@@ -50,7 +50,7 @@ root.render(
       fallbackTitle="APPLICATION STARTUP FAULT"
       fallbackDescription="A critical error occurred while initializing the workspace. You can reboot the module or reload the page."
     >
-      <App />
+      {import.meta.env.DEV && new URLSearchParams(window.location.search).get("previewLoader") === "1" ? <OrbitLoader fullViewport /> : <App />}
     </GlobalErrorBoundary>
   </React.StrictMode>,
 );

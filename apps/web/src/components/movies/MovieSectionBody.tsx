@@ -1,3 +1,4 @@
+import { OrbitLoader } from "@/components/ui/OrbitLoader";
 import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
@@ -348,6 +349,14 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
       >
         <LibrarySearch
+          onOpenMovie={(movieId) => {
+            const movie = allMovies.find((item) => item.id === movieId);
+            if (!movie) return;
+            setWallFilters(DEFAULT_MOVIE_WALL_FILTERS);
+            openMovieDetails(movie);
+          }}
+          searchQuery={wallFilters.query ?? ""}
+          onSearchQueryChange={(query) => setWallFilters((filters) => ({ ...filters, query }))}
           filterSlot={
             <MovieWallFilters
               movies={allMovies}
@@ -359,6 +368,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           }
         />
 
+        {collectionState === "loading" ? <OrbitLoader /> : null}
         {unifiedCards.length > 0 ? (
           <DriftWall
             items={unifiedCards}

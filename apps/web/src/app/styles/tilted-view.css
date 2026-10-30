@@ -1583,18 +1583,15 @@
 .library-workspace > .workspace-search__stage,
 .workspace-search__stage.y2k-command-dock {
   position: fixed;
-  top: 0.65rem;
-  left: 50%;
+  top: 0;
+  left: var(--frame-border-width, 7px);
   z-index: 1100;
-  width: min(56rem, calc(100vw - 2rem));
+  width: calc(100vw - 2 * var(--frame-border-width, 7px));
   padding: 0;
-  transform: translate3d(-50%, 0, 0);
+  transform: none;
   opacity: 1;
   pointer-events: auto;
-  animation: searchBarSlideIn 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-  transition:
-    transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    opacity 180ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  animation: none;
   background: transparent;
 }
 
@@ -1708,4 +1705,91 @@
   .tilted-poster-wall__track {
     will-change: auto;
   }
+}
+
+/* Reserve the outline's lower-right account corner without cropping the artwork. */
+body:has(.frame-corner-profiles) .movies-wall-container {
+  -webkit-mask-image: linear-gradient(#000, #000), var(--frame-account-shape);
+  mask-image: linear-gradient(#000, #000), var(--frame-account-shape);
+  -webkit-mask-size: 100% 100%, calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
+  mask-size: 100% 100%, calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
+  -webkit-mask-position: center, right bottom;
+  mask-position: center, right bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Filters share the frame surface, with quiet rules and a single selection cue. */
+.top-frame-panels .movie-wall-filters__panel {
+  background: transparent;
+  color: #171717;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0.75rem;
+}
+.top-frame-panels .movie-wall-filters__panel [class*="movie-wall-filters__"] {
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+  text-shadow: none;
+  border-color: rgba(23, 23, 23, 0.2);
+  border-radius: 0;
+  transform: none;
+}
+.top-frame-panels .movie-wall-filters__panel button {
+  color: #171717;
+  background: transparent;
+  box-shadow: none;
+}
+.top-frame-panels .movie-wall-filters__panel button:hover:not(:disabled) {
+  background: rgba(23, 23, 23, 0.05);
+  transform: none;
+}
+.top-frame-panels .movie-wall-filters__panel button:focus-visible,
+.top-frame-panels .movie-wall-filters__search-input:focus-visible {
+  outline: 2px solid #665024;
+  outline-offset: 2px;
+}
+.top-frame-panels .movie-wall-filters__preset-card,
+.top-frame-panels .movie-wall-filters__player-card,
+.top-frame-panels .movie-wall-filters__format-btn {
+  min-height: 0;
+  padding: 0.65rem;
+  border: 0;
+  border-bottom: 1px solid rgba(23, 23, 23, 0.2);
+}
+.top-frame-panels .movie-wall-filters__preset-card { gap: 0.2rem; }
+.top-frame-panels .movie-wall-filters__preset-top { display: none; }
+.top-frame-panels .movie-wall-filters__preset-title { font-size: 0.85rem; }
+.top-frame-panels .movie-wall-filters__preset-sub { font-size: 0.75rem; opacity: 0.8; }
+.top-frame-panels .movie-wall-filters__section-title {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+.top-frame-panels .movie-wall-filters__player-segments { border: 0; padding: 0; }
+.top-frame-panels .movie-wall-filters__panel button.is-active {
+  background: transparent;
+  color: #171717;
+  box-shadow: inset 0 -2px 0 #a47b22;
+  border-color: transparent;
+}
+.top-frame-panels .movie-wall-filters__panel-badge,
+.top-frame-panels .movie-wall-filters__preset-count,
+.top-frame-panels .movie-wall-filters__genre-count { border: 0; font-variant-numeric: tabular-nums; }
+.top-frame-panels .movie-wall-filters__search-input {
+  color: #171717;
+  border: 0;
+  border-bottom: 1px solid rgba(23, 23, 23, 0.4);
+}
+.top-frame-panels .movie-wall-filters__search-input::placeholder { color: #454137; }
+.top-frame-panels .movie-wall-filters__player-avatar { border: 0; border-radius: 0; }
+.top-frame-panels .movie-wall-filters__footer { position: static; border: 0; }
+
+.top-frame-panels .movie-wall-filters__panel .movie-wall-filters__player-card .movie-wall-filters__player-seg-btn.is-active {
+  background: transparent;
+  color: #171717;
+  border-color: transparent;
+  box-shadow: inset 0 -2px 0 #a47b22;
 }

@@ -205,7 +205,7 @@ export const scoreLibraryMatch = (name: string, query: string): number => {
 
 export const matchLibraryMovies = (
   query: string,
-  movies: readonly Pick<Movie, "id" | "title" | "year" | "posterUrl">[],
+  movies: readonly Pick<Movie, "id" | "title" | "year" | "posterUrl" | "imdbRating">[],
 ): LibraryAutocompleteRow[] =>
   movies
     .map((movie) => ({ movie, score: scoreLibraryMatch(movie.title, query) }))
@@ -220,9 +220,7 @@ export const matchLibraryMovies = (
       id: `saved-movie-${entry.movie.id}`,
       group: "saved" as const,
       title: entry.movie.title,
-      meta: entry.movie.year
-        ? `Saved movie • ${entry.movie.year}`
-        : "Saved movie",
+      meta: ["In your library", entry.movie.year, entry.movie.imdbRating ? `IMDb ${entry.movie.imdbRating}` : null].filter(Boolean).join(" • "),
       posterUrl: entry.movie.posterUrl,
       actionLabel: "Open" as const,
       selection: {
@@ -317,7 +315,7 @@ export const buildLibraryAutocompleteRows = ({
   movieResults,
 }: {
   query: string;
-  movies: readonly Pick<Movie, "id" | "title" | "year" | "posterUrl">[];
+  movies: readonly Pick<Movie, "id" | "title" | "year" | "posterUrl" | "imdbRating">[];
   places: readonly Pick<Place, "id" | "name">[];
   movieResults: readonly MovieAutocompleteResult[];
 }): LibraryAutocompleteRow[] => {

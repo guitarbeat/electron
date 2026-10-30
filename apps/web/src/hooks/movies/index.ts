@@ -28,7 +28,7 @@ const AUTO_SYNC_IDLE_DELAY_MS = 500;
 const AUTO_SYNC_CONCURRENCY_LIMIT = 5;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
-  const { poster, year, plot, imdbRating, runtime, genre, director, type } =
+  const { poster, year, plot, imdbRating, runtime, genre, director, actors, type } =
     metadata;
   const result: Partial<Movie> = {};
   if (poster && isValidUrl(poster)) result.posterUrl = poster;
@@ -39,6 +39,7 @@ const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
   if (genre && Array.isArray(genre))
     result.genre = sanitizeInput(genre.join(", "));
   if (director) result.director = sanitizeInput(director);
+  if (actors?.length) result.actors = sanitizeInput(actors.join(", "));
   if (type === "series" || type === "movie" || type === "youtube") result.mediaType = type;
   if (type === "series") result.category = "TV Series";
   return result;
