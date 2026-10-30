@@ -856,3 +856,120 @@
 @media (prefers-reduced-motion: reduce) {
   .top-frame-panel { animation: none; }
 }
+
+/* Corner controls follow the four sculpted pockets in the viewport frame. */
+.y2k-command-dock__bar { min-height: 0; padding: 0; pointer-events: none; }
+.y2k-command-dock__bar > * { pointer-events: auto; }
+.y2k-command-dock .y2k-library-search,
+.y2k-command-dock .y2k-add-form {
+  position: fixed;
+  top: var(--frame-border-width);
+  height: var(--frame-corner-height);
+  padding: 0.5rem 0.75rem;
+}
+.y2k-command-dock .y2k-library-search {
+  left: var(--frame-border-width);
+  width: var(--frame-search-width);
+  justify-content: center;
+}
+.y2k-command-dock .y2k-add-form {
+  right: var(--frame-border-width);
+  width: var(--frame-create-width);
+  justify-content: center;
+}
+.y2k-command-dock .y2k-add-form.is-expanded { justify-content: flex-start; }
+.y2k-command-dock .y2k-search-capsule { width: 100%; }
+.y2k-command-dock .frame-picker-trigger {
+  position: fixed;
+  top: calc(var(--frame-border-width) + 0.5rem);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: var(--frame-picker-width);
+  height: calc(var(--frame-corner-height) - 1rem);
+}
+.y2k-command-dock .y2k-command-dock__divider { display: none; }
+.y2k-command-dock .y2k-command-dock__filters {
+  position: fixed;
+  left: var(--frame-border-width);
+  bottom: var(--frame-border-width);
+  width: var(--frame-filter-width);
+  height: var(--frame-corner-height);
+  padding: 0.25rem 0.5rem;
+}
+.y2k-command-dock .movie-wall-filters { width: 100%; flex-wrap: nowrap; }
+.y2k-command-dock .movie-wall-status-buttons {
+  position: fixed;
+  left: 50%;
+  bottom: var(--frame-border-width);
+  transform: translateX(-50%);
+  width: var(--frame-status-width);
+  height: var(--frame-corner-height);
+  justify-content: center;
+  align-items: center;
+}
+.y2k-command-dock .top-frame-panels {
+  position: fixed;
+  top: calc(var(--frame-border-width) + var(--frame-corner-height));
+  right: var(--frame-border-width);
+  width: min(38rem, calc(100vw - 2 * var(--frame-border-width)));
+  max-height: calc(100dvh - 2 * var(--frame-corner-height) - 2rem);
+  border-radius: 1rem;
+  background: #dcd6c4;
+  pointer-events: auto;
+}
+.y2k-command-dock .top-frame-panels[data-expanded="false"] { pointer-events: none; }
+.y2k-command-dock[data-panel-origin="filters"] .top-frame-panels {
+  top: auto;
+  right: auto;
+  left: var(--frame-border-width);
+  bottom: calc(var(--frame-border-width) + var(--frame-corner-height));
+}
+.y2k-command-dock__subbar {
+  position: fixed;
+  top: calc(var(--frame-border-width) + var(--frame-corner-height));
+  right: var(--frame-border-width);
+  max-width: calc(100vw - 2 * var(--frame-border-width));
+  padding: 0.5rem 1rem;
+  background: #dcd6c4;
+  pointer-events: auto;
+}
+@media (max-width: 600px) {
+  .y2k-command-dock .y2k-library-search,
+  .y2k-command-dock .y2k-add-form { padding-inline: 0.25rem; }
+  .y2k-command-dock .y2k-add-form { right: var(--frame-border-width); width: var(--frame-create-width); }
+  .y2k-command-dock .frame-picker-trigger { width: var(--frame-picker-width); }
+  .y2k-command-dock .movie-wall-status-buttons { gap: 0; flex: 1; min-width: 0; }
+  .y2k-command-dock .movie-wall-status-button { min-width: 0; flex: 1; padding-inline: 0.1rem; }
+  .y2k-command-dock .movie-wall-status-button__art { width: 3rem; }
+  .y2k-command-dock .movie-wall-status-button__label { flex-direction: column; align-items: center; gap: 0.1rem; font-size: 0.65rem; }
+  .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork { min-width: 3rem; width: 3rem; flex: 0 0 3rem; padding-inline: 0; }
+  .y2k-command-dock .movie-wall-status-button__art { height: 2rem; }
+  .y2k-command-dock .movie-wall-filters { gap: 0; }
+  :root:has(.y2k-library-search.is-expanded) .y2k-command-dock .y2k-add-form,
+  :root:has(.y2k-library-search.is-expanded) .frame-picker-trigger { visibility: hidden; }
+  :root:has(.y2k-add-form.is-expanded) .y2k-command-dock .y2k-library-search { visibility: hidden; }
+}
+
+/* Details take priority over the fixed frame controls, including the close target. */
+body:has(.movie-details-modal) .y2k-command-dock,
+body:has(.movie-details-modal) .frame-corner-profiles {
+  visibility: hidden;
+}
+
+@media (max-width: 960px) {
+  :root:has(.y2k-library-search.is-expanded) .frame-picker-trigger,
+  :root:has(.y2k-add-form.is-expanded) .frame-picker-trigger { visibility: hidden; }
+}
+@media (max-width: 600px) {
+  .y2k-command-dock .movie-wall-status-buttons,
+  .y2k-command-dock .y2k-command-dock__filters { height: 5.5rem; }
+  .y2k-command-dock .frame-picker-trigger { height: 3.5rem; }
+  .y2k-command-dock[data-panel-origin="filters"] .top-frame-panels { bottom: calc(var(--frame-border-width) + 5.5rem); }
+}
+
+@media (max-width: 600px) {
+  .frame-corner-profiles { padding: 0; }
+  .frame-corner-profiles [role="group"] { gap: 0; }
+  .frame-corner-profiles .profile-switcher-btn { width: 2.75rem; flex: 0 0 2.75rem; }
+}

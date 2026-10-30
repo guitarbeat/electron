@@ -10,7 +10,7 @@ import React, {
 import { createPortal } from "react-dom";
 import { AccountPinViewport, TopFramePanel, TopFrameViewport, useTopFrame } from "@/app/TopFramePanels";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-import { CornerDownLeft, X } from "lucide-react";
+import { CornerDownLeft, SlidersHorizontal, X } from "lucide-react";
 import { Button, ProfileMenu } from "@/components/ui";
 import { concurrentMap } from "@/utils/concurrency";
 import { PlusIcon } from "@/common/Icons";
@@ -65,13 +65,35 @@ export interface LibrarySearchHandle {
 
 export interface LibrarySearchProps {
   filterSlot?: React.ReactNode;
+  viewSlot?: React.ReactNode;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   onOpenMovie: (movieId: string) => void;
 }
 
 const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
-  ({ filterSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
+  ({ filterSlot, viewSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
+    const settingsRef = useRef<HTMLDetailsElement>(null);
+    useEffect(() => {
+      const dismiss = (event: PointerEvent | KeyboardEvent) => {
+        const settings = settingsRef.current;
+        if (!settings?.open) return;
+        if (event instanceof KeyboardEvent) {
+          if (event.key === "Escape" && !event.defaultPrevented) {
+            settings.open = false;
+            settings.querySelector("summary")?.focus();
+          }
+        } else if (!settings.contains(event.target as Node)) {
+          settings.open = false;
+        }
+      };
+      document.addEventListener("pointerdown", dismiss);
+      document.addEventListener("keydown", dismiss);
+      return () => {
+        document.removeEventListener("pointerdown", dismiss);
+        document.removeEventListener("keydown", dismiss);
+      };
+    }, []);
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const { modalOpen } = useTopFrame();
@@ -99,8 +121,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     const addTriggerRef = useRef<HTMLButtonElement>(null);
     const searchInputId = useId();
     const addInputId = useId();
-    const searchExpanded = isSearchExpanded || Boolean(searchQuery);
-
+    const searchExpanded = isSearchExpanded || (Boolean(searchQuery) && !isAddExpanded);
 
     const { currentUser } = useUser();
     const { showToast } = useToast();
@@ -108,7 +129,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     const { addSuggestion } = useSuggestions();
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const navbarRef = useRef<HTMLDivElement>(null);
     const autocompleteRegionRef = useRef<HTMLDivElement>(null);
     const requestIdRef = useRef(0);
     const dropdownInteractionPendingRef = useRef(false);
@@ -118,34 +138,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
       if (item?.kind === "library-movie") onOpenMovie(item.movieId);
     }, [onOpenMovie]);
     const [catalogRatings, setCatalogRatings] = useState<Record<string, string>>({});
-    // Measure the entire frame content, including portalled panels. The toolbar
-    // height is independent, so the scroll limit cannot feed back into its own size.
-    useEffect(() => {
-      const navbar = navbarRef.current;
-      const content = autocompleteRegionRef.current;
-      if (!navbar || !content) return;
-      const root = document.documentElement;
-      const previousHeight = root.style.getPropertyValue("--frame-border-top-width");
-      const previousToolbar = root.style.getPropertyValue("--frame-toolbar-height");
-      const fitTopEdge = () => {
-        const toolbarHeight = Math.ceil(navbar.getBoundingClientRect().height);
-        const height = Math.ceil(content.getBoundingClientRect().height);
-        if (toolbarHeight > 0) root.style.setProperty("--frame-toolbar-height", `${toolbarHeight}px`);
-        if (height > 0) root.style.setProperty("--frame-border-top-width", `${height}px`);
-      };
-      fitTopEdge();
-      const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fitTopEdge);
-      observer?.observe(content);
-      observer?.observe(navbar);
-      return () => {
-        observer?.disconnect();
-        if (previousHeight) root.style.setProperty("--frame-border-top-width", previousHeight);
-        else root.style.removeProperty("--frame-border-top-width");
-        if (previousToolbar) root.style.setProperty("--frame-toolbar-height", previousToolbar);
-        else root.style.removeProperty("--frame-toolbar-height");
-      };
-    }, []);
-
     const [selection, setSelection] = useState<LibrarySelection>(null);
     const [movieResults, setMovieResults] = useState<MovieAutocompleteResult[]>(
       [],
@@ -195,7 +187,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         : rawSubmitKind;
     const primaryLabel = librarySubmitLabel(submitKind, isGuest);
     const hasQuery = trimmed.length > 0;
-    const addExpanded = isAddExpanded || Boolean(query) || isBusy;
+    const addExpanded = isAddExpanded || (Boolean(query) && !isSearchExpanded) || isBusy;
 
     useEffect(() => {
       if (currentUser) return;
@@ -219,10 +211,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
 
     const focusAddInputHandle = useWorkspaceSearchInputHandle(inputRef);
     const focusAddInput = useCallback(() => {
+      setIsSearchExpanded(false);
       setIsAddExpanded(true);
       window.requestAnimationFrame(focusAddInputHandle);
     }, [focusAddInputHandle]);
     const focusSearchInput = useCallback(() => {
+      setIsAddExpanded(false);
       setIsSearchExpanded(true);
       window.requestAnimationFrame(() => {
         searchInputRef.current?.focus();
@@ -577,14 +571,14 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         trimmed.length >= 2);
 
     const commandDock = (
-      <div className="workspace-search__stage curved-library-search y2k-command-dock" role="navigation" aria-label="Movie controls">
+      <div className="workspace-search__stage curved-library-search y2k-command-dock" data-panel-origin={pickerOpen ? "picker" : isOpen ? "add" : "filters"} role="navigation" aria-label="Movie controls">
         <div
             ref={autocompleteRegionRef}
             className={`curved-library-search__boundary y2k-command-dock__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}${isFocused ? " is-focused" : ""}`}
             onFocusCapture={onFocusCapture}
             onBlurCapture={onBlurCapture}
           >
-            <div ref={navbarRef} className="y2k-command-dock__bar" inert={modalOpen}>
+            <div className="y2k-command-dock__bar" inert={modalOpen}>
               <div
                 className={`y2k-library-search y2k-symbol-control${searchExpanded ? " is-expanded" : ""}`}
                 onBlur={(event) => {
@@ -601,9 +595,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   aria-controls={searchInputId}
                   onClick={focusSearchInput}
                 >
-                  <svg className="frame-command-art" viewBox="0 145 865 550" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-                    <image href="/avatars/search_aaron_electra_pixel_icon.png" width="865" height="865" />
-                  </svg>
+                  <svg className="frame-command-art" viewBox="0 145 865 550" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/search_aaron_electra_pixel_icon.png" width="865" height="865" /></svg>
                   <span className="frame-command-label" aria-hidden="true">Search</span>
                 </button>
                 <div className="y2k-symbol-control__field" hidden={!searchExpanded}>
@@ -669,9 +661,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     aria-controls={addInputId}
                     onClick={focusAddInput}
                   >
-                    <svg className="frame-command-art" viewBox="0 145 823 540" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-                      <image href="/avatars/add_aaron_electra_pixel_icon.png" width="823" height="823" />
-                    </svg>
+                    <svg className="frame-command-art" viewBox="0 145 823 540" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/add_aaron_electra_pixel_icon.png" width="823" height="823" /></svg>
                     <span className="frame-command-label" aria-hidden="true">{isBusy ? "Saving…" : "Add"}</span>
                   </button>
                   <div className="y2k-symbol-control__field" hidden={!addExpanded}>
@@ -804,6 +794,10 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   </div>
                 </>
               ) : null}
+              <details className="library-settings" ref={settingsRef}>
+                <summary><SlidersHorizontal size={18} aria-hidden="true" /><span>View & settings</span></summary>
+                <div className="library-settings__body">
+                  {viewSlot}
               <button
                 ref={pickerTriggerRef}
                 type="button"
@@ -813,15 +807,15 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                 aria-controls="top-frame-movie-picker"
                 onClick={() => setPickerOpen((open) => !open)}
               >
-                <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-                  <image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" />
-                </svg>
+                <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>
+                </div>
+              </details>
               <NavbarToastViewport />
             </div>
             <TopFrameViewport />
             {pickerOpen ? <TopFramePanel name="picker">
-              <section id="top-frame-movie-picker" className="frame-movie-picker" aria-label="Movie picker">
+              <section id="top-frame-movie-picker" className="frame-movie-picker" role="dialog" aria-label="Movie picker">
                 <div className="frame-panel-heading"><h2>Pick a movie</h2><button type="button" onClick={closePicker} aria-label="Close movie picker"><X size={20} /></button></div>
                 <React.Suspense fallback={<p role="status">Loading movie picker…</p>}><MoviePickerPanel /></React.Suspense>
               </section>

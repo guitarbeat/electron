@@ -1918,11 +1918,12 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
   style,
   year: _year,
 }) => {
+  const [showDetails, setShowDetails] = useState(false);
   const actionsDisabled = isProcessing || disableActions || !canRespond;
 
   if (media) {
     return (
-      <div className={`movie-item-container suggestion-item-container`}>
+      <div className={`movie-item-container suggestion-item-container`} data-tv-expanded={showDetails || undefined}>
         <Card
           variant="default"
           className={`suggestion-item-card suggestion-item-card--media chroma-card ${className}`.trim()}
@@ -1940,8 +1941,16 @@ export const SuggestionCardBase: React.FC<SuggestionCardBaseProps> = ({
             <button
               type="button"
               className="movie-item-details-hit-area"
+              onClick={() => setShowDetails(value => !value)}
+              aria-expanded={showDetails}
               aria-label={`View details for "${title}"`}
             />
+            {showDetails ? <div className="suggestion-poster-details">
+              <strong>{title}</strong>
+              <span>Suggested by {suggestedBy}</span>
+              {subtitle ? <p>{subtitle}</p> : null}
+              {details}
+            </div> : null}
             <CardActionRail
               variant="glass"
               primary={

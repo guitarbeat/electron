@@ -31,6 +31,7 @@ const ALLOWED_ROOT_DIRECTORIES = new Set([
   '.vercel',
   'agent',
   'api',
+  'android-tv',
   'apps',
   'assets',
   'dist',

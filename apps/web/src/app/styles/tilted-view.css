@@ -1583,14 +1583,13 @@
 .library-workspace > .workspace-search__stage,
 .workspace-search__stage.y2k-command-dock {
   position: fixed;
-  top: 0;
-  left: var(--frame-border-width, 7px);
+  inset: 0;
   z-index: 1100;
-  width: calc(100vw - 2 * var(--frame-border-width, 7px));
+  width: auto;
   padding: 0;
   transform: none;
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: none;
   animation: none;
   background: transparent;
 }
@@ -1707,18 +1706,19 @@
   }
 }
 
-/* Reserve the outline's lower-right account corner without cropping the artwork. */
+/* The wall opens between the four pockets, rather than beneath a full toolbar. */
 body:has(.frame-corner-profiles) .movies-wall-container {
-  -webkit-mask-image: linear-gradient(#000, #000), var(--frame-account-shape);
-  mask-image: linear-gradient(#000, #000), var(--frame-account-shape);
-  -webkit-mask-size: 100% 100%, calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
-  mask-size: 100% 100%, calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
-  -webkit-mask-position: center, right bottom;
-  mask-position: center, right bottom;
-  -webkit-mask-repeat: no-repeat;
+  mask-image: linear-gradient(#000, #000), var(--frame-top-left-shape), var(--frame-top-right-shape), var(--frame-bottom-left-shape), var(--frame-account-shape), var(--frame-top-notch-shape), var(--frame-bottom-notch-shape);
+  mask-size: 100% 100%,
+    calc(var(--frame-search-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
+    calc(var(--frame-create-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
+    calc(var(--frame-filter-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
+    calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper)),
+    calc(var(--frame-picker-width) + 2 * var(--frame-account-taper)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
+    calc(var(--frame-status-width) + 2 * var(--frame-account-taper)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper));
+  mask-position: center, left top, right top, left bottom, right bottom, center top, center bottom;
   mask-repeat: no-repeat;
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  mask-composite: subtract, add, add, add, add, add, add;
 }
 
 /* Filters share the frame surface, with quiet rules and a single selection cue. */
@@ -1792,4 +1792,15 @@ body:has(.frame-corner-profiles) .movies-wall-container {
   color: #171717;
   border-color: transparent;
   box-shadow: inset 0 -2px 0 #a47b22;
+}
+
+/* On phones the pockets merge into shallow shelves; posters get the usable center. */
+@media (max-width: 600px) {
+  body:has(.frame-corner-profiles) .movies-wall-container {
+    mask-image: linear-gradient(#000, #000), var(--frame-top-notch-shape), var(--frame-bottom-notch-shape);
+    mask-size: 100% calc(100% - 10rem), calc(var(--frame-picker-width) + 2rem) 5.5rem, calc(var(--frame-status-width) + 2rem) 6.5rem;
+    mask-position: center calc(50% - 0.5rem), center top, center bottom;
+    mask-repeat: no-repeat;
+    mask-composite: subtract, add, add;
+  }
 }

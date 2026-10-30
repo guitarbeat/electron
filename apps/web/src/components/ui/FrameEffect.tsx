@@ -46,7 +46,13 @@ export const FrameEffect: React.FC<FrameEffectProps> = ({
       style={customStyles as React.CSSProperties}
       aria-hidden="true"
       data-testid="viewport-frame"
-    />
+    >
+      <span className="viewport-frame__corner viewport-frame__corner--top-left" />
+      <span className="viewport-frame__corner viewport-frame__corner--top-right" />
+      <span className="viewport-frame__corner viewport-frame__corner--bottom-left" />
+      <span className="viewport-frame__corner viewport-frame__corner--top-center" />
+      <span className="viewport-frame__corner viewport-frame__corner--bottom-center" />
+    </div>
   );
 
   if (!children) {

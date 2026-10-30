@@ -78,7 +78,7 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     // 5. Verify Movie Details dialog is opened
     const detailsDialog = page.getByRole("dialog");
     await expect(detailsDialog).toBeVisible();
-    await expect(page.locator(".drift-wall--modal-open")).toHaveCSS(
+    await expect(page.locator(".movie-library-grid--modal-open")).toHaveCSS(
       "filter",
       "blur(5px) brightness(0.68) saturate(0.78)",
     );

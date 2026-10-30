@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Electron Movies</string>
+    <string name="loading">Loading your movies…</string>
+    <string name="load_error">Could not load your movies</string>
+    <string name="load_error_detail">Check your connection, then try again.</string>
+    <string name="retry">Retry</string>
+</resources>

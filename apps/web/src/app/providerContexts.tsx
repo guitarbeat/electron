@@ -203,8 +203,9 @@ export const ViewportProvider: React.FC<{ children: ReactNode }> = ({
   const isTv = useMemo(() => {
     if (typeof navigator === "undefined") return false;
     return (
+      new URLSearchParams(window.location.search).get("tv") === "1" ||
       isSilkBrowser ||
-      /tv|smarttv|googletv|appletv|firetv|hbbtv/i.test(navigator.userAgent)
+      /ElectronTV|AFTKM|tv|smarttv|googletv|appletv|firetv|hbbtv/i.test(navigator.userAgent)
     );
   }, [isSilkBrowser]);
 

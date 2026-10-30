@@ -1,10 +1,10 @@
 :root {
-  --frame-border-width: 7px;
-  --frame-border-top-width: 4.65rem;
+  --frame-border-width: 5px;
+  --frame-border-top-width: var(--frame-border-width);
   --frame-color: #999999;
   --frame-border-radius: 20px;
-  --frame-account-width: 9rem;
-  --frame-account-height: 4.5rem;
+  --frame-account-width: 8rem;
+  --frame-account-height: 4rem;
   --frame-account-taper: 20px;
   --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 120Q20 120 20 100V50Q20 20 50 20H180Q200 20 200 0V120Z'/%3E%3C/svg%3E");
   --z-index-frame: 80;
@@ -16,7 +16,7 @@
 @media (max-width: 768px) {
   :root {
     --frame-border-width: 5px;
-    --frame-border-top-width: 4.25rem;
+    --frame-border-top-width: var(--frame-border-width);
     --frame-border-radius: 16px;
     --loader-badge-width: min(18.5rem, calc(100vw - 2rem));
     --loader-badge-height: 12.25rem;
@@ -702,4 +702,93 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::
 
 :root:has(.account-pin-viewport:not(:empty)) {
   --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 404 628' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 628Q20 628 20 608V50Q20 20 50 20H384Q404 20 404 0V628Z'/%3E%3C/svg%3E");
+}
+
+/* Four corner pockets share the existing account contour. */
+:root {
+  --frame-top-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%200H240Q220%200%20220%2020V65Q220%2090%20195%2090H45Q20%2090%2020%2065V20Q20%200%200%200Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-bottom-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%20100H240Q220%20100%20220%2080V35Q220%2010%20195%2010H45Q20%2010%2020%2035V80Q20%20100%200%20100Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-search-width: 5.5rem;
+  --frame-create-width: 5.5rem;
+  --frame-filter-width: 4.5rem;
+  --frame-status-width: 18rem;
+  --frame-picker-width: 8rem;
+  --frame-corner-height: 4.5rem;
+  --frame-top-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%20120%29%20scale%28-1%20-1%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-top-right-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%280%20120%29%20scale%281%20-1%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-bottom-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%200%29%20scale%28-1%201%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
+}
+:root:has(.y2k-library-search.is-expanded) { --frame-search-width: min(28rem, calc(100vw - 18rem)); }
+:root:has(.y2k-add-form.is-expanded) { --frame-create-width: min(34rem, calc(100vw - 18rem)); }
+.viewport-frame__corner { display: none; }
+body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner {
+  display: block;
+  position: absolute;
+  height: calc(var(--frame-corner-height) + var(--frame-account-taper));
+  background: var(--frame-color);
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+}
+.viewport-frame__corner--top-left {
+  top: 0; left: 0;
+  width: calc(var(--frame-search-width) + var(--frame-account-taper));
+  mask-image: var(--frame-top-left-shape);
+}
+.viewport-frame__corner--top-right {
+  top: 0; right: 0;
+  width: calc(var(--frame-create-width) + var(--frame-account-taper));
+  mask-image: var(--frame-top-right-shape);
+}
+.viewport-frame__corner--bottom-left {
+  bottom: 0; left: 0;
+  width: calc(var(--frame-filter-width) + var(--frame-account-taper));
+  mask-image: var(--frame-bottom-left-shape);
+}
+@media (max-width: 600px) {
+  :root {
+    --frame-search-width: 4.5rem;
+    --frame-create-width: 4.5rem;
+    --frame-filter-width: 4rem;
+    --frame-status-width: calc(100vw - 11.75rem);
+    --frame-picker-width: 6.5rem;
+    --frame-account-width: 5.5rem;
+  }
+  :root:has(.y2k-library-search.is-expanded) { --frame-search-width: calc(100vw - 2 * var(--frame-border-width)); }
+  :root:has(.y2k-add-form.is-expanded) { --frame-create-width: calc(100vw - 2 * var(--frame-border-width)); }
+}
+
+.viewport-frame__corner--top-center,
+.viewport-frame__corner--bottom-center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.viewport-frame__corner--top-center {
+  top: 0;
+  width: calc(var(--frame-picker-width) + 2 * var(--frame-account-taper));
+  mask-image: var(--frame-top-notch-shape);
+}
+.viewport-frame__corner--bottom-center {
+  bottom: 0;
+  width: calc(var(--frame-status-width) + 2 * var(--frame-account-taper));
+  mask-image: var(--frame-bottom-notch-shape);
+}
+
+@media (max-width: 600px) {
+  :root { --frame-corner-height: 4.5rem; --frame-border-top-width: 4.5rem; }
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) {
+    border-top-width: 4.5rem;
+    border-bottom-width: 5.5rem;
+  }
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before,
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-left,
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-right,
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-left { display: none; }
+  body:has(.frame-corner-profiles) .viewport-frame .viewport-frame__corner--top-center {
+    top: -4.5rem;
+    height: 5.5rem;
+  }
+  body:has(.frame-corner-profiles) .viewport-frame .viewport-frame__corner--bottom-center {
+    bottom: -5.5rem;
+    height: 6.5rem;
+  }
 }

@@ -698,6 +698,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             <button
               type="button"
               className="movie-wall-filters__done"
+              data-tv-close
               onClick={() => setIsOpen(false)}
             >
               <Check size={14} aria-hidden="true" />

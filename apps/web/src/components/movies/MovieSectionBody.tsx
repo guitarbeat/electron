@@ -69,6 +69,14 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onToggleError,
   actions,
 }) => {
+  const [view, setView] = React.useState<"grid" | "wall">(() => {
+    try { return localStorage.getItem("movies-view") === "wall" ? "wall" : "grid"; }
+    catch { return "grid"; }
+  });
+  const changeView = (next: "grid" | "wall") => {
+    setView(next);
+    try { localStorage.setItem("movies-view", next); } catch { /* Storage can be unavailable. */ }
+  };
   const wallContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
   const [selectedOrigin, setSelectedOrigin] =
@@ -107,13 +115,12 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
 
   const { tileWidth, tileHeight, gap, dynamicColumns } = React.useMemo(() => {
     if (isMobile || viewportWidth < 640) {
-      const slotW = 95; // 84px card + 11px gap (4+ cols on mobile)
-      const targetCols = Math.max(4, Math.floor(viewportWidth / slotW));
+      const width = Math.max(136, Math.min(220, (viewportWidth - 40) / 2));
       return {
-        tileWidth: 84,
-        tileHeight: 126,
-        gap: 11,
-        dynamicColumns: targetCols % 2 === 0 ? targetCols : targetCols + 1,
+        tileWidth: width,
+        tileHeight: width * 1.5,
+        gap: 14,
+        dynamicColumns: 2,
       };
     }
     if (viewportWidth < 1024) {
@@ -336,7 +343,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   // ── Full section body ─────────────────────────────────────────────────────
   return (
     <div
-      className="unified-wall-content"
+      className="unified-wall-content simple-library"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -357,6 +364,10 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           }}
           searchQuery={wallFilters.query ?? ""}
           onSearchQueryChange={(query) => setWallFilters((filters) => ({ ...filters, query }))}
+          viewSlot={<fieldset className="library-view-options"><legend>View</legend>
+            <button type="button" aria-pressed={view === "grid"} onClick={() => changeView("grid")}>Grid</button>
+            <button type="button" aria-pressed={view === "wall"} onClick={() => changeView("wall")}>Moving wall</button>
+          </fieldset>}
           filterSlot={
             <MovieWallFilters
               movies={allMovies}
@@ -370,7 +381,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
 
         {collectionState === "loading" ? <OrbitLoader /> : null}
         {unifiedCards.length > 0 ? (
-          <DriftWall
+          view === "grid" ? <div className={`movie-library-grid${selectedMovie ? " movie-library-grid--modal-open" : ""}`} aria-label="Movie grid">
+            {unifiedCards.map((card, index) => <div className="movie-library-grid__item" key={React.isValidElement(card) ? card.key ?? index : index}>{card}</div>)}
+          </div> : <DriftWall
             items={unifiedCards}
             columns={dynamicColumns}
             tileWidth={tileWidth}
