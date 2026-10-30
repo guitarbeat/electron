@@ -37,16 +37,36 @@ const tests = [
     },
   },
   {
-    name: 'State sync API rejects unauthenticated access',
+    name: 'State sync API returns readable movie state',
     path: '/api/state/movies',
     validate: (res, body) => {
+      if (res.status !== 200) return `Expected HTTP 200, got ${res.status}`;
+      try {
+        const json = JSON.parse(body);
+        if (!Array.isArray(json.data) || typeof json.version !== 'string') {
+          return 'Expected movie data and a state version';
+        }
+        if (json.degraded !== false) return 'Movie state is degraded';
+      } catch (err) {
+        return `Failed to parse JSON response: ${err.message}`;
+      }
+      return null;
+    },
+  },
+  {
+    name: 'State sync API rejects unauthenticated mutations',
+    path: '/api/state/movies/mutate',
+    method: 'POST',
+    // An unsupported operation cannot alter state even if authorization regresses.
+    body: JSON.stringify({ baseVersion: '', op: '__smoke_auth_probe__', payload: {} }),
+    validate: (res, body) => {
       if (res.status !== 401) {
-        return `Expected HTTP 401, got ${res.status}: ${body}`;
+        return `Expected HTTP 401, got ${res.status}`;
       }
       try {
         const json = JSON.parse(body);
-        if (json?.error !== 'Unauthorized.') {
-          return `Expected Unauthorized error envelope, got: ${body}`;
+        if (json?.error !== 'Profile session required.') {
+          return 'Expected profile-session-required error envelope';
         }
       } catch (err) {
         return `Failed to parse JSON response: ${err.message}`;
@@ -63,9 +83,12 @@ for (const test of tests) {
   const start = Date.now();
   try {
     const res = await fetch(url, {
+      method: test.method || 'GET',
+      body: test.body,
       headers: {
         'User-Agent': 'Vercel-Deployment-Check-Smoke-Runner/1.0',
         Accept: 'application/json, text/html, */*',
+        ...(test.body ? { 'Content-Type': 'application/json' } : {}),
         ...(bypassSecret
           ? { 'x-vercel-protection-bypass': bypassSecret }
           : {}),
