@@ -132,12 +132,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  transition: transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  width: 44px;
+  height: 44px;
+  border-radius: 50% !important;
+  background: radial-gradient(circle at 50% 35%, #1e293b 0%, #030712 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+  overflow: hidden !important;
+  transition: transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .profile-switcher-face-wrap img,
@@ -145,15 +147,12 @@
 .profile-switcher-avatar,
 .profile-switcher-avatar .app-header__option-avatar,
 .profile-switcher-face-wrap .app-header__avatar-image {
-  border-radius: 0 !important;
-  overflow: visible !important;
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  object-fit: contain !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
   pointer-events: none;
-  width: 56px;
-  height: 56px;
+  width: 100% !important;
+  height: 100% !important;
   transition: filter 200ms ease, opacity 200ms ease;
 }
 
@@ -165,17 +164,13 @@
 
 /* SHRUNK STATE (Logged out) */
 .profile-switcher-btn.is-logged-out {
-  opacity: 0.55;
-  transform: scale(0.82);
+  opacity: 0.65;
+  transform: scale(0.9);
 }
 
-.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap,
-.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap img,
-.profile-switcher-btn.is-logged-out .profile-switcher-avatar-wrap,
-.profile-switcher-btn.is-logged-out .app-header__avatar-image {
-  width: 56px;
-  height: 56px;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5)) grayscale(0.25);
+.profile-switcher-btn.is-logged-out .profile-switcher-face-wrap {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  filter: grayscale(0.2);
 }
 
 @media (hover: hover) and (pointer: fine) {

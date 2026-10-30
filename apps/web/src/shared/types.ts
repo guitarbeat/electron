@@ -1,135 +1,66 @@
-export type User = "Aaron" | "Electra";
+export type User = "Aaron" | "Electra" | "Guest";
 
-export const USER_PHOTOS: Record<User, string> = {
-  Aaron: "/aaron-avatar.png",
-  Electra: "/electra-button.png",
-};
+export type MainTab = "movies" | "places" | "messages" | "quiz" | "spin";
 
-export const MAIN_TABS = ["movies", "places", "messages"] as const;
-
-export type MainTab = (typeof MAIN_TABS)[number];
-
-export interface Place {
-  id: string;
-  name: string;
-  addedBy?: User;
-  notes?: string;
-  createdAt: string;
-  visitedAt?: string; // optional: when you went (ISO string)
-  lat?: number;
-  lng?: number;
-  category?: string; // e.g. "Restaurant", "Park", "Museum"
-  rating?: string; // e.g. "4.5", "3.8"
-  description?: string; // detailed description
-  imageUrl?: string; // optional photo
-}
-
-export interface PlaceSuggestion {
-  id: string;
-  name: string;
-  suggestedBy: string; // Any name (not restricted to User type)
-  createdAt: string;
-  notes?: string;
-  category?: string;
-  rating?: string;
-  description?: string;
-  imageUrl?: string;
-  status: "pending" | "accepted" | "rejected";
-  respondedAt?: string;
-  respondedBy?: User; // Aaron or Electra
-}
+export type WatchStatus = "queue" | "watching" | "seen";
 
 export interface Movie {
   id: string;
   title: string;
-  addedBy: User;
-  watchedBy: User[];
-  watchingBy?: User[];
-  createdAt: string;
-
-  // Metadata
-  posterUrl?: string;
-  customPosterUrl?: string;
   year?: string;
-  plot?: string;
-  imdbRating?: string;
-  runtime?: string;
+  posterUrl?: string;
+  imageUrl?: string;
+  customPosterUrl?: string;
+  rating?: string;
   genre?: string;
-  director?: string;
-  category?: string; // e.g. "Humor", "Action", "Drama"
+  overview?: string;
+  status: WatchStatus;
+  watchedBy: User[];
+  watched?: boolean;
+  addedBy?: User;
   mediaType?: "movie" | "series" | "youtube";
   youtubeUrl?: string;
+  createdAt?: string;
 }
 
 export interface MovieSuggestion {
   id: string;
   title: string;
-  suggestedBy: string; // Any name (not restricted to User type)
-  reason?: string; // Optional: "You'd love this because..."
+  reason?: string;
+  suggestedBy?: string;
+  meta?: {
+    imdbID?: string;
+    type?: string;
+  };
+  createdAt?: string;
+}
+
+export interface Place {
+  id: string;
+  name: string;
+  address?: string;
+  category?: string;
   notes?: string;
-  imdbID?: string;
-  type?: "movie" | "series" | "youtube";
-  youtubeUrl?: string;
-  status: "pending" | "accepted" | "rejected";
-  createdAt: string;
-  respondedAt?: string;
-  respondedBy?: User; // Aaron or Electra
+  rating?: number;
+  visitedBy?: User[];
+  addedBy?: User;
+  lat?: number;
+  lng?: number;
+  imageUrl?: string;
+}
+
+export interface PlaceSuggestion {
+  id: string;
+  name: string;
+  reason?: string;
+  suggestedBy?: string;
+  createdAt?: string;
 }
 
 export interface Message {
   id: string;
-  author: string;
-  content: string;
-  createdAt: string;
+  sender: string;
+  text: string;
+  timestamp: string;
+  avatarUrl?: string;
 }
-
-export interface MatchmakerGame {
-  id: string;
-  moviePool: string[]; // Array of movie IDs
-  aaronLikes: string[]; // Array of movie IDs
-  electraLikes: string[]; // Array of movie IDs
-  aaronDislikes: string[]; // Array of movie IDs
-  electraDislikes: string[]; // Array of movie IDs
-  aaronSwipeOrder?: string[]; // Ordered history of Aaron's swipes
-  electraSwipeOrder?: string[]; // Ordered history of Electra's swipes
-  status: "active" | "completed";
-  createdAt: string;
-  startedBy: User;
-}
-
-export interface MoviesViewProps {
-  isPaused?: boolean;
-  hideSearch?: boolean;
-}
-
-export type {
-  QuizCharacter,
-  QuizQuestion,
-  QuizAnswer,
-  QuizResult,
-  CharacterScores,
-  MultipleChoiceQuestion,
-  AgreeDisagreeQuestion,
-  ImageChoiceQuestion,
-  XYAxisQuestion,
-  SavedQuizProgress,
-} from "./quizData.js";
-export {
-  CHARACTERS,
-  quizQuestions,
-  characterDescriptions,
-  neitherDescription,
-  calculateQuizResults,
-  buildQuizProgressStorageKey,
-  buildQuizOutcomeStorageKey,
-  buildQuizResultStorageKey,
-  readSavedQuizProgress,
-  writeSavedQuizProgress,
-  clearSavedQuizProgress,
-  readSavedQuizOutcome,
-  readSavedQuizResult,
-  writeSavedQuizOutcome,
-  writeSavedQuizResult,
-  clearSavedQuizOutcome,
-  clearSavedQuizResult,
-} from "./quizData.js";

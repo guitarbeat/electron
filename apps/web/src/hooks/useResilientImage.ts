@@ -1,174 +1,27 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { getCatPosterUrl } from "@/utils/catPosters";
-import { getCachedPosterUrlSync } from "@/services/posterCache";
-import {
-  getCachedObjectUrlSync,
-  getImageBlob,
-} from "@/utils/imageCache";
-
-export type ImageStatus = "loading" | "loaded" | "primary-error" | "fallback-error";
+import { useState, useCallback } from "react";
 
 export interface UseResilientImageOptions {
-  src?: string | null;
   fallbackSrc?: string;
-  seed?: string;
-  catFallback?: boolean;
-  onLoad?: (event?: React.SyntheticEvent<HTMLImageElement, Event>) => void;
-  onError?: (event?: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
-export interface UseResilientImageResult {
-  currentSrc: string | null;
-  isPrimary: boolean;
-  isCatFallback: boolean;
-  isGraphicPlaceholder: boolean;
-  isLoading: boolean;
-  hasError: boolean;
-  status: ImageStatus;
-  handleLoad: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void;
-  handleError: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void;
-  retry: () => void;
-}
+export function useResilientImage(initialSrc?: string, options?: UseResilientImageOptions) {
+  const fallbackSrc = options?.fallbackSrc || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 450'%3E%3Crect width='300' height='450' fill='%231e293b'/%3E%3C/svg%3E";
+  const [src, setSrc] = useState(initialSrc || fallbackSrc);
+  const [hasError, setHasError] = useState(false);
 
-/**
- * Hook to manage resilient image loading with multi-tier fallback:
- * 1. Primary Source (with IndexedDB blob cache sync checking)
- * 2. Cat API deterministic fallback poster
- * 3. Y2K-inspired themed vector placeholder graphic
- */
-export function useResilientImage(options: UseResilientImageOptions): UseResilientImageResult {
-  const {
-    src,
-    fallbackSrc,
-    seed,
-    catFallback = true,
-    onLoad,
-    onError,
-  } = options;
-
-  const resolvedFallbackCat = useMemo(() => {
-    if (fallbackSrc) return fallbackSrc;
-    if (catFallback) {
-      return getCatPosterUrl(seed || src || "y2k-cat-placeholder");
+  const handleError = useCallback(() => {
+    if (!hasError) {
+      setHasError(true);
+      setSrc(fallbackSrc);
     }
-    return null;
-  }, [fallbackSrc, catFallback, seed, src]);
-
-  const [hasPrimaryError, setHasPrimaryError] = useState(false);
-  const [hasFallbackError, setHasFallbackError] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [cachedSrc, setCachedSrc] = useState<string | null>(() => {
-    if (!src) return null;
-    return getCachedObjectUrlSync(src) || getCachedPosterUrlSync(src);
-  });
-
-  // Reset error states when primary source changes
-  useEffect(() => {
-    let isCancelled = false;
-    let createdObjectUrl: string | null = null;
-    setHasPrimaryError(false);
-    setHasFallbackError(false);
-    setIsLoaded(false);
-
-    if (!src || src === "N/A" || src.trim() === "") {
-      setHasPrimaryError(true);
-      return;
-    }
-
-    const syncCached = getCachedObjectUrlSync(src) || getCachedPosterUrlSync(src);
-    if (syncCached) {
-      setCachedSrc(syncCached);
-    } else {
-      setCachedSrc(null);
-      getImageBlob(src)
-        .then((blob) => {
-          if (isCancelled) return;
-          if (blob) {
-            try {
-              const objUrl = URL.createObjectURL(blob);
-              createdObjectUrl = objUrl;
-              setCachedSrc(objUrl);
-            } catch {
-              // Ignore blob URL errors and let standard img tag load
-            }
-          }
-        })
-        .catch(() => {
-          // Fall back to direct src
-        });
-    }
-
-    return () => {
-      isCancelled = true;
-      if (createdObjectUrl) {
-        try {
-          URL.revokeObjectURL(createdObjectUrl);
-        } catch {
-          // Ignore revoke errors
-        }
-      }
-    };
-  }, [src]);
-
-  const activeSrc = useMemo(() => {
-    if (!hasPrimaryError && src && src !== "N/A" && src.trim() !== "") {
-      return cachedSrc || src;
-    }
-    if (!hasFallbackError && resolvedFallbackCat) {
-      return resolvedFallbackCat;
-    }
-    return null;
-  }, [hasPrimaryError, hasFallbackError, src, cachedSrc, resolvedFallbackCat]);
-
-  const isPrimary = !hasPrimaryError && Boolean(src && src !== "N/A" && src.trim() !== "");
-  const isCatFallback = hasPrimaryError && Boolean(!hasFallbackError && resolvedFallbackCat);
-  const isGraphicPlaceholder = !activeSrc || hasFallbackError;
-
-  const handleLoad = useCallback(
-    (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-      setIsLoaded(true);
-      onLoad?.(event);
-    },
-    [onLoad]
-  );
-
-  const handleError = useCallback(
-    (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-      if (!hasPrimaryError) {
-        setHasPrimaryError(true);
-        setIsLoaded(false);
-      } else {
-        setHasFallbackError(true);
-        setIsLoaded(true);
-      }
-      onError?.(event);
-    },
-    [hasPrimaryError, onError]
-  );
-
-  const retry = useCallback(() => {
-    setHasPrimaryError(false);
-    setHasFallbackError(false);
-    setIsLoaded(false);
-  }, []);
-
-  const status: ImageStatus = useMemo(() => {
-    if (hasFallbackError || (!activeSrc && hasPrimaryError)) return "fallback-error";
-    if (hasPrimaryError) return "primary-error";
-    if (isLoaded) return "loaded";
-    return "loading";
-  }, [hasFallbackError, hasPrimaryError, activeSrc, isLoaded]);
+  }, [fallbackSrc, hasError]);
 
   return {
-    currentSrc: activeSrc,
-    isPrimary,
-    isCatFallback,
-    isGraphicPlaceholder,
-    isLoading: !isLoaded && Boolean(activeSrc),
-    hasError: isGraphicPlaceholder,
-    status,
-    handleLoad,
+    src,
+    hasError,
     handleError,
-    retry,
+    setSrc,
   };
 }
+
+export default useResilientImage;

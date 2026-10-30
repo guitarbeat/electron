@@ -1,76 +1,33 @@
 {
-  "name": "workspace",
+  "name": "immersive-workspace-applet",
+  "private": true,
   "version": "0.0.0",
   "type": "module",
-  "license": "MIT",
-  "packageManager": "pnpm@9.15.4",
-  "workspaces": [
-    "apps/*",
-    "lib/*"
-  ],
   "scripts": {
-    "preinstall": "echo skip",
-    "dev": "npm --prefix apps/web run dev",
-    "preview": "npm --prefix apps/web run serve",
-    "verify": "npm run check-artifacts && npm run check-hygiene && npm run check-types && npm run lint && npm run test && npm run build",
-    "check-artifacts": "node scripts/check-artifacts.js",
-    "check-hygiene": "node scripts/verify-repo-hygiene.mjs",
-    "pre-commit": "node scripts/check-artifacts.js",
-    "build": "npm run check-artifacts && npm run build:bundle",
-    "build:bundle": "npm --prefix apps/web run build && node scripts/prepare-dist.mjs",
-    "typecheck:libs": "tsc --build",
-    "typecheck:api": "tsc -p api/tsconfig.json --noEmit",
-    "typecheck": "npm run typecheck:libs && npm run typecheck:api && npm --prefix apps/web run typecheck",
-    "check-types": "npm run typecheck",
-    "lint": "eslint . --max-warnings 0",
-    "test": "npm run test:unit && npm run test:web",
-    "test:unit": "node scripts/run-node-tests.mjs",
-    "test:web": "npm --prefix apps/web run test",
-    "test:e2e": "playwright test --config playwright-dyad.config.ts",
-    "test:smoke": "node scripts/smoke-test-deployment.mjs",
-    "test:serverless-output": "node scripts/verify-vercel-output.mjs"
-  },
-  "private": true,
-  "overrides": {
-    "esbuild@<=0.24.2": "^0.25.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "@types/react": "19.1.0",
-    "@types/react-dom": "19.1.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.5",
-    "@playwright/test": "^1.62.1",
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.3",
-    "@types/node": "^25.3.3",
-    "@types/pg": "^8.20.0",
-    "eslint": "^9.39.5",
-    "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^6.1.1",
-    "eslint-plugin-react-refresh": "^0.5.3",
-    "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.9.0",
-    "jsdom": "^30.1.0",
-    "pg": "^8.20.0",
-    "prettier": "^3.8.3",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "ts-morph": "^28.0.0",
-    "tsx": "^4.21.0",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.66.0",
-    "vitest": "^5.0.1",
-    "zod": "^3.25.76"
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "clean": "rm -rf dist server.js",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "gsap": "^3.15.0",
-    "lightningcss": "^1.32.0"
+    "@google/genai": "^2.4.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-query": "^5.62.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "dotenv": "^17.2.3",
+    "gsap": "^3.12.5",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^8.3.0",
+    "zod": "^3.25.76"
   },
-  "optionalDependencies": {
-    "@esbuild/darwin-arm64": "0.27.3",
-    "@rollup/rollup-darwin-arm64": "^4.62.2",
-    "lightningcss-darwin-arm64": "1.32.0"
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
   }
 }

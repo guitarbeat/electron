@@ -1,78 +1,28 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "@total-typescript/ts-reset";
-import "@/shared/pwaInstallWindow";
-import { preloadCriticalAppModules } from "@/app/preloadAppModules";
-import { GlobalErrorBoundary } from "@/app/GlobalErrorBoundary";
-import { applyTheme } from "@/theme/tokens";
-import App from "./app/App";
+import LibrarySearch from "@/components/library/LibrarySearch";
+import { AppProviders } from "@/app/providerContexts";
+import { PwaInstallProvider } from "@/app/PwaInstallProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Dev convenience: ?mock=1 in URL sets mock data mode
-if (
-  import.meta.env.DEV &&
-  new URLSearchParams(window.location.search).get("mock") === "1"
-) {
-  try {
-    window.localStorage.setItem("useMockData", "true");
-  } catch {
-    // Ignore storage access errors in restricted/private contexts
-  }
-}
+const queryClient = new QueryClient();
 
-applyTheme("movies");
-void preloadCriticalAppModules();
+const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppProviders>
+        <PwaInstallProvider>
+          <div style={{ minHeight: "100vh", backgroundColor: "#090d16", color: "#ffffff", padding: "1.5rem" }}>
+            <LibrarySearch />
+          </div>
+        </PwaInstallProvider>
+      </AppProviders>
+    </QueryClientProvider>
+  );
+};
 
-let isStandalone = false;
-try {
-  isStandalone =
-    (typeof window.matchMedia === "function" &&
-      window.matchMedia("(display-mode: standalone)").matches) ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true;
-} catch {
-  isStandalone = false;
-}
-
-if (isStandalone) {
-  document.documentElement.classList.add("app-standalone");
-}
-
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
-
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <GlobalErrorBoundary
-      moduleName="RootApplication"
-      fallbackTitle="APPLICATION STARTUP FAULT"
-      fallbackDescription="A critical error occurred while initializing the workspace. You can reboot the module or reload the page."
-    >
-      <App />
-    </GlobalErrorBoundary>
-  </React.StrictMode>,
-);
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .getRegistrations()
-    .then((registrations) => {
-      for (const registration of registrations) {
-        void registration.unregister();
-      }
-    })
-    .catch(() => undefined);
-
-  if ("caches" in window) {
-    caches
-      .keys()
-      .then((keys) => {
-        for (const key of keys) {
-          void caches.delete(key);
-        }
-      })
-      .catch(() => undefined);
-  }
+const rootEl = document.getElementById("root");
+if (rootEl) {
+  ReactDOM.createRoot(rootEl).render(<App />);
 }

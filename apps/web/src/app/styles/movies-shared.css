@@ -181,7 +181,121 @@
   /* Removed inner scale */
 }
 
-/* ── Corner Mini-Avatars with Status Rings ───────────────────────────────── */
+/* ── Quick 1-Click Watch Toggle on Poster Hover ──────────────────────────── */
+
+.movie-item-quick-toggle {
+  position: absolute;
+  top: 0.38rem;
+  right: 0.38rem;
+  z-index: 24;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  height: 1.52rem;
+  padding: 0 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(186, 230, 253, 0.32);
+  background: rgba(8, 12, 22, 0.86);
+  color: rgba(241, 245, 249, 0.95);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 760;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.95);
+  pointer-events: none;
+  transition:
+    opacity 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.movie-item-container:hover .movie-item-quick-toggle,
+.movie-item-container:focus-within .movie-item-quick-toggle,
+.card-tilt-wrap:hover .movie-item-quick-toggle,
+.movie-item-quick-toggle:focus-visible,
+.movie-item-quick-toggle.is-updating {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.movie-item-quick-toggle__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #bae6fd;
+  flex-shrink: 0;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.movie-item-quick-toggle:hover:not(:disabled) {
+  border-color: rgba(52, 211, 153, 0.75);
+  background: rgba(6, 78, 59, 0.92);
+  color: #ecfdf5;
+  transform: translateY(0) scale(1.04);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.72),
+    0 0 12px rgba(16, 185, 129, 0.38);
+}
+
+.movie-item-quick-toggle:hover:not(:disabled) .movie-item-quick-toggle__icon {
+  background: #10b981;
+  color: #04101f;
+}
+
+.movie-item-quick-toggle.is-watched {
+  border-color: rgba(52, 211, 153, 0.72);
+  background: rgba(6, 78, 59, 0.88);
+  color: #d1fae5;
+}
+
+.movie-item-quick-toggle.is-watched .movie-item-quick-toggle__icon {
+  background: #10b981;
+  color: #04101f;
+}
+
+.movie-item-quick-toggle.is-watched:hover:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.68);
+  background: rgba(69, 10, 10, 0.9);
+  color: #fecaca;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.72),
+    0 0 12px rgba(239, 68, 68, 0.32);
+}
+
+.movie-item-quick-toggle.is-watched:hover:not(:disabled) .movie-item-quick-toggle__icon {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.movie-item-quick-toggle:active:not(:disabled) {
+  transform: translateY(0) scale(0.95);
+}
+
+.movie-item-quick-toggle:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 2px;
+}
+
+/* ── Corner Mini-Avatars with Status Rings (Compact + Hover Expand) ──────── */
 
 .media-card-watchers-stack {
   display: inline-flex;
@@ -192,22 +306,37 @@
 .media-card-watchers-stack.movie-item-watchers,
 .movie-item-poster-wrap > .movie-item-watchers {
   position: absolute !important;
-  bottom: 0.5rem;
-  right: 0.5rem;
+  bottom: 0.35rem;
+  right: 0.35rem;
   top: auto;
   left: auto;
   z-index: 15;
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.22rem 0.3rem;
+  gap: 0.14rem;
+  padding: 0.14rem 0.2rem;
   border-radius: 9999px;
-  background: rgba(8, 12, 22, 0.85);
+  background: rgba(8, 12, 22, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.68);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   pointer-events: none;
+  transform-origin: bottom right;
+  transition:
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.movie-item-container:hover .media-card-watchers-stack.movie-item-watchers,
+.movie-item-container:focus-within .media-card-watchers-stack.movie-item-watchers,
+.card-tilt-wrap:hover .media-card-watchers-stack.movie-item-watchers {
+  transform: scale(1.1);
+  background: rgba(8, 12, 22, 0.94);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
 }
 
 .media-card-watchers-stack .watcher-badge {
@@ -215,14 +344,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.42rem;
+  height: 1.42rem;
   flex-shrink: 0;
   overflow: visible;
 }
 
 .media-card-watchers-stack .watcher-badge + .watcher-badge {
-  margin-left: -0.25rem;
+  margin-left: -0.18rem;
 }
 
 .watcher-badge__avatar {
@@ -231,8 +360,8 @@
   height: 100%;
   border-radius: 9999px;
   background: #0b101d;
-  border: 2px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.75);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -244,7 +373,7 @@
   border-color: #fbbf24;
   box-shadow:
     0 0 0 1px rgba(9, 13, 22, 0.95),
-    0 0 12px rgba(245, 158, 11, 0.85);
+    0 0 9px rgba(245, 158, 11, 0.85);
 }
 
 .watcher-badge--status-watched .watcher-badge__avatar,
@@ -252,7 +381,7 @@
   border-color: #34d399;
   box-shadow:
     0 0 0 1px rgba(9, 13, 22, 0.95),
-    0 0 12px rgba(16, 185, 129, 0.75);
+    0 0 9px rgba(16, 185, 129, 0.75);
 }
 
 .watcher-badge__avatar-photo {
@@ -270,7 +399,7 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  font-size: 0.75rem;
+  font-size: 0.62rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1;
@@ -279,22 +408,24 @@
 
 .watcher-badge__status {
   position: absolute;
-  right: -3px;
-  bottom: -3px;
-  width: 1.05rem;
-  height: 1.05rem;
+  right: -2px;
+  bottom: -2px;
+  width: 0.8rem;
+  height: 0.8rem;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #090d16;
+  border: 1.25px solid #090d16;
   background: #334155;
   color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
   z-index: 4;
 }
 
 .watcher-badge__status svg {
+  width: 8px;
+  height: 8px;
   display: block;
   flex-shrink: 0;
 }
@@ -312,11 +443,11 @@
 }
 
 .watcher-badge__label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--color-text-primary, #ffffff);
-  margin-left: 0.35rem;
-  padding-right: 0.25rem;
+  margin-left: 0.3rem;
+  padding-right: 0.2rem;
   white-space: nowrap;
 }
 

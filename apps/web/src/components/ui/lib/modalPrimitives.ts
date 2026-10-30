@@ -1,72 +1,39 @@
-import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
-import { colors, radius, spacing, zIndex } from "@/theme/tokens";
+import React from "react";
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+export function isFocusWithin(container: HTMLElement | null): boolean {
+  if (!container || typeof document === "undefined") return false;
+  return container.contains(document.activeElement);
+}
 
-export const trapFocusOnTab = (
-  event: KeyboardEvent | ReactKeyboardEvent,
+export function trapFocusOnTab(
+  event: React.KeyboardEvent | KeyboardEvent,
   container: HTMLElement | null,
-): void => {
-  if (event.key !== "Tab" || !container) return;
+): void {
+  if (!container || event.key !== "Tab") return;
 
-  const focusableNodes = Array.from(
-    container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-  ).filter((node) => !node.hasAttribute("disabled"));
+  const focusables = Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
 
-  if (!focusableNodes.length) {
+  if (focusables.length === 0) {
     event.preventDefault();
     return;
   }
 
-  const [first] = focusableNodes;
-  const last = focusableNodes[focusableNodes.length - 1] ?? first;
-  const active = document.activeElement as HTMLElement | null;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
 
-  if (event.shiftKey && active === first) {
-    event.preventDefault();
-    last.focus();
-    return;
+  if (event.shiftKey) {
+    if (document.activeElement === first) {
+      last.focus();
+      event.preventDefault();
+    }
+  } else {
+    if (document.activeElement === last) {
+      first.focus();
+      event.preventDefault();
+    }
   }
-
-  if (!event.shiftKey && active === last) {
-    event.preventDefault();
-    first.focus();
-  }
-};
-
-export const isFocusWithin = (container: HTMLElement | null): boolean => {
-  if (!container) return false;
-  const active = document.activeElement as HTMLElement | null;
-  return active !== null && container.contains(active);
-};
-
-export const getModalOverlayStyle = (
-  backgroundColor: string = colors.overlay,
-  alignItems: CSSProperties["alignItems"] = "center",
-  padding: CSSProperties["padding"] = spacing.md,
-): CSSProperties => ({
-  position: "fixed",
-  inset: 0,
-  backgroundColor,
-  backdropFilter: "blur(4px)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems,
-  zIndex: zIndex.modal,
-  padding,
-});
-
-export const getModalCloseButtonStyle = (): CSSProperties => ({
-  position: "absolute",
-  top: spacing.sm,
-  right: spacing.sm,
-  width: "34px",
-  height: "34px",
-  borderRadius: radius.full,
-  border: `1px solid ${colors.borderSubtle}`,
-  background: colors.surface2,
-  color: colors.textPrimary,
-  cursor: "pointer",
-  lineHeight: 1,
-});
+}

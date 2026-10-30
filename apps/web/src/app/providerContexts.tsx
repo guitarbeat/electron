@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useCallback,
+  useState,
   useSyncExternalStore,
 } from "react";
 import type { ReactNode } from "react";
@@ -34,6 +35,29 @@ export const useTheme = (): ThemeContextValue => {
 export const useThemeColors = () => {
   const { theme } = useTheme();
   return theme.semantic;
+};
+
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const value = useMemo(
+    () => ({
+      currentTheme: "dark" as ThemeName,
+      theme: {
+        semantic: {
+          bg: "#090d16",
+          surface1: "#0f172a",
+          surface2: "#1e293b",
+          textPrimary: "#ffffff",
+          textSecondary: "#94a3b8",
+          textTertiary: "#64748b",
+          accent: "#6366f1",
+          border: "rgba(255, 255, 255, 0.12)",
+        },
+      } as unknown as AppThemeDefinition,
+    }),
+    []
+  );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 // ============================================================================
@@ -70,6 +94,23 @@ export const useToast = (): ToastContextType => {
   return context;
 };
 
+export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const showToast = useCallback((toast: ToastInput) => {
+    console.log("Toast:", toast.message);
+    return `toast-${Date.now()}`;
+  }, []);
+
+  const dismissToast = useCallback((_id: string) => {}, []);
+  const clearToasts = useCallback(() => {}, []);
+
+  const value = useMemo(
+    () => ({ showToast, dismissToast, clearToasts }),
+    [showToast, dismissToast, clearToasts]
+  );
+
+  return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;
+};
+
 // ============================================================================
 // User Context & Hooks
 // ============================================================================
@@ -96,6 +137,52 @@ export const useUser = (): UserContextType => {
     throw new Error("useUser must be used within a UserProvider");
   }
   return context;
+};
+
+export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [currentUser, setCurrentUserLocal] = useState<User | null>("Aaron");
+  const [hasAccess] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("app_current_user");
+      if (saved === "Aaron" || saved === "Electra") {
+        setCurrentUserLocal(saved as User);
+      }
+    }
+  }, []);
+
+  const setCurrentUser = useCallback(async (user: User | null): Promise<boolean> => {
+    setCurrentUserLocal(user);
+    if (typeof window !== "undefined" && user) {
+      localStorage.setItem("app_current_user", user);
+    }
+    return true;
+  }, []);
+
+  const logoutUser = useCallback(async (): Promise<boolean> => {
+    setCurrentUserLocal(null);
+    return true;
+  }, []);
+
+  const refreshSession = useCallback(async (): Promise<void> => {}, []);
+
+  const value = useMemo(
+    () => ({
+      hasAccess,
+      pinProtectedUsers: [],
+      usersMissingPins: [],
+      isSessionLoading: false,
+      currentUser,
+      activeUsers: ["Aaron", "Electra"] as User[],
+      setCurrentUser,
+      logoutUser,
+      refreshSession,
+    }),
+    [currentUser, hasAccess, setCurrentUser, logoutUser, refreshSession]
+  );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 export const useAppSession = (): Pick<
@@ -126,7 +213,7 @@ export const useAppSession = (): Pick<
 };
 
 // ============================================================================
-// Viewport Context, Provider & Hooks (consolidated from ViewportContext.tsx)
+// Viewport Context, Provider & Hooks
 // ============================================================================
 
 interface ViewportContextValue {
@@ -137,7 +224,6 @@ interface ViewportContextValue {
 
 export const ViewportContext = createContext<ViewportContextValue | null>(null);
 
-// Self-contained media query hook to prevent circular dependency on hooks/index
 const useMediaQueryLocal = (query: string): boolean => {
   const subscribe = useCallback(
     (callback: () => void) => {
@@ -238,7 +324,7 @@ export function useViewport(): ViewportContextValue {
 }
 
 // ============================================================================
-// Bento Slot Context & Hooks (consolidated from BentoSlotContext.tsx)
+// Bento Slot Context & Hooks
 // ============================================================================
 
 import type {
@@ -254,7 +340,7 @@ export interface BentoSlotConfig {
   sorts?: BentoSortChipConfig[];
   activeSortOrder?: SortOrder;
   onSortChange?(order: SortOrder): void;
-  viewModes?: MagicToggleOption<string>[];
+  viewModes?: MagicToggleOption[];
   activeViewMode?: string;
   onViewModeChange?: (mode: string) => void;
   viewModeAriaLabel?: string;
@@ -279,3 +365,19 @@ export function useBentoSlot(): BentoSlotContextValue {
   }
   return ctx;
 }
+
+// ============================================================================
+// AppProviders Composite Provider
+// ============================================================================
+
+export const AppProviders: React.FC<{ children: ReactNode }> = ({ children }) => {
+  return (
+    <ThemeProvider>
+      <ViewportProvider>
+        <ToastProvider>
+          <UserProvider>{children}</UserProvider>
+        </ToastProvider>
+      </ViewportProvider>
+    </ThemeProvider>
+  );
+};

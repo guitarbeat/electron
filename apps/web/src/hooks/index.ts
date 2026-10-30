@@ -1525,3 +1525,13 @@ export * from "./useKineticWallScroll";
 export * from "./usePersistentAuth";
 export * from "./useCrtEntranceAnimation";
 export * from "./useResilientImage";
+
+export function isScrollBlockedElement(target: EventTarget | null): boolean {
+  if (!target || !(target instanceof HTMLElement)) return false;
+  return Boolean(
+    target.closest(
+      'input, textarea, select, button, [role="dialog"], [role="menu"], .is-scroll-blocked',
+    ),
+  );
+}
+
