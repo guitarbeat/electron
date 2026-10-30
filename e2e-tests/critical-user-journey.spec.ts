@@ -51,13 +51,16 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     // 1. Visit the home page
     await page.goto("/");
 
-    // 2. Verify main heading and search input are rendered
+    // 2. Verify the movie workspace and expand the catalog search.
     await expect(
-      page.getByRole("heading", { name: "Movies & Places", level: 2 }),
+      page.getByRole("heading", { name: "Movies", level: 2, exact: true }),
     ).toBeVisible();
 
+    await page
+      .getByRole("button", { name: "Add a movie or show (Cmd+K)", exact: true })
+      .click();
     const searchInput = page.getByRole("combobox", {
-      name: "Search movies, shows, and places to add",
+      name: "Search movies and shows to add",
     });
     await expect(searchInput).toBeVisible();
 
@@ -98,6 +101,9 @@ test.describe("Critical User Journey - Movies & Exploration", () => {
     await expect(detailsDialog).toBeHidden();
 
     // 7. Choosing a catalog result stages it without mutating shared state.
+    await page
+      .getByRole("button", { name: "Add a movie or show (Cmd+K)", exact: true })
+      .click();
     await searchInput.fill("Flow State");
     const catalogResult = page.getByRole("option", {
       name: /Flow State Test.*Movie.*2026/i,
