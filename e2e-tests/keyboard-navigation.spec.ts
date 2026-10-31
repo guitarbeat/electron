@@ -101,6 +101,12 @@ test.describe("desktop arrow-key navigation", () => {
     await expect(stremio).toBeFocused();
     await page.keyboard.press("ArrowUp");
     await expect.poll(() => activeInside(page, '[data-book-row="people"]')).toBe(true);
+    await page.keyboard.press("ArrowDown");
+    await expect(stremio).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect.poll(() => activeInside(page, '[data-book-row="nav"]')).toBe(true);
+    await page.keyboard.press("ArrowUp");
+    await expect.poll(() => activeInside(page, '[data-book-row="actions"]')).toBe(true);
     await stremio.focus();
     // Past the start of a row the page turns back to the cover.
     await page.keyboard.press("ArrowLeft");

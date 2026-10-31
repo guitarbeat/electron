@@ -748,8 +748,9 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   }, [isOpen, turnedCount]);
 
   /* Left/Right move along the focused row (people, actions, page tabs). Past the end of a row,
-     or from anything that is not in a row, they turn the page. Up/Down stay with spatial
-     navigation, and Escape/Backspace close the book through it. Runs before that handler. */
+     or from anything that is not in a row, they turn the page. Up/Down step between those rows
+     in order. Everything else, including Escape/Backspace to close, stays with spatial
+     navigation; this listener runs before it. */
   const turnTo = useCallback((target: number) => {
     setTurnedCount(target);
     if (target === 0) {
@@ -760,17 +761,40 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   }, []);
   useEffect(() => {
     if (!isOpen) return;
+    const rowItems = (row: Element) => [...row.querySelectorAll<HTMLElement>("a[href],button:not(:disabled)")];
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.defaultPrevented) return;
       const figure = figureRef.current;
       const active = document.activeElement;
       if (!figure || !(active instanceof HTMLElement) || !figure.contains(active)) return;
       if (active.matches("input,textarea,select") || active.isContentEditable) return;
-      const forward = event.key === "ArrowRight";
       const row = active.closest<HTMLElement>("[data-book-row]");
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        // Rows stack people, actions, then page tabs. Only the tabs show while on the cover.
+        if (!row) return;
+        const names = turnedRef.current === 1 ? ["people", "actions", "nav"] : ["nav"];
+        const position = names.indexOf(row.dataset.bookRow ?? "");
+        const nextName = names[position + (event.key === "ArrowDown" ? 1 : -1)];
+        const nextRow = position >= 0 && nextName ? figure.querySelector(`[data-book-row="${nextName}"]`) : null;
+        const items = nextRow ? rowItems(nextRow) : [];
+        if (!items.length) return;
+        const from = active.getBoundingClientRect();
+        const centre = from.left + from.width / 2;
+        const target = items.reduce((best, item) => {
+          const box = item.getBoundingClientRect();
+          const bestBox = best.getBoundingClientRect();
+          return Math.abs(box.left + box.width / 2 - centre) < Math.abs(bestBox.left + bestBox.width / 2 - centre) ? item : best;
+        });
+        event.preventDefault();
+        event.stopPropagation();
+        playXmbCue("cursor", event.repeat);
+        target.focus({ preventScroll: true });
+        return;
+      }
+      const forward = event.key === "ArrowRight";
       if (row) {
-        const items = [...row.querySelectorAll<HTMLElement>("a[href],button:not(:disabled)")];
+        const items = rowItems(row);
         const index = items.findIndex((item) => item === active || item.contains(active));
         const next = items[index + (forward ? 1 : -1)];
         if (index >= 0 && next) {
