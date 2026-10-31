@@ -33,6 +33,10 @@ This is a Fire OS sideload target, not a Google Play release configuration.
 The shell contains no native `.so` libraries, so its universal APK runs on the device's
 **32-bit `armeabi-v7a`** runtime without requiring 64-bit code.
 
+The Fire TV launcher banner is `app/src/main/res/drawable-nodpi/tv_banner.png`, generated from
+the repository's `electron-app-icon.png` at **1280 x 720**, RGB PNG with no transparency. The
+separate Android manifest icon is a square version of the same artwork.
+
 ## Connect, install, launch
 
 On the Fire TV, enable **Settings → My Fire TV → Developer Options → ADB Debugging**.
