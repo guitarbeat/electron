@@ -185,6 +185,12 @@
     0 0 16px rgba(245, 196, 81, 0.45);
 }
 
+/* The art is downscaled from 256px, so smooth sampling keeps its pixels even;
+   nearest-neighbour would drop whole rows at this size. */
+@media (prefers-reduced-motion: reduce) {
+  .chat-fab.is-open { transform: none; }
+}
+
 /* macOS Genie Effect for Chat Panel */
 .chat-dock {
   position: fixed;
