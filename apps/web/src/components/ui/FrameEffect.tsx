@@ -5,7 +5,7 @@ if (typeof document !== "undefined") {
 }
 
 /** Pockets that hang from the frame edge around the corner and center controls. */
-const FRAME_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right", "top-center"] as const;
+const FRAME_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
 
 export interface FrameEffectProps {
   children?: React.ReactNode;

@@ -34,7 +34,6 @@
 /* Dock, filters, and chat sit outside the poster grid and were losing the couch-distance ring. */
 .is-tv-runtime :is(
   .y2k-command-dock,
-  .library-settings,
   .movie-wall-filters,
   .frame-corner-profiles,
   .chat-fab,
@@ -47,7 +46,6 @@
   box-shadow: 0 0 0 8px #183b48, 0 0 26px 9px #6de8d180 !important;
 }
 
-.is-tv-runtime .library-settings summary,
 .is-tv-runtime .library-view-options legend,
 .is-tv-runtime .library-view-options button,
 .is-tv-runtime .top-frame-panels .movie-wall-filters__section-title,
@@ -66,11 +64,6 @@
 .is-tv-runtime .chat-dock,
 .is-silk-browser .chat-dock {
   background: rgba(15, 23, 42, 0.97);
-}
-
-.is-tv-runtime .library-settings__body,
-.is-silk-browser .library-settings__body {
-  background: #e6e0ce;
 }
 
 .is-tv-runtime .movie-details-modal__backdrop,

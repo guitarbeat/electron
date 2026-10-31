@@ -374,15 +374,16 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             <button type="button" aria-pressed={soundsOn} aria-label="Menu sounds on" onClick={() => setXmbSoundsEnabled(true)}>On</button>
             <button type="button" aria-pressed={!soundsOn} aria-label="Menu sounds off" onClick={() => setXmbSoundsEnabled(false)}>Off</button>
           </fieldset>}
-          filterSlot={
+          renderFilterSlot={(settings) => (
             <MovieWallFilters
               movies={allMovies}
               filters={wallFilters}
               resultCount={filteredMovies.length}
               onChange={setWallFilters}
               hasSearch={false}
+              settingsSlot={settings}
             />
-          }
+          )}
         />
 
         {collectionState === "loading" ? <OrbitLoader /> : unifiedCards.length > 0 ? (

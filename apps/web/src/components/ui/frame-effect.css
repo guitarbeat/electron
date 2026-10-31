@@ -689,29 +689,24 @@
    shapes stay SVG masks so the poster wall can cut out the same outline. */
 @property --frame-search-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --frame-create-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
-@property --frame-picker-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --frame-filter-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --frame-account-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 :root {
   --frame-notch-grow: 14px;
   --frame-search-grow: 0px;
   --frame-create-grow: 0px;
-  --frame-picker-grow: 0px;
   --frame-filter-grow: 0px;
   --frame-account-grow: 0px;
   transition:
     --frame-search-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
     --frame-create-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
-    --frame-picker-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
     --frame-filter-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
     --frame-account-grow 450ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 :root {
-  --frame-top-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%200H240C228.95%200%20220%208.95%20220%2020V62C220%2077.46%20207.46%2090%20192%2090H48C32.54%2090%2020%2077.46%2020%2062V20C20%208.95%2011.05%200%200%200Z%22%2F%3E%3C%2Fsvg%3E");
   --frame-search-width: 5.5rem;
   --frame-create-width: 5.5rem;
-  --frame-filter-width: 4.5rem;
-  --frame-picker-width: 8rem;
+  --frame-filter-width: 5.25rem;
   --frame-corner-height: 4.5rem;
   --frame-top-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%20120%29%20scale%28-1%20-1%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
   --frame-top-right-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%280%20120%29%20scale%281%20-1%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
@@ -763,19 +758,10 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
     --frame-search-width: 4.5rem;
     --frame-create-width: 4.5rem;
     --frame-filter-width: 4rem;
-    --frame-picker-width: 6.5rem;
     --frame-account-width: 5.5rem;
   }
   :root:has(.y2k-library-search.is-expanded) { --frame-search-width: calc(100vw - 2 * var(--frame-border-width)); }
   :root:has(.y2k-add-form.is-expanded) { --frame-create-width: calc(100vw - 2 * var(--frame-border-width)); }
-}
-
-.viewport-frame__corner--top-center {
-  --frame-notch-shape: var(--frame-top-notch-shape);
-  left: 50%;
-  transform: translateX(-50%);
-  top: 0;
-  width: calc(var(--frame-picker-width) + 2 * var(--frame-account-taper) + var(--frame-picker-grow));
 }
 
 @media (max-width: 600px) {
@@ -786,10 +772,6 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
   }
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-left,
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-right { display: none; }
-  body:has(.frame-corner-profiles) .viewport-frame .viewport-frame__corner--top-center {
-    top: -4.5rem;
-    height: 5.5rem;
-  }
 }
 
 /* Pockets grow a little toward the control under the pointer or keyboard / D-pad focus.
@@ -797,14 +779,12 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
 @media (prefers-reduced-motion: no-preference) {
   :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-library-search:not(.is-expanded) :focus-visible) { --frame-search-grow: var(--frame-notch-grow); }
   :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-add-form:not(.is-expanded) :focus-visible) { --frame-create-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.library-settings > summary:focus-visible) { --frame-picker-grow: var(--frame-notch-grow); }
   :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters :focus-visible) { --frame-filter-grow: var(--frame-notch-grow); }
   :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles :focus-visible) { --frame-account-grow: var(--frame-notch-grow); }
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):hover) { --frame-search-grow: var(--frame-notch-grow); }
   :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):hover) { --frame-create-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.library-settings > summary:hover) { --frame-picker-grow: var(--frame-notch-grow); }
   :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters:hover) { --frame-filter-grow: var(--frame-notch-grow); }
   :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles:hover) { --frame-account-grow: var(--frame-notch-grow); }
 }

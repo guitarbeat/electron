@@ -147,7 +147,7 @@ export function useTvSpatialNavigation(enabled = true) {
           scope.open = false;
           scope.querySelector<HTMLElement>("summary")?.focus();
         } else {
-          const close = scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close filters"],button[aria-label="Close chat"],button[aria-label="Close"],button[aria-label="Cancel"]');
+          const close = scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close settings"],button[aria-label="Close chat"],button[aria-label="Close"],button[aria-label="Cancel"]');
           if (close) close.click();
           else dispatchEscape();
         }
@@ -224,7 +224,7 @@ export function useTvSpatialNavigation(enabled = true) {
         }
         // Handle Back before component listeners, without redispatching recursively.
         const scope = scopeForFocus();
-        const close = scope !== document.body && scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close filters"],button[aria-label="Close chat"]');
+        const close = scope !== document.body && scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close settings"],button[aria-label="Close chat"]');
         if (scope instanceof HTMLDetailsElement) {
           scope.open = false;
           scope.querySelector<HTMLElement>("summary")?.focus();
