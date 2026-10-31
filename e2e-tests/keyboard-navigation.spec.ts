@@ -107,6 +107,9 @@ test.describe("desktop arrow-key navigation", () => {
     const detailsTab = dialog.getByRole("button", { name: "Details", exact: true });
     await expect(detailsTab).toBeFocused();
     await expect(dialog.getByRole("button", { name: "Cover", exact: true })).toHaveAttribute("aria-current", "page");
+    // The cover stays put; the book only auto-opens once when shown.
+    await page.waitForTimeout(400);
+    await expect(dialog.getByRole("button", { name: "Cover", exact: true })).toHaveAttribute("aria-current", "page");
     await page.keyboard.press("ArrowRight");
     await expect(detailsTab).toHaveAttribute("aria-current", "page");
     await expect(stremio).toBeFocused();
