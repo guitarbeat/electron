@@ -13,6 +13,7 @@ export const mockMovies: Movie[] = [
   {
     id: "mock-1",
     title: "The Matrix",
+    imdbID: "tt0133093",
     addedBy: "Aaron",
     watchedBy: ["Aaron"],
     createdAt: "2024-01-15T10:00:00Z",
@@ -28,6 +29,7 @@ export const mockMovies: Movie[] = [
   {
     id: "mock-2",
     title: "Inception",
+    imdbID: "tt1375666",
     addedBy: "Electra",
     watchedBy: [],
     createdAt: "2024-01-20T14:30:00Z",
@@ -43,6 +45,7 @@ export const mockMovies: Movie[] = [
   {
     id: "mock-3",
     title: "Spirited Away",
+    imdbID: "tt0245429",
     addedBy: "Electra",
     watchedBy: ["Aaron", "Electra"],
     createdAt: "2024-01-10T09:00:00Z",
@@ -58,6 +61,7 @@ export const mockMovies: Movie[] = [
   {
     id: "mock-4",
     title: "Parasite",
+    imdbID: "tt6751668",
     addedBy: "Aaron",
     watchedBy: ["Electra"],
     createdAt: "2024-02-01T18:00:00Z",
@@ -73,6 +77,7 @@ export const mockMovies: Movie[] = [
   {
     id: "mock-5",
     title: "Everything Everywhere All at Once",
+    imdbID: "tt6710474",
     addedBy: "Electra",
     watchedBy: [],
     createdAt: "2024-02-05T12:00:00Z",
@@ -92,6 +97,7 @@ export const mockSuggestions: MovieSuggestion[] = [
   {
     id: "sugg-1",
     title: "Dune: Part Two",
+    imdbID: "tt15239678",
     suggestedBy: "Guest",
     reason: "The cinematography is incredible!",
     status: "pending",
@@ -100,6 +106,7 @@ export const mockSuggestions: MovieSuggestion[] = [
   {
     id: "sugg-2",
     title: "Poor Things",
+    imdbID: "tt14230458",
     suggestedBy: "Friend",
     reason: "Emma Stone is amazing in this",
     status: "pending",

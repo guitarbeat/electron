@@ -112,7 +112,9 @@ test.describe("Fire TV remote navigation", () => {
     await expect(dialog).toBeVisible();
     const link = dialog.locator("a.stremio-btn");
     await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute("href", /^stremio:\/\/\/search\?search=/);
+    // The title opens directly in Stremio (three slashes, IMDb id), not a search.
+    await expect(link).toHaveAttribute("href", /^stremio:\/\/\/detail\/movie\/tt\d+\/tt\d+$/);
+    await expect(link).toHaveAttribute("aria-label", /^Open ".+" in Stremio$/);
     await dialog.getByRole("button", { name: /Close details/ }).first().focus();
 
     const reached = await page.evaluate(async () => {
@@ -128,7 +130,7 @@ test.describe("Fire TV remote navigation", () => {
         if (!current || seen.has(current)) continue;
         seen.add(current);
         const origin = document.querySelector<HTMLElement>(`[data-focus-probe="${current}"]`);
-        if (origin?.getAttribute("href")?.startsWith("stremio:///search?search=")) return true;
+        if (origin?.getAttribute("href")?.startsWith("stremio:///detail/")) return true;
         for (const key of directions) {
           origin?.focus();
           document.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
@@ -152,7 +154,7 @@ test.describe("Fire TV remote navigation", () => {
     });
     expect(activation.defaultPrevented).toBe(false);
     expect(activation.unhandled).toBe(true);
-    expect(activation.href).toMatch(/^stremio:\/\/\/search\?search=/);
+    expect(activation.href).toMatch(/^stremio:\/\/\/detail\/movie\/tt\d+\/tt\d+$/);
   });
 
 });

@@ -72,7 +72,8 @@ import {
   USER_OPTIONS,
   getCatPosterUrl,
 } from "@/utils";
-import { fetchWikipediaPosterOrSummary } from "@/services/metadata";
+import { fetchOmdbMetadataCached, fetchWikipediaPosterOrSummary } from "@/services/metadata";
+import { normalizeImdbId, toStremioType } from "@/utils/stremio";
 import {
   Y2kPlaceholderGraphic,
   ResilientImage,
@@ -2667,7 +2668,26 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
   variant = "pill",
   className = "",
 }) => {
-  const urls = getStremioUrls(movie);
+  // Older watchlist entries were saved without an IMDb id. The book's Watch button looks it up
+  // (the metadata lookup is cached) so it can open the title instead of a search.
+  const known = typeof movie === "string" ? null : normalizeImdbId(movie.imdbID ?? movie.imdbId);
+  const lookupTitle = typeof movie === "string" ? "" : movie.title;
+  const lookupType = typeof movie === "string" ? "movie" : toStremioType(movie.mediaType || movie.type, movie.category);
+  const [resolvedImdbId, setResolvedImdbId] = useState<string | null>(null);
+  useEffect(() => {
+    if (variant !== "full" || known || !lookupTitle) return;
+    let cancelled = false;
+    fetchOmdbMetadataCached(lookupTitle, lookupType)
+      .then((metadata) => {
+        if (!cancelled) setResolvedImdbId(normalizeImdbId(metadata?.imdbID));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [variant, known, lookupTitle, lookupType]);
+  const urls = typeof movie === "string"
+    ? getStremioUrls(movie)
+    : getStremioUrls({ ...movie, imdbID: known ?? resolvedImdbId ?? undefined });
+  const action = urls.hasDirectImdbMatch ? "Open" : "Search";
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Stop propagation so parent card clicks don't open modals instead
@@ -2682,8 +2702,8 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
         href={urls.appUrl}
         onClick={handleClick}
         className={`stremio-btn stremio-btn-icon ${className}`.trim()}
-        title={`Open "${movieTitle}" in Stremio`}
-        aria-label={`Open "${movieTitle}" in Stremio`}
+        title={`${action} "${movieTitle}" in Stremio`}
+        aria-label={`${action} "${movieTitle}" in Stremio`}
         tabIndex={0}
       >
         <StremioIcon />
@@ -2699,9 +2719,8 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
       href={urls.appUrl}
       onClick={handleClick}
       className={`stremio-btn ${variantClass} ${className}`.trim()}
-      title={
-        `Search "${movieTitle}" in Stremio`
-      }
+      title={`${action} "${movieTitle}" in Stremio`}
+      aria-label={`${action} "${movieTitle}" in Stremio`}
       tabIndex={0}
     >
       <StremioIcon />
