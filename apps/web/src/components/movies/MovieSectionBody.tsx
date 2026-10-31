@@ -11,7 +11,7 @@ import {
   hasActiveMovieWallFilters,
   type MovieWallFilterState,
 } from "./movieWallFilterUtils";
-import { movieWallPlaceholder } from "./movieWallPlaceholder";
+import { catalogLoadFailed, movieWallPlaceholder } from "./movieWallPlaceholder";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
@@ -54,6 +54,7 @@ interface Props_MovieSectionBody {
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
   loadError?: Error | null;
+  loadDegraded?: boolean;
   onRetryLoad?: () => void;
   actions: MovieBodyActions;
   posterPlaceCards?: React.ReactNode[];
@@ -73,6 +74,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onDeleteRequest,
   onToggleError,
   loadError = null,
+  loadDegraded = false,
   onRetryLoad,
   actions,
 }) => {
@@ -293,7 +295,11 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   ]);
   const wallPlaceholder = movieWallPlaceholder({
     hasActiveFilters,
-    loadFailed: Boolean(loadError),
+    loadFailed: catalogLoadFailed({
+      error: loadError,
+      degraded: loadDegraded,
+      movieCount: allMovies.length,
+    }),
   });
 
   const handleTileClick = (item: unknown) => {

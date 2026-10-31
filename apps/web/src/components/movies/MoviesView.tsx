@@ -175,6 +175,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           onDeleteRequest={setMovieToDelete}
           onToggleError={(message) => setToast({ message, type: "error" })}
           loadError={moviesLoadError}
+          loadDegraded={isMoviesWorkspaceDegraded}
           onRetryLoad={() => void retryMoviesWorkspaceSync()}
           actions={{
             toggleWatched,
