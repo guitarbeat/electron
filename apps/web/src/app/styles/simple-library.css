@@ -153,29 +153,64 @@
   border: 1px solid var(--settings-line);
   font-size: 0.72rem;
 }
+/* The two switches stack on the left; Pick a movie fills the rest of the row beside them. */
 .top-frame-panels .settings-menu .settings-menu__view {
   display: grid;
-  grid-template-columns: repeat(3, max-content);
-  align-items: end;
-  gap: 0.6rem 1rem;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 0.35rem 0.75rem;
 }
-.y2k-command-dock .top-frame-panels .settings-menu .frame-picker-trigger {
-  position: static; inset: auto; transform: none; width: fit-content; height: auto;
-  flex-direction: row; gap: 0.4rem; min-width: 0; min-height: 1.85rem;
-  padding: 0.1rem 0.6rem 0.1rem 0.25rem; border: 1px solid var(--settings-line); border-radius: 999px;
-  font: inherit; font-size: 0.76rem; font-weight: 700;
+.top-frame-panels .settings-menu .settings-menu__view > :not(.frame-picker-trigger) { grid-column: 1; }
+/* Pick a movie is the sheet's main action: a wide gold button with big pixel art. */
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
+  position: static; inset: auto; transform: none;
+  grid-column: 2; grid-row: 1 / span 2;
+  display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.75rem;
+  width: 100%; min-width: 0; height: auto; min-height: 4rem;
+  padding: 0.25rem 1.25rem 0.25rem 0.5rem;
+  border: 2px solid #a47b22; border-radius: 1rem;
+  background: linear-gradient(180deg, #f7d77a 0%, #f5c451 55%, #e2a93a 100%);
+  box-shadow: 0 3px 0 #8a6519, 0 6px 16px rgba(164, 123, 34, 0.35);
+  color: #171717;
+  font: inherit; font-size: 1.05rem; font-weight: 800; letter-spacing: 0.01em;
 }
-.top-frame-panels .settings-menu .frame-picker-art { width: 3rem; height: 1.5rem; }
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fadf8f 0%, #f7cc63 55%, #e8b246 100%);
+}
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:focus-visible {
+  outline: 3px solid #202c2c;
+  outline-offset: 3px;
+}
+.top-frame-panels .settings-menu .frame-picker-art { width: 7.25rem; height: 3.6rem; margin-block: -0.2rem; }
+/* The switches and the big button explain themselves; the heading stays for screen readers. */
+.top-frame-panels .settings-menu #settings-menu-view {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
+    transition: transform 450ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 450ms cubic-bezier(0.32, 0.72, 0, 1), background 160ms ease-out;
+  }
+  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible) {
+    transform: scale(1.03);
+    box-shadow: 0 4px 0 #8a6519, 0 10px 24px rgba(164, 123, 34, 0.45);
+  }
+  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:active {
+    transform: translateY(2px) scale(0.99);
+    box-shadow: 0 1px 0 #8a6519, 0 4px 10px rgba(164, 123, 34, 0.3);
+  }
+}
 @media (max-width: 600px) {
   .top-frame-panels .settings-menu .settings-menu__columns { grid-template-columns: minmax(0, 1fr); }
-  .top-frame-panels .movie-wall-filters__panel.settings-menu { gap: 0.45rem; }
+  .top-frame-panels .movie-wall-filters__panel.settings-menu { gap: 0.4rem; }
   .top-frame-panels .settings-menu .settings-menu__status-art { width: 1.9rem; margin-left: -0.3rem; }
   .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__seg--status .settings-menu__opt { padding-inline: 0.45rem; gap: 0.2rem; }
   .top-frame-panels .settings-menu .settings-menu__person { grid-template-columns: auto 1fr; }
   .top-frame-panels .settings-menu .settings-menu__person .settings-menu__seg { grid-column: 1 / -1; grid-row: 2; }
   .top-frame-panels .settings-menu .settings-menu__picked { justify-self: end; }
-  .top-frame-panels .settings-menu .settings-menu__view { grid-template-columns: repeat(2, max-content); grid-auto-flow: dense; }
-  .y2k-command-dock .top-frame-panels .settings-menu .frame-picker-trigger { grid-column: 1 / -1; justify-self: start; }
+  .top-frame-panels .settings-menu .settings-menu__view { grid-template-columns: repeat(2, max-content); }
+  .top-frame-panels .settings-menu .settings-menu__view > :not(.frame-picker-trigger) { grid-column: auto; }
+  .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger { grid-column: 1 / -1; grid-row: 2; min-height: 3.5rem; font-size: 1rem; }
+  .top-frame-panels .settings-menu .frame-picker-art { width: 6rem; height: 3rem; }
 }
 /* TV stays a little larger for couch distance. */
 .is-tv-runtime .top-frame-panels .movie-wall-filters__panel.settings-menu { font-size: 1rem; gap: 0.85rem; }
