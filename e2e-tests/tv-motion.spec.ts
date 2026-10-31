@@ -28,8 +28,8 @@ test.describe("Fire TV keeps the desktop motion", () => {
     expect(durationMs(await notch.evaluate((element) => getComputedStyle(element).transitionDuration))).toBeGreaterThan(100);
     await page.locator('[data-notch-trigger="bottom"]').first().focus();
     await page.keyboard.press("Enter");
-    const pill = page.locator(".settings-menu__seg--status .settings-menu__pill");
-    await expect(page.locator('[data-notch-panel="settings"]')).toBeVisible();
+    const pill = page.locator('[data-notch-panel="settings"]:not(.dyn-notch-ghost) .settings-menu__seg--status .settings-menu__pill');
+    await expect(page.locator('[data-notch-panel="settings"]:not(.dyn-notch-ghost)')).toBeVisible();
     expect(durationMs(await pill.evaluate((element) => getComputedStyle(element).transitionDuration))).toBeGreaterThan(100);
   });
 

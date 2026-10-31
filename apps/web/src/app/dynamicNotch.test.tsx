@@ -32,12 +32,17 @@ it("leaves an inert, unlabeled copy of closing content to fade out inside the no
   document.body.append(host);
   const panel = document.createElement("section");
   panel.id = "menu";
+  panel.setAttribute("data-notch-panel", "settings");
+  panel.setAttribute("role", "dialog");
   panel.innerHTML = '<button id="inner">Go</button>';
   leaveNotchGhost(panel, host);
   const ghost = host.querySelector(".dyn-notch-ghost");
   expect(ghost).toHaveAttribute("aria-hidden", "true");
   expect(ghost).toHaveAttribute("inert");
   expect(ghost?.querySelector("[id]")).toBeNull();
+  expect(ghost).not.toHaveAttribute("data-notch-panel");
+  expect(ghost).not.toHaveAttribute("role");
+  expect(panel).toHaveAttribute("data-notch-panel", "settings");
   host.remove();
 });
 
