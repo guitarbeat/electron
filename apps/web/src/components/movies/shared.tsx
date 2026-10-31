@@ -15,6 +15,7 @@ import {
   formatMemoryTimestamp,
   resolvePosterUrl,
 } from "@/utils";
+import { useViewport } from "@/app/providerContexts";
 import { getCachedPosterUrlSync } from "@/services/posterCache";
 import { getCachedObjectUrlSync } from "@/utils/imageCache";
 import {
@@ -659,6 +660,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
   onClose: _onClose,
   isOpen = true,
 }) => {
+  const { isTv } = useViewport();
   const [turnedCount, setTurnedCount] = useState(0);
 
   const rawPosterUrl = movie.customPosterUrl || movie.posterUrl;
@@ -789,7 +791,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
 
         {/* Booklet Controls & Tab Selector */}
         <nav
-          className="flex flex-col items-center gap-2 mt-4 sm:mt-5 select-none"
+          className="booklet-nav flex flex-col items-center gap-2 mt-4 sm:mt-5 select-none"
           aria-label="Booklet navigation"
           data-movie-details-interactive="true"
         >
@@ -844,10 +846,14 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
             </button>
           </div>
 
-          <span className="text-[11px] text-white/50 tracking-wide font-normal">
-            {turnedCount === 0
-              ? "Swipe left, click cover, or tap 'Details' to open"
-              : "Swipe right, click 'Cover', or tap ‹ Prev to close"}
+          <span className="booklet-nav__hint text-[11px] text-white/50 tracking-wide font-normal">
+            {isTv
+              ? turnedCount === 0
+                ? "Press Details to open the book"
+                : "Press Cover or Previous page to close the book"
+              : turnedCount === 0
+                ? "Swipe left, click cover, or tap Details to open"
+                : "Swipe right, click Cover, or tap Previous page to close"}
           </span>
         </nav>
       </div>

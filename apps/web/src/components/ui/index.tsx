@@ -4518,7 +4518,7 @@ export const SyncBanner: FC<SyncBannerProps> = ({
         <button
           type="button"
           onClick={() => void onRetry()}
-          className="px-2 py-0.5 rounded text-xs font-semibold bg-white/10 hover:bg-white/20 transition"
+          className="min-h-11 min-w-24 px-4 py-2 rounded text-sm font-semibold bg-white/10 hover:bg-white/20 transition"
         >
           Retry
         </button>

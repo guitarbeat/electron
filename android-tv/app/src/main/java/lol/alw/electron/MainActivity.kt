@@ -357,7 +357,16 @@ class MainActivity : ComponentActivity() {
             return
         }
         if (dismissKeyboard()) return
-        if (!pageReady || rendererGone || errorScreen.visibility == View.VISIBLE) { finish(); return }
+        if (!pageReady || rendererGone || errorScreen.visibility == View.VISIBLE) {
+            // First Back during a slow load offers Retry. Back on that screen leaves the app.
+            if (loading.visibility == View.VISIBLE && !rendererGone && errorScreen.visibility != View.VISIBLE) {
+                showError("Load cancelled")
+                webView.stopLoading()
+                return
+            }
+            finish()
+            return
+        }
         if (backPending) return
         backPending = true
         handler.postDelayed(backFallback, BACK_JS_TIMEOUT_MS)

@@ -11,6 +11,7 @@ import {
   hasActiveMovieWallFilters,
   type MovieWallFilterState,
 } from "./movieWallFilterUtils";
+import { catalogLoadFailed, movieWallPlaceholder } from "./movieWallPlaceholder";
 import DriftWall from "@/components/ui/DriftWall";
 import { interleaveCollectionItems } from "@/components/ui/lib/posterMatrix";
 
@@ -52,6 +53,9 @@ interface Props_MovieSectionBody {
   onRejectSuggestion: (s: MovieSuggestion) => void;
   onDeleteRequest: (movie: Movie) => void;
   onToggleError: (msg: string) => void;
+  loadError?: Error | null;
+  loadDegraded?: boolean;
+  onRetryLoad?: () => void;
   actions: MovieBodyActions;
   posterPlaceCards?: React.ReactNode[];
 }
@@ -69,6 +73,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onRejectSuggestion,
   onDeleteRequest,
   onToggleError,
+  loadError = null,
+  loadDegraded = false,
+  onRetryLoad,
   actions,
 }) => {
   const { isTv } = useViewport();
@@ -286,6 +293,15 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     onToggleError,
     openMovieDetails,
   ]);
+  const wallPlaceholder = movieWallPlaceholder({
+    hasActiveFilters,
+    loadFailed: catalogLoadFailed({
+      error: loadError,
+      degraded: loadDegraded,
+      movieCount: allMovies.length,
+    }),
+  });
+
   const handleTileClick = (item: unknown) => {
     if (!React.isValidElement(item) || !item.props) {
       return;
@@ -355,8 +371,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             <button type="button" aria-pressed={view === "wall"} onClick={() => changeView("wall")}>Moving wall</button>
           </fieldset>}
           soundSlot={<fieldset className="library-view-options"><legend>Menu sounds</legend>
-            <button type="button" aria-pressed={soundsOn} onClick={() => setXmbSoundsEnabled(true)}>On</button>
-            <button type="button" aria-pressed={!soundsOn} onClick={() => setXmbSoundsEnabled(false)}>Off</button>
+            <button type="button" aria-pressed={soundsOn} aria-label="Menu sounds on" onClick={() => setXmbSoundsEnabled(true)}>On</button>
+            <button type="button" aria-pressed={!soundsOn} aria-label="Menu sounds off" onClick={() => setXmbSoundsEnabled(false)}>Off</button>
           </fieldset>}
           filterSlot={
             <MovieWallFilters
@@ -407,19 +423,24 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             className="poster-wall-empty"
           >
             <MoviesEmptyIllustration />
-            <strong>{hasActiveFilters ? "No matching titles" : "No movies yet"}</strong>
-            <span>
-              {hasActiveFilters
-                ? "Try a broader combination or clear the wall filters."
-                : "Add a movie or suggestion to fill this wall."}
-            </span>
-            {hasActiveFilters ? (
+            <strong>{wallPlaceholder.title}</strong>
+            <span>{wallPlaceholder.detail}</span>
+            {wallPlaceholder.action === "clear" ? (
               <button
                 type="button"
                 className="movie-wall-filters__empty-reset"
                 onClick={() => setWallFilters(DEFAULT_MOVIE_WALL_FILTERS)}
               >
                 Clear filters
+              </button>
+            ) : null}
+            {wallPlaceholder.action === "retry" && onRetryLoad ? (
+              <button
+                type="button"
+                className="movie-wall-filters__empty-reset"
+                onClick={() => onRetryLoad()}
+              >
+                Try again
               </button>
             ) : null}
           </CollectionEmptyState>

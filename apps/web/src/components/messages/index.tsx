@@ -325,6 +325,7 @@ export const MessageBoard: React.FC = () => {
             isLoading={isLoading}
             isSubmitting={isSubmitting}
             error={error}
+            onRetry={() => void retrySync()}
             onDelete={setMessageToDelete}
           />
 
@@ -373,6 +374,7 @@ interface MessageListProps {
   isLoading: boolean;
   isSubmitting: boolean;
   error: Error | null;
+  onRetry?: () => void;
   onDelete: (message: Message) => void;
 }
 
@@ -382,6 +384,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   isLoading,
   isSubmitting,
   error,
+  onRetry,
   onDelete,
 }) => {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -561,9 +564,25 @@ export const MessageList: React.FC<MessageListProps> = ({
                     '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif',
                 }}
               >
-                Couldn&apos;t load messages right now. Try again in a few
-                seconds.
+                Couldn&apos;t load messages right now.
               </p>
+              {onRetry ? <button
+                type="button"
+                onClick={() => onRetry()}
+                style={{
+                  marginTop: spacing.md,
+                  minHeight: "2.75rem",
+                  padding: "0.45rem 1rem",
+                  border: 0,
+                  borderRadius: "999px",
+                  background: "#fff",
+                  color: "#111",
+                  fontWeight: 650,
+                  cursor: "pointer",
+                }}
+              >
+                Try again
+              </button> : null}
             </div>
           ) : null}
 
