@@ -63,7 +63,9 @@ function centerGridItem(element: HTMLElement, behavior: ScrollBehavior) {
 function focusAndReveal(element: HTMLElement) {
   element.focus({ preventScroll: true });
   const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-  if (!centerGridItem(element, behavior)) {
+  // Grid focus is centered by the focusin listener below. Starting a second
+  // smooth scroll here restarts WebView's native animation on every D-pad move.
+  if (!element.closest(".movie-library-grid")) {
     element.scrollIntoView({ behavior, block: "nearest", inline: "nearest" });
   }
 }
@@ -213,7 +215,7 @@ export function useTvSpatialNavigation(enabled = true) {
       }
     };
     const onFocus = (event: FocusEvent) => {
-      if (event.target instanceof HTMLElement && event.target.matches(":focus-visible")) {
+      if (event.target instanceof HTMLElement && (enabled || event.target.matches(":focus-visible"))) {
         centerGridItem(event.target, matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
       }
       if (event.target instanceof HTMLElement && currentScope.contains(event.target) && scopeForFocus() === currentScope) lastFocus = event.target;

@@ -4,9 +4,29 @@
   outline: 4px solid #fff8a6 !important;
   outline-offset: 5px;
   box-shadow: 0 0 0 8px #183b48, 0 0 26px 9px #6de8d180 !important;
+  transition: box-shadow 200ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 200ms ease;
 }
 .is-tv-runtime .movie-item-details-hit-area:focus-visible,
 .movie-library-grid .movie-item-details-hit-area:focus-visible { outline-offset: -5px; }
 .is-tv-runtime .movie-item-container:focus-within { position: relative; z-index: 5; }
 .is-tv-runtime .movie-item-container:focus-within .movie-item-watchers { opacity: 1; visibility: visible; }
 .is-tv-runtime .movie-item-container:focus-within .card-tilt-sheen { opacity: 0; }
+
+/* Promote only the selected poster; many permanently promoted cards stutter on Fire TV. */
+.is-tv-runtime .movie-library-grid .card-tilt-wrap,
+.is-tv-runtime .movie-library-grid .movie-item-container {
+  will-change: auto;
+}
+.is-tv-runtime .movie-library-grid .movie-item-container {
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.is-tv-runtime .movie-library-grid .movie-item-container:focus-within {
+  transform: scale(1.035) translateZ(0) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-tv-runtime :focus-visible,
+  .is-tv-runtime .movie-library-grid .movie-item-container {
+    transition-duration: 0.01ms !important;
+  }
+}
