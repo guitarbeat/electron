@@ -58,9 +58,16 @@ test.describe("Fire TV remote navigation", () => {
     await page.evaluate(() => window.electronTvBack?.());
     await page.getByRole("button", { name: "Filter", exact: true }).focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("dialog", { name: "Movie filters", exact: true })).toBeVisible();
+    const filters = page.getByRole("dialog", { name: "Movie filters", exact: true });
+    await expect(filters).toBeVisible();
+    await expect(filters.getByRole("button", { name: /Queue:/ })).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(filters.getByRole("button", { name: /Watching:/ })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Filter, Watching" })).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "Movie filters", exact: true })).not.toBeVisible();
+    await expect(filters).not.toBeVisible();
+    await expect(page.locator(".y2k-command-dock .movie-wall-status-buttons")).toHaveCount(0);
     await page.getByRole("button", { name: "Search movies (/)", exact: true }).focus();
     await page.keyboard.press("Enter");
     const input = page.getByRole("searchbox", { name: "Search your watchlist" });

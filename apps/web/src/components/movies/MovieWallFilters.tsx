@@ -54,12 +54,11 @@ const progressLabels: Record<MovieProgressFilter, string> = {
   watched: "Seen",
 };
 
-const statusPresetLabels: Record<MovieStatusPreset, string> = {
-  all: "All Titles",
-  queue: "Movie Night Queue",
-  in_progress: "Finish Watching",
-  both_watched: "Watched Together",
-};
+const WATCH_STATUS_OPTIONS = [
+  { value: "queue", artwork: "queue", label: "Queue", description: "Unwatched by both people" },
+  { value: "in_progress", artwork: "watching", label: "Watching", description: "Started by either person" },
+  { value: "both_watched", artwork: "seen", label: "Seen", description: "Completed by both people" },
+] as const;
 
 const FORMAT_CARTRIDGES: Array<{
   value: MovieFormatFilter;
@@ -152,6 +151,8 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
   );
 
   const isActive = hasActiveMovieWallFilters(filters);
+  const activeWatchStatus = WATCH_STATUS_OPTIONS.find((status) => status.value === filters.statusPreset);
+  const focusWatchStatus = activeWatchStatus?.value ?? WATCH_STATUS_OPTIONS[0].value;
 
   const currentSort = filters.sortBy ?? "recent";
   const isAaronFiltered =
@@ -247,15 +248,6 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     });
   }
 
-  if (filters.statusPreset && !["all", "queue", "in_progress", "both_watched"].includes(filters.statusPreset)) {
-    activeTags.push({
-      id: "statusPreset",
-      label: statusPresetLabels[filters.statusPreset],
-      tone: "couple",
-      onRemove: () => update("statusPreset", "all"),
-    });
-  }
-
   if (filters.Aaron !== "all") {
     activeTags.push({
       id: "Aaron",
@@ -310,34 +302,14 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
       ref={rootRef}
       className={`movie-wall-filters${hasSearch ? " movie-wall-filters--below-search" : ""}`}
     >
-      <div className="movie-wall-status-buttons" role="group" aria-label="Watch status filters">
-        {([
-          { value: "queue", artwork: "queue", label: "Queue", description: "Unwatched by both people" },
-          { value: "in_progress", artwork: "watching", label: "Watching", description: "Started by either person" },
-          { value: "both_watched", artwork: "seen", label: "Seen", description: "Completed by both people" },
-        ] as const).map((status) => (
-          <button
-            key={status.value}
-            type="button"
-            className="movie-wall-status-button"
-            aria-pressed={filters.statusPreset === status.value}
-            aria-label={`${status.label}: ${optionCounts.presets[status.value]} titles`}
-            title={status.description}
-            onClick={() => handleSelectCouplePreset(status.value)}
-          >
-            <WatchStatusArtwork status={status.artwork} className="movie-wall-status-button__art" />
-            <span className="movie-wall-status-button__label">
-              {status.label}<span className="movie-wall-status-button__count">{optionCounts.presets[status.value]}</span>
-            </span>
-          </button>
-        ))}
-      </div>
       {/* Tactile Y2K Filter Deck trigger button */}
       <button
         type="button"
         className={`movie-wall-filters__trigger movie-wall-filters__trigger--artwork${isActive ? " is-active" : ""}${isOpen ? " is-open" : ""}`}
         aria-expanded={isOpen}
         aria-controls="movie-wall-filter-panel"
+        aria-label={activeWatchStatus ? `Filter, ${activeWatchStatus.label}` : "Filter"}
+        {...(activeWatchStatus ? { "data-watch-status": activeWatchStatus.artwork } : {})}
         onClick={() => {
           setIsOpen((open) => !open);
         }}
@@ -351,7 +323,12 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
         >
           <image href="/avatars/aaron-electra-filter-sliders.png" width="1448" height="1086" />
         </svg>
-        <span className="movie-wall-filters__trigger-label">Filter</span>
+        <span className="movie-wall-filters__trigger-label">
+          {activeWatchStatus ? activeWatchStatus.label : "Filter"}
+          {activeWatchStatus ? (
+            <span className="movie-wall-filters__trigger-count">{optionCounts.presets[activeWatchStatus.value]}</span>
+          ) : null}
+        </span>
 
         {/* Mini avatar pips when Aaron or Electra filters are active */}
         {isAaronFiltered || isElectraFiltered ? (
@@ -440,6 +417,40 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           role="dialog"
           aria-label="Movie filters"
         >
+          <div className="movie-wall-filters__section">
+            <div className="movie-wall-filters__section-header">
+              <span className="movie-wall-filters__section-title">Status</span>
+              {activeWatchStatus ? (
+                <button
+                  type="button"
+                  className="movie-wall-filters__sub-reset"
+                  onClick={() => update("statusPreset", "all")}
+                >
+                  All titles
+                </button>
+              ) : null}
+            </div>
+            <div className="movie-wall-status-buttons" role="group" aria-label="Watch status filters">
+              {WATCH_STATUS_OPTIONS.map((status) => (
+                <button
+                  key={status.value}
+                  type="button"
+                  className={`movie-wall-status-button${filters.statusPreset === status.value ? " is-active" : ""}`}
+                  aria-pressed={filters.statusPreset === status.value}
+                  aria-label={`${status.label}: ${optionCounts.presets[status.value]} titles`}
+                  title={status.description}
+                  {...(status.value === focusWatchStatus ? { "data-tv-autofocus": "" } : {})}
+                  onClick={() => handleSelectCouplePreset(status.value)}
+                >
+                  <WatchStatusArtwork status={status.artwork} className="movie-wall-status-button__art" />
+                  <span className="movie-wall-status-button__label">
+                    {status.label}<span className="movie-wall-status-button__count">{optionCounts.presets[status.value]}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 2. Interactive Partner Avatar Player Cards (Aaron P1 & Electra P2) */}
           <div className="movie-wall-filters__section">
             <div className="movie-wall-filters__section-header">

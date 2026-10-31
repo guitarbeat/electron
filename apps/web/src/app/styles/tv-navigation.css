@@ -50,7 +50,8 @@
 .is-tv-runtime .library-view-options legend,
 .is-tv-runtime .library-view-options button,
 .is-tv-runtime .top-frame-panels .movie-wall-filters__section-title,
-.is-tv-runtime .top-frame-panels .movie-wall-filters__preset-title {
+.is-tv-runtime .top-frame-panels .movie-wall-filters__preset-title,
+.is-tv-runtime .top-frame-panels .movie-wall-status-button__label {
   font-size: 1.05rem;
 }
 

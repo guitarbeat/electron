@@ -772,23 +772,21 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
   width: calc(var(--frame-status-width) + 2 * var(--frame-account-taper));
   mask-image: var(--frame-bottom-notch-shape);
 }
+body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-center {
+  display: none;
+}
 
 @media (max-width: 600px) {
   :root { --frame-corner-height: 4.5rem; --frame-border-top-width: 4.5rem; }
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) {
     border-top-width: 4.5rem;
-    border-bottom-width: 5.5rem;
+    border-bottom-width: var(--frame-border-width);
   }
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before,
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-left,
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-right,
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-left { display: none; }
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-center { display: none; }
   body:has(.frame-corner-profiles) .viewport-frame .viewport-frame__corner--top-center {
     top: -4.5rem;
     height: 5.5rem;
-  }
-  body:has(.frame-corner-profiles) .viewport-frame .viewport-frame__corner--bottom-center {
-    bottom: -5.5rem;
-    height: 6.5rem;
   }
 }
