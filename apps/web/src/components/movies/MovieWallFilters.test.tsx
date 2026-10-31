@@ -53,3 +53,21 @@ it("keeps watch status inside the Settings menu, with the choice on the Settings
     expect(screen.getByLabelText("Visible titles")).toHaveTextContent("Finished Film");
   }
 });
+
+it("groups the compact menu into radio rows, an avatar cycle button and a header Clear all", () => {
+  render(<Filters />);
+  fireEvent.click(screen.getByRole("button", { name: "Settings", exact: true }));
+  const aaron = screen.getByRole("radiogroup", { name: "Aaron watch status" });
+  expect(aaron).toContainElement(screen.getByRole("radio", { name: "Aaron: any status" }));
+  expect(screen.getByRole("radio", { name: "Aaron: any status" })).toHaveAttribute("aria-checked", "true");
+  fireEvent.click(screen.getByRole("radio", { name: /^Aaron: Queue/ }));
+  expect(screen.getByRole("radio", { name: /^Aaron: Queue/ })).toHaveAttribute("aria-checked", "true");
+  fireEvent.click(screen.getByRole("button", { name: /^Cycle Aaron/ }));
+  expect(screen.getByRole("radio", { name: /^Aaron: Watching/ })).toHaveAttribute("aria-checked", "true");
+  expect(screen.getByRole("radiogroup", { name: "Sort by" })).toBeInTheDocument();
+  // Formats with nothing in them are hidden; this list only has films.
+  expect(screen.queryByRole("radio", { name: /YouTube/ })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
+  expect(screen.getByRole("radio", { name: "Aaron: any status" })).toHaveAttribute("aria-checked", "true");
+  expect(screen.queryByRole("button", { name: "Clear all" })).not.toBeInTheDocument();
+});

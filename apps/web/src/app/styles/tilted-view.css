@@ -1750,48 +1750,6 @@ body:has(.frame-corner-profiles) .movies-wall-container {
   outline: 2px solid #665024;
   outline-offset: 2px;
 }
-.top-frame-panels .movie-wall-filters__preset-card,
-.top-frame-panels .movie-wall-filters__player-card,
-.top-frame-panels .movie-wall-filters__format-btn {
-  min-height: 0;
-  padding: 0.65rem;
-  border: 0;
-  border-bottom: 1px solid rgba(23, 23, 23, 0.2);
-}
-.top-frame-panels .movie-wall-filters__preset-card { gap: 0.2rem; }
-.top-frame-panels .movie-wall-filters__preset-top { display: none; }
-.top-frame-panels .movie-wall-filters__preset-title { font-size: 0.85rem; }
-.top-frame-panels .movie-wall-filters__preset-sub { font-size: 0.75rem; opacity: 0.8; }
-.top-frame-panels .movie-wall-filters__section-title {
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-}
-.top-frame-panels .movie-wall-filters__player-segments { border: 0; padding: 0; }
-.top-frame-panels .movie-wall-filters__panel button.is-active {
-  background: transparent;
-  color: #171717;
-  box-shadow: inset 0 -2px 0 #a47b22;
-  border-color: transparent;
-}
-.top-frame-panels .movie-wall-filters__panel-badge,
-.top-frame-panels .movie-wall-filters__preset-count,
-.top-frame-panels .movie-wall-filters__genre-count { border: 0; font-variant-numeric: tabular-nums; }
-.top-frame-panels .movie-wall-filters__search-input {
-  color: #171717;
-  border: 0;
-  border-bottom: 1px solid rgba(23, 23, 23, 0.4);
-}
-.top-frame-panels .movie-wall-filters__search-input::placeholder { color: #454137; }
-.top-frame-panels .movie-wall-filters__player-avatar { border: 0; border-radius: 0; }
-.top-frame-panels .movie-wall-filters__footer { position: static; border: 0; }
-
-.top-frame-panels .movie-wall-filters__panel .movie-wall-filters__player-card .movie-wall-filters__player-seg-btn.is-active {
-  background: transparent;
-  color: #171717;
-  border-color: transparent;
-  box-shadow: inset 0 -2px 0 #a47b22;
-}
-
 /* On phones the pockets merge into shallow shelves; posters get the usable center. */
 @media (max-width: 600px) {
   body:has(.frame-corner-profiles) .movies-wall-container {

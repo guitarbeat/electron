@@ -3,6 +3,7 @@ import { MovieDetailsModal } from "./MovieDetailsModal";
 import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
+import { SettingsSwitch } from "./SettingsControls";
 import { MovieWallFilters } from "./MovieWallFilters";
 import LibrarySearch from "@/components/library/LibrarySearch";
 import {
@@ -366,14 +367,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           }}
           searchQuery={wallFilters.query ?? ""}
           onSearchQueryChange={(query) => setWallFilters((filters) => ({ ...filters, query }))}
-          viewSlot={<fieldset className="library-view-options"><legend>View</legend>
-            <button type="button" aria-pressed={view === "grid"} onClick={() => changeView("grid")}>Grid</button>
-            <button type="button" aria-pressed={view === "wall"} onClick={() => changeView("wall")}>Moving wall</button>
-          </fieldset>}
-          soundSlot={<fieldset className="library-view-options"><legend>Menu sounds</legend>
-            <button type="button" aria-pressed={soundsOn} aria-label="Menu sounds on" onClick={() => setXmbSoundsEnabled(true)}>On</button>
-            <button type="button" aria-pressed={!soundsOn} aria-label="Menu sounds off" onClick={() => setXmbSoundsEnabled(false)}>Off</button>
-          </fieldset>}
+          viewSlot={<SettingsSwitch label="Moving wall" checked={view === "wall"} onChange={(on) => changeView(on ? "wall" : "grid")} />}
+          soundSlot={<SettingsSwitch label="Menu sounds" checked={soundsOn} silent onChange={setXmbSoundsEnabled} />}
           renderFilterSlot={(settings) => (
             <MovieWallFilters
               movies={allMovies}
