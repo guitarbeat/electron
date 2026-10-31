@@ -53,6 +53,8 @@ export interface Movie {
   year?: string;
   plot?: string;
   imdbRating?: string;
+  /** IMDb title id (tt…), used to open the title directly in Stremio. */
+  imdbID?: string;
   runtime?: string;
   genre?: string;
   director?: string;

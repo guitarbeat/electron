@@ -1,6 +1,7 @@
 import { mockMovies } from "../../../apps/web/src/services/state/mockData.js";
 import type { StateScopeDataMap } from "../../../apps/web/src/services/state/stateTypes.js";
 import type { Movie, User } from "../../../apps/web/src/shared/types.js";
+import { normalizeImdbId } from "../../../apps/web/src/utils/stremio.js";
 import {
   findMovieByNormalizedTitle,
   isUser,
@@ -70,6 +71,7 @@ const normalizeMovieRecord = (value: unknown): Movie | null => {
     year: normalizeOptionalString(movie.year),
     plot: normalizeOptionalString(movie.plot),
     imdbRating: normalizeOptionalString(movie.imdbRating),
+    imdbID: normalizeImdbId(movie.imdbID) ?? undefined,
     runtime: normalizeOptionalString(movie.runtime),
     genre: normalizeOptionalString(movie.genre),
     director: normalizeOptionalString(movie.director),
@@ -130,6 +132,8 @@ export const sanitizeMovieMetadata = (value: unknown): Partial<Movie> => {
   assignString("year", metadata.year);
   assignString("plot", metadata.plot);
   assignString("imdbRating", metadata.imdbRating);
+  const imdbID = normalizeImdbId(metadata.imdbID);
+  if (imdbID) next.imdbID = imdbID;
   assignString("runtime", metadata.runtime);
   assignString("genre", metadata.genre);
   assignString("director", metadata.director);

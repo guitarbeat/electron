@@ -19,6 +19,7 @@ import {
 import { useCollection } from "../index.ts";
 import { useSuggestions } from "../suggestions";
 import { useToast } from "@/app/providerContexts";
+import { normalizeImdbId } from "@/utils/stremio";
 import { isMockMode } from "../../services/state";
 import { cacheWatchlistPosters } from "../../services/posterCache.js";
 
@@ -28,9 +29,11 @@ const AUTO_SYNC_IDLE_DELAY_MS = 500;
 const AUTO_SYNC_CONCURRENCY_LIMIT = 5;
 
 const extractSafeMetadata = (metadata: MovieMetadata): Partial<Movie> => {
-  const { poster, year, plot, imdbRating, runtime, genre, director, actors, type } =
+  const { poster, year, plot, imdbRating, imdbID, runtime, genre, director, actors, type } =
     metadata;
   const result: Partial<Movie> = {};
+  const imdbId = normalizeImdbId(imdbID);
+  if (imdbId) result.imdbID = imdbId;
   if (poster && isValidUrl(poster)) result.posterUrl = poster;
   if (year) result.year = year;
   if (plot) result.plot = sanitizeInput(plot);
@@ -170,6 +173,7 @@ export const useMovies = (
         createdAt: new Date().toISOString(),
         mediaType: selectedResult?.type,
         category: selectedResult?.type === "series" ? "TV Series" : undefined,
+        ...(normalizeImdbId(selectedResult?.imdbID) ? { imdbID: normalizeImdbId(selectedResult?.imdbID)! } : {}),
       };
 
       await performMutation(
@@ -180,6 +184,7 @@ export const useMovies = (
           metadata: {
             mediaType: newMovie.mediaType,
             category: newMovie.category,
+            imdbID: newMovie.imdbID,
           },
         },
         [...movies, newMovie],
