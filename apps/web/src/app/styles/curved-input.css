@@ -880,15 +880,6 @@
 }
 .y2k-command-dock .y2k-add-form.is-expanded { justify-content: flex-start; }
 .y2k-command-dock .y2k-search-capsule { width: 100%; }
-.y2k-command-dock .frame-picker-trigger {
-  position: fixed;
-  top: calc(var(--frame-border-width) + 0.5rem);
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  width: var(--frame-picker-width);
-  height: calc(var(--frame-corner-height) - 1rem);
-}
 .y2k-command-dock .y2k-command-dock__divider { display: none; }
 .y2k-command-dock .y2k-command-dock__filters {
   position: fixed;
@@ -964,7 +955,7 @@
   pointer-events: auto;
 }
 .y2k-command-dock .top-frame-panels[data-expanded="false"] { pointer-events: none; }
-.y2k-command-dock[data-panel-origin="filters"] .top-frame-panels {
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels {
   top: auto;
   right: auto;
   left: var(--frame-border-width);
@@ -983,7 +974,6 @@
   .y2k-command-dock .y2k-library-search,
   .y2k-command-dock .y2k-add-form { padding-inline: 0.25rem; }
   .y2k-command-dock .y2k-add-form { right: var(--frame-border-width); width: var(--frame-create-width); }
-  .y2k-command-dock .frame-picker-trigger { width: var(--frame-picker-width); }
   .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork:not([data-watch-status]) { min-width: 3rem; width: 3rem; flex: 0 0 3rem; padding-inline: 0; }
   .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork[data-watch-status] {
     width: 100%;
@@ -992,8 +982,7 @@
     max-width: 100%;
   }
   .y2k-command-dock .movie-wall-filters { gap: 0; }
-  :root:has(.y2k-library-search.is-expanded) .y2k-command-dock .y2k-add-form,
-  :root:has(.y2k-library-search.is-expanded) .frame-picker-trigger { visibility: hidden; }
+  :root:has(.y2k-library-search.is-expanded) .y2k-command-dock .y2k-add-form { visibility: hidden; }
   :root:has(.y2k-add-form.is-expanded) .y2k-command-dock .y2k-library-search { visibility: hidden; }
 }
 
@@ -1003,13 +992,6 @@ body:has(.movie-details-modal) .frame-corner-profiles {
   visibility: hidden;
 }
 
-@media (max-width: 960px) {
-  :root:has(.y2k-library-search.is-expanded) .frame-picker-trigger,
-  :root:has(.y2k-add-form.is-expanded) .frame-picker-trigger { visibility: hidden; }
-}
-@media (max-width: 600px) {
-  .y2k-command-dock .frame-picker-trigger { height: 3.5rem; }
-}
 
 @media (max-width: 600px) {
   .frame-corner-profiles { padding: 0; }

@@ -18,40 +18,22 @@
 .movie-library-grid .movie-item-poster-wrap { width: 100%; height: 100%; }
 .movie-library-grid .movie-item-container { transform: none; }
 .movie-library-grid--modal-open { filter: blur(5px) brightness(0.68) saturate(0.78); }
-.library-settings {
-  position: fixed; top: var(--frame-border-width); left: 50%; transform: translateX(-50%);
-  width: var(--frame-picker-width); height: var(--frame-corner-height); color: #171717;
-}
-.library-settings summary {
-  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
-  height: 100%; min-height: 44px; cursor: pointer; list-style: none;
-  text-align: center; font-size: 13px; font-weight: 600;
-}
-.library-settings summary::-webkit-details-marker { display: none; }
-.library-settings__body {
-  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-  width: min(320px, calc(100vw - 24px)); max-height: calc(100dvh - 12rem);
-  overflow-y: auto; padding: 20px; background: #dcd6c4e8;
-  backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%);
-  border: 1px solid #aaa595; border-radius: 12px; box-shadow: 0 10px 32px #0003;
-  display: flex; flex-direction: column; gap: 20px;
-}
 .library-view-options { border: 0; padding: 0; margin: 0; display: flex; gap: 8px; }
 .library-view-options legend { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
 .library-view-options button { min-height: 44px; padding: 8px 16px; border: 1px solid #8b887b; border-radius: 8px; }
 .library-view-options button[aria-pressed="true"] { background: #202c2c; color: #fff; }
-.y2k-command-dock .library-settings .frame-picker-trigger {
-  position: static; inset: auto; transform: none; width: 100%; height: auto;
-  display: flex; align-items: center; justify-content: flex-start; gap: 12px; font: inherit;
+/* View, Pick a movie, and sounds now sit in the Settings menu beside the filters. */
+.movie-wall-filters__settings { display: flex; flex-direction: column; gap: 16px; }
+.movie-wall-filters__settings .library-view-options legend { font-size: 13px; margin-bottom: 8px; }
+.y2k-command-dock .top-frame-panels .frame-picker-trigger {
+  position: static; inset: auto; transform: none; width: fit-content; height: auto;
+  align-self: flex-start; flex-direction: row; justify-content: flex-start; gap: 12px; font: inherit;
+  min-height: 44px; padding: 4px 8px; border: 1px solid #8b887b; border-radius: 8px;
 }
-.library-settings .frame-picker-art { width: 88px; height: 44px; }
-.library-settings :focus-visible { outline: 2px solid #327d78; outline-offset: 3px; }
+.movie-wall-filters__settings .frame-picker-art { width: 88px; height: 44px; }
 @media (max-width: 600px) {
   .movie-library-grid__canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 6.5rem 16px 7.5rem; }
   .movie-library-grid[data-centered-navigation="true"] .movie-library-grid__canvas { width: calc(100% - 32px); }
-  .library-settings summary { font-size: 11px; }
-  :root:has(.y2k-library-search.is-expanded) .library-settings,
-  :root:has(.y2k-add-form.is-expanded) .library-settings { visibility: hidden; }
 }
 
 .suggestion-poster-details {
@@ -62,3 +44,8 @@
 }
 .suggestion-poster-details strong { font-size: 16px; }
 .suggestion-poster-details span, .suggestion-poster-details p { font-size: 14px; margin: 0; }
+.movie-wall-filters__group-title {
+  margin: 0; padding-top: 4px; border-top: 1px solid #8b887b55;
+  font-size: 17px; font-weight: 800; letter-spacing: 0.01em; color: #171717;
+}
+.movie-wall-filters__group-title:first-child { border-top: 0; padding-top: 0; }

@@ -10,7 +10,7 @@ import React, {
 import { createPortal } from "react-dom";
 import { AccountPinViewport, TopFramePanel, TopFrameViewport, useTopFrame } from "@/app/TopFramePanels";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-import { CornerDownLeft, SlidersHorizontal, X } from "lucide-react";
+import { CornerDownLeft, X } from "lucide-react";
 import { Button, ProfileMenu } from "@/components/ui";
 import { concurrentMap } from "@/utils/concurrency";
 import { PlusIcon } from "@/common/Icons";
@@ -64,7 +64,8 @@ export interface LibrarySearchHandle {
 }
 
 export interface LibrarySearchProps {
-  filterSlot?: React.ReactNode;
+  /** Renders the bottom-left Settings menu; receives the view, picker, and sound controls. */
+  renderFilterSlot?: (settings: React.ReactNode) => React.ReactNode;
   viewSlot?: React.ReactNode;
   soundSlot?: React.ReactNode;
   searchQuery: string;
@@ -73,28 +74,7 @@ export interface LibrarySearchProps {
 }
 
 const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
-  ({ filterSlot, viewSlot, soundSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
-    const settingsRef = useRef<HTMLDetailsElement>(null);
-    useEffect(() => {
-      const dismiss = (event: PointerEvent | KeyboardEvent) => {
-        const settings = settingsRef.current;
-        if (!settings?.open) return;
-        if (event instanceof KeyboardEvent) {
-          if (event.key === "Escape" && !event.defaultPrevented) {
-            settings.open = false;
-            settings.querySelector("summary")?.focus();
-          }
-        } else if (!settings.contains(event.target as Node)) {
-          settings.open = false;
-        }
-      };
-      document.addEventListener("pointerdown", dismiss);
-      document.addEventListener("keydown", dismiss);
-      return () => {
-        document.removeEventListener("pointerdown", dismiss);
-        document.removeEventListener("keydown", dismiss);
-      };
-    }, []);
+  ({ renderFilterSlot, viewSlot, soundSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const { modalOpen } = useTopFrame();
@@ -102,7 +82,13 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     const pickerTriggerRef = useRef<HTMLButtonElement>(null);
     const closePicker = useCallback(() => {
       setPickerOpen(false);
-      window.requestAnimationFrame(() => pickerTriggerRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        // The picker button lives in the Settings menu, which closes when the picker opens.
+        const trigger = pickerTriggerRef.current?.isConnected
+          ? pickerTriggerRef.current
+          : document.querySelector<HTMLElement>(".y2k-command-dock .movie-wall-filters__trigger");
+        trigger?.focus();
+      });
     }, []);
     useEffect(() => {
       if (!pickerOpen || modalOpen) return;
@@ -778,7 +764,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                 </div>
               </form>
 
-              {filterSlot ? (
+              {renderFilterSlot ? (
                 <>
                   <div
                     className="y2k-command-dock__divider"
@@ -792,18 +778,14 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                       }
                     }}
                   >
-                    {filterSlot}
-                  </div>
-                </>
-              ) : null}
-              <details className="library-settings" ref={settingsRef}>
-                <summary><SlidersHorizontal size={18} aria-hidden="true" /><span>View & settings</span></summary>
-                <div className="library-settings__body">
-                  {viewSlot}
+                    {renderFilterSlot(
+                      <>
+                        {viewSlot}
               <button
                 ref={pickerTriggerRef}
                 type="button"
                 className="frame-picker-trigger"
+                data-closes-settings
                 aria-label="Pick a movie"
                 aria-expanded={pickerOpen}
                 aria-controls="top-frame-movie-picker"
@@ -811,9 +793,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>
-                  {soundSlot}
-                </div>
-              </details>
+                        {soundSlot}
+                      </>,
+                    )}
+                  </div>
+                </>
+              ) : null}
               <NavbarToastViewport />
             </div>
             <TopFrameViewport />

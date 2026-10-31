@@ -38,6 +38,8 @@ interface MovieWallFiltersProps {
   resultCount: number;
   onChange: (filters: MovieWallFilterState) => void;
   hasSearch?: boolean;
+  /** View, Pick a movie, and sound controls shown under the filters in the same menu. */
+  settingsSlot?: React.ReactNode;
 }
 
 const formatLabels: Record<MovieFormatFilter, string> = {
@@ -134,6 +136,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
   resultCount,
   onChange,
   hasSearch = false,
+  settingsSlot,
 }) => {
   const { modalOpen } = useTopFrame();
   const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -181,6 +184,18 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, modalOpen]);
+
+  // Controls that open another panel (Pick a movie) close this menu first.
+  React.useEffect(() => {
+    const panel = panelRef.current;
+    if (!isOpen || !panel) return;
+    const handleClick = (event: MouseEvent) => {
+      // Defer so React still delivers the click to the control before this panel unmounts.
+      if ((event.target as Element | null)?.closest("[data-closes-settings]")) window.setTimeout(() => setIsOpen(false), 0);
+    };
+    panel.addEventListener("click", handleClick);
+    return () => panel.removeEventListener("click", handleClick);
+  }, [isOpen]);
 
   const update = <K extends keyof MovieWallFilterState>(
     key: K,
@@ -308,7 +323,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
         className={`movie-wall-filters__trigger movie-wall-filters__trigger--artwork${isActive ? " is-active" : ""}${isOpen ? " is-open" : ""}`}
         aria-expanded={isOpen}
         aria-controls="movie-wall-filter-panel"
-        aria-label={activeWatchStatus ? `Filter, ${activeWatchStatus.label}` : "Filter"}
+        aria-label={activeWatchStatus ? `Settings, ${activeWatchStatus.label}` : "Settings"}
         {...(activeWatchStatus ? { "data-watch-status": activeWatchStatus.artwork } : {})}
         onClick={() => {
           setIsOpen((open) => !open);
@@ -324,7 +339,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           <image href="/avatars/aaron-electra-filter-sliders.png" width="1448" height="1086" />
         </svg>
         <span className="movie-wall-filters__trigger-label">
-          {activeWatchStatus ? activeWatchStatus.label : "Filter"}
+          {activeWatchStatus ? activeWatchStatus.label : "Settings"}
           {activeWatchStatus ? (
             <span className="movie-wall-filters__trigger-count">{optionCounts.presets[activeWatchStatus.value]}</span>
           ) : null}
@@ -415,8 +430,9 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           id="movie-wall-filter-panel"
           className="movie-wall-filters__panel"
           role="dialog"
-          aria-label="Movie filters"
+          aria-label="Settings"
         >
+          <h2 className="movie-wall-filters__group-title">Filters</h2>
           <div className="movie-wall-filters__section">
             <div className="movie-wall-filters__section-header">
               <span className="movie-wall-filters__section-title">Status</span>
@@ -462,7 +478,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                 className="movie-wall-filters__close-btn"
                 onClick={() => setIsOpen(false)}
                 data-tv-close
-                aria-label="Close filters"
+                aria-label="Close settings"
               >
                 <X size={15} aria-hidden="true" />
               </button>
@@ -704,6 +720,15 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
               })}
             </div>
           </div>
+
+          {settingsSlot ? (
+            <>
+              <h2 className="movie-wall-filters__group-title">View &amp; sounds</h2>
+              <div className="movie-wall-filters__section movie-wall-filters__settings">
+                {settingsSlot}
+              </div>
+            </>
+          ) : null}
 
           {/* Footer Action */}
           <div className="movie-wall-filters__footer">
