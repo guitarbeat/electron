@@ -608,7 +608,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                       type="button"
                       role="radio"
                       className={`settings-menu__chip${isSelected ? " is-active" : ""}`}
-                      onClick={() => update("genre", isSelected ? "all" : genre)}
+                      onClick={() => update("genre", genre)}
                       aria-checked={isSelected}
                     >
                       <Check size={11} className="settings-menu__check" aria-hidden="true" />
