@@ -27,6 +27,7 @@ import {
 } from "@/components/ui";
 
 import { useViewport } from "@/app/providerContexts";
+import { currentXmbSoundsEnabled, setXmbSoundsEnabled, subscribeXmbSounds } from "@/services/xmbAudio";
 import { spacing } from "@/theme/tokens";
 import {
   getWorkspaceCollectionState,
@@ -71,6 +72,11 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   actions,
 }) => {
   const { isTv } = useViewport();
+  const soundsOn = React.useSyncExternalStore(
+    subscribeXmbSounds,
+    () => currentXmbSoundsEnabled(isTv),
+    () => false,
+  );
   const [view, setView] = React.useState<"grid" | "wall">(() => {
     try { return localStorage.getItem("movies-view") === "wall" ? "wall" : "grid"; }
     catch { return "grid"; }
@@ -347,6 +353,10 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           viewSlot={<fieldset className="library-view-options"><legend>View</legend>
             <button type="button" aria-pressed={view === "grid"} onClick={() => changeView("grid")}>Grid</button>
             <button type="button" aria-pressed={view === "wall"} onClick={() => changeView("wall")}>Moving wall</button>
+          </fieldset>}
+          soundSlot={<fieldset className="library-view-options"><legend>Menu sounds</legend>
+            <button type="button" aria-pressed={soundsOn} onClick={() => setXmbSoundsEnabled(true)}>On</button>
+            <button type="button" aria-pressed={!soundsOn} onClick={() => setXmbSoundsEnabled(false)}>Off</button>
           </fieldset>}
           filterSlot={
             <MovieWallFilters
