@@ -84,7 +84,8 @@ across process death**. The shell does not silently copy session-only secrets in
 ## Frontend development and verification
 
 The `ElectronTV/1.0` user-agent marker activates TV navigation. For a desktop development preview,
-use `http://localhost:3000/?tv=1#movies`. Plain desktop URLs keep their original interactions.
+use `http://localhost:3000/?tv=1#movies`. Desktop mouse and text editing retain their behavior; arrow keys inside the movie grid also move focus.
+In grid mode the focused poster stays centered as the grid pans beneath it, including edge rows/columns.
 Deploy the accompanying React updates through the existing GitHub/Vercel flow to enable the new
 navigation in the production shell; the APK always opens the hosted site.
 

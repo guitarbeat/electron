@@ -1,10 +1,12 @@
-/* The TV shell opts in by user-agent; desktop styling and arrow-key editing stay intact. */
-.is-tv-runtime :focus-visible {
+/* Shared poster focus for arrows/D-pad; TV also highlights the surrounding controls. */
+.is-tv-runtime :focus-visible,
+.movie-library-grid :focus-visible {
   outline: 4px solid #fff8a6 !important;
   outline-offset: 5px;
   box-shadow: 0 0 0 8px #183b48, 0 0 26px 9px #6de8d180 !important;
 }
-.is-tv-runtime .movie-item-details-hit-area:focus-visible { outline-offset: -5px; }
+.is-tv-runtime .movie-item-details-hit-area:focus-visible,
+.movie-library-grid .movie-item-details-hit-area:focus-visible { outline-offset: -5px; }
 .is-tv-runtime .movie-item-container:focus-within { position: relative; z-index: 5; }
 .is-tv-runtime .movie-item-container:focus-within .movie-item-watchers { opacity: 1; visibility: visible; }
 .is-tv-runtime .movie-item-container:focus-within .card-tilt-sheen { opacity: 0; }

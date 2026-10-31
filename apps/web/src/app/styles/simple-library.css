@@ -1,9 +1,17 @@
 /* Grid and moving wall share the original blended frame and corner controls. */
 .movie-library-grid {
-  height: 100%; overflow-y: auto; overscroll-behavior: contain;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-  align-content: start; gap: 16px; padding: 5.5rem 20px;
+  height: 100%; overflow: auto; overscroll-behavior: contain;
   scrollbar-color: #8b887b #111824;
+}
+.movie-library-grid__canvas {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  align-content: start; gap: 16px; padding: 5.5rem 20px; width: 100%;
+}
+/* Extra space lets the first/last row and column reach the same central focus point. */
+.movie-library-grid[data-centered-navigation="true"] .movie-library-grid__canvas {
+  box-sizing: content-box; width: calc(100% - 40px);
+  padding: max(0px, calc((var(--grid-viewport-height) - var(--grid-focus-height)) / 2))
+    max(0px, calc((var(--grid-viewport-width) - var(--grid-focus-width)) / 2));
 }
 .movie-library-grid__item { min-width: 0; aspect-ratio: 2 / 3; }
 .movie-library-grid__item > *, .movie-library-grid .movie-item-card,
@@ -39,7 +47,8 @@
 .library-settings .frame-picker-art { width: 88px; height: 44px; }
 .library-settings :focus-visible { outline: 2px solid #327d78; outline-offset: 3px; }
 @media (max-width: 600px) {
-  .movie-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 6.5rem 16px 7.5rem; }
+  .movie-library-grid__canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 6.5rem 16px 7.5rem; }
+  .movie-library-grid[data-centered-navigation="true"] .movie-library-grid__canvas { width: calc(100% - 32px); }
   .library-settings summary { font-size: 11px; }
   :root:has(.y2k-library-search.is-expanded) .library-settings,
   :root:has(.y2k-add-form.is-expanded) .library-settings { visibility: hidden; }

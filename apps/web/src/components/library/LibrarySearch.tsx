@@ -429,6 +429,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               message: `"${movieTitle}" added to movies!`,
               type: "success",
               actionLabel: "Undo",
+              persistent: true, // Keep Undo available while the newly added movie's details are open.
               onAction: () => void deleteMovie(added.id),
             });
             window.requestAnimationFrame(() => {

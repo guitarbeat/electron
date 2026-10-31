@@ -109,8 +109,10 @@ test("desktop and Fire TV share the same grid density and frame geometry", async
     await page.route("**/api/session", route => route.fulfill({ contentType: "application/json", body: JSON.stringify({ hasAccess: true, currentUser: null, activeUsers: [], pinProtectedUsers: ["Aaron", "Electra"], usersMissingPins: [] }) }));
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator(".movie-library-grid .movie-item-details-hit-area").first()).toBeVisible();
+    await page.locator("[data-movie-id] .movie-item-details-hit-area").first().focus();
+    await page.keyboard.press("ArrowRight");
     layouts.push(await page.evaluate(() => {
-      const grid = getComputedStyle(document.querySelector(".movie-library-grid")!);
+      const grid = getComputedStyle(document.querySelector(".movie-library-grid__canvas")!);
       const frame = getComputedStyle(document.querySelector(".viewport-frame")!);
       const search = getComputedStyle(document.querySelector(".y2k-library-search")!);
       return { columns: grid.gridTemplateColumns, gap: grid.gap, padding: grid.padding,
@@ -119,4 +121,40 @@ test("desktop and Fire TV share the same grid density and frame geometry", async
     await context.close();
   }
   expect(layouts[1]).toEqual(layouts[0]);
+});
+
+
+test("grid follows the focused poster at its center for both desktop arrows and TV", async ({ browser }) => {
+  for (const userAgent of ["Desktop browser", "ElectronTV/1.0 AFTKM"]) {
+    const context = await browser.newContext({ viewport: { width: 960, height: 540 }, reducedMotion: "reduce", userAgent });
+    const page = await context.newPage();
+    await page.route("https://**/*", route => route.abort());
+    await page.addInitScript(() => localStorage.setItem("useMockData", "true"));
+    await page.route("**/api/session", route => route.fulfill({ contentType: "application/json", body: JSON.stringify({ hasAccess: true, currentUser: null, activeUsers: [], pinProtectedUsers: ["Aaron", "Electra"], usersMissingPins: [] }) }));
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const cards = page.locator(".movie-library-grid__item .movie-item-details-hit-area");
+    await expect(cards.first()).toBeVisible();
+    const centered = async () => {
+      await expect.poll(() => page.evaluate(() => {
+        const item = document.activeElement?.closest(".movie-library-grid__item");
+        if (!item) return Infinity;
+        const box = item.getBoundingClientRect();
+        const grid = item.closest(".movie-library-grid") as HTMLElement;
+        const viewport = grid.getBoundingClientRect();
+        return Math.max(Math.abs(box.left + box.width / 2 - viewport.left - grid.clientWidth / 2), Math.abs(box.top + box.height / 2 - viewport.top - grid.clientHeight / 2));
+      })).toBeLessThan(2);
+    };
+    // Padding permits even the first and last card to reach the viewport center.
+    await cards.first().focus();
+    await centered();
+    await page.keyboard.press("ArrowRight");
+    await centered();
+    await page.keyboard.press("ArrowDown");
+    await centered();
+    await cards.last().focus();
+    await centered();
+    await page.keyboard.press("ArrowLeft");
+    await centered();
+    await context.close();
+  }
 });

@@ -13,6 +13,11 @@ function visible(element: HTMLElement) {
   const style = getComputedStyle(element);
   if (style.visibility === "hidden" || style.display === "none") return false;
   if (element.closest("details:not([open])") && element.tagName !== "SUMMARY") return false;
+  if (element.closest(".drift-wall")) {
+    const box = element.getBoundingClientRect();
+    const centerY = box.top + box.height / 2;
+    if (box.right <= 0 || box.left >= innerWidth || centerY < 80 || centerY > innerHeight - 80) return false;
+  }
   return element.getClientRects().length > 0 && element.offsetWidth > 0 && element.offsetHeight > 0;
 }
 
@@ -35,25 +40,37 @@ function scopeForFocus(): HTMLElement {
   return menu ?? document.body;
 }
 
+function centerGridItem(element: HTMLElement, behavior: ScrollBehavior) {
+  const grid = element.closest<HTMLElement>(".movie-library-grid");
+  const item = element.closest<HTMLElement>(".movie-library-grid__item");
+  if (!grid || !item) return false;
+  const size = item.getBoundingClientRect();
+  grid.style.setProperty("--grid-focus-width", `${size.width}px`);
+  grid.style.setProperty("--grid-focus-height", `${size.height}px`);
+  grid.style.setProperty("--grid-viewport-width", `${grid.clientWidth}px`);
+  grid.style.setProperty("--grid-viewport-height", `${grid.clientHeight}px`);
+  grid.dataset.centeredNavigation = "true";
+  const box = item.getBoundingClientRect();
+  const viewport = grid.getBoundingClientRect();
+  grid.scrollTo({
+    left: grid.scrollLeft + box.left + box.width / 2 - viewport.left - grid.clientWidth / 2,
+    top: grid.scrollTop + box.top + box.height / 2 - viewport.top - grid.clientHeight / 2,
+    behavior,
+  });
+  return true;
+}
+
 function focusAndReveal(element: HTMLElement) {
   element.focus({ preventScroll: true });
   const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-  const grid = element.closest<HTMLElement>(".movie-library-grid");
-  if (grid) {
-    // Keep posters clear of the constant corner shelves, including when scrolling up.
-    const box = element.getBoundingClientRect();
-    const margin = 120;
-    if (box.top < margin) grid.scrollBy({ top: box.top - margin, behavior });
-    else if (box.bottom > innerHeight - margin) grid.scrollBy({ top: box.bottom - innerHeight + margin, behavior });
-  } else {
+  if (!centerGridItem(element, behavior)) {
     element.scrollIntoView({ behavior, block: "nearest", inline: "nearest" });
   }
 }
 
-/** TV-only: one spatial navigator owns directions, scopes overlays, and restores focus. */
+/** TV-wide navigation plus desktop grid arrows; the shared grid follows keyboard focus. */
 export function useTvSpatialNavigation(enabled = true) {
   useEffect(() => {
-    if (!enabled) return;
     let currentScope: HTMLElement = document.body;
     const returnFocus = new WeakMap<HTMLElement, HTMLElement>();
     let lastFocus: HTMLElement | null = null;
@@ -117,9 +134,10 @@ export function useTvSpatialNavigation(enabled = true) {
       }
       return false;
     };
-    window.electronTvBack = back;
+    if (enabled) window.electronTvBack = back;
 
     const onKey = (event: KeyboardEvent) => {
+      if (!enabled && (!DIRECTIONS.has(event.key) || !document.activeElement?.closest(".movie-library-grid"))) return;
       const audio = (window as Window & { _sharedAudioContext?: AudioContext })._sharedAudioContext;
       if (audio?.state === "suspended") void audio.resume().catch(() => {});
       // Existing form, autocomplete, and dialog Escape/Enter handlers keep their behavior.
@@ -130,15 +148,34 @@ export function useTvSpatialNavigation(enabled = true) {
         if (editing && (event.key === "ArrowLeft" || event.key === "ArrowRight")) return;
         if (active?.matches('input[role="combobox"][aria-expanded="true"]') && (event.key === "ArrowUp" || event.key === "ArrowDown")) return;
         if (active?.matches('input[type="range"],select')) return;
-        reconcile();
+        if (enabled) reconcile();
         const scope = scopeForFocus();
         const origin = document.activeElement as HTMLElement;
         let candidates = focusables(scope).filter(element => element !== origin);
         const from = origin.getBoundingClientRect();
         const grid = origin.closest(".movie-library-grid");
+        const horizontal = event.key === "ArrowLeft" || event.key === "ArrowRight";
         if (grid) {
-          const inGrid = candidates.filter(element => grid.contains(element) && Number.isFinite(spatialScore(from, element.getBoundingClientRect(), event.key as Direction)));
+          const inGrid = candidates.filter(element => {
+            const box = element.getBoundingClientRect();
+            return grid.contains(element) && Number.isFinite(spatialScore(from, box, event.key as Direction)) &&
+              (!horizontal || (box.top < from.bottom && box.bottom > from.top));
+          });
           if (inGrid.length) candidates = inGrid;
+          else if (horizontal) {
+            focusAndReveal(origin);
+            event.preventDefault(); event.stopPropagation(); return;
+          }
+        } else if (scope === document.body &&
+          ((event.key === "ArrowDown" && from.top < innerHeight / 3) ||
+           (event.key === "ArrowUp" && from.top > innerHeight * 2 / 3))) {
+          const allGridCandidates = candidates.filter(element => element.closest(".movie-library-grid,.drift-wall"));
+          const gridCandidates = allGridCandidates.filter(element => {
+            const box = element.getBoundingClientRect();
+            return box.right > 0 && box.left < innerWidth && box.bottom > 0 && box.top < innerHeight;
+          });
+          if (gridCandidates.length) candidates = gridCandidates;
+          else if (allGridCandidates.length) candidates = allGridCandidates;
         }
         let best: HTMLElement | undefined;
         let score = Infinity;
@@ -176,14 +213,22 @@ export function useTvSpatialNavigation(enabled = true) {
       }
     };
     const onFocus = (event: FocusEvent) => {
+      if (event.target instanceof HTMLElement && event.target.matches(":focus-visible")) {
+        centerGridItem(event.target, matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+      }
       if (event.target instanceof HTMLElement && currentScope.contains(event.target) && scopeForFocus() === currentScope) lastFocus = event.target;
     };
     const observer = new MutationObserver(() => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(reconcile);
     });
-    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "inert", "open", "aria-hidden", "disabled"] });
-    frame = requestAnimationFrame(reconcile);
+    if (enabled) observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "inert", "open", "aria-hidden", "disabled"] });
+    if (enabled) frame = requestAnimationFrame(reconcile);
+    const resize = () => {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active.closest('[data-centered-navigation="true"]')) centerGridItem(active, "auto");
+    };
+    window.addEventListener("resize", resize);
     // Capture directions before DriftWall's local roving focus can trap the remote in the wall.
     document.addEventListener("keydown", onKey, true);
     document.addEventListener("focusin", onFocus);
@@ -191,7 +236,8 @@ export function useTvSpatialNavigation(enabled = true) {
       observer.disconnect(); cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKey, true);
       document.removeEventListener("focusin", onFocus);
-      delete window.electronTvBack;
+      window.removeEventListener("resize", resize);
+      if (enabled) delete window.electronTvBack;
     };
   }, [enabled]);
 }

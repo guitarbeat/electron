@@ -382,7 +382,9 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         {collectionState === "loading" ? <OrbitLoader /> : null}
         {unifiedCards.length > 0 ? (
           view === "grid" ? <div className={`movie-library-grid${selectedMovie ? " movie-library-grid--modal-open" : ""}`} aria-label="Movie grid">
+            <div className="movie-library-grid__canvas">
             {unifiedCards.map((card, index) => <div className="movie-library-grid__item" key={React.isValidElement(card) ? card.key ?? index : index}>{card}</div>)}
+            </div>
           </div> : <DriftWall
             items={unifiedCards}
             columns={dynamicColumns}
