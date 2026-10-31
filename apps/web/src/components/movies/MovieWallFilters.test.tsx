@@ -25,6 +25,10 @@ it("keeps portalled filter interactions inside the expanding frame until closed"
   fireEvent.click(screen.getByRole("button", { name: "Settings", exact: true }));
   const dialog = screen.getByRole("dialog", { name: "Settings" });
   expect(container.querySelector(".top-frame-panels")).toContainElement(dialog);
+  // The menu is housed in the bottom-left notch, which the trigger expands (Down works too).
+  expect(dialog).toHaveAttribute("data-notch-panel", "settings");
+  expect(screen.getByRole("button", { name: "Settings", exact: true })).toHaveAttribute("data-notch-trigger", "bottom");
+  expect(screen.getByRole("button", { name: "Settings", exact: true })).toHaveAttribute("aria-controls", "movie-wall-filter-panel");
   fireEvent.pointerDown(dialog);
   expect(dialog).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Close settings" }));

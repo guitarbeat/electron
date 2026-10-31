@@ -41,7 +41,8 @@ function focusables(scope: ParentNode): HTMLElement[] {
 }
 
 function scopeForFocus(): HTMLElement {
-  const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"],[role="alertdialog"]')).filter(visible);
+  // An expanded notch holds its menu inside the frame; it traps arrows like a dialog does.
+  const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"],[role="alertdialog"],[data-notch-panel]:not(.dyn-notch-ghost)')).filter(visible);
   const modal = dialogs.filter(dialog => dialog.getAttribute("aria-modal") === "true").at(-1);
   if (modal) return modal;
   const panel = dialogs.at(-1);
@@ -104,7 +105,7 @@ export function useTvSpatialNavigation(enabled = true) {
     const reconcile = (recoverFocus = enabled) => {
       const nextScope = scopeForFocus();
       const nextDialog = nextScope !== document.body
-        && (nextScope.getAttribute("role") === "dialog" || nextScope.getAttribute("role") === "alertdialog");
+        && (nextScope.getAttribute("role") === "dialog" || nextScope.getAttribute("role") === "alertdialog" || nextScope.hasAttribute("data-notch-panel"));
       if (nextDialog && !dialogOpen) playXmbOpen();
       dialogOpen = nextDialog;
       if (nextScope !== currentScope) {
@@ -193,6 +194,12 @@ export function useTvSpatialNavigation(enabled = true) {
       // Existing form, autocomplete, and dialog Escape/Enter handlers keep their behavior.
       if (event.defaultPrevented) return;
       const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      // Down expands a bottom notch (nothing lies below it); focus then moves into its content.
+      if (event.key === "ArrowDown" && active?.matches('[data-notch-trigger="bottom"][aria-expanded="false"]') && scopeForFocus() === document.body) {
+        playXmbSelect();
+        active.click();
+        event.preventDefault(); event.stopPropagation(); return;
+      }
       if (DIRECTIONS.has(event.key)) {
         const editing = active?.matches('input,textarea,[contenteditable="true"]');
         if (editing && (event.key === "ArrowLeft" || event.key === "ArrowRight")) return;

@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -11,6 +12,7 @@ import React, {
 import type { FC, ReactNode, CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useTopFrame } from "@/app/TopFramePanels";
+import { leaveNotchGhost, useExclusiveNotch, useNotchContentHeight } from "@/app/dynamicNotch";
 import { WatchStatusArtwork } from "@/components/movies/WatchStatusArtwork";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { motion, useInView } from "motion/react";
@@ -693,6 +695,7 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   const [activeSettingsProfile, setActiveSettingsProfile] = useState<User | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastMenuRef = useRef<HTMLDivElement | null>(null);
 
   const toggleSettings = useCallback(
     (next: boolean) => {
@@ -705,6 +708,16 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
     },
     [clearSelectionError, onOpenChange],
   );
+
+  // In the account corner the menu lives inside the notch, which grows around it.
+  useExclusiveNotch("profiles", isSettingsOpen, () => toggleSettings(false));
+  useNotchContentHeight(menuRef, "--dyn-profile-h", isSettingsOpen);
+  useLayoutEffect(() => {
+    if (!isSettingsOpen) return;
+    lastMenuRef.current = menuRef.current;
+    const host = containerRef.current;
+    return () => leaveNotchGhost(lastMenuRef.current, host);
+  }, [isSettingsOpen]);
 
   // Close on outside pointer interaction
   useEffect(() => {
@@ -796,6 +809,8 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
               disabled={isDisabled}
               data-current={currentUser === profile}
               aria-expanded={isProfileLoggedIn ? isMenuTarget : undefined}
+              aria-controls={isProfileLoggedIn && isMenuTarget ? "profile-settings-menu" : undefined}
+              data-notch-trigger={isProfileLoggedIn ? "bottom" : undefined}
               aria-haspopup={isProfileLoggedIn ? "menu" : undefined}
               aria-label={
                 isProfileLoggedIn
@@ -825,8 +840,10 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
           />
           <div
             ref={menuRef}
+            id="profile-settings-menu"
             className="profile-settings-menu"
             role="menu"
+            data-notch-panel="profiles"
             aria-label={`${targetProfile} settings`}
           >
             <div className="profile-settings-header">
