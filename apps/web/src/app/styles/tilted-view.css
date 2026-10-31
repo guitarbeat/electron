@@ -1710,8 +1710,8 @@
 body:has(.frame-corner-profiles) .movies-wall-container {
   mask-image: linear-gradient(#000, #000), var(--frame-top-left-shape), var(--frame-top-right-shape), var(--frame-bottom-left-shape), var(--frame-account-shape);
   mask-size: 100% 100%,
-    calc(var(--frame-search-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-search-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
-    calc(var(--frame-create-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-create-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
+    calc(var(--frame-search-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-search-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-top-edge) + var(--frame-account-taper)),
+    calc(var(--frame-create-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-create-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-top-edge) + var(--frame-account-taper)),
     calc(var(--frame-filter-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-filter-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
     calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-account-grow, 0px)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
   mask-position: center, left top, right top, left bottom, right bottom;

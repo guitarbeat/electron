@@ -864,7 +864,7 @@
 .y2k-command-dock .y2k-library-search,
 .y2k-command-dock .y2k-add-form {
   position: fixed;
-  top: var(--frame-border-width);
+  top: var(--frame-top-edge);
   height: var(--frame-corner-height);
   padding: 0.5rem 0.75rem;
 }
@@ -946,7 +946,7 @@
 }
 .y2k-command-dock .top-frame-panels {
   position: fixed;
-  top: calc(var(--frame-border-width) + var(--frame-corner-height));
+  top: calc(var(--frame-top-edge) + var(--frame-corner-height));
   right: var(--frame-border-width);
   width: min(38rem, calc(100vw - 2 * var(--frame-border-width)));
   max-height: calc(100dvh - 2 * var(--frame-corner-height) - 2rem);
@@ -963,7 +963,7 @@
 }
 .y2k-command-dock__subbar {
   position: fixed;
-  top: calc(var(--frame-border-width) + var(--frame-corner-height));
+  top: calc(var(--frame-top-edge) + var(--frame-corner-height));
   right: var(--frame-border-width);
   max-width: calc(100vw - 2 * var(--frame-border-width));
   padding: 0.5rem 1rem;
