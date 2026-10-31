@@ -4,4 +4,5 @@
     <string name="load_error">Could not load your movies</string>
     <string name="load_error_detail">Check your connection, then try again.</string>
     <string name="retry">Retry</string>
+    <string name="stremio_not_installed">Stremio is not installed on this device.</string>
 </resources>

@@ -14,8 +14,8 @@ export interface StremioMediaObject {
 
 export function buildStremioSearchUrl(query: string): string {
   const clean = query.trim();
-  if (!clean) return "stremio://";
-  return `stremio://search?search=${encodeURIComponent(clean)}`;
+  if (!clean) return "stremio:///";
+  return `stremio:///search?search=${encodeURIComponent(clean)}`;
 }
 
 export function buildStremioDetailUrl(

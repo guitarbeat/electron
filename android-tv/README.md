@@ -79,7 +79,9 @@ adb -s "$FIRE_TV_IP:5555" shell input keyevent 4   # Back
 With the **debug** app open and ADB connected, open `chrome://inspect/#devices` in desktop Chrome,
 enable USB device discovery, and inspect the `electron.alw.lol` WebView target.
 WebView inspection is disabled in release builds. No JavaScript-to-native interface is exposed;
-top-level browsing is restricted to the HTTPS app origin.
+HTTPS pages stay in the WebView, Stremio links use Android `ACTION_VIEW`, and other top-level
+external destinations are blocked. If Stremio has no installed link handler, the app shows a short
+native message and leaves Electron open.
 
 First- and third-party cookies are enabled and flushed on pause/stop. LocalStorage and IndexedDB
 are disk-backed; authentication remains subject to server-side session expiry. `sessionStorage`

@@ -1,6 +1,8 @@
 package lol.alw.electron
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -27,6 +29,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 
@@ -99,8 +102,23 @@ class MainActivity : ComponentActivity() {
             webChromeClient = WebChromeClient()
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                    // Keep authentication and navigation on the app origin. No native JS interface.
-                    return request.isForMainFrame && !isAppOrigin(request.url)
+                    if (!request.isForMainFrame || isAppOrigin(request.url)) return false
+
+                    if (request.url.scheme.equals("stremio", ignoreCase = true)) {
+                        try {
+                            startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                        } catch (_: ActivityNotFoundException) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                getString(R.string.stremio_not_installed),
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                    }
+
+                    // Only explicitly supported app links leave the WebView; block every
+                    // other external scheme and origin. No native JavaScript interface.
+                    return true
                 }
 
                 override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {

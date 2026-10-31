@@ -8,30 +8,30 @@ import {
 
 describe("stremio utilities", () => {
   describe("buildStremioSearchUrl", () => {
-    it("returns default stremio protocol string for empty or whitespace query", () => {
-      assert.strictEqual(buildStremioSearchUrl(""), "stremio://");
-      assert.strictEqual(buildStremioSearchUrl("   "), "stremio://");
+    it("returns the Stremio app root for an empty or whitespace query", () => {
+      assert.strictEqual(buildStremioSearchUrl(""), "stremio:///");
+      assert.strictEqual(buildStremioSearchUrl("   "), "stremio:///");
     });
 
     it("returns formatted search URL for valid queries", () => {
       assert.strictEqual(
         buildStremioSearchUrl("Inception"),
-        "stremio://search?search=Inception",
+        "stremio:///search?search=Inception",
       );
       assert.strictEqual(
         buildStremioSearchUrl("  Breaking Bad  "),
-        "stremio://search?search=Breaking%20Bad",
+        "stremio:///search?search=Breaking%20Bad",
       );
     });
 
     it("properly URI encodes special characters and unicode", () => {
       assert.strictEqual(
         buildStremioSearchUrl("Spider-Man: Into the Spider-Verse & More"),
-        "stremio://search?search=Spider-Man%3A%20Into%20the%20Spider-Verse%20%26%20More",
+        "stremio:///search?search=Spider-Man%3A%20Into%20the%20Spider-Verse%20%26%20More",
       );
       assert.strictEqual(
         buildStremioSearchUrl("   Amélie 🎬   "),
-        "stremio://search?search=Am%C3%A9lie%20%F0%9F%8E%AC",
+        "stremio:///search?search=Am%C3%A9lie%20%F0%9F%8E%AC",
       );
     });
   });
@@ -61,32 +61,32 @@ describe("stremio utilities", () => {
       const resultDefault = getStremioUrls("Inception");
       assert.deepStrictEqual(resultDefault, {
         detailUrl: null,
-        searchUrl: "stremio://search?search=Inception",
-        appUrl: "stremio://search?search=Inception",
+        searchUrl: "stremio:///search?search=Inception",
+        appUrl: "stremio:///search?search=Inception",
         hasDirectImdbMatch: false,
       });
 
       const resultWithImdb = getStremioUrls("Inception", "movie", "tt1375666");
       assert.deepStrictEqual(resultWithImdb, {
         detailUrl: "stremio://detail/movie/tt1375666",
-        searchUrl: "stremio://search?search=Inception",
-        appUrl: "stremio://search?search=Inception",
+        searchUrl: "stremio:///search?search=Inception",
+        appUrl: "stremio:///search?search=Inception",
         hasDirectImdbMatch: true,
       });
 
       const resultSeries = getStremioUrls("Breaking Bad", "series", "tt0903747");
       assert.deepStrictEqual(resultSeries, {
         detailUrl: "stremio://detail/series/tt0903747",
-        searchUrl: "stremio://search?search=Breaking%20Bad",
-        appUrl: "stremio://search?search=Breaking%20Bad",
+        searchUrl: "stremio:///search?search=Breaking%20Bad",
+        appUrl: "stremio:///search?search=Breaking%20Bad",
         hasDirectImdbMatch: true,
       });
 
       const resultEmptyString = getStremioUrls("");
       assert.deepStrictEqual(resultEmptyString, {
         detailUrl: null,
-        searchUrl: "stremio://",
-        appUrl: "stremio://",
+        searchUrl: "stremio:///",
+        appUrl: "stremio:///",
         hasDirectImdbMatch: false,
       });
     });
@@ -99,8 +99,8 @@ describe("stremio utilities", () => {
       };
       assert.deepStrictEqual(getStremioUrls(obj1), {
         detailUrl: "stremio://detail/movie/tt0133093",
-        searchUrl: "stremio://search?search=The%20Matrix",
-        appUrl: "stremio://search?search=The%20Matrix",
+        searchUrl: "stremio:///search?search=The%20Matrix",
+        appUrl: "stremio:///search?search=The%20Matrix",
         hasDirectImdbMatch: true,
       });
 
@@ -111,8 +111,8 @@ describe("stremio utilities", () => {
       };
       assert.deepStrictEqual(getStremioUrls(obj2), {
         detailUrl: "stremio://detail/series/tt4574334",
-        searchUrl: "stremio://search?search=Stranger%20Things",
-        appUrl: "stremio://search?search=Stranger%20Things",
+        searchUrl: "stremio:///search?search=Stranger%20Things",
+        appUrl: "stremio:///search?search=Stranger%20Things",
         hasDirectImdbMatch: true,
       });
 
@@ -124,8 +124,8 @@ describe("stremio utilities", () => {
       };
       assert.deepStrictEqual(getStremioUrls(objMediaTypePriority), {
         detailUrl: "stremio://detail/series/tt1234567",
-        searchUrl: "stremio://search?search=Show%20Priority",
-        appUrl: "stremio://search?search=Show%20Priority",
+        searchUrl: "stremio:///search?search=Show%20Priority",
+        appUrl: "stremio:///search?search=Show%20Priority",
         hasDirectImdbMatch: true,
       });
 
@@ -137,8 +137,8 @@ describe("stremio utilities", () => {
       };
       assert.deepStrictEqual(getStremioUrls(objImdbIDPriority), {
         detailUrl: "stremio://detail/movie/tt1111111",
-        searchUrl: "stremio://search?search=IMDB%20Priority",
-        appUrl: "stremio://search?search=IMDB%20Priority",
+        searchUrl: "stremio:///search?search=IMDB%20Priority",
+        appUrl: "stremio:///search?search=IMDB%20Priority",
         hasDirectImdbMatch: true,
       });
 
@@ -149,8 +149,8 @@ describe("stremio utilities", () => {
       };
       assert.deepStrictEqual(getStremioUrls(objNonSeriesMediaType), {
         detailUrl: "stremio://detail/movie/tt9999999",
-        searchUrl: "stremio://search?search=Other%20Type",
-        appUrl: "stremio://search?search=Other%20Type",
+        searchUrl: "stremio:///search?search=Other%20Type",
+        appUrl: "stremio:///search?search=Other%20Type",
         hasDirectImdbMatch: true,
       });
 
@@ -160,8 +160,8 @@ describe("stremio utilities", () => {
       };
       assert.deepStrictEqual(getStremioUrls(objNoImdb), {
         detailUrl: null,
-        searchUrl: "stremio://search?search=Unknown%20Show",
-        appUrl: "stremio://search?search=Unknown%20Show",
+        searchUrl: "stremio:///search?search=Unknown%20Show",
+        appUrl: "stremio:///search?search=Unknown%20Show",
         hasDirectImdbMatch: false,
       });
     });
