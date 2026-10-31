@@ -98,11 +98,14 @@
   .is-tv-runtime .booklet-nav__hint { display: none; }
 }
 .is-tv-runtime .movie-details-modal__poster-pill,
-.is-tv-runtime .movie-details-modal__fact-pill,
-.is-tv-runtime .flipbook-avatar-btn__name,
-.is-tv-runtime .flipbook-avatar-btn__status {
+.is-tv-runtime .flipbook-avatar-btn__name {
   font-size: 0.95rem;
 }
+/* The book leaf is a fixed size, so TV text grows only as far as the page still fits. */
+.is-tv-runtime .book-page--meta .movie-details-modal__fact-pill { font-size: 0.78rem; }
+.is-tv-runtime .book-page--meta .flipbook-avatar-btn__name { font-size: 0.82rem; }
+.is-tv-runtime .book-page--meta .flipbook-avatar-btn__status { font-size: 0.72rem; }
+.is-tv-runtime .book-overview__text { font-size: 0.95rem; }
 
 /* Desktop arrow-key navigation reaches the same frame controls and panels. :where keeps this
    a fallback ring, so components with their own focus styles keep them. */

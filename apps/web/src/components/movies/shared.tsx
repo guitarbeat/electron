@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { playXmbCue } from "@/services/xmbAudio";
 import { WatchStatusArtwork } from "./WatchStatusArtwork";
 import type {
   Movie,
@@ -16,6 +17,7 @@ import {
   resolvePosterUrl,
 } from "@/utils";
 import { useViewport } from "@/app/providerContexts";
+import { useMediaQuery } from "@/hooks";
 import { getCachedPosterUrlSync } from "@/services/posterCache";
 import { getCachedObjectUrlSync } from "@/utils/imageCache";
 import {
@@ -443,7 +445,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
       </div>
 
       <div className="movie-details-modal__title-row">
-        <h2 id="movie-details-title" className="movie-details-modal__title">
+        <h2 id="movie-details-title" className="movie-details-modal__title" title={movie.title} data-title-length={movie.title.length > 40 ? "xlong" : movie.title.length > 22 ? "long" : undefined}>
           {movie.title}
         </h2>
       </div>
@@ -480,17 +482,13 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
         </div>
       )}
 
-      {/* Action Toolbar */}
-      <div
-        className="movie-details-modal__actions"
-        role="toolbar"
-        aria-label="Movie actions"
-        style={{ flexWrap: "wrap" }}
-      >
+      {/* Person cards, then one row with the primary action and Edit. */}
+      <div className="movie-details-modal__actions">
         <div
           className="movie-details-modal__avatar-toggles"
           role="group"
           aria-label="Mark watch status for Aaron and Electra"
+          data-book-row="people"
         >
           {USERS.map((user) => {
             const isWatched = movie.watchedBy.includes(user);
@@ -562,21 +560,28 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
           })}
         </div>
 
-        {movie.mediaType === "youtube" && movie.youtubeUrl ? (
-          <YoutubeButton url={movie.youtubeUrl} movieTitle={movie.title} variant="full" />
-        ) : (
-          <StremioButton movie={movie} variant="full" />
-        )}
+        <div
+          className="movie-details-modal__primary-row"
+          role="toolbar"
+          aria-label="Movie actions"
+          data-book-row="actions"
+        >
+          {movie.mediaType === "youtube" && movie.youtubeUrl ? (
+            <YoutubeButton url={movie.youtubeUrl} movieTitle={movie.title} variant="full" />
+          ) : (
+            <StremioButton movie={movie} variant="full" />
+          )}
 
-        {onEdit && (
-          <CardActionButton
-            variant="outline"
-            onClick={onEdit}
-            leftIcon={<EditIcon />}
-          >
-            Edit
-          </CardActionButton>
-        )}
+          {onEdit && (
+            <CardActionButton
+              variant="outline"
+              onClick={onEdit}
+              leftIcon={<EditIcon />}
+            >
+              Edit
+            </CardActionButton>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -622,6 +627,69 @@ export const SummaryBand: React.FC<SummaryBandProps> = ({
 );
 
 /* -------------------------------------------------------------------------- */
+/*                     Sub-component: BookOverview                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The overview fills the page it sits on. If it still runs long it stops at the last whole
+ * line with a More toggle, so the spread itself never needs to scroll.
+ */
+export const BookOverview: React.FC<{ text: string }> = ({ text }) => {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef<HTMLParagraphElement | null>(null);
+  const [lines, setLines] = useState<number | null>(null);
+  const [overflows, setOverflows] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const para = textRef.current;
+    if (!box || !para) return;
+    const measure = () => {
+      const lineHeight = parseFloat(getComputedStyle(para).lineHeight) || 20;
+      // Leave one line for the More toggle when the text does not fit.
+      const fit = Math.max(2, Math.floor(box.clientHeight / lineHeight));
+      const full = Math.round(para.scrollHeight / lineHeight);
+      const long = full > fit;
+      setOverflows(long);
+      setLines(long ? Math.max(2, fit - 1) : null);
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    observer.observe(para);
+    return () => observer.disconnect();
+  }, [text]);
+
+  const clamped = overflows && !expanded && lines !== null;
+  return (
+    <div ref={boxRef} className={`book-overview__body${expanded ? " is-expanded" : ""}`}>
+      <p
+        ref={textRef}
+        id="book-overview-text"
+        className="movie-details-modal__plot book-overview__text"
+        style={clamped ? ({ WebkitLineClamp: lines, lineClamp: lines } as React.CSSProperties) : undefined}
+        data-clamped={clamped ? "true" : "false"}
+      >
+        {text}
+      </p>
+      {overflows ? (
+        <button
+          type="button"
+          className="book-overview__more"
+          aria-expanded={expanded}
+          aria-controls="book-overview-text"
+          onClick={() => setExpanded((open) => !open)}
+        >
+          {expanded ? "Less" : "More"}
+        </button>
+      ) : null}
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /*                     Sub-component: PosterHero                              */
 /* -------------------------------------------------------------------------- */
 
@@ -662,6 +730,68 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
 }) => {
   const { isTv } = useViewport();
   const [turnedCount, setTurnedCount] = useState(0);
+  const figureRef = useRef<HTMLElement | null>(null);
+  const turnedRef = useRef(turnedCount);
+  turnedRef.current = turnedCount;
+
+  // Opening the details spread puts focus on Watch on Stremio (or YouTube), its main action.
+  useEffect(() => {
+    if (!isOpen || turnedCount !== 1) return;
+    const timer = window.setTimeout(() => {
+      const figure = figureRef.current;
+      const active = document.activeElement;
+      // Leave focus alone if the person already moved inside the spread.
+      if (!figure || (active instanceof HTMLElement && figure.contains(active) && active.closest("[data-book-row]") && !active.closest('[data-book-row="nav"]'))) return;
+      figure.querySelector<HTMLElement>('[data-book-row="actions"] > :is(a[href], button)')?.focus({ preventScroll: true });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [isOpen, turnedCount]);
+
+  /* Left/Right move along the focused row (people, actions, page tabs). Past the end of a row,
+     or from anything that is not in a row, they turn the page. Up/Down stay with spatial
+     navigation, and Escape/Backspace close the book through it. Runs before that handler. */
+  const turnTo = useCallback((target: number) => {
+    setTurnedCount(target);
+    if (target === 0) {
+      window.requestAnimationFrame(() =>
+        figureRef.current?.querySelector<HTMLElement>('[data-book-tab="details"]')?.focus({ preventScroll: true }),
+      );
+    }
+  }, []);
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.defaultPrevented) return;
+      const figure = figureRef.current;
+      const active = document.activeElement;
+      if (!figure || !(active instanceof HTMLElement) || !figure.contains(active)) return;
+      if (active.matches("input,textarea,select") || active.isContentEditable) return;
+      const forward = event.key === "ArrowRight";
+      const row = active.closest<HTMLElement>("[data-book-row]");
+      if (row) {
+        const items = [...row.querySelectorAll<HTMLElement>("a[href],button:not(:disabled)")];
+        const index = items.findIndex((item) => item === active || item.contains(active));
+        const next = items[index + (forward ? 1 : -1)];
+        if (index >= 0 && next) {
+          event.preventDefault();
+          event.stopPropagation();
+          playXmbCue("cursor", event.repeat);
+          next.focus({ preventScroll: true });
+          return;
+        }
+      }
+      const target = Math.max(0, Math.min(1, turnedRef.current + (forward ? 1 : -1)));
+      // Nothing to turn to: let spatial navigation move on (for example to the overview's More).
+      if (target === turnedRef.current) return;
+      event.preventDefault();
+      event.stopPropagation();
+      playXmbCue("cursor", event.repeat);
+      turnTo(target);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [isOpen, turnTo]);
 
   const rawPosterUrl = movie.customPosterUrl || movie.posterUrl;
   const cachedPoster =
@@ -680,7 +810,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
         front: activePosterUrl,
         frontAlt: `${movie.title} cover`,
         back: (
-          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-l border-white/10 select-none overflow-y-auto custom-scrollbar relative z-10">
+          <div className="book-page book-page--meta border-l border-white/10 select-none relative z-10">
             <MetadataHeader
               movie={movie}
               metadataItems={metadataItems}
@@ -698,12 +828,11 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
       {
         id: "details",
         front: (
-          <div className="flex h-full w-full flex-col p-4 bg-[#0d111a] text-white border-r border-white/10 select-none overflow-y-auto custom-scrollbar">
+          <div className="book-page book-page--details border-r border-white/10 select-none">
             {movie.plot ? (
               <section
                 aria-labelledby="movie-overview-heading"
-                className="movie-details-modal__section"
-                style={{ padding: 0 }}
+                className="book-overview"
               >
                 <h3
                   id="movie-overview-heading"
@@ -711,21 +840,16 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
                 >
                   Overview
                 </h3>
-                <p className="movie-details-modal__plot" style={{ marginBottom: 0 }}>
-                  {movie.plot}
-                </p>
+                <BookOverview text={movie.plot} />
               </section>
             ) : (
               <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
                 No overview recorded for this title.
               </div>
             )}
-            <footer
-              className="movie-details-modal__footer mt-auto pt-4 border-t border-white/5"
-              style={{ padding: "1rem 0 0" }}
-            >
+            <footer className="book-page__meta">
               <span>
-                Catalog item added {new Date(movie.createdAt).toLocaleDateString()}
+                Added {new Date(movie.createdAt).toLocaleDateString()}
               </span>
               <span>
                 {movie.watchedBy.length === 2
@@ -752,9 +876,12 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
     onEdit,
   ]);
 
-  const bookWidth = isMobile ? 180 : 280;
-  const bookHeight = isMobile ? 270 : 420;
-  const bookSpineShift = isMobile ? 85 : 130;
+  // Short screens (a 1080p TV runs a 960x540 viewport) get a slightly smaller leaf so the
+  // spread and its page tabs fit without clipping under the frame.
+  const isShort = useMediaQuery("(max-height: 600px)");
+  const bookWidth = isMobile ? 180 : isShort ? 260 : 280;
+  const bookHeight = isMobile ? 270 : isShort ? 390 : 420;
+  const bookSpineShift = isMobile ? 85 : isShort ? 120 : 130;
 
   const navTabs = [
     { label: "Cover", index: 0 },
@@ -763,6 +890,7 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
 
   return (
     <figure
+      ref={figureRef}
       className="movie-details-modal__poster-shell !flex-1 !bg-transparent"
       aria-label={`Poster for ${movie.title}`}
     >
@@ -795,65 +923,35 @@ export const PosterHero: React.FC<PosterHeroProps> = ({
           aria-label="Booklet navigation"
           data-movie-details-interactive="true"
         >
-          <div className="flex items-center gap-1 p-1 rounded-full bg-slate-950/80 border border-white/15 backdrop-blur-md shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setTurnedCount((c) => Math.max(0, c - 1))}
-              disabled={turnedCount === 0}
-              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
-                turnedCount === 0
-                  ? "text-white/25 cursor-not-allowed opacity-40"
-                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
-              }`}
-              aria-label="Previous page"
-            >
-              ‹ Prev
-            </button>
-
-            <div className="flex items-center gap-0.5 px-1 border-x border-white/10">
-              {navTabs.map((tab) => {
-                const isActive = turnedCount === tab.index;
-                return (
-                  <button
-                    key={tab.index}
-                    type="button"
-                    onClick={() => setTurnedCount(tab.index)}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer ${
-                      isActive
-                        ? "bg-white text-slate-950 font-semibold shadow-sm scale-100"
-                        : "text-white/70 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setTurnedCount((c) => Math.min(1, c + 1))}
-              disabled={turnedCount >= 1}
-              className={`flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all ${
-                turnedCount >= 1
-                  ? "text-white/25 cursor-not-allowed opacity-40"
-                  : "text-white/90 hover:text-white hover:bg-white/10 active:scale-95 cursor-pointer"
-              }`}
-              aria-label="Next page"
-            >
-              Next ›
-            </button>
+          <div
+            className="flex items-center gap-0.5 p-1 rounded-full bg-slate-950/80 border border-white/15 backdrop-blur-md shadow-2xl"
+            role="group"
+            aria-label="Book pages"
+            data-book-row="nav"
+          >
+            {navTabs.map((tab) => {
+              const isActive = turnedCount === tab.index;
+              return (
+                <button
+                  key={tab.index}
+                  type="button"
+                  onClick={() => setTurnedCount(tab.index)}
+                  aria-current={isActive ? "page" : undefined}
+                  data-book-tab={tab.label.toLowerCase()}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer ${
+                    isActive
+                      ? "bg-white text-slate-950 font-semibold shadow-sm scale-100"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           <span className="booklet-nav__hint text-[11px] text-white/50 tracking-wide font-normal">
-            {isTv
-              ? turnedCount === 0
-                ? "Press Details to open the book"
-                : "Press Cover or Previous page to close the book"
-              : turnedCount === 0
-                ? "Swipe left, click cover, or tap Details to open"
-                : "Swipe right, click Cover, or tap Previous page to close"}
+            {isTv ? "◀ ▶ turn pages · Back to close" : isMobile ? "Swipe to turn pages" : "← → turn pages · Esc to close"}
           </span>
         </nav>
       </div>
