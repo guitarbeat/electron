@@ -31,21 +31,32 @@ export function SlidingSegments<T extends string>({
   className?: string;
 }) {
   const groupRef = React.useRef<HTMLDivElement | null>(null);
-  const [pill, setPill] = React.useState<{ x: number; w: number } | null>(null);
+  const [pill, setPill] = React.useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
+  // Callers build `options` inline, so key the effect on the option values, not the array.
+  const optionKey = options.map((option) => option.value).join("|");
+  // The pill copies the chosen option's box exactly, so it can never cover a neighbour. It is
+  // re-measured whenever the group or any option changes size (fonts, counts, TV scale).
   React.useLayoutEffect(() => {
     const group = groupRef.current;
     if (!group) return;
     const measure = () => {
       const active = group.querySelector<HTMLElement>('[data-segment-active="true"]');
-      setPill(active ? { x: active.offsetLeft, w: active.offsetWidth } : null);
+      setPill((current) => {
+        if (!active) return null;
+        const next = { x: active.offsetLeft, y: active.offsetTop, w: active.offsetWidth, h: active.offsetHeight };
+        return current && current.x === next.x && current.y === next.y && current.w === next.w && current.h === next.h
+          ? current
+          : next;
+      });
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
     observer.observe(group);
+    group.querySelectorAll(".settings-menu__opt").forEach((option) => observer.observe(option));
     return () => observer.disconnect();
-  }, [value, options.length]);
+  }, [value, optionKey]);
 
   return (
     <div
@@ -53,7 +64,9 @@ export function SlidingSegments<T extends string>({
       className={`settings-menu__seg${className ? ` ${className}` : ""}`}
       role={mode === "radio" ? "radiogroup" : "group"}
       aria-label={label}
-      style={pill ? ({ "--pill-x": `${pill.x}px`, "--pill-w": `${pill.w}px` } as React.CSSProperties) : undefined}
+      style={pill
+        ? ({ "--pill-x": `${pill.x}px`, "--pill-y": `${pill.y}px`, "--pill-w": `${pill.w}px`, "--pill-h": `${pill.h}px` } as React.CSSProperties)
+        : undefined}
       data-has-pill={pill ? "true" : "false"}
     >
       <span className="settings-menu__pill" aria-hidden="true" />

@@ -142,33 +142,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         </p>
 
         {canDelete ? (
-          <div
-            className={"msg-actions"}
-            style={{
-              position: "absolute",
-              top: "-8px",
-              [isCurrentUser ? "left" : "right"]: "-8px",
-            }}
-          >
+          <div className="msg-actions" data-side={isCurrentUser ? "start" : "end"}>
             <button
               type="button"
+              className="msg-delete"
               onClick={() => onDelete(message)}
               aria-label={`Delete message from ${message.author}`}
               title={`Delete message from ${message.author}`}
-              style={{
-                width: "24px",
-                height: "24px",
-                padding: 0,
-                border: "none",
-                borderRadius: "999px",
-                background: "#ff3b30",
-                color: "#ffffff",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              }}
             >
               <TrashIcon style={{ width: "12px", height: "12px" }} />
             </button>

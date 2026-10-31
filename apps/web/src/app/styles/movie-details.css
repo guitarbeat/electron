@@ -831,3 +831,34 @@
 }
 .book-page--meta .movie-details-modal__primary-row .stremio-btn { white-space: nowrap; gap: 0.4rem; }
 .is-tv-runtime .book-page--meta .movie-details-modal__primary-row .stremio-btn { padding-inline: 0.55rem; font-size: 0.82rem; }
+
+/* Phone: the book sits at the top and the details sheet starts just under its Cover/Details
+   tabs. (Centred, the book's lower page and tabs collided with the sheet's first rows.) */
+@media (max-width: 768px) {
+  .movie-details-modal__dialog--mobile {
+    --phone-book-top: calc(var(--frame-corner-height, 4.5rem) + 0.5rem);
+    --phone-book-height: 270px;
+    --phone-book-nav: 6.5rem;
+  }
+  .movie-details-modal__dialog--mobile .movie-details-modal__poster-shell > .relative {
+    justify-content: flex-start;
+    padding-top: var(--phone-book-top);
+  }
+  .movie-details-modal__dialog--mobile .movie-details-modal__content {
+    padding-top: calc(var(--phone-book-top) + var(--phone-book-height) + var(--phone-book-nav));
+    background: linear-gradient(to top, rgba(13, 17, 26, 1) 0%, rgba(13, 17, 26, 0.98) 55%, rgba(13, 17, 26, 0) 100%);
+  }
+}
+/* The sheet below already has the watch toggles and Watch/Edit, so the little phone book keeps
+   just the title and facts instead of clipping cramped copies of them. */
+@media (max-width: 768px) {
+  .movie-details-modal__dialog--mobile .book-page--meta :is([data-book-row="people"], [data-book-row="actions"]) { display: none; }
+}
+@media (max-width: 768px) {
+  /* Let the last row scroll clear of the frame's bottom notches. */
+  .movie-details-modal__dialog--mobile .movie-details-modal__content {
+    padding-bottom: calc(var(--frame-corner-height, 4.5rem) + 1rem + env(safe-area-inset-bottom));
+  }
+  /* The floating chat button would sit on top of the sheet's controls. */
+  body:has(.movie-details-modal.is-open) .chat-fab-anchor { visibility: hidden; }
+}

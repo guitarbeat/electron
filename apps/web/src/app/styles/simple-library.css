@@ -91,7 +91,8 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  flex-wrap: wrap;
+  /* A segmented control is one row. Options shrink before they would wrap under the pill. */
+  flex-wrap: nowrap;
   gap: 2px;
   width: fit-content;
   max-width: 100%;
@@ -99,6 +100,7 @@
   border: 1px solid var(--settings-line);
   border-radius: 999px;
 }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__seg > .settings-menu__opt { flex: 0 1 auto; min-width: 0; }
 .top-frame-panels .movie-wall-filters__panel.settings-menu :is(.settings-menu__opt, .settings-menu__chip, .settings-switch) {
   display: inline-flex;
   align-items: center;
@@ -141,11 +143,14 @@
 .top-frame-panels .settings-menu .settings-menu__person-name { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 800; }
 .top-frame-panels .settings-menu .settings-menu__avatar { width: 1.6rem; height: 1.6rem; object-fit: contain; }
 .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__picked { border: 1px solid var(--settings-line); }
+/* Format and Sort share a row when both fit; otherwise Sort drops to its own row instead of
+   squeezing its segments onto two lines. */
 .top-frame-panels .settings-menu .settings-menu__columns {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, max-content));
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem 1rem;
 }
+.top-frame-panels .settings-menu .settings-menu__columns > .settings-menu__section { flex: 0 1 auto; max-width: 100%; }
 .top-frame-panels .settings-menu .settings-menu__chips { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip {
   min-height: 1.6rem;
@@ -200,7 +205,6 @@
   }
 }
 @media (max-width: 600px) {
-  .top-frame-panels .settings-menu .settings-menu__columns { grid-template-columns: minmax(0, 1fr); }
   .top-frame-panels .movie-wall-filters__panel.settings-menu { gap: 0.4rem; }
   .top-frame-panels .settings-menu .settings-menu__status-art { width: 1.9rem; margin-left: -0.3rem; }
   .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__seg--status .settings-menu__opt { padding-inline: 0.45rem; gap: 0.2rem; }
@@ -225,14 +229,14 @@
 .top-frame-panels .settings-menu .settings-menu__pill {
   position: absolute;
   z-index: -1;
-  top: 2px;
-  bottom: 2px;
+  top: 0;
   left: 0;
   width: var(--pill-w, 0);
+  height: var(--pill-h, 0);
   border-radius: 999px;
   background: var(--settings-on);
   box-shadow: 0 2px 6px rgba(23, 23, 23, 0.25);
-  transform: translateX(var(--pill-x, 0));
+  transform: translate(var(--pill-x, 0), var(--pill-y, 0));
   opacity: 0;
 }
 .top-frame-panels .settings-menu .settings-menu__seg[data-has-pill="true"] .settings-menu__pill { opacity: 1; }
@@ -312,7 +316,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .settings-menu .settings-menu__pill {
-    transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1), width 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 160ms ease-out;
+    transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1), width 320ms cubic-bezier(0.32, 0.72, 0, 1), height 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 160ms ease-out;
   }
   :root:not(.is-tv-runtime, .is-silk-browser) .settings-switch__knob,
   :root:not(.is-tv-runtime, .is-silk-browser) .settings-switch__track {
