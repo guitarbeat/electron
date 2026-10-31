@@ -73,6 +73,8 @@
   user-select: none;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Lets the title size itself to the card rather than the window. */
+  container-type: inline-size;
 }
 
 .y2k-placeholder-graphic::after {
@@ -132,6 +134,7 @@
 .y2k-placeholder-graphic__title {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(0.9rem, 2.8vw, 1.55rem);
+  font-size: clamp(0.8rem, 14cqi, 1.55rem);
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.025em;
@@ -141,7 +144,9 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0;
-  overflow-wrap: anywhere;
+  /* Hyphenate long words ("Every-where") instead of breaking them at any letter. */
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .y2k-placeholder-graphic__meta {

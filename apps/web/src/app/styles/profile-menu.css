@@ -1039,3 +1039,19 @@
   .frame-movie-picker .spin-wheel-stage { grid-template-columns: minmax(0, 1fr); }
 }
 .account-pin-shield { background: rgba(0, 0, 0, 0.1); }
+
+/* Short screens (Fire TV, 1024x640 laptops): the 320px wheel plus the summary no longer fit in
+   the sheet, so the wheel was cut off. Tighten the summary into one line and scale the wheel
+   (zoom keeps its labels and pointer laid out exactly as at full size). */
+@media (max-height: 700px) {
+  .frame-movie-picker .spin-wheel-shell { gap: 0.6rem; }
+  .frame-movie-picker .spin-wheel-summary { padding-block: 0.25rem; gap: 0.5rem; }
+  .frame-movie-picker .spin-wheel-summary__item { flex-direction: row; align-items: baseline; gap: 0.4rem; }
+  .frame-movie-picker .spin-wheel-wrapper { padding-block: 0.75rem 0.25rem; }
+  .frame-movie-picker .spin-wheel-container { zoom: 0.72; }
+  .frame-movie-picker .spin-wheel-stage { gap: 1rem; }
+}
+@media (max-height: 560px) {
+  .frame-movie-picker .spin-wheel-container { zoom: 0.6; }
+  .frame-movie-picker .spin-wheel-wrapper { padding-block: 0.6rem 0; }
+}
