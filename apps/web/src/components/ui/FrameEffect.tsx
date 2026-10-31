@@ -4,6 +4,9 @@ if (typeof document !== "undefined") {
   void import("./frame-effect.css");
 }
 
+/** Pockets that hang from the frame edge around the corner and center controls. */
+const FRAME_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right", "top-center"] as const;
+
 export interface FrameEffectProps {
   children?: React.ReactNode;
   borderWidth?: string;
@@ -47,10 +50,11 @@ export const FrameEffect: React.FC<FrameEffectProps> = ({
       aria-hidden="true"
       data-testid="viewport-frame"
     >
-      <span className="viewport-frame__corner viewport-frame__corner--top-left" />
-      <span className="viewport-frame__corner viewport-frame__corner--top-right" />
-      <span className="viewport-frame__corner viewport-frame__corner--bottom-left" />
-      <span className="viewport-frame__corner viewport-frame__corner--top-center" />
+      {FRAME_CORNERS.map((corner) => (
+        <span key={corner} className={`viewport-frame__corner viewport-frame__corner--${corner}`}>
+          <span className="viewport-frame__notch" />
+        </span>
+      ))}
     </div>
   );
 

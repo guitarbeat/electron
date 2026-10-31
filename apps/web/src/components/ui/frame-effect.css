@@ -6,7 +6,7 @@
   --frame-account-width: 8rem;
   --frame-account-height: 4rem;
   --frame-account-taper: 20px;
-  --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 120Q20 120 20 100V50Q20 20 50 20H180Q200 20 200 0V120Z'/%3E%3C/svg%3E");
+  --frame-account-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
   --z-index-frame: 80;
   --loader-badge-width: min(21.5rem, calc(100vw - 2.5rem));
   --loader-badge-height: 13.5rem;
@@ -62,19 +62,6 @@
   box-sizing: border-box;
   pointer-events: none;
   transition: border-radius 720ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* A corner extension joins the account controls to the same blended outline. */
-body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: calc(var(--frame-account-width) + var(--frame-account-taper));
-  height: calc(var(--frame-account-height) + var(--frame-account-taper));
-  -webkit-mask: var(--frame-account-shape) 0 0 / 100% 100% no-repeat;
-  mask: var(--frame-account-shape) 0 0 / 100% 100% no-repeat;
-  background: var(--frame-color);
 }
 
 /* Initial compact state: wraps the center Aaron & Electra arcade loading badge */
@@ -693,28 +680,42 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::
   min-height: 100%;
 }
 
-body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before {
-  transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), height 240ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::before { transition: none; }
-}
-
 :root:has(.account-pin-viewport:not(:empty)) {
-  --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 404 628' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 628Q20 628 20 608V50Q20 20 50 20H384Q404 20 404 0V628Z'/%3E%3C/svg%3E");
+  --frame-account-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20404%20628%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%20628C11.05%20628%2020%20619.05%2020%20608V52C20%2034.33%2034.33%2020%2052%2020H384C395.05%2020%20404%2011.05%20404%200V628Z%22%2F%3E%3C%2Fsvg%3E");
 }
 
-/* The corner pockets share the existing account contour. */
+/* NotchNook-style pockets. Each one hangs from the frame edge, flares out of it
+   through concave fillets, and has rounded outer corners and a soft glow. The
+   shapes stay SVG masks so the poster wall can cut out the same outline. */
+@property --frame-search-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --frame-create-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --frame-picker-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --frame-filter-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --frame-account-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 :root {
-  --frame-top-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%200H240Q220%200%20220%2020V65Q220%2090%20195%2090H45Q20%2090%2020%2065V20Q20%200%200%200Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-notch-grow: 14px;
+  --frame-search-grow: 0px;
+  --frame-create-grow: 0px;
+  --frame-picker-grow: 0px;
+  --frame-filter-grow: 0px;
+  --frame-account-grow: 0px;
+  transition:
+    --frame-search-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
+    --frame-create-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
+    --frame-picker-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
+    --frame-filter-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
+    --frame-account-grow 450ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+:root {
+  --frame-top-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%200H240C228.95%200%20220%208.95%20220%2020V62C220%2077.46%20207.46%2090%20192%2090H48C32.54%2090%2020%2077.46%2020%2062V20C20%208.95%2011.05%200%200%200Z%22%2F%3E%3C%2Fsvg%3E");
   --frame-search-width: 5.5rem;
   --frame-create-width: 5.5rem;
   --frame-filter-width: 4.5rem;
   --frame-picker-width: 8rem;
   --frame-corner-height: 4.5rem;
-  --frame-top-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%20120%29%20scale%28-1%20-1%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
-  --frame-top-right-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%280%20120%29%20scale%281%20-1%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
-  --frame-bottom-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%200%29%20scale%28-1%201%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-top-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%20120%29%20scale%28-1%20-1%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-top-right-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%280%20120%29%20scale%281%20-1%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
+  --frame-bottom-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%200%29%20scale%28-1%201%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
 }
 :root:has(.y2k-library-search.is-expanded) { --frame-search-width: min(28rem, calc(100vw - 18rem)); }
 :root:has(.y2k-add-form.is-expanded) { --frame-create-width: min(34rem, calc(100vw - 18rem)); }
@@ -723,24 +724,39 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
   display: block;
   position: absolute;
   height: calc(var(--frame-corner-height) + var(--frame-account-taper));
+}
+/* The glow sits on the wrapper because a mask would clip a shadow on the shape itself. */
+.viewport-frame__corner {
+  filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--frame-color) 45%, transparent));
+}
+.viewport-frame__notch {
+  position: absolute;
+  inset: 0;
   background: var(--frame-color);
-  mask-repeat: no-repeat;
-  mask-size: 100% 100%;
+  -webkit-mask: var(--frame-notch-shape) 0 0 / 100% 100% no-repeat;
+  mask: var(--frame-notch-shape) 0 0 / 100% 100% no-repeat;
 }
 .viewport-frame__corner--top-left {
+  --frame-notch-shape: var(--frame-top-left-shape);
   top: 0; left: 0;
-  width: calc(var(--frame-search-width) + var(--frame-account-taper));
-  mask-image: var(--frame-top-left-shape);
+  width: calc(var(--frame-search-width) + var(--frame-account-taper) + var(--frame-search-grow));
 }
 .viewport-frame__corner--top-right {
+  --frame-notch-shape: var(--frame-top-right-shape);
   top: 0; right: 0;
-  width: calc(var(--frame-create-width) + var(--frame-account-taper));
-  mask-image: var(--frame-top-right-shape);
+  width: calc(var(--frame-create-width) + var(--frame-account-taper) + var(--frame-create-grow));
 }
 .viewport-frame__corner--bottom-left {
+  --frame-notch-shape: var(--frame-bottom-left-shape);
   bottom: 0; left: 0;
-  width: calc(var(--frame-filter-width) + var(--frame-account-taper));
-  mask-image: var(--frame-bottom-left-shape);
+  width: calc(var(--frame-filter-width) + var(--frame-account-taper) + var(--frame-filter-grow));
+}
+body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-right {
+  --frame-notch-shape: var(--frame-account-shape);
+  right: 0; bottom: 0;
+  width: calc(var(--frame-account-width) + var(--frame-account-taper) + var(--frame-account-grow));
+  height: calc(var(--frame-account-height) + var(--frame-account-taper));
+  transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), height 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @media (max-width: 600px) {
   :root {
@@ -755,11 +771,11 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
 }
 
 .viewport-frame__corner--top-center {
+  --frame-notch-shape: var(--frame-top-notch-shape);
   left: 50%;
   transform: translateX(-50%);
   top: 0;
-  width: calc(var(--frame-picker-width) + 2 * var(--frame-account-taper));
-  mask-image: var(--frame-top-notch-shape);
+  width: calc(var(--frame-picker-width) + 2 * var(--frame-account-taper) + var(--frame-picker-grow));
 }
 
 @media (max-width: 600px) {
@@ -775,3 +791,26 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
     height: 5.5rem;
   }
 }
+
+/* Pockets grow a little toward the control under the pointer or keyboard / D-pad focus.
+   Skipped for reduced motion and on TV, where the light-motion mode keeps the frame still. */
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-library-search:not(.is-expanded) :focus-visible) { --frame-search-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-add-form:not(.is-expanded) :focus-visible) { --frame-create-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.library-settings > summary:focus-visible) { --frame-picker-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters :focus-visible) { --frame-filter-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles :focus-visible) { --frame-account-grow: var(--frame-notch-grow); }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):hover) { --frame-search-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):hover) { --frame-create-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.library-settings > summary:hover) { --frame-picker-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters:hover) { --frame-filter-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles:hover) { --frame-account-grow: var(--frame-notch-grow); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { transition: none; }
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-right { transition: none; }
+}
+/* Fire TV composites the frame over a moving wall; a filtered layer there costs frames. */
+:is(.is-tv-runtime, .is-silk-browser) .viewport-frame__corner { filter: none; }
