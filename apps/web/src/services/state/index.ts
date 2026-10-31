@@ -1978,9 +1978,15 @@ export const mutateScope = async <TScope extends StateScope>(
   }
 };
 
+/**
+ * The snapshot saved on this device, or undefined when nothing is saved yet.
+ * An empty default must not stand in for "nothing saved": the query would
+ * treat it as real data and show an empty list until the next poll.
+ */
 export const getStoredScopeSnapshot = <TScope extends StateScope>(
   scope: TScope,
-): ScopeSnapshot<StateScopeDataMap[TScope]> => readOptimisticSnapshot(scope);
+): ScopeSnapshot<StateScopeDataMap[TScope]> | undefined =>
+  isMockMode() || readSnapshot(scope) ? readOptimisticSnapshot(scope) : undefined;
 
 export const sessionInvalidationEvent = SESSION_INVALID_EVENT;
 export const syncOutboxStatusEvent = OUTBOX_STATUS_EVENT;
