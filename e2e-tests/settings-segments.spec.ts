@@ -74,3 +74,39 @@ for (const { name, ...use } of viewports) {
     });
   });
 }
+
+// The Queue / Watching / Seen shelf tabs are the sheet's main switch: big, and still one row with real two-digit counts.
+for (const { name, viewport, minHeight } of [
+  { name: "desktop 1280x800", viewport: { width: 1280, height: 800 }, minHeight: 40 },
+  { name: "small phone 320x640", viewport: { width: 320, height: 640 }, minHeight: 48 },
+]) {
+  test(`status shelf tabs are large and stay on one row on ${name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.route("https://**/*", (route) => route.abort());
+    await page.addInitScript(() => localStorage.setItem("useMockData", "true"));
+    await page.route("**/api/session", (route) => route.fulfill({ contentType: "application/json", body: JSON.stringify({ hasAccess: true, currentUser: "Aaron", activeUsers: ["Aaron"], pinProtectedUsers: [], usersMissingPins: [] }) }));
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".movie-library-grid .movie-item-details-hit-area").first()).toBeVisible();
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    const status = page.locator(".settings-menu__seg--status");
+    await expect(status).toBeVisible();
+    await status.evaluate((group) => {
+      group.querySelectorAll(".settings-menu__count").forEach((count, index) => { count.textContent = ["41", "47", "34"][index] ?? "99"; });
+    });
+    await status.locator(".settings-menu__opt").first().click();
+    const tabs = await status.evaluate((group) => {
+      const panel = group.closest(".movie-wall-filters__panel")!.getBoundingClientRect();
+      return [...group.querySelectorAll<HTMLElement>(".settings-menu__opt")].map((option) => {
+        const box = option.getBoundingClientRect();
+        return { top: Math.round(box.top), height: box.height, clipped: option.scrollWidth > option.clientWidth + 1, inside: box.right <= panel.right + 1 };
+      });
+    });
+    expect(new Set(tabs.map((tab) => tab.top)).size).toBe(1);
+    for (const tab of tabs) {
+      expect(tab.height).toBeGreaterThanOrEqual(minHeight);
+      expect(tab.clipped).toBe(false);
+      expect(tab.inside).toBe(true);
+    }
+    await expectTidySegments(page);
+  });
+}
