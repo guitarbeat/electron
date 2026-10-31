@@ -670,6 +670,10 @@ export const useSyncedScope = <TScope extends StateScope>(
     queryKey: [scope],
     queryFn: () => readScope(scope),
     initialData: () => getStoredScopeSnapshot(scope),
+    // The saved snapshot shows right away, but it is never treated as fresh:
+    // with the app's 5-minute staleTime it would otherwise skip the first
+    // request and wait for the 15s poll (messages showed "No messages yet").
+    initialDataUpdatedAt: 0,
     refetchInterval: isPaused ? false : pollingInterval,
     refetchOnWindowFocus: !isPaused,
     structuralSharing: false,
