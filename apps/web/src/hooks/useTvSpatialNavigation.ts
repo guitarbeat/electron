@@ -199,7 +199,8 @@ export function useTvSpatialNavigation(enabled = true) {
         if (active?.matches('input[role="combobox"][aria-expanded="true"]') && (event.key === "ArrowUp" || event.key === "ArrowDown")) return;
         if (active?.matches('input[type="range"],select')) return;
         if (!enabled && active instanceof HTMLTextAreaElement && !caretAtEdge(active, event.key)) return;
-        if (!enabled && active?.matches('[contenteditable="true"]')) return;
+        // Rich editors often focus a child of the editable root, so ask the element itself.
+        if (!enabled && active?.isContentEditable) return;
         // Comboboxes step through their suggestions; Escape leaves them. Widgets that use arrows
         // themselves (the quiz XY grid) opt out with data-arrow-keys="native".
         if (!enabled && active?.matches('input[role="combobox"]') && (event.key === "ArrowUp" || event.key === "ArrowDown")) return;
@@ -274,7 +275,7 @@ export function useTvSpatialNavigation(enabled = true) {
           event.preventDefault(); event.stopPropagation();
         }
       } else if (event.key === "Backspace" && !enabled) {
-        if (active?.matches('input,textarea,select,[contenteditable="true"]')) return;
+        if (active?.matches("input,textarea,select") || active?.isContentEditable) return;
         if (back()) { event.preventDefault(); event.stopPropagation(); }
       } else if (event.key === "Enter" && !event.repeat && active?.matches('button,a[href],summary,[role="button"],[role="gridcell"]')) {
         playXmbSelect();
