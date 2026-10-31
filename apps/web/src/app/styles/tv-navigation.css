@@ -46,13 +46,6 @@
   box-shadow: 0 0 0 8px #183b48, 0 0 26px 9px #6de8d180 !important;
 }
 
-.is-tv-runtime .library-view-options legend,
-.is-tv-runtime .library-view-options button,
-.is-tv-runtime .top-frame-panels .movie-wall-filters__section-title,
-.is-tv-runtime .top-frame-panels .movie-wall-filters__preset-title,
-.is-tv-runtime .top-frame-panels .movie-wall-status-button__label {
-  font-size: 1.05rem;
-}
 
 /* Backdrop blur and per-poster filters are a common stall on Fire TV Stick. */
 .is-tv-runtime *,

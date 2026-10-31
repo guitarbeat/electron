@@ -46,10 +46,8 @@ test.describe("Fire TV remote navigation", () => {
     await page.keyboard.press("Enter");
     const settings = page.getByRole("dialog", { name: "Settings", exact: true });
     await expect(settings).toBeVisible();
-    await settings.getByRole("button", { name: "Grid", exact: true }).focus();
+    await settings.getByRole("switch", { name: "Moving wall", exact: true }).focus();
     await page.keyboard.press("ArrowRight");
-    await expect(page.getByRole("button", { name: "Moving wall", exact: true })).toBeFocused();
-    await page.keyboard.press("ArrowDown");
     await expect(page.getByRole("button", { name: "Pick a movie", exact: true })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(settings).not.toBeVisible();
@@ -96,9 +94,10 @@ test.describe("Fire TV remote navigation", () => {
     await expect(suggestion.locator(".suggestion-poster-details")).not.toBeVisible();
     await page.getByRole("button", { name: "Settings", exact: true }).focus();
     await page.keyboard.press("Enter");
-    await page.getByRole("dialog", { name: "Settings", exact: true }).getByRole("button", { name: "Grid", exact: true }).focus();
-    await page.keyboard.press("ArrowRight");
+    const wallSwitch = page.getByRole("dialog", { name: "Settings", exact: true }).getByRole("switch", { name: "Moving wall", exact: true });
+    await wallSwitch.focus();
     await page.keyboard.press("Enter");
+    await expect(wallSwitch).toHaveAttribute("aria-checked", "true");
     await expect(page.locator(".drift-wall")).toBeVisible();
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Search movies (/)", exact: true }).focus();

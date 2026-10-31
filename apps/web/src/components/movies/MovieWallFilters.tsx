@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { WatchStatusArtwork } from "./WatchStatusArtwork";
+import { SlidingSegments } from "./SettingsControls";
 import type { Movie, User } from "@/shared/types";
 import {
   cycleProgressFilter,
@@ -72,6 +73,19 @@ const FORMAT_CARTRIDGES: Array<{
   { value: "series", label: "Shows", icon: Tv },
   { value: "youtube", label: "YouTube", icon: Video },
 ];
+
+const PERSON_STATUSES = [
+  { status: "all", label: "Any" },
+  { status: "unwatched", label: "Queue" },
+  { status: "watching", label: "Watching" },
+  { status: "watched", label: "Seen" },
+] as const;
+
+const STATUS_GLYPHS: Record<Exclude<MovieProgressFilter, "all">, React.ReactNode> = {
+  unwatched: <Clock size={9} strokeWidth={3} />,
+  watching: <Eye size={9} strokeWidth={3} />,
+  watched: <Check size={9} strokeWidth={3} />,
+};
 
 const PARTNER_CONFIG: Record<
   User,
@@ -221,24 +235,19 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     user: User,
     status: MovieProgressFilter,
   ) => {
-    const nextStatus =
-      status !== "all" && filters[user] === status ? "all" : status;
     onChange({
       ...filters,
-      [user]: nextStatus,
+      [user]: status,
       // Clear couple preset if setting individual viewer progress
       statusPreset: "all",
     });
   };
 
   const handleCycleViewerProgress = (user: User) => {
-    const nextStatus = cycleProgressFilter(filters[user]);
-    onChange({
-      ...filters,
-      [user]: nextStatus,
-      statusPreset: "all",
-    });
+    onChange({ ...filters, [user]: cycleProgressFilter(filters[user]), statusPreset: "all" });
   };
+
+  const clearAll = () => onChange({ ...DEFAULT_MOVIE_WALL_FILTERS, sortBy: filters.sortBy });
 
   const handleToggleAddedBy = (user: User) => {
     const nextAddedBy = filters.addedBy === user ? "all" : user;
@@ -407,12 +416,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             <button
               type="button"
               className="movie-wall-filters__tag movie-wall-filters__tag--clear-all"
-              onClick={() =>
-                onChange({
-                  ...DEFAULT_MOVIE_WALL_FILTERS,
-                  sortBy: filters.sortBy,
-                })
-              }
+              onClick={clearAll}
               title="Clear all filters"
               aria-label="Clear all filters"
             >
@@ -428,322 +432,201 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
         <div
           ref={panelRef}
           id="movie-wall-filter-panel"
-          className="movie-wall-filters__panel"
+          className="movie-wall-filters__panel settings-menu"
           role="dialog"
-          aria-label="Settings"
+          aria-labelledby="settings-menu-title"
         >
-          <h2 className="movie-wall-filters__group-title">Filters</h2>
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-header">
-              <span className="movie-wall-filters__section-title">Status</span>
-              {activeWatchStatus ? (
-                <button
-                  type="button"
-                  className="movie-wall-filters__sub-reset"
-                  onClick={() => update("statusPreset", "all")}
-                >
-                  All titles
-                </button>
-              ) : null}
-            </div>
-            <div className="movie-wall-status-buttons" role="group" aria-label="Watch status filters">
-              {WATCH_STATUS_OPTIONS.map((status) => (
-                <button
-                  key={status.value}
-                  type="button"
-                  className={`movie-wall-status-button${filters.statusPreset === status.value ? " is-active" : ""}`}
-                  aria-pressed={filters.statusPreset === status.value}
-                  aria-label={`${status.label}: ${optionCounts.presets[status.value]} titles`}
-                  title={status.description}
-                  {...(status.value === focusWatchStatus ? { "data-tv-autofocus": "" } : {})}
-                  onClick={() => handleSelectCouplePreset(status.value)}
-                >
-                  <WatchStatusArtwork status={status.artwork} className="movie-wall-status-button__art" />
-                  <span className="movie-wall-status-button__label">
-                    {status.label}<span className="movie-wall-status-button__count">{optionCounts.presets[status.value]}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 2. Interactive Partner Avatar Player Cards (Aaron P1 & Electra P2) */}
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-header">
-              <span className="movie-wall-filters__section-title">
-                By person
-              </span>
-              <button
-                type="button"
-                className="movie-wall-filters__close-btn"
-                onClick={() => setIsOpen(false)}
-                data-tv-close
-                aria-label="Close settings"
-              >
-                <X size={15} aria-hidden="true" />
+          <header className="settings-menu__header">
+            <h2 id="settings-menu-title" className="settings-menu__title">Settings</h2>
+            <span className="settings-menu__result" aria-live="polite">
+              {resultCount} {resultCount === 1 ? "title" : "titles"}
+            </span>
+            {isActive ? (
+              <button type="button" className="settings-menu__clear" onClick={clearAll}>
+                Clear all
               </button>
-              {filters.Aaron !== "all" ||
-              filters.Electra !== "all" ||
-              filters.addedBy !== "all" ? (
-                <button
-                  type="button"
-                  className="movie-wall-filters__sub-reset"
-                  onClick={() =>
-                    onChange({
-                      ...filters,
-                      Aaron: "all",
-                      Electra: "all",
-                      addedBy: "all",
-                    })
-                  }
-                >
-                  Reset players
-                </button>
-              ) : null}
-            </div>
+            ) : null}
+            <button
+              type="button"
+              className="settings-menu__close"
+              onClick={() => setIsOpen(false)}
+              data-tv-close
+              aria-label="Close settings"
+            >
+              <X size={16} aria-hidden="true" />
+            </button>
+          </header>
 
-            <div className="movie-wall-filters__players-grid">
+          <section className="settings-menu__section" aria-labelledby="settings-menu-status">
+            <h3 id="settings-menu-status" className="settings-menu__label">Status</h3>
+            <SlidingSegments
+              label="Watch status filters"
+              mode="toggle"
+              className="settings-menu__seg--status"
+              value={activeWatchStatus?.value ?? null}
+              onSelect={handleSelectCouplePreset}
+              options={WATCH_STATUS_OPTIONS.map((status) => ({
+                value: status.value,
+                ariaLabel: `${status.label}: ${optionCounts.presets[status.value]} titles`,
+                title: status.description,
+                empty: optionCounts.presets[status.value] === 0,
+                autofocus: status.value === focusWatchStatus,
+                content: (
+                  <>
+                    <WatchStatusArtwork status={status.artwork} className="settings-menu__status-art" />
+                    <span>{status.label}</span>
+                    <span className="settings-menu__count">{optionCounts.presets[status.value]}</span>
+                  </>
+                ),
+              }))}
+            />
+          </section>
+
+          <section className="settings-menu__section" aria-labelledby="settings-menu-people">
+            <h3 id="settings-menu-people" className="settings-menu__label">By person</h3>
+            <div className="settings-menu__people">
               {(["Aaron", "Electra"] as const).map((user) => {
                 const cfg = PARTNER_CONFIG[user];
-                const currentStatus = filters[user];
                 const isPickedByUser = filters.addedBy === user;
-                const isPlayerActive =
-                  currentStatus !== "all" || isPickedByUser;
-
                 return (
-                  <div
-                    key={user}
-                    className={`movie-wall-filters__player-card ${cfg.toneClass}${isPlayerActive ? " is-active" : ""}`}
-                  >
-                    <div className="movie-wall-filters__player-header">
-                      <button
-                        type="button"
-                        className={`movie-wall-filters__player-avatar-btn status-${currentStatus}`}
-                        onClick={() => handleCycleViewerProgress(user)}
-                        title={`Tap to cycle ${user}'s watch filter (${progressLabels[currentStatus]})`}
-                        aria-label={`Cycle ${user} watch status filter. Currently ${progressLabels[currentStatus]}`}
-                      >
-                        <span className="movie-wall-filters__player-avatar-wrap">
-                          <img
-                            src={cfg.avatarSrc}
-                            alt={user}
-                            className="movie-wall-filters__player-avatar"
-                          />
-
-                        </span>
-                        <span className="movie-wall-filters__player-identity">
-                          <span className="movie-wall-filters__player-name">
-                            {user}
-                          </span>
-                          <span className="movie-wall-filters__player-cycle-hint">
-                            {currentStatus === "all"
-                              ? "Tap to cycle"
-                              : progressLabels[currentStatus]}
-                          </span>
-                        </span>
-                      </button>
-
-                      {/* 1-tap "Picked by" toggle pill */}
-                      <button
-                        type="button"
-                        className={`movie-wall-filters__picked-btn${isPickedByUser ? " is-active" : ""}`}
-                        onClick={() => handleToggleAddedBy(user)}
-                        aria-pressed={isPickedByUser}
-                        title={`Filter titles added by ${user} (${optionCounts.addedBy[user]})`}
-                      >
-                        <Star size={11} aria-hidden="true" />
-                        <span>Picked ({optionCounts.addedBy[user]})</span>
-                      </button>
-                    </div>
-
-                    {/* 4-button status strip with live counts */}
-                    <div
-                      className="movie-wall-filters__player-segments"
-                      role="group"
-                      aria-label={`${user} watch status`}
+                  <div key={user} className={`settings-menu__person ${cfg.toneClass}`}>
+                    <button
+                      type="button"
+                      className="settings-menu__person-name"
+                      onClick={() => handleCycleViewerProgress(user)}
+                      aria-label={`Cycle ${user} watch status filter. Currently ${progressLabels[filters[user]]}`}
+                      title={`Cycle ${user}'s watch status`}
                     >
-                      {(
-                        [
-                          { status: "all", label: "Any", icon: null },
-                          { status: "unwatched", label: "Queue", icon: Clock },
-                          { status: "watching", label: "Watching", icon: Eye },
-                          { status: "watched", label: "Seen", icon: Check },
-                        ] as const
-                      ).map(({ status, label }) => {
-                        const isSegActive = currentStatus === status;
-                        const statusCount = optionCounts.viewers[user][status];
-                        return (
-                          <button
-                            key={status}
-                            type="button"
-                            className={`movie-wall-filters__player-seg-btn${isSegActive ? " is-active" : ""}`}
-                            onClick={() =>
-                              handleSelectViewerProgress(user, status)
-                            }
-                            aria-pressed={isSegActive}
-                          >
-                            <span className="movie-wall-filters__player-seg-label">
-                              {label}
-                            </span>
-                            {status !== "all" ? (
-                              <span className="movie-wall-filters__player-seg-count">
-                                {statusCount}
-                              </span>
-                            ) : null}
-                          </button>
-                        );
+                      <span key={filters[user]} className="settings-menu__avatar-wrap" data-status={filters[user]}>
+                        <img src={cfg.avatarSrc} alt="" className="settings-menu__avatar" />
+                        {filters[user] !== "all" ? (
+                          <span className="settings-menu__avatar-badge" aria-hidden="true">
+                            {STATUS_GLYPHS[filters[user]]}
+                          </span>
+                        ) : null}
+                      </span>
+                      {user}
+                    </button>
+                    <SlidingSegments
+                      label={`${user} watch status`}
+                      value={filters[user]}
+                      onSelect={(status) => handleSelectViewerProgress(user, status)}
+                      options={PERSON_STATUSES.map(({ status, label }) => {
+                        const count = optionCounts.viewers[user][status];
+                        return {
+                          value: status,
+                          ariaLabel: status === "all" ? `${user}: any status` : `${user}: ${label}, ${count} titles`,
+                          empty: status !== "all" && count === 0,
+                          content: (
+                            <>
+                              <span>{label}</span>
+                              {status !== "all" ? <span className="settings-menu__count">{count}</span> : null}
+                            </>
+                          ),
+                        };
                       })}
-                    </div>
+                    />
+                    <button
+                      type="button"
+                      className={`settings-menu__opt settings-menu__picked${isPickedByUser ? " is-active" : ""}`}
+                      onClick={() => handleToggleAddedBy(user)}
+                      aria-pressed={isPickedByUser}
+                      aria-label={`Picked by ${user}: ${optionCounts.addedBy[user]} titles`}
+                    >
+                      <Star size={12} aria-hidden="true" />
+                      <span>Picked</span>
+                      <span className="settings-menu__count">{optionCounts.addedBy[user]}</span>
+                    </button>
                   </div>
                 );
               })}
             </div>
+          </section>
+
+          <div className="settings-menu__columns">
+            <section className="settings-menu__section" aria-labelledby="settings-menu-format">
+              <h3 id="settings-menu-format" className="settings-menu__label">Format</h3>
+              <SlidingSegments
+                label="Format"
+                value={filters.format}
+                onSelect={(value) => update("format", value)}
+                options={FORMAT_CARTRIDGES.filter(
+                  ({ value }) => value === "all" || optionCounts.formats[value] > 0 || filters.format === value,
+                ).map(({ value, label, icon: Icon }) => ({
+                  value,
+                  content: (
+                    <>
+                      <Icon size={12} aria-hidden="true" />
+                      <span>{label}</span>
+                      <span className="settings-menu__count">{optionCounts.formats[value]}</span>
+                    </>
+                  ),
+                }))}
+              />
+            </section>
+
+            <section className="settings-menu__section" aria-labelledby="settings-menu-sort">
+              <h3 id="settings-menu-sort" className="settings-menu__label">Sort by</h3>
+              <SlidingSegments
+                label="Sort by"
+                value={currentSort}
+                onSelect={(value) => update("sortBy", value)}
+                options={SORT_OPTIONS.map((opt) => ({
+                  value: opt.value,
+                  title: opt.description,
+                  content: (
+                    <>
+                      <opt.icon size={12} aria-hidden="true" />
+                      <span>{opt.shortLabel}</span>
+                    </>
+                  ),
+                }))}
+              />
+            </section>
           </div>
 
-          {/* 3. Format (4-column tactile buttons with live counts) */}
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-header">
-              <span className="movie-wall-filters__section-title">
-                Format
-              </span>
-              {filters.format !== "all" ? (
-                <button
-                  type="button"
-                  className="movie-wall-filters__sub-reset"
-                  onClick={() => update("format", "all")}
-                >
-                  All formats
-                </button>
-              ) : null}
-            </div>
-            <div className="movie-wall-filters__format-grid">
-              {FORMAT_CARTRIDGES.map(({ value, label, icon: Icon }) => {
-                const isSelected = filters.format === value;
-                const count = optionCounts.formats[value];
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`movie-wall-filters__format-btn${isSelected ? " is-active" : ""}`}
-                    onClick={() =>
-                      update(
-                        "format",
-                        value !== "all" && isSelected ? "all" : value,
-                      )
-                    }
-                    aria-pressed={isSelected}
-                  >
-                    <Icon size={14} aria-hidden="true" />
-                    <span className="movie-wall-filters__format-label">
-                      {label}
-                    </span>
-                    <span className="movie-wall-filters__format-count">
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 4. Genre Cloud & Sort Strip */}
           {genres.length > 0 ? (
-            <div className="movie-wall-filters__section">
-              <div className="movie-wall-filters__section-header">
-                <span className="movie-wall-filters__section-title">
-                  Genre
-                </span>
-                {filters.genre !== "all" ? (
-                  <button
-                    type="button"
-                    className="movie-wall-filters__sub-reset"
-                    onClick={() => update("genre", "all")}
-                  >
-                    Clear genre
-                  </button>
-                ) : null}
-              </div>
-              <div className="movie-wall-filters__genres-cloud">
+            <section className="settings-menu__section" aria-labelledby="settings-menu-genre">
+              <h3 id="settings-menu-genre" className="settings-menu__label">Genre</h3>
+              <div className="settings-menu__chips" role="radiogroup" aria-label="Genre">
                 <button
                   type="button"
-                  className={`movie-wall-filters__genre-chip${filters.genre === "all" ? " is-active" : ""}`}
+                  role="radio"
+                  className={`settings-menu__chip${filters.genre === "all" ? " is-active" : ""}`}
                   onClick={() => update("genre", "all")}
+                  aria-checked={filters.genre === "all"}
                 >
-                  <span>All Genres</span>
-                  <span className="movie-wall-filters__genre-count">
-                    {movies.length}
-                  </span>
+                  <Check size={11} className="settings-menu__check" aria-hidden="true" />
+                  <span>All</span>
+                  <span className="settings-menu__count">{movies.length}</span>
                 </button>
                 {genreCounts.map(({ genre, count }) => {
-                  const isSelected =
-                    filters.genre.toLowerCase() === genre.toLowerCase();
+                  const isSelected = filters.genre.toLowerCase() === genre.toLowerCase();
                   return (
                     <button
                       key={genre}
                       type="button"
-                      className={`movie-wall-filters__genre-chip${isSelected ? " is-active" : ""}`}
-                      onClick={() =>
-                        update("genre", isSelected ? "all" : genre)
-                      }
+                      role="radio"
+                      className={`settings-menu__chip${isSelected ? " is-active" : ""}`}
+                      onClick={() => update("genre", genre)}
+                      aria-checked={isSelected}
                     >
+                      <Check size={11} className="settings-menu__check" aria-hidden="true" />
                       <span>{genre}</span>
-                      <span className="movie-wall-filters__genre-count">
-                        {count}
-                      </span>
+                      <span className="settings-menu__count">{count}</span>
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </section>
           ) : null}
-
-          {/* 5. Compact Sort Order Strip */}
-          <div className="movie-wall-filters__section">
-            <div className="movie-wall-filters__section-title">
-              Order Watchlist By
-            </div>
-            <div className="movie-wall-filters__sort-grid">
-              {SORT_OPTIONS.map((opt) => {
-                const Icon = opt.icon;
-                const isSelected = currentSort === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    className={`movie-wall-filters__pill${isSelected ? " is-active" : ""}`}
-                    onClick={() => update("sortBy", opt.value)}
-                  >
-                    <Icon size={12} aria-hidden="true" />
-                    <span>{opt.shortLabel}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {settingsSlot ? (
-            <>
-              <h2 className="movie-wall-filters__group-title">View &amp; sounds</h2>
-              <div className="movie-wall-filters__section movie-wall-filters__settings">
-                {settingsSlot}
-              </div>
-            </>
+            <section className="settings-menu__section" aria-labelledby="settings-menu-view">
+              <h3 id="settings-menu-view" className="settings-menu__label">View &amp; sounds</h3>
+              <div className="settings-menu__view">{settingsSlot}</div>
+            </section>
           ) : null}
-
-          {/* Footer Action */}
-          <div className="movie-wall-filters__footer">
-            <button
-              type="button"
-              className="movie-wall-filters__done"
-              data-tv-close
-              onClick={() => setIsOpen(false)}
-            >
-              <Check size={14} aria-hidden="true" />
-              <span>
-                Show {resultCount} {resultCount === 1 ? "title" : "titles"}
-              </span>
-            </button>
-          </div>
         </div>
         </TopFramePanel>
       ) : null}
