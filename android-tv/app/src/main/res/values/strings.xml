@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">Electron Movies</string>
-    <string name="loading">Loading your movies…</string>
-    <string name="loading_slow">Still connecting. Check Wi-Fi if this keeps spinning.</string>
+    <string name="loading_names">Aaron &amp; Electra</string>
+    <string name="loading">Loading movie night</string>
+    <string name="loading_slow">Still connecting. Check Wi-Fi if this keeps going.</string>
     <string name="load_error">Could not load your movies</string>
     <string name="load_error_detail">Check your connection, then try again.</string>
     <string name="retry">Retry</string>

@@ -387,14 +387,14 @@ body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .m
   height: calc(var(--dyn-h) + var(--dyn-peek, 0px) * 0.75);
 }
 @media (prefers-reduced-motion: no-preference) {
-  :root:not(.is-tv-runtime, .is-silk-browser) :is(.y2k-library-search, .y2k-add-form):not(.is-expanded):has(:focus-visible) .dyn-notch,
-  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock:not(:has(.top-frame-panels[data-expanded="true"])) .y2k-command-dock__filters:has(:focus-visible) .dyn-notch,
-  :root:not(.is-tv-runtime, .is-silk-browser) .frame-corner-profiles:not(:has(.profile-settings-menu)):has(:focus-visible) .dyn-notch {
+  :root :is(.y2k-library-search, .y2k-add-form):not(.is-expanded):has(:focus-visible) .dyn-notch,
+  :root .y2k-command-dock:not(:has(.top-frame-panels[data-expanded="true"])) .y2k-command-dock__filters:has(:focus-visible) .dyn-notch,
+  :root .frame-corner-profiles:not(:has(.profile-settings-menu)):has(:focus-visible) .dyn-notch {
     --dyn-peek: var(--notch-peek);
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) :is(.y2k-library-search, .y2k-add-form):not(.is-expanded):has(:focus-visible) .dyn-notch .dyn-notch__grip,
-  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock:not(:has(.top-frame-panels[data-expanded="true"])) .y2k-command-dock__filters:has(:focus-visible) .dyn-notch .dyn-notch__grip,
-  :root:not(.is-tv-runtime, .is-silk-browser) .frame-corner-profiles:not(:has(.profile-settings-menu)):has(:focus-visible) .dyn-notch .dyn-notch__grip {
+  :root :is(.y2k-library-search, .y2k-add-form):not(.is-expanded):has(:focus-visible) .dyn-notch .dyn-notch__grip,
+  :root .y2k-command-dock:not(:has(.top-frame-panels[data-expanded="true"])) .y2k-command-dock__filters:has(:focus-visible) .dyn-notch .dyn-notch__grip,
+  :root .frame-corner-profiles:not(:has(.profile-settings-menu)):has(:focus-visible) .dyn-notch .dyn-notch__grip {
     opacity: 1;
     transform: none;
   }
@@ -413,7 +413,7 @@ body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .m
   }
 }
 
-/* ---- Reduced motion and the TV light-motion mode: no morph, a short cross-fade ---- */
+/* ---- Reduced motion: no morph, a short cross-fade ---- */
 @media (prefers-reduced-motion: reduce) {
   .dyn-notch,
   .dyn-notch[class],
@@ -426,23 +426,22 @@ body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .m
   .dyn-notch-hint { animation: dynNotchFade 160ms ease both; }
   .movies-wall-container :is(.movie-library-grid, .drift-wall) { transition: none; }
 }
-:is(.is-tv-runtime, .is-silk-browser) :is(
-  .dyn-notch,
-  .y2k-command-dock .top-frame-panels,
-  .y2k-command-dock .y2k-library-search,
-  .y2k-command-dock .y2k-add-form
-) { transition: none !important; }
-:is(.is-tv-runtime, .is-silk-browser) :is(
-  .y2k-command-dock .top-frame-panel,
-  .frame-corner-profiles .profile-settings-menu,
-  .dyn-notch-hint
-) { animation: dynNotchFade 160ms ease both; }
+/* TV keeps the notch morph (small fixed boxes, no filter on them there) and the content
+   fade-ins. Only reduced motion above turns them off. */
 /* Fire TV composites the frame over a moving wall; filters and backdrop blur cost frames there. */
 :is(.is-tv-runtime, .is-silk-browser) .dyn-notch { filter: none; }
+/* There the wall dims with a compositor-only opacity fade over the dark backdrop instead of
+   filtering the whole (3D) wall, which looks the same and costs no repaint. */
+:is(.is-tv-runtime, .is-silk-browser) .movies-wall-container :is(.movie-library-grid, .drift-wall) {
+  transition: opacity 300ms ease;
+}
 :is(.is-tv-runtime, .is-silk-browser) body:has(.y2k-command-dock .top-frame-panels[data-expanded="true"]) .movies-wall-container :is(.movie-library-grid, .drift-wall),
 :is(.is-tv-runtime, .is-silk-browser) body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .movies-wall-container :is(.movie-library-grid, .drift-wall) {
-  filter: brightness(0.6);
-  transition: none;
+  filter: none;
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.is-tv-runtime, .is-silk-browser) .movies-wall-container :is(.movie-library-grid, .drift-wall) { transition: none; }
 }
 
 /* ---- Phones: the top bar is the notch, and it drops down as a sheet ---- */

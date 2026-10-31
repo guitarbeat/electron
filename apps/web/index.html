@@ -22,10 +22,31 @@
     <title>Immersive Workspace Applet</title>
     <style>
       body{background:#07091a;margin:0;overflow:hidden;}
-      #root:empty{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;background:radial-gradient(circle at 50% 50%,rgba(56,189,248,0.08) 0%,rgba(244,114,182,0.05) 35%,transparent 70%),#07091a;}
-      #root:empty::before{content:'AARON  +  ELECTRA';display:flex;align-items:center;justify-content:center;width:min(21.5rem,calc(100vw - 2.5rem));height:13.5rem;box-sizing:border-box;border:7px solid #999999;border-radius:24px;background:rgba(9,14,28,0.88);box-shadow:0 24px 60px rgba(0,0,0,0.75),inset 0 1px 0 rgba(255,255,255,0.18);color:#e0f2fe;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:0.78rem;font-weight:700;letter-spacing:0.18em;animation:bootPulse 1.2s ease-in-out infinite alternate;}
-      @media(max-width:768px){#root:empty::before{width:min(18.5rem,calc(100vw - 2rem));height:12.25rem;border-width:5px;border-radius:20px;}}
-      @keyframes bootPulse{from{opacity:0.78;transform:scale(0.992)}to{opacity:1;transform:scale(1)}}
+      /* Boot screen: the OrbitLoader on the frame beige. The Fire TV app shows a native copy
+         at the same dp/px sizes and clock phase, then cross-fades to this; the app fades it out
+         once the wall is ready (src/app/bootSplash.ts). Transform/opacity animations only. */
+      #boot-splash{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#aaa596;color:#24221d;font-family:system-ui,-apple-system,"Roboto",sans-serif;pointer-events:none;transition:opacity 320ms ease;}
+      #boot-splash.is-leaving{opacity:0;}
+      .boot-splash__scene{position:relative;width:min(15rem,70vw);aspect-ratio:1;margin-bottom:1.25rem;}
+      .boot-splash__track{position:absolute;inset:1.75rem;border:1px dashed rgba(36,34,29,0.25);border-radius:50%;}
+      .boot-splash__reel{position:absolute;inset:0;width:3.5rem;height:3.5rem;margin:auto;color:#665024;animation:bootReel 8s linear infinite;animation-delay:var(--boot-reel-delay,0ms);}
+      .boot-splash__orbit{position:absolute;inset:0;animation:bootOrbit 5s linear infinite;animation-delay:var(--boot-orbit-delay,0ms);}
+      .boot-splash__face{position:absolute;top:calc(50% - 1.75rem);width:3.5rem;height:3.5rem;animation:bootUpright 5s linear infinite;animation-delay:var(--boot-orbit-delay,0ms);}
+      .boot-splash__face--aaron{left:0;}
+      .boot-splash__face--electra{right:0;}
+      .boot-splash__face img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
+      .boot-splash__names{margin:0;font-size:1rem;font-weight:700;line-height:1;}
+      .boot-splash__label{margin:0.5rem 0 0;font-size:0.78rem;line-height:1;color:#454137;}
+      .boot-splash__dots{display:inline-block;clip-path:inset(0 100% 0 0);animation:bootDots 1.5s steps(4,end) infinite;animation-delay:var(--boot-dots-delay,0ms);}
+      @keyframes bootOrbit{to{transform:rotate(360deg)}}
+      @keyframes bootUpright{to{transform:rotate(-360deg)}}
+      @keyframes bootReel{to{transform:rotate(-360deg)}}
+      @keyframes bootDots{to{clip-path:inset(0 0 0 0)}}
+      @media (prefers-reduced-motion: reduce){
+        .boot-splash__reel,.boot-splash__orbit,.boot-splash__face,.boot-splash__dots{animation:none;}
+        .boot-splash__dots{clip-path:none;}
+        #boot-splash{transition:none;}
+      }
     </style>
     <link rel="dns-prefetch" href="https://www.omdbapi.com" />
     <link rel="dns-prefetch" href="https://api.tvmaze.com" />
@@ -45,6 +66,29 @@
   </head>
 
   <body class="font-body" data-theme="movies">
+    <noscript><style>#boot-splash{display:none}</style></noscript>
+    <div id="boot-splash" role="status" aria-label="Loading movie night">
+      <div class="boot-splash__scene" aria-hidden="true">
+        <div class="boot-splash__track"></div>
+        <svg class="boot-splash__reel" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="29" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="5" fill="currentColor"/><circle cx="32" cy="14" r="7" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="32" r="7" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="50" r="7" stroke="currentColor" stroke-width="3"/><circle cx="14" cy="32" r="7" stroke="currentColor" stroke-width="3"/></svg>
+        <div class="boot-splash__orbit">
+          <div class="boot-splash__face boot-splash__face--aaron"><img src="/boot/aaron.png" alt="" width="56" height="56" /></div>
+          <div class="boot-splash__face boot-splash__face--electra"><img src="/boot/electra.png" alt="" width="56" height="56" /></div>
+        </div>
+      </div>
+      <p class="boot-splash__names" aria-hidden="true">Aaron &amp; Electra</p>
+      <p class="boot-splash__label" aria-hidden="true">Loading movie night<span class="boot-splash__dots">...</span></p>
+    </div>
+    <script>
+      // Phase every loop from the wall clock, like the native Fire TV loader, so the
+      // native-to-web hand-off lands on the same frame.
+      (function () {
+        var now = Date.now(), s = document.getElementById('boot-splash').style;
+        s.setProperty('--boot-orbit-delay', -(now % 5000) + 'ms');
+        s.setProperty('--boot-reel-delay', -(now % 8000) + 'ms');
+        s.setProperty('--boot-dots-delay', -(now % 1500) + 'ms');
+      })();
+    </script>
     <div id="root"></div>
 
     <script>

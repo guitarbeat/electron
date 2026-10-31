@@ -3,7 +3,7 @@
         <item name="android:fontFamily">sans</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:windowBackground">#080D17</item>
+        <item name="android:windowBackground">@color/boot_background</item>
         <item name="android:colorAccent">#6DE8D1</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>

@@ -45,6 +45,7 @@ export function useNotchContentHeight(ref: RefObject<HTMLElement | null>, variab
 }
 
 const GHOST_MS = 220;
+const GHOST_STRIPPED_ATTRIBUTES = ["data-notch-panel", "role", "aria-modal", "aria-labelledby", "aria-describedby"] as const;
 
 /**
  * Leaves a fading, inert copy of panel content behind when it unmounts, so the notch can
@@ -53,11 +54,13 @@ const GHOST_MS = 220;
 export function leaveNotchGhost(node: HTMLElement | null, host: HTMLElement | null) {
   if (!node || !host?.isConnected || typeof window === "undefined") return;
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-  const root = document.documentElement;
-  if (root.classList.contains("is-tv-runtime") || root.classList.contains("is-silk-browser")) return;
   const ghost = node.cloneNode(true) as HTMLElement;
   ghost.removeAttribute("id");
   ghost.querySelectorAll("[id]").forEach((element) => element.removeAttribute("id"));
+  // The copy must not read as a second open panel to queries, TV focus scoping or assistive tech.
+  for (const element of [ghost, ...Array.from(ghost.querySelectorAll<HTMLElement>("*"))]) {
+    for (const name of GHOST_STRIPPED_ATTRIBUTES) element.removeAttribute(name);
+  }
   ghost.setAttribute("aria-hidden", "true");
   ghost.setAttribute("inert", "");
   ghost.classList.add("dyn-notch-ghost");

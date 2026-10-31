@@ -47,7 +47,8 @@
 }
 
 
-/* Backdrop blur and per-poster filters are a common stall on Fire TV Stick. */
+/* Backdrop blur and per-poster filters are a common stall on Fire TV Stick. These are the
+   genuinely expensive effects, so TV swaps them for solid lookalikes and keeps the motion. */
 .is-tv-runtime *,
 .is-silk-browser * {
   backdrop-filter: none !important;
@@ -76,11 +77,19 @@
   opacity: 0.5;
 }
 
-.is-tv-runtime .drift-wall__tile,
+/* Drift tiles keep their focus lift and fade on TV; the poster image itself has no filter
+   there, so only its transform and opacity transitions run. */
 .is-tv-runtime .drift-wall__tile img,
-.is-silk-browser .drift-wall__tile,
 .is-silk-browser .drift-wall__tile img {
   transition: none;
+}
+.is-tv-runtime .drift-wall,
+.is-silk-browser .drift-wall {
+  transition: opacity 320ms ease, transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-tv-runtime .drift-wall,
+  .is-silk-browser .drift-wall { transition: none; }
 }
 
 /* Book and detail chips are read from the couch. Desktop sizes stay put. */
