@@ -4086,7 +4086,14 @@ export const PinDialog: React.FC<PinDialogProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    const id = window.setTimeout(() => inputRef.current?.focus(), 80);
+    const id = window.setTimeout(() => {
+      const television = document.documentElement.classList.contains("is-tv-runtime");
+      if (television) {
+        formRef.current?.querySelector<HTMLElement>("[data-tv-autofocus]")?.focus();
+        return;
+      }
+      inputRef.current?.focus();
+    }, 80);
     return () => window.clearTimeout(id);
   }, [isOpen, flow.phase]);
 
@@ -4435,6 +4442,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
                     key={digit}
                     type="button"
                     className="h-[3.25rem] rounded-xl border border-slate-700 bg-slate-800/75 text-slate-50 flex flex-col items-center justify-center cursor-pointer select-none transition-all duration-150 shadow-[0_2px_6px_rgba(0,0,0,0.2)] hover:bg-indigo-500/15 hover:border-indigo-500/40 hover:-translate-y-[1px] active:scale-95 active:bg-indigo-500/25 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                    {...(digit === 1 ? { "data-tv-autofocus": "" } : {})}
                     onClick={() => appendDigit(digit)}
                     disabled={isLoading || flow.digits.length >= PIN_LENGTH}
                     aria-label={`${digit} ${letters}`}

@@ -45,7 +45,11 @@ const App: React.FC = () => {
     prefersReducedMotion,
     isMobile,
   });
-  const [openPanels, setOpenPanels] = useState<Set<TogglePanel>>(new Set());
+  const [openPanels, setOpenPanels] = useState<Set<TogglePanel>>(() => {
+    const next = new Set<TogglePanel>();
+    if (initialViewState.showMessages) next.add("messages");
+    return next;
+  });
 
   const togglePanel = useCallback((panel: TogglePanel) => {
     setOpenPanels((prev) => {

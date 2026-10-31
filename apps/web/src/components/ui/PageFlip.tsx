@@ -272,7 +272,11 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
   );
 
   const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // Avatar toggles and Watch on Stremio live on the open page. Select must
+      // activate those controls; the page wrapper only turns when it itself is focused.
+      const origin = event.nativeEvent.target;
+      if (origin instanceof Element && origin !== event.currentTarget) return;
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         onSelect(index);
@@ -590,6 +594,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
       {/* Background click reset button */}
       <button
         type="button"
+        tabIndex={-1}
         className="absolute inset-0 w-full h-full bg-transparent border-0 p-0 cursor-default"
         onClick={handleBackgroundClick}
         aria-label="Reset flipbook to cover"

@@ -48,8 +48,8 @@ import {
   mutateScope,
   retryScopeSync,
   normalizeQuizData,
-  mockMessages,
 } from "../services/state";
+import { selectVisibleMessages } from "./messageList";
 import { areDeeplyEqual } from "../utils";
 import { User } from "../shared/types";
 import { QuizQuestion, QuizCharacter } from "@/components/quiz";
@@ -440,11 +440,7 @@ export const useMessages = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const messages = useMemo(() => {
-    const list =
-      remoteMessages && remoteMessages.length > 0
-        ? remoteMessages
-        : mockMessages;
-    return [...list].sort(compareCreatedAtAsc);
+    return [...selectVisibleMessages(remoteMessages)].sort(compareCreatedAtAsc);
   }, [remoteMessages]);
 
   const addMessage = useCallback(

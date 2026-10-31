@@ -26,6 +26,7 @@ import {
   MoviesEmptyIllustration,
 } from "@/components/ui";
 
+import { useViewport } from "@/app/providerContexts";
 import { spacing } from "@/theme/tokens";
 import {
   getWorkspaceCollectionState,
@@ -69,6 +70,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   onToggleError,
   actions,
 }) => {
+  const { isTv } = useViewport();
   const [view, setView] = React.useState<"grid" | "wall">(() => {
     try { return localStorage.getItem("movies-view") === "wall" ? "wall" : "grid"; }
     catch { return "grid"; }
@@ -229,28 +231,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
     };
 
-    if (collectionState === "loading") {
-      const skeletonCount = isMobile ? 16 : dynamicColumns * 4;
-      return Array.from({ length: skeletonCount }, (_, i) => {
-        const isShort = i % 5 === 2;
-        return (
-          <div
-            key={`loading-tile-${i}`}
-            className="drift-wall-loading__tile"
-            data-height-ratio={isShort ? 0.55 : 1}
-            style={
-              {
-                "--loading-tile": Math.floor(i / dynamicColumns),
-                "--loading-column": i % dynamicColumns,
-                "--loading-tone": i % 6,
-                width: "100%",
-                height: "100%",
-              } as React.CSSProperties
-            }
-          />
-        );
-      });
-    }
+    if (collectionState === "loading") return [];
 
     // Deduplicate suggestions
     const seenSuggestionIds = new Set<string>();
@@ -285,7 +266,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   }, [
     collectionState,
     isMobile,
-    dynamicColumns,
     filteredMovies,
     hasActiveFilters,
     sections.suggestions,
@@ -379,8 +359,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           }
         />
 
-        {collectionState === "loading" ? <OrbitLoader /> : null}
-        {unifiedCards.length > 0 ? (
+        {collectionState === "loading" ? <OrbitLoader /> : unifiedCards.length > 0 ? (
           view === "grid" ? <div className={`movie-library-grid${selectedMovie ? " movie-library-grid--modal-open" : ""}`} aria-label="Movie grid">
             <div className="movie-library-grid__canvas">
             {unifiedCards.map((card, index) => <div className="movie-library-grid__item" key={React.isValidElement(card) ? card.key ?? index : index}>{card}</div>)}
@@ -396,7 +375,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             roll={0}
             perspective={1000}
             depth={0}
-            speed={isMobile ? 22 : 32}
+            speed={isTv ? 14 : isMobile ? 22 : 32}
             direction="up"
             variance={0}
             parallax={0}

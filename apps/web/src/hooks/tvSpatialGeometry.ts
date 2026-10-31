@@ -1,6 +1,21 @@
 export type Direction = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
 export interface FocusRect { left: number; top: number; right: number; bottom: number; }
 
+/** A moving-wall tile is reachable when most of it is on screen, including posters near the edge. */
+export function isMostlyOnScreen(
+  box: FocusRect,
+  viewportWidth: number,
+  viewportHeight: number,
+  fraction = 0.45,
+): boolean {
+  const width = box.right - box.left;
+  const height = box.bottom - box.top;
+  if (width <= 0 || height <= 0) return false;
+  const visibleWidth = Math.min(box.right, viewportWidth) - Math.max(box.left, 0);
+  const visibleHeight = Math.min(box.bottom, viewportHeight) - Math.max(box.top, 0);
+  return visibleWidth >= width * fraction && visibleHeight >= height * fraction;
+}
+
 /** Prefer a control in the same row/column before a diagonally closer control. */
 export function spatialScore(from: FocusRect, to: FocusRect, direction: Direction): number {
   const horizontal = direction === "ArrowLeft" || direction === "ArrowRight";

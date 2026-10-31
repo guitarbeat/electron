@@ -29,7 +29,6 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 
@@ -38,19 +37,37 @@ class MainActivity : ComponentActivity() {
         private const val ENTRY_URL = "https://electron.alw.lol/#movies"
         private const val TAG = "ElectronTV"
         private const val LOAD_TIMEOUT_MS = 30_000L
+        private const val SLOW_LOAD_MS = 8_000L
+        private const val NOTICE_MS = 8_000L
+        private const val BACK_JS_TIMEOUT_MS = 1_500L
     }
 
     private lateinit var root: FrameLayout
     private lateinit var webView: WebView
     private lateinit var loading: LinearLayout
+    private lateinit var loadingStatus: TextView
     private lateinit var errorScreen: LinearLayout
     private lateinit var retry: Button
+    private lateinit var notice: LinearLayout
+    private lateinit var noticeText: TextView
+    private lateinit var noticeDismiss: Button
     private val handler = Handler(Looper.getMainLooper())
     private var failed = false
     private var pageReady = false
     private var backPending = false
     private var rendererGone = false
     private val timeout = Runnable { showError("Page load timed out") }
+    private val slowLoading = Runnable {
+        if (::loadingStatus.isInitialized && loading.visibility == View.VISIBLE) {
+            loadingStatus.text = getString(R.string.loading_slow)
+        }
+    }
+    private val hideNotice = Runnable { dismissNotice() }
+    private val backFallback = Runnable {
+        if (!backPending || isFinishing) return@Runnable
+        backPending = false
+        if (::webView.isInitialized && !rendererGone && webView.canGoBack()) webView.goBack() else finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -108,12 +125,10 @@ class MainActivity : ComponentActivity() {
                         try {
                             startActivity(Intent(Intent.ACTION_VIEW, request.url))
                         } catch (_: ActivityNotFoundException) {
-                            Toast.makeText(
-                                this@MainActivity,
-                                getString(R.string.stremio_not_installed),
-                                Toast.LENGTH_SHORT,
-                            ).show()
+                            showNotice(getString(R.string.stremio_not_installed))
                         }
+                    } else {
+                        showNotice(getString(R.string.link_blocked))
                     }
 
                     // Only explicitly supported app links leave the WebView; block every
@@ -132,6 +147,7 @@ class MainActivity : ComponentActivity() {
                 override fun onPageFinished(view: WebView, url: String?) {
                     if (failed || !isAppOrigin(Uri.parse(url ?: ""))) return
                     handler.removeCallbacks(timeout)
+                    handler.removeCallbacks(slowLoading)
                     pageReady = true
                     loading.visibility = View.GONE
                     errorScreen.visibility = View.GONE
@@ -185,6 +201,8 @@ class MainActivity : ComponentActivity() {
         loading = panel().apply {
             addView(ProgressBar(this@MainActivity))
             addView(text(getString(R.string.loading), 24f))
+            loadingStatus = text("", 20f)
+            addView(loadingStatus)
         }
         retry = Button(this).apply {
             text = getString(R.string.retry)
@@ -207,8 +225,40 @@ class MainActivity : ComponentActivity() {
             addView(text(getString(R.string.load_error_detail), 22f))
             addView(retry, LinearLayout.LayoutParams(280, 88))
         }
+        noticeDismiss = Button(this).apply {
+            text = getString(R.string.notice_ok)
+            textSize = 22f
+            setTextColor(Color.rgb(8, 13, 23))
+            setBackgroundResource(R.drawable.retry_background)
+            isFocusable = true
+            minWidth = 220
+            setOnClickListener { dismissNotice() }
+        }
+        notice = panel().apply {
+            visibility = View.GONE
+            noticeText = text("", 22f)
+            addView(noticeText)
+            addView(noticeDismiss, LinearLayout.LayoutParams(280, 88))
+        }
         root.addView(loading, FrameLayout.LayoutParams(-1, -1))
         root.addView(errorScreen, FrameLayout.LayoutParams(-1, -1))
+        root.addView(notice, FrameLayout.LayoutParams(-1, -1))
+    }
+
+    private fun showNotice(message: String) {
+        if (!::notice.isInitialized) return
+        noticeText.text = message
+        notice.visibility = View.VISIBLE
+        noticeDismiss.requestFocus()
+        handler.removeCallbacks(hideNotice)
+        handler.postDelayed(hideNotice, NOTICE_MS)
+    }
+
+    private fun dismissNotice() {
+        if (!::notice.isInitialized || notice.visibility != View.VISIBLE) return
+        handler.removeCallbacks(hideNotice)
+        notice.visibility = View.GONE
+        if (pageReady && ::webView.isInitialized && !rendererGone) webView.requestFocus()
     }
 
     private fun showLoading() {
@@ -216,6 +266,9 @@ class MainActivity : ComponentActivity() {
         loading.visibility = View.VISIBLE
         errorScreen.visibility = View.GONE
         webView.visibility = View.INVISIBLE
+        if (::loadingStatus.isInitialized) loadingStatus.text = ""
+        handler.removeCallbacks(slowLoading)
+        handler.postDelayed(slowLoading, SLOW_LOAD_MS)
     }
 
     private fun showError(reason: String) {
@@ -223,6 +276,7 @@ class MainActivity : ComponentActivity() {
         failed = true
         pageReady = false
         handler.removeCallbacks(timeout)
+        handler.removeCallbacks(slowLoading)
         if (!::errorScreen.isInitialized) return
         loading.visibility = View.GONE
         errorScreen.visibility = View.VISIBLE
@@ -233,7 +287,20 @@ class MainActivity : ComponentActivity() {
     // AndroidX inherits a restricted annotation on this public Activity override.
     @SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (!pageReady || rendererGone || errorScreen.visibility == View.VISIBLE) return super.dispatchKeyEvent(event)
+        if (::notice.isInitialized && notice.visibility == View.VISIBLE) return super.dispatchKeyEvent(event)
+        if (!pageReady || rendererGone || errorScreen.visibility == View.VISIBLE) {
+            if (errorScreen.visibility == View.VISIBLE || rendererGone) return super.dispatchKeyEvent(event)
+            return when (event.keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER -> true
+                else -> super.dispatchKeyEvent(event)
+            }
+        }
         val key = when (event.keyCode) {
             KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"
             KeyEvent.KEYCODE_DPAD_DOWN -> "ArrowDown"
@@ -276,10 +343,24 @@ class MainActivity : ComponentActivity() {
         return true
     }
 
+    private fun dismissKeyboard(): Boolean {
+        val insets = window.decorView.rootWindowInsets
+        if (insets?.isVisible(WindowInsets.Type.ime()) != true) return false
+        val token = (currentFocus ?: if (::webView.isInitialized) webView else null)?.windowToken ?: return false
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        return imm.hideSoftInputFromWindow(token, 0)
+    }
+
     private fun handleBack() {
+        if (::notice.isInitialized && notice.visibility == View.VISIBLE) {
+            dismissNotice()
+            return
+        }
+        if (dismissKeyboard()) return
         if (!pageReady || rendererGone || errorScreen.visibility == View.VISIBLE) { finish(); return }
         if (backPending) return
         backPending = true
+        handler.postDelayed(backFallback, BACK_JS_TIMEOUT_MS)
         webView.evaluateJavascript("""
             (() => {
                 if (typeof window.electronTvBack === 'function') return window.electronTvBack();
@@ -292,6 +373,7 @@ class MainActivity : ComponentActivity() {
                 return overlay;
             })()
         """.trimIndent()) { result ->
+            handler.removeCallbacks(backFallback)
             backPending = false
             if (!isFinishing && result != "true") {
                 if (webView.canGoBack()) webView.goBack() else finish()

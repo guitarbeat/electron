@@ -39,9 +39,16 @@
 }
 
 :is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profile-switcher-btn {
+  position: relative;
   width: 2.15rem;
   height: 2.15rem;
   border-radius: 50%;
+}
+
+:is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profile-switcher-btn::after {
+  content: "";
+  position: absolute;
+  inset: -0.4rem;
 }
 
 :is(.floating-dock-cluster__profiles, .y2k-command-dock__profiles) .profile-switcher-btn .profile-switcher-face-wrap,
@@ -219,15 +226,33 @@
   }
 }
 
+.chat-fab-anchor {
+  position: fixed;
+  z-index: 1260;
+  right: calc(var(--frame-border-width, 7px) + var(--frame-account-width, 9rem) + 0.6rem);
+  bottom: calc(var(--frame-border-width, 7px) + 0.55rem);
+}
+
+@media (max-width: 720px) {
+  .chat-fab-anchor {
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: calc(var(--frame-border-width, 7px) + 6.4rem);
+  }
+}
+
+:root:has(.account-pin-viewport:not(:empty)) .chat-fab-anchor {
+  display: none;
+}
+
 .chat-dock__close {
   position: absolute;
-  top: 0.8rem;
-  right: 0.8rem;
+  top: 0.55rem;
+  right: 0.55rem;
   z-index: 5;
   display: grid;
   place-items: center;
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -262,7 +287,7 @@
 }
 
 .chat-dock .msg-board-header {
-  padding-right: 3.2rem;
+  padding-right: 4rem;
   background: rgba(28, 28, 30, 0.82);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);

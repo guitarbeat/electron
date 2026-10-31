@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { isScrollBlockedElement } from "@/hooks";
 import { scrollStorage } from "@/utils/scrollStorage";
+import { shouldWriteDriftFrame, TV_DRIFT_FRAME_MS } from "./driftMotion";
 import "./DriftWall.css";
 
 export interface DriftWallItem {
@@ -106,6 +107,7 @@ export const DriftWall: React.FC<DriftWallProps> = ({
     height: number;
   } | null>(null);
   const lastTsRef = useRef<number | null>(null);
+  const lastPaintRef = useRef(0);
 
   const [containerHeight, setContainerHeight] = useState<number>(600);
   const [containerWidth, setContainerWidth] = useState<number>(1200);
@@ -366,28 +368,41 @@ export const DriftWall: React.FC<DriftWallProps> = ({
   // 4. Main Animation Loop (Serpentine Conveyor Belt)
   // ============================================================================
   useEffect(() => {
+    let stopped = false;
     const animate = (ts: number) => {
+      if (stopped) return;
+      if (document.hidden) {
+        rafRef.current = null;
+        return;
+      }
       if (lastTsRef.current === null) lastTsRef.current = ts;
-      
+
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
       lastTsRef.current = ts;
+      const tvRuntime = document.documentElement.classList.contains("is-tv-runtime")
+        || document.documentElement.classList.contains("is-silk-browser");
+      const writeTransforms = shouldWriteDriftFrame(
+        ts,
+        lastPaintRef.current,
+        tvRuntime ? TV_DRIFT_FRAME_MS : 0,
+      );
 
       // --- Part A: 3D Parallax Tilt ---
       const maxTilt = parallax * 8;
       const targetX = pointerRef.current.x * maxTilt;
       const targetY = -pointerRef.current.y * maxTilt;
-      
+
       const damp = 1 - Math.exp(-dt / 0.045);
       pointerDampedRef.current.x += (targetX - pointerDampedRef.current.x) * damp;
       pointerDampedRef.current.y += (targetY - pointerDampedRef.current.y) * damp;
-      
-      applyPlaneTransform(pointerDampedRef.current.x, pointerDampedRef.current.y);
+
+      if (writeTransforms) applyPlaneTransform(pointerDampedRef.current.x, pointerDampedRef.current.y);
 
       // --- Part B: Scroll Friction ---
       const scrollFriction = 0.9;
       const scrollDecay = Math.pow(scrollFriction, dt * 60);
       const scrollStep = scrollVelocityRef.current * dt;
-      
+
       scrollVelocityRef.current *= scrollDecay;
       if (Math.abs(scrollVelocityRef.current) < 0.15) {
         scrollVelocityRef.current = 0;
@@ -408,25 +423,29 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         nextOffset = ((nextOffset % totalBeltLength) + totalBeltLength) % totalBeltLength;
         beltOffsetRef.current = nextOffset;
 
-        for (let i = 0; i < totalSlots; i++) {
-          const el = tileRefs.current[i];
-          if (!el) continue;
+        if (writeTransforms) {
+          lastPaintRef.current = ts;
+          for (let i = 0; i < totalSlots; i++) {
+            const el = tileRefs.current[i];
+            if (!el) continue;
 
-          const frac = (((i / totalSlots) + (nextOffset / totalBeltLength)) % 1 + 1) % 1;
-          const u = frac * safeCols;
-          const colIndex = Math.floor(u) % safeCols;
-          const t_col = u - Math.floor(u);
+            const frac = (((i / totalSlots) + (nextOffset / totalBeltLength)) % 1 + 1) % 1;
+            const u = frac * safeCols;
+            const colIndex = Math.floor(u) % safeCols;
+            const t_col = u - Math.floor(u);
 
-          const x = (colIndex - (safeCols - 1) / 2) * (tileWidth + gap);
-          const isEvenUp = direction !== "down";
-          const isUp = isEvenUp ? colIndex % 2 === 0 : colIndex % 2 !== 0;
-          const y = isUp
-            ? (0.5 - t_col) * columnHeight
-            : (t_col - 0.5) * columnHeight;
+            const x = (colIndex - (safeCols - 1) / 2) * (tileWidth + gap);
+            const isEvenUp = direction !== "down";
+            const isUp = isEvenUp ? colIndex % 2 === 0 : colIndex % 2 !== 0;
+            const y = isUp
+              ? (0.5 - t_col) * columnHeight
+              : (t_col - 0.5) * columnHeight;
 
-          el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+            el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+          }
         }
-      } else if (reduced && totalSlots > 0) {
+      } else if (reduced && totalSlots > 0 && writeTransforms) {
+        lastPaintRef.current = ts;
         // Reduced motion: static positions
         const totalRows = Math.ceil(totalSlots / safeCols);
         for (let i = 0; i < totalSlots; i++) {
@@ -440,14 +459,32 @@ export const DriftWall: React.FC<DriftWallProps> = ({
         }
       }
 
+      const settled =
+        (reduced && lastPaintRef.current !== 0) ||
+        (isPaused &&
+          Math.abs(beltVelocityRef.current) < 0.25 &&
+          Math.abs(scrollVelocityRef.current) < 0.25);
+      if (settled) {
+        rafRef.current = null;
+        return;
+      }
       rafRef.current = requestAnimationFrame(animate);
     };
 
+    const resume = () => {
+      if (stopped || document.hidden || rafRef.current) return;
+      lastTsRef.current = null;
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    document.addEventListener("visibilitychange", resume);
     rafRef.current = requestAnimationFrame(animate);
     return () => {
+      stopped = true;
+      document.removeEventListener("visibilitychange", resume);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
       lastTsRef.current = null;
+      lastPaintRef.current = 0;
     };
   }, [
     totalBeltLength,
