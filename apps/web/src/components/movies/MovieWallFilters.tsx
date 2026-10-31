@@ -1,5 +1,6 @@
 import React from "react";
 import { TopFramePanel, useTopFrame } from "@/app/TopFramePanels";
+import { useExclusiveNotch } from "@/app/dynamicNotch";
 import {
   ArrowDownAZ,
   Calendar,
@@ -156,6 +157,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
   const panelRef = React.useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = React.useState(false);
   const rootRef = React.useRef<HTMLDivElement | null>(null);
+  useExclusiveNotch("settings", isOpen, () => setIsOpen(false));
 
   const genres = React.useMemo(() => getMovieWallGenres(movies), [movies]);
   const genreCounts = React.useMemo(
@@ -332,6 +334,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
         className={`movie-wall-filters__trigger movie-wall-filters__trigger--artwork${isActive ? " is-active" : ""}${isOpen ? " is-open" : ""}`}
         aria-expanded={isOpen}
         aria-controls="movie-wall-filter-panel"
+        data-notch-trigger="bottom"
         aria-label={activeWatchStatus ? `Settings, ${activeWatchStatus.label}` : "Settings"}
         {...(activeWatchStatus ? { "data-watch-status": activeWatchStatus.artwork } : {})}
         onClick={() => {
@@ -435,6 +438,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           className="movie-wall-filters__panel settings-menu"
           role="dialog"
           aria-labelledby="settings-menu-title"
+          data-notch-panel="settings"
         >
           <header className="settings-menu__header">
             <h2 id="settings-menu-title" className="settings-menu__title">Settings</h2>

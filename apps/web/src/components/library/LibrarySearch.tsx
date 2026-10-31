@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { AccountPinViewport, TopFramePanel, TopFrameViewport, useTopFrame } from "@/app/TopFramePanels";
+import { useExclusiveNotch } from "@/app/dynamicNotch";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { CornerDownLeft, X } from "lucide-react";
 import { Button, ProfileMenu } from "@/components/ui";
@@ -70,11 +71,14 @@ export interface LibrarySearchProps {
   soundSlot?: React.ReactNode;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
+  /** Titles left on the wall after the search, shown inside the expanded Search notch. */
+  searchResultCount?: number;
+  libraryCount?: number;
   onOpenMovie: (movieId: string) => void;
 }
 
 const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
-  ({ renderFilterSlot, viewSlot, soundSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
+  ({ renderFilterSlot, viewSlot, soundSlot, searchQuery, onSearchQueryChange, onOpenMovie, searchResultCount, libraryCount }, forwardedRef) => {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const { modalOpen } = useTopFrame();
@@ -175,6 +179,15 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     const primaryLabel = librarySubmitLabel(submitKind, isGuest);
     const hasQuery = trimmed.length > 0;
     const addExpanded = isAddExpanded || (Boolean(query) && !isSearchExpanded) || isBusy;
+
+    // One notch at a time: opening Search, Add, or the picker collapses the others.
+    useExclusiveNotch("search", isSearchExpanded, () => setIsSearchExpanded(false));
+    useExclusiveNotch("add", isAddExpanded || isOpen, () => {
+      setIsOpen(false);
+      setIsMounted(false);
+      setIsAddExpanded(false);
+    });
+    useExclusiveNotch("settings", pickerOpen, () => setPickerOpen(false));
 
     useEffect(() => {
       if (currentUser) return;
@@ -573,6 +586,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   if (!event.currentTarget.contains(event.relatedTarget) && !searchQuery) setIsSearchExpanded(false);
                 }}
               >
+                <span className="dyn-notch" data-notch="search" aria-hidden="true"><i className="dyn-notch__grip" /></span>
                 <button
                   ref={searchTriggerRef}
                   type="button"
@@ -618,6 +632,14 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     }}
                   ><X size={14} /></button> : <kbd className="y2k-search-capsule__kbd" aria-hidden="true">/</kbd>}
                 </div>
+                {searchExpanded ? (
+                  <p className="dyn-notch-hint" aria-live="polite">
+                    {searchQuery && searchResultCount !== undefined
+                      ? <span><strong>{searchResultCount}</strong> of {libraryCount ?? searchResultCount} {(libraryCount ?? searchResultCount) === 1 ? "title" : "titles"} match</span>
+                      : <span>Filters the wall as you type</span>}
+                    <span className="dyn-notch-hint__keys" aria-hidden="true">Esc closes</span>
+                  </p>
+                ) : null}
               </div>
               <form
                 className={`y2k-search-form y2k-add-form y2k-symbol-control${addExpanded ? " is-expanded" : ""}`}
@@ -636,6 +658,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   handlePrimary();
                 }}
               >
+                <span className="dyn-notch" data-notch="add" aria-hidden="true"><i className="dyn-notch__grip" /></span>
                 <div
                   className={`y2k-search-capsule${isFocused ? " is-focused" : ""}${isLoading || isBusy ? " is-loading" : ""}`}
                 >
@@ -762,6 +785,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   </button> : null}
                   </div>
                 </div>
+                {addExpanded && !(showPanel && isOpen) ? (
+                  <p className="dyn-notch-hint">
+                    <span>{hasQuery ? "Enter adds it to the wall" : "Type a movie or show"}</span>
+                    <span className="dyn-notch-hint__keys" aria-hidden="true">Esc closes</span>
+                  </p>
+                ) : null}
               </form>
 
               {renderFilterSlot ? (
@@ -778,6 +807,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                       }
                     }}
                   >
+                    <span className="dyn-notch" data-notch="settings" aria-hidden="true"><i className="dyn-notch__grip" /></span>
                     {renderFilterSlot(
                       <>
                         {viewSlot}
@@ -944,7 +974,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     return (
       <>
         {typeof document !== "undefined"
-          ? createPortal(<>{commandDock}<div className="frame-corner-profiles y2k-command-dock__profiles" role="region" aria-label="Account controls" inert={modalOpen}><ProfileMenu /></div><AccountPinViewport /></>, document.body)
+          ? createPortal(<><div className="dyn-notch-scrim" aria-hidden="true" />{commandDock}<div className="frame-corner-profiles y2k-command-dock__profiles" role="region" aria-label="Account controls" inert={modalOpen}><span className="dyn-notch" data-notch="profiles" aria-hidden="true"><i className="dyn-notch__grip" /></span><ProfileMenu /></div><AccountPinViewport /></>, document.body)
           : commandDock}
         {showRecommend && currentUser && hasQuery ? (
           <MovieRecommendationComposer

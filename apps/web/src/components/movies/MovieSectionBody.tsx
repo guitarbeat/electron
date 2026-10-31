@@ -366,6 +366,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             openMovieDetails(movie);
           }}
           searchQuery={wallFilters.query ?? ""}
+          searchResultCount={filteredMovies.length}
+          libraryCount={allMovies.length}
           onSearchQueryChange={(query) => setWallFilters((filters) => ({ ...filters, query }))}
           viewSlot={<SettingsSwitch label="Moving wall" checked={view === "wall"} onChange={(on) => changeView(on ? "wall" : "grid")} />}
           soundSlot={<SettingsSwitch label="Menu sounds" checked={soundsOn} silent onChange={setXmbSoundsEnabled} />}

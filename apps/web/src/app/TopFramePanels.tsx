@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { motion, useReducedMotion } from "motion/react";
+import { leaveNotchGhost } from "./dynamicNotch";
 
 const TopFrameContext = createContext<{
   target: HTMLDivElement | null;
@@ -22,14 +22,23 @@ export function TopFrameProvider({ children }: { children: ReactNode }) {
   return <TopFrameContext.Provider value={value}>{children}</TopFrameContext.Provider>;
 }
 
+/**
+ * The inside of the expanded notch that owns the open panel (Add suggestions, Settings, or the
+ * movie picker). It has no surface of its own: the notch body drawn behind it grows to the
+ * published `--dyn-panel-h`, and this clip grows with it on the same curve.
+ */
 export function TopFrameViewport() {
   const { target, setTarget, modalOpen } = useTopFrame();
   const [height, setHeight] = useState(0);
-  const reducedMotion = useReducedMotion();
 
   useLayoutEffect(() => {
     if (!target) return;
-    const measure = () => setHeight(modalOpen ? 0 : target.getBoundingClientRect().height);
+    const root = document.documentElement;
+    const measure = () => {
+      const next = modalOpen ? 0 : Math.ceil(target.getBoundingClientRect().height);
+      setHeight(next);
+      root.style.setProperty("--dyn-panel-h", `${next}px`);
+    };
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
@@ -38,25 +47,23 @@ export function TopFrameViewport() {
   }, [target, modalOpen]);
 
   return (
-    <motion.div
-      className="top-frame-panels"
-      data-modal-open={modalOpen}
-      data-expanded={height > 0}
-      initial={false}
-      animate={{ height }}
-      transition={reducedMotion
-        ? { duration: 0 }
-        : { type: "spring", stiffness: 420, damping: 38, mass: 0.8 }}
-    >
+    <div className="top-frame-panels" data-modal-open={modalOpen} data-expanded={height > 0}>
       <div ref={setTarget} className="top-frame-panels__content" />
-    </motion.div>
+    </div>
   );
 }
 
 export function TopFramePanel({ name, children }: { name: string; children: ReactNode }) {
   const { target } = useTopFrame();
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    // Refs attach before layout effects, so this is the panel node portaled into `target`.
+    const node = panelRef.current;
+    const host = target?.parentElement ?? null;
+    return () => leaveNotchGhost(node, host);
+  }, [target]);
   return target
-    ? createPortal(<div className="top-frame-panel" data-frame-panel={name}>{children}</div>, target)
+    ? createPortal(<div ref={panelRef} className="top-frame-panel" data-frame-panel={name}>{children}</div>, target)
     : <>{children}</>;
 }
 
