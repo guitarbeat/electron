@@ -123,7 +123,7 @@
   transform-origin: var(--transform-origin);
 }
 
-/* Floating iOS-style chat button */
+/* Floating chat button: Aaron's round pixel-art speech-bubble badge. */
 .chat-fab {
   position: relative;
   display: grid;
@@ -131,35 +131,34 @@
   width: 3.25rem;
   height: 3.25rem;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 0;
   border-radius: 9999px;
   color: white;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.95), rgba(2, 132, 199, 0.98));
+  background: #101a3a;
   box-shadow:
-    0 8px 24px rgba(2, 132, 199, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    0 8px 22px rgba(8, 12, 36, 0.55),
+    0 0 0 1px rgba(255, 236, 196, 0.22);
   cursor: pointer;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   transition:
     transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    background 200ms ease,
     box-shadow 200ms ease;
 }
 
-.chat-fab::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
+.chat-fab__art {
+  display: block;
+  width: 100%;
+  height: 100%;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 60%);
+  object-fit: cover;
   pointer-events: none;
+  user-select: none;
 }
 
 .chat-fab:hover {
   box-shadow:
-    0 12px 30px rgba(2, 132, 199, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    0 12px 28px rgba(8, 12, 36, 0.65),
+    0 0 0 1px rgba(255, 236, 196, 0.4),
+    0 0 18px rgba(255, 196, 120, 0.35);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -177,12 +176,19 @@
   outline-offset: 3px;
 }
 
+/* Open: a warm ring around the badge, matching the bubble outline in the art. */
 .chat-fab.is-open {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
-  border-color: rgba(255, 255, 255, 0.18);
+  transform: scale(0.94);
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 6px 18px rgba(0, 0, 0, 0.5),
+    0 0 0 3px #f5c451,
+    0 0 16px rgba(245, 196, 81, 0.45);
+}
+
+/* The art is downscaled from 256px, so smooth sampling keeps its pixels even;
+   nearest-neighbour would drop whole rows at this size. */
+@media (prefers-reduced-motion: reduce) {
+  .chat-fab.is-open { transform: none; }
 }
 
 /* macOS Genie Effect for Chat Panel */
