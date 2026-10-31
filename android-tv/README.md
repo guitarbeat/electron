@@ -34,8 +34,9 @@ The shell contains no native `.so` libraries, so its universal APK runs on the d
 **32-bit `armeabi-v7a`** runtime without requiring 64-bit code.
 
 The Fire TV launcher banner is `app/src/main/res/drawable-nodpi/tv_banner.png`, generated from
-the repository's `electron-app-icon.png` at **1280 x 720**, RGB PNG with no transparency. The
-separate Android manifest icon is a square version of the same artwork.
+`assets/local-originals/electron-app-icon.png` at **1280 x 720**, RGB PNG with no transparency.
+The square Android manifest icon uses `assets/local-originals/Pixel Electron Nightscape.png`
+at 512 x 512.
 
 ## Connect, install, launch
 

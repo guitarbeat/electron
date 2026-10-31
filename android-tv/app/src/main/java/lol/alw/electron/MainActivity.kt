@@ -51,10 +51,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemBars()
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         root = FrameLayout(this).apply { setBackgroundColor(Color.rgb(8, 13, 23)) }
         setContentView(root)
+        // Accessing WindowInsetsController requires the decor view created by setContentView.
+        hideSystemBars()
         createWebView()
         createOverlays()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {

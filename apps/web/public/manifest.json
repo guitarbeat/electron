@@ -49,16 +49,10 @@
       "purpose": "any"
     },
     {
-      "src": "/electron-logo-mark.png",
+      "src": "/electron-app-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "/electron-logo-mark.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }
