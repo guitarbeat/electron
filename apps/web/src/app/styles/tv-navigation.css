@@ -110,3 +110,20 @@
 .is-tv-runtime .flipbook-avatar-btn__status {
   font-size: 0.95rem;
 }
+
+/* Desktop arrow-key navigation reaches the same frame controls and panels. :where keeps this
+   a fallback ring, so components with their own focus styles keep them. */
+:where(:root:not(.is-tv-runtime)) :where(
+  .y2k-command-dock,
+  .movie-wall-filters,
+  .top-frame-panels,
+  .frame-corner-profiles,
+  .chat-fab-anchor,
+  .chat-dock,
+  .movie-library-grid,
+  .drift-wall,
+  .movie-details-modal
+) :focus-visible {
+  outline: 3px solid #f5c451;
+  outline-offset: 3px;
+}
