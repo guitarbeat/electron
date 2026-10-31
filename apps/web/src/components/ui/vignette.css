@@ -4,8 +4,9 @@
   --vignette-blur-fallback-opacity: 0.6;
   --vignette-blur-glow-color: rgba(255, 255, 255, 0.14);
 
-  --vignette-top-height-desktop: 9.5rem;
-  --vignette-top-height-mobile: 6.75rem;
+  /* Measured from the frame's top border, so the frost hugs the top edge. */
+  --vignette-top-height-desktop: calc(var(--frame-border-top-width, 5px) + 4.85rem);
+  --vignette-top-height-mobile: calc(var(--frame-border-top-width, 5px) + 2.5rem);
   --vignette-top-blur-strength: 56px;
   --vignette-top-gradient-stop: 58%;
   --vignette-top-opacity: 1;

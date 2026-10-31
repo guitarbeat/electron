@@ -704,14 +704,12 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact)::
   --frame-account-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 404 628' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 628Q20 628 20 608V50Q20 20 50 20H384Q404 20 404 0V628Z'/%3E%3C/svg%3E");
 }
 
-/* Four corner pockets share the existing account contour. */
+/* The corner pockets share the existing account contour. */
 :root {
   --frame-top-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%200H240Q220%200%20220%2020V65Q220%2090%20195%2090H45Q20%2090%2020%2065V20Q20%200%200%200Z%22%2F%3E%3C%2Fsvg%3E");
-  --frame-bottom-notch-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20240%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%20100H240Q220%20100%20220%2080V35Q220%2010%20195%2010H45Q20%2010%2020%2035V80Q20%20100%200%20100Z%22%2F%3E%3C%2Fsvg%3E");
   --frame-search-width: 5.5rem;
   --frame-create-width: 5.5rem;
   --frame-filter-width: 4.5rem;
-  --frame-status-width: 18rem;
   --frame-picker-width: 8rem;
   --frame-corner-height: 4.5rem;
   --frame-top-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%20120%29%20scale%28-1%20-1%29%22%20d%3D%22M0%20120Q20%20120%2020%20100V50Q20%2020%2050%2020H180Q200%2020%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
@@ -749,7 +747,6 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
     --frame-search-width: 4.5rem;
     --frame-create-width: 4.5rem;
     --frame-filter-width: 4rem;
-    --frame-status-width: calc(100vw - 11.75rem);
     --frame-picker-width: 6.5rem;
     --frame-account-width: 5.5rem;
   }
@@ -757,23 +754,12 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
   :root:has(.y2k-add-form.is-expanded) { --frame-create-width: calc(100vw - 2 * var(--frame-border-width)); }
 }
 
-.viewport-frame__corner--top-center,
-.viewport-frame__corner--bottom-center {
+.viewport-frame__corner--top-center {
   left: 50%;
   transform: translateX(-50%);
-}
-.viewport-frame__corner--top-center {
   top: 0;
   width: calc(var(--frame-picker-width) + 2 * var(--frame-account-taper));
   mask-image: var(--frame-top-notch-shape);
-}
-.viewport-frame__corner--bottom-center {
-  bottom: 0;
-  width: calc(var(--frame-status-width) + 2 * var(--frame-account-taper));
-  mask-image: var(--frame-bottom-notch-shape);
-}
-body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-center {
-  display: none;
 }
 
 @media (max-width: 600px) {
@@ -783,8 +769,7 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
     border-bottom-width: var(--frame-border-width);
   }
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-left,
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-right,
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-center { display: none; }
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-right { display: none; }
   body:has(.frame-corner-profiles) .viewport-frame .viewport-frame__corner--top-center {
     top: -4.5rem;
     height: 5.5rem;
