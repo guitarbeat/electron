@@ -31,15 +31,23 @@ it("keeps portalled filter interactions inside the expanding frame until closed"
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
 
-it("offers three shared artwork buttons that filter the wall and toggle off", () => {
+it("keeps watch status inside the filter menu, with the choice on the filter button", () => {
   render(<Filters />);
+  expect(screen.queryByRole("group", { name: "Watch status filters" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Filter", exact: true }));
+  const dialog = screen.getByRole("dialog", { name: "Movie filters" });
+  expect(dialog).toContainElement(screen.getByRole("group", { name: "Watch status filters" }));
   for (const [label, title] of [["Queue", "Queued Film"], ["Watching", "Started Film"], ["Seen", "Finished Film"]]) {
     const button = screen.getByRole("button", { name: `${label}: 1 titles` });
+    expect(dialog).toContainElement(button);
     fireEvent.click(button);
     expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: `Filter, ${label}` })).toHaveTextContent(label);
+    expect(screen.getByRole("button", { name: `Filter, ${label}` })).toHaveTextContent("1");
     expect(screen.getByLabelText("Visible titles")).toHaveTextContent(new RegExp(`^${title}$`));
     fireEvent.click(button);
     expect(button).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Filter", exact: true })).toBeInTheDocument();
     expect(screen.getByLabelText("Visible titles")).toHaveTextContent("Queued Film");
     expect(screen.getByLabelText("Visible titles")).toHaveTextContent("Started Film");
     expect(screen.getByLabelText("Visible titles")).toHaveTextContent("Finished Film");

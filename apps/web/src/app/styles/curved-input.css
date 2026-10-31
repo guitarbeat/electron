@@ -672,8 +672,9 @@
 }
 
 .movie-wall-filters__trigger--artwork {
-  width: 4rem;
-  flex: 0 0 4rem;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .movie-wall-filters__trigger--artwork .movie-wall-filters__count-pill {
@@ -898,15 +899,59 @@
   padding: 0.25rem 0.5rem;
 }
 .y2k-command-dock .movie-wall-filters { width: 100%; flex-wrap: nowrap; }
-.y2k-command-dock .movie-wall-status-buttons {
-  position: fixed;
-  left: 50%;
-  bottom: var(--frame-border-width);
-  transform: translateX(-50%);
-  width: var(--frame-status-width);
-  height: var(--frame-corner-height);
-  justify-content: center;
+.top-frame-panels .movie-wall-status-buttons {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  height: auto;
+  gap: 0.35rem;
+  transform: none;
+}
+.top-frame-panels .movie-wall-status-button {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  min-height: 5.25rem;
+}
+.top-frame-panels .movie-wall-status-button__art {
+  width: min(5.25rem, 100%);
+  height: 2.6rem;
+}
+.top-frame-panels .movie-wall-status-button__label {
+  flex-direction: column;
   align-items: center;
+  gap: 0.1rem;
+  font-size: 0.78rem;
+}
+:root:has(.movie-wall-filters__trigger[data-watch-status="queue"]),
+:root:has(.movie-wall-filters__trigger[data-watch-status="seen"]) {
+  --frame-filter-width: 5.75rem;
+}
+:root:has(.movie-wall-filters__trigger[data-watch-status="watching"]) {
+  --frame-filter-width: 7.25rem;
+}
+.y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork[data-watch-status] {
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.y2k-command-dock .y2k-command-dock__filters:has([data-watch-status]) {
+  padding-inline: 0.15rem;
+}
+.movie-wall-filters__trigger-label {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  max-width: 100%;
+}
+.movie-wall-filters__trigger-count {
+  font-variant-numeric: tabular-nums;
+}
+.movie-wall-filters__trigger[data-watch-status] .movie-wall-filters__trigger-label {
+  box-shadow: inset 0 -2px 0 #f5c451;
 }
 .y2k-command-dock .top-frame-panels {
   position: fixed;
@@ -939,12 +984,13 @@
   .y2k-command-dock .y2k-add-form { padding-inline: 0.25rem; }
   .y2k-command-dock .y2k-add-form { right: var(--frame-border-width); width: var(--frame-create-width); }
   .y2k-command-dock .frame-picker-trigger { width: var(--frame-picker-width); }
-  .y2k-command-dock .movie-wall-status-buttons { gap: 0; flex: 1; min-width: 0; }
-  .y2k-command-dock .movie-wall-status-button { min-width: 0; flex: 1; padding-inline: 0.1rem; }
-  .y2k-command-dock .movie-wall-status-button__art { width: 3rem; }
-  .y2k-command-dock .movie-wall-status-button__label { flex-direction: column; align-items: center; gap: 0.1rem; font-size: 0.65rem; }
-  .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork { min-width: 3rem; width: 3rem; flex: 0 0 3rem; padding-inline: 0; }
-  .y2k-command-dock .movie-wall-status-button__art { height: 2rem; }
+  .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork:not([data-watch-status]) { min-width: 3rem; width: 3rem; flex: 0 0 3rem; padding-inline: 0; }
+  .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork[data-watch-status] {
+    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+  }
   .y2k-command-dock .movie-wall-filters { gap: 0; }
   :root:has(.y2k-library-search.is-expanded) .y2k-command-dock .y2k-add-form,
   :root:has(.y2k-library-search.is-expanded) .frame-picker-trigger { visibility: hidden; }
@@ -962,10 +1008,7 @@ body:has(.movie-details-modal) .frame-corner-profiles {
   :root:has(.y2k-add-form.is-expanded) .frame-picker-trigger { visibility: hidden; }
 }
 @media (max-width: 600px) {
-  .y2k-command-dock .movie-wall-status-buttons,
-  .y2k-command-dock .y2k-command-dock__filters { height: 5.5rem; }
   .y2k-command-dock .frame-picker-trigger { height: 3.5rem; }
-  .y2k-command-dock[data-panel-origin="filters"] .top-frame-panels { bottom: calc(var(--frame-border-width) + 5.5rem); }
 }
 
 @media (max-width: 600px) {
