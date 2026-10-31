@@ -40,7 +40,8 @@
   .chat-fab,
   .chat-dock,
   .account-corner-pin-sheet
-) :focus-visible {
+) :focus-visible,
+.is-tv-runtime .chat-fab:focus-visible {
   outline: 4px solid #fff8a6 !important;
   outline-offset: 4px;
   box-shadow: 0 0 0 8px #183b48, 0 0 26px 9px #6de8d180 !important;

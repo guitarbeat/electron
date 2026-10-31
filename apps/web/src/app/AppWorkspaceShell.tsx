@@ -5,7 +5,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { MessageCircle } from "lucide-react";
 import { prefersReducedMotion } from "../utils";
 import { logger } from "../services/logger";
 import type { MainTab } from "../shared/types";
@@ -212,7 +211,16 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
               aria-controls={chatRendered ? "floating-chat-panel" : undefined}
               onClick={() => handleTogglePanel("messages")}
             >
-              <MessageCircle size={22} aria-hidden="true" />
+              <img
+                className="chat-fab__art"
+                src="/avatars/pixel-orbit-speech-bubble.png"
+                alt=""
+                aria-hidden="true"
+                width={256}
+                height={256}
+                draggable={false}
+                decoding="async"
+              />
             </button>
           </div>
         ) : null}
