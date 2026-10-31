@@ -88,6 +88,40 @@ test.describe("desktop arrow-key navigation", () => {
     await expect.poll(() => page.evaluate(() => document.activeElement?.closest("[data-movie-id]")?.getAttribute("data-movie-id"))).toBe(id);
   });
 
+  test("the book opens on Watch on Stremio, arrows walk rows and turn pages, and everything fits", async ({ page }) => {
+    await page.locator(".movie-library-grid [data-movie-id] .movie-item-details-hit-area").first().click();
+    const dialog = page.locator('[role="dialog"][aria-modal="true"]').last();
+    const stremio = dialog.locator('[data-book-row="actions"] a.stremio-btn');
+    await expect(stremio).toBeFocused();
+    // Neither page of the spread needs scrolling.
+    for (const fit of await page.locator(".book-page").evaluateAll(pages => pages.map(page => page.scrollHeight <= page.clientHeight + 1))) expect(fit).toBe(true);
+    await page.keyboard.press("ArrowRight");
+    await expect(dialog.getByRole("button", { name: "Edit" })).toBeFocused();
+    await page.keyboard.press("ArrowLeft");
+    await expect(stremio).toBeFocused();
+    await page.keyboard.press("ArrowUp");
+    await expect.poll(() => activeInside(page, '[data-book-row="people"]')).toBe(true);
+    await page.keyboard.press("ArrowDown");
+    await expect(stremio).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect.poll(() => activeInside(page, '[data-book-row="nav"]')).toBe(true);
+    await page.keyboard.press("ArrowUp");
+    await expect.poll(() => activeInside(page, '[data-book-row="actions"]')).toBe(true);
+    await stremio.focus();
+    // Past the start of a row the page turns back to the cover.
+    await page.keyboard.press("ArrowLeft");
+    const detailsTab = dialog.getByRole("button", { name: "Details", exact: true });
+    await expect(detailsTab).toBeFocused();
+    await expect(dialog.getByRole("button", { name: "Cover", exact: true })).toHaveAttribute("aria-current", "page");
+    // The cover stays put; the book only auto-opens once when shown.
+    await page.waitForTimeout(400);
+    await expect(dialog.getByRole("button", { name: "Cover", exact: true })).toHaveAttribute("aria-current", "page");
+    await page.keyboard.press("ArrowRight");
+    await expect(detailsTab).toHaveAttribute("aria-current", "page");
+    await expect(stremio).toBeFocused();
+    await expect(dialog.getByRole("button", { name: /Next page|Previous page/ })).toHaveCount(0);
+  });
+
   test("arrows edit text inside fields", async ({ page }) => {
     await page.getByRole("button", { name: "Search movies (/)", exact: true }).focus();
     await page.keyboard.press("Enter");

@@ -403,16 +403,24 @@ export const PageFlip: React.FC<PageFlipProps> = ({
     }
   }, [forceClose, turnedCount, updateTurnedCount]);
 
-  // Handle autoOpen
+  // Handle autoOpen: open once each time the book is shown, so turning back to the cover sticks.
+  const autoOpenedRef = useRef(false);
   useEffect(() => {
-    if (autoOpen && turnedCount === 0 && !forceClose) {
-      const timer = setTimeout(() => {
-        setIsCascadingClose(false);
-        updateTurnedCount(1);
-      }, 50);
-      return () => clearTimeout(timer);
+    if (!autoOpen || forceClose) {
+      autoOpenedRef.current = false;
+      return undefined;
     }
-    return undefined;
+    if (autoOpenedRef.current) return undefined;
+    if (turnedCount > 0) {
+      autoOpenedRef.current = true;
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      autoOpenedRef.current = true;
+      setIsCascadingClose(false);
+      updateTurnedCount(1);
+    }, 50);
+    return () => clearTimeout(timer);
   }, [autoOpen, forceClose, turnedCount, updateTurnedCount]);
 
   /* -------------------------- Navigation Actions -------------------------- */

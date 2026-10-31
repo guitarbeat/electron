@@ -744,3 +744,90 @@
     transition: none;
   }
 }
+
+/* Book spread: each page is a fixed leaf, so everything is sized to fit without scrolling. */
+.book-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 0.85rem 0.85rem 0.8rem;
+  overflow: hidden;
+  background: #0d111a;
+  color: #fff;
+}
+.book-page--meta .movie-details-modal__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  height: 100%;
+  min-height: 0;
+}
+.book-page--meta .movie-details-modal__eyebrow { margin: 0; gap: 0.3rem; }
+.book-page--meta .movie-details-modal__type-badge,
+.book-page--meta .movie-details-modal__category-tag { padding: 0.12rem 0.45rem; font-size: 0.6rem; }
+.book-page--meta .movie-details-modal__title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: clamp(1.15rem, 0.85rem + 0.9vw, 1.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+/* Long titles step down a size so they still finish inside two lines. */
+.book-page--meta .movie-details-modal__title[data-title-length="long"] { font-size: clamp(1.05rem, 0.8rem + 0.6vw, 1.3rem); }
+.book-page--meta .movie-details-modal__title[data-title-length="xlong"] { font-size: clamp(0.95rem, 0.75rem + 0.4vw, 1.1rem); }
+.book-page--meta .movie-details-modal__fact-row { gap: 0.25rem; margin: 0; }
+.book-page--meta .movie-details-modal__fact-pill { padding: 0.12rem 0.45rem; font-size: 0.64rem; }
+.book-page--meta .movie-details-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+.book-page--meta .movie-details-modal__avatar-toggles { gap: 0.35rem; margin: 0; }
+.book-page--meta .flipbook-avatar-btn { gap: 0.35rem; min-width: 0; min-height: 2.6rem; padding: 0.3rem 0.4rem; border-radius: 0.7rem; }
+.book-page--meta .flipbook-avatar-btn__face { width: 1.85rem; height: 1.85rem; }
+.book-page--meta .flipbook-avatar-btn__name { font-size: 0.72rem; }
+/* The whole status reads, wrapping if it must, instead of "Not watch…". */
+.book-page--meta .flipbook-avatar-btn__status { overflow: visible; white-space: normal; font-size: 0.62rem; line-height: 1.1; }
+.movie-details-modal__primary-row { display: flex; align-items: stretch; gap: 0.4rem; min-width: 0; }
+.movie-details-modal__primary-row > :first-child { flex: 1 1 auto; min-width: 0; }
+.book-page--meta .movie-details-modal__primary-row .stremio-btn { min-height: 2.4rem; padding-inline: 0.75rem; font-size: 0.8rem; }
+.book-page--meta .movie-details-modal__primary-row .workspace-card-action {
+  flex: 0 0 auto;
+  min-height: 2.4rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.76rem;
+}
+
+.book-page--details { gap: 0.6rem; }
+.book-overview { display: flex; flex: 1 1 auto; flex-direction: column; gap: 0.4rem; min-height: 0; }
+.book-overview__body { display: flex; flex: 1 1 auto; flex-direction: column; align-items: flex-start; gap: 0.3rem; min-height: 0; }
+.book-overview__body.is-expanded { overflow-y: auto; overscroll-behavior: contain; }
+.book-overview__text { margin: 0; font-size: 0.86rem; line-height: 1.55; }
+.book-overview__text[data-clamped="true"] { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; }
+.book-overview__more {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.book-overview__more:focus-visible { outline: 2px solid #f5c451; outline-offset: 2px; }
+.book-page__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--color-text-tertiary);
+  font-size: 0.64rem;
+}
+.book-page--meta .movie-details-modal__primary-row .stremio-btn { white-space: nowrap; gap: 0.4rem; }
+.is-tv-runtime .book-page--meta .movie-details-modal__primary-row .stremio-btn { padding-inline: 0.55rem; font-size: 0.82rem; }
