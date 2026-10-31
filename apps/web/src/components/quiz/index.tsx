@@ -814,6 +814,7 @@ export const XYAxisQuestionView: React.FC<XYAxisQuestionViewProps> = ({
             ref={gridRef}
             role="button"
             aria-label="XY position selector"
+            data-arrow-keys="native"
             tabIndex={0}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}

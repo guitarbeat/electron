@@ -80,7 +80,18 @@ function focusAndReveal(element: HTMLElement) {
   }
 }
 
-/** TV-wide navigation plus desktop grid arrows; the shared grid follows keyboard focus. */
+/** A textarea keeps Up/Down for its own lines until the caret reaches the first or last line. */
+function caretAtEdge(field: HTMLTextAreaElement, key: string) {
+  if (field.selectionStart !== field.selectionEnd) return false;
+  const caret = field.selectionStart;
+  return key === "ArrowUp" ? !field.value.slice(0, caret).includes("\n") : !field.value.slice(caret).includes("\n");
+}
+
+/**
+ * Spatial arrow-key navigation. On TV (`enabled`) it drives the whole remote, including Back,
+ * media keys, and focus recovery. On desktop the same arrows, Escape/Backspace, and menu
+ * trapping work from the keyboard, but focus is never moved on its own while the mouse is in use.
+ */
 export function useTvSpatialNavigation(enabled = true) {
   useEffect(() => {
     let currentScope: HTMLElement = document.body;
@@ -90,7 +101,7 @@ export function useTvSpatialNavigation(enabled = true) {
     let dialogOpen = false;
     preloadXmbSounds();
 
-    const reconcile = () => {
+    const reconcile = (recoverFocus = enabled) => {
       const nextScope = scopeForFocus();
       const nextDialog = nextScope !== document.body
         && (nextScope.getAttribute("role") === "dialog" || nextScope.getAttribute("role") === "alertdialog");
@@ -108,7 +119,7 @@ export function useTvSpatialNavigation(enabled = true) {
           if (!alreadyMoved) focusAndReveal(restore);
           return;
         }
-        if (nextScope !== document.body) {
+        if (nextScope !== document.body && (enabled || !alreadyInside(nextScope))) {
           const preferred = nextScope.querySelector<HTMLElement>("[data-tv-autofocus]");
           const first = preferred && visible(preferred) && !preferred.matches(':disabled,[aria-disabled="true"]')
             ? preferred
@@ -116,6 +127,7 @@ export function useTvSpatialNavigation(enabled = true) {
           if (first) { focusAndReveal(first); return; }
         }
       }
+      if (!recoverFocus) return;
       const active = document.activeElement;
       if (!(active instanceof HTMLElement) || active === document.body || !visible(active) || !currentScope.contains(active)) {
         const preferred = currentScope === document.body
@@ -124,6 +136,12 @@ export function useTvSpatialNavigation(enabled = true) {
         const first = preferred ?? focusables(currentScope)[0];
         if (first) focusAndReveal(first);
       }
+    };
+
+    // A menu or dialog that already focused its own field (chat, picker) keeps that focus.
+    const alreadyInside = (scope: HTMLElement) => {
+      const active = document.activeElement;
+      return active instanceof HTMLElement && active !== document.body && scope.contains(active) && visible(active);
     };
 
     const dispatchEscape = () => {
@@ -164,7 +182,11 @@ export function useTvSpatialNavigation(enabled = true) {
     if (enabled) window.electronTvBack = back;
 
     const onKey = (event: KeyboardEvent) => {
-      if (!enabled && (!DIRECTIONS.has(event.key) || !document.activeElement?.closest(".movie-library-grid"))) return;
+      if (!enabled) {
+        // Desktop: leave shortcuts, text selection, and media keys to the browser and components.
+        if (event.altKey || event.ctrlKey || event.metaKey || (event.shiftKey && DIRECTIONS.has(event.key))) return;
+        if (!DIRECTIONS.has(event.key) && !["Escape", "Backspace", "Enter"].includes(event.key)) return;
+      }
       noteXmbUserInput();
       const audio = (window as Window & { _sharedAudioContext?: AudioContext })._sharedAudioContext;
       if (audio?.state === "suspended") void audio.resume().catch(() => {});
@@ -176,7 +198,23 @@ export function useTvSpatialNavigation(enabled = true) {
         if (editing && (event.key === "ArrowLeft" || event.key === "ArrowRight")) return;
         if (active?.matches('input[role="combobox"][aria-expanded="true"]') && (event.key === "ArrowUp" || event.key === "ArrowDown")) return;
         if (active?.matches('input[type="range"],select')) return;
+        if (!enabled && active instanceof HTMLTextAreaElement && !caretAtEdge(active, event.key)) return;
+        if (!enabled && active?.matches('[contenteditable="true"]')) return;
+        // Comboboxes step through their suggestions; Escape leaves them. Widgets that use arrows
+        // themselves (the quiz XY grid) opt out with data-arrow-keys="native".
+        if (!enabled && active?.matches('input[role="combobox"]') && (event.key === "ArrowUp" || event.key === "ArrowDown")) return;
+        if (!enabled && active?.closest('[data-arrow-keys="native"]')) return;
         if (enabled) reconcile();
+        else {
+          // The first arrow press from an unfocused page (or a stray click outside an open
+          // menu) lands focus somewhere useful instead of moving from <body>.
+          const before = document.activeElement;
+          reconcile(true);
+          if (document.activeElement !== before) {
+            playXmbCue("cursor", event.repeat);
+            event.preventDefault(); event.stopPropagation(); return;
+          }
+        }
         const scope = scopeForFocus();
         const origin = document.activeElement as HTMLElement;
         let candidates = focusables(scope).filter(element => element !== origin);
@@ -235,6 +273,9 @@ export function useTvSpatialNavigation(enabled = true) {
           playXmbCue("cancel");
           event.preventDefault(); event.stopPropagation();
         }
+      } else if (event.key === "Backspace" && !enabled) {
+        if (active?.matches('input,textarea,select,[contenteditable="true"]')) return;
+        if (back()) { event.preventDefault(); event.stopPropagation(); }
       } else if (event.key === "Enter" && !event.repeat && active?.matches('button,a[href],summary,[role="button"],[role="gridcell"]')) {
         playXmbSelect();
         if (active.matches('[role="button"]:not(button),[role="gridcell"]')) {
@@ -261,10 +302,10 @@ export function useTvSpatialNavigation(enabled = true) {
     };
     const observer = new MutationObserver(() => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(reconcile);
+      frame = requestAnimationFrame(() => reconcile());
     });
-    if (enabled) observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "inert", "open", "aria-hidden", "disabled"] });
-    if (enabled) frame = requestAnimationFrame(reconcile);
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "inert", "open", "aria-hidden", "disabled"] });
+    if (enabled) frame = requestAnimationFrame(() => reconcile());
     const resize = () => {
       const active = document.activeElement;
       if (active instanceof HTMLElement && active.closest('[data-centered-navigation="true"]')) centerGridItem(active, "auto");
