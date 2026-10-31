@@ -33,6 +33,8 @@ export function SlidingSegments<T extends string>({
   const groupRef = React.useRef<HTMLDivElement | null>(null);
   const [pill, setPill] = React.useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
+  // Callers build `options` inline, so key the effect on the option values, not the array.
+  const optionKey = options.map((option) => option.value).join("|");
   // The pill copies the chosen option's box exactly, so it can never cover a neighbour. It is
   // re-measured whenever the group or any option changes size (fonts, counts, TV scale).
   React.useLayoutEffect(() => {
@@ -54,7 +56,7 @@ export function SlidingSegments<T extends string>({
     observer.observe(group);
     group.querySelectorAll(".settings-menu__opt").forEach((option) => observer.observe(option));
     return () => observer.disconnect();
-  }, [value, options]);
+  }, [value, optionKey]);
 
   return (
     <div
