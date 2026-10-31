@@ -7,6 +7,7 @@ import { GlobalErrorBoundary } from "@/app/GlobalErrorBoundary";
 import { applyTheme } from "@/theme/tokens";
 import App from "./app/App";
 import { OrbitLoader } from "@/components/ui/OrbitLoader";
+import { BOOT_SPLASH_MAX_MS, dismissBootSplash } from "@/app/bootSplash";
 
 // Explicit local preview switch; mock=0 returns a previously seeded browser to real data.
 if (import.meta.env.DEV) {
@@ -54,6 +55,11 @@ root.render(
     </GlobalErrorBoundary>
   </React.StrictMode>,
 );
+
+// One loader from launch to wall: the boot screen stays until the collection is ready
+// (or a short cap passes, e.g. on the sign-in screen), then fades into the app.
+window.addEventListener("workspace-collection-ready", dismissBootSplash, { once: true });
+window.setTimeout(dismissBootSplash, BOOT_SPLASH_MAX_MS);
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

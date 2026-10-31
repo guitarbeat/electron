@@ -3,7 +3,6 @@ package lol.alw.electron
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -27,7 +26,6 @@ import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
@@ -40,12 +38,15 @@ class MainActivity : ComponentActivity() {
         private const val SLOW_LOAD_MS = 8_000L
         private const val NOTICE_MS = 8_000L
         private const val BACK_JS_TIMEOUT_MS = 1_500L
+        // If the WebView never reports a painted frame, uncover the page anyway.
+        private const val HANDOFF_FALLBACK_MS = 1_500L
     }
 
     private lateinit var root: FrameLayout
     private lateinit var webView: WebView
-    private lateinit var loading: LinearLayout
+    private lateinit var loading: BootLoaderView
     private lateinit var loadingStatus: TextView
+    private var visualStateId = 0L
     private lateinit var errorScreen: LinearLayout
     private lateinit var retry: Button
     private lateinit var notice: LinearLayout
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
         }
     }
     private val hideNotice = Runnable { dismissNotice() }
+    private val handoffFallback = Runnable { if (pageReady) loading.fadeOut() }
     private val backFallback = Runnable {
         if (!backPending || isFinishing) return@Runnable
         backPending = false
@@ -72,7 +74,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
-        root = FrameLayout(this).apply { setBackgroundColor(Color.rgb(8, 13, 23)) }
+        root = FrameLayout(this).apply { setBackgroundColor(getColor(R.color.boot_background)) }
         setContentView(root)
         // Accessing WindowInsetsController requires the decor view created by setContentView.
         hideSystemBars()
@@ -101,7 +103,8 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun createWebView() {
         webView = WebView(this).apply {
-            setBackgroundColor(Color.rgb(8, 13, 23))
+            // Matches the loader and the page's own boot screen, so nothing flashes between them.
+            setBackgroundColor(getColor(R.color.boot_background))
             isFocusable = true
             isFocusableInTouchMode = true
             settings.apply {
@@ -115,7 +118,11 @@ class MainActivity : ComponentActivity() {
                 allowFileAccess = false
                 allowContentAccess = false
                 setSupportMultipleWindows(false)
+                // Keep tiles rastered while visible so remote-driven scrolling and the moving
+                // wall don't wait on raster work (the window is hardware accelerated).
+                offscreenPreRaster = true
             }
+            setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true)
             webChromeClient = WebChromeClient()
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -149,10 +156,22 @@ class MainActivity : ComponentActivity() {
                     handler.removeCallbacks(timeout)
                     handler.removeCallbacks(slowLoading)
                     pageReady = true
-                    loading.visibility = View.GONE
                     errorScreen.visibility = View.GONE
+                    // Reveal the page under the native loader, wait until the WebView has
+                    // actually drawn it (the page shows the same loader), then cross-fade.
                     view.visibility = View.VISIBLE
                     view.requestFocus()
+                    val id = ++visualStateId
+                    view.postVisualStateCallback(id, object : WebView.VisualStateCallback() {
+                        override fun onComplete(requestId: Long) {
+                            if (requestId == visualStateId && pageReady) {
+                                handler.removeCallbacks(handoffFallback)
+                                loading.fadeOut()
+                            }
+                        }
+                    })
+                    handler.removeCallbacks(handoffFallback)
+                    handler.postDelayed(handoffFallback, HANDOFF_FALLBACK_MS)
                     CookieManager.getInstance().flush()
                 }
 
@@ -186,7 +205,7 @@ class MainActivity : ComponentActivity() {
     private fun text(value: String, size: Float) = TextView(this).apply {
         text = value
         textSize = size
-        setTextColor(Color.WHITE)
+        setTextColor(getColor(R.color.boot_ink))
         gravity = Gravity.CENTER
         setPadding(16, 12, 16, 12)
     }
@@ -194,20 +213,15 @@ class MainActivity : ComponentActivity() {
     private fun panel() = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
-        setBackgroundColor(Color.rgb(8, 13, 23))
+        setBackgroundColor(getColor(R.color.boot_background))
     }
 
     private fun createOverlays() {
-        loading = panel().apply {
-            addView(ProgressBar(this@MainActivity))
-            addView(text(getString(R.string.loading), 24f))
-            loadingStatus = text("", 20f)
-            addView(loadingStatus)
-        }
+        loading = BootLoaderView(this).also { loadingStatus = it.status }
         retry = Button(this).apply {
             text = getString(R.string.retry)
             textSize = 24f
-            setTextColor(Color.rgb(8, 13, 23))
+            setTextColor(getColor(R.color.boot_ink))
             setBackgroundResource(R.drawable.retry_background)
             isFocusable = true
             minWidth = 220
@@ -228,7 +242,7 @@ class MainActivity : ComponentActivity() {
         noticeDismiss = Button(this).apply {
             text = getString(R.string.notice_ok)
             textSize = 22f
-            setTextColor(Color.rgb(8, 13, 23))
+            setTextColor(getColor(R.color.boot_ink))
             setBackgroundResource(R.drawable.retry_background)
             isFocusable = true
             minWidth = 220
@@ -241,6 +255,7 @@ class MainActivity : ComponentActivity() {
             addView(noticeDismiss, LinearLayout.LayoutParams(280, 88))
         }
         root.addView(loading, FrameLayout.LayoutParams(-1, -1))
+        loading.show()
         root.addView(errorScreen, FrameLayout.LayoutParams(-1, -1))
         root.addView(notice, FrameLayout.LayoutParams(-1, -1))
     }
@@ -263,7 +278,8 @@ class MainActivity : ComponentActivity() {
 
     private fun showLoading() {
         if (!::loading.isInitialized) return
-        loading.visibility = View.VISIBLE
+        handler.removeCallbacks(handoffFallback)
+        loading.show()
         errorScreen.visibility = View.GONE
         webView.visibility = View.INVISIBLE
         if (::loadingStatus.isInitialized) loadingStatus.text = ""
@@ -277,8 +293,9 @@ class MainActivity : ComponentActivity() {
         pageReady = false
         handler.removeCallbacks(timeout)
         handler.removeCallbacks(slowLoading)
+        handler.removeCallbacks(handoffFallback)
         if (!::errorScreen.isInitialized) return
-        loading.visibility = View.GONE
+        loading.hide()
         errorScreen.visibility = View.VISIBLE
         webView.visibility = View.INVISIBLE
         retry.requestFocus()

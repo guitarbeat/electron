@@ -53,8 +53,6 @@ const GHOST_MS = 220;
 export function leaveNotchGhost(node: HTMLElement | null, host: HTMLElement | null) {
   if (!node || !host?.isConnected || typeof window === "undefined") return;
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-  const root = document.documentElement;
-  if (root.classList.contains("is-tv-runtime") || root.classList.contains("is-silk-browser")) return;
   const ghost = node.cloneNode(true) as HTMLElement;
   ghost.removeAttribute("id");
   ghost.querySelectorAll("[id]").forEach((element) => element.removeAttribute("id"));

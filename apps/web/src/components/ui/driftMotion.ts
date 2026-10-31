@@ -1,5 +1,9 @@
-/** About 20 paints per second. Enough for the belt to read as motion on a Fire TV Stick. */
-export const TV_DRIFT_FRAME_MS = 48;
+/**
+ * TV paints the belt every animation frame, like desktop. The writes are transform-only on
+ * already-composited tiles, so they are cheap; the old 48 ms (about 20 fps) cap made the wall
+ * judder on Fire TV. The browser still drops frames by itself if the device falls behind.
+ */
+export const TV_DRIFT_FRAME_MS = 0;
 
 export function shouldWriteDriftFrame(
   now: number,

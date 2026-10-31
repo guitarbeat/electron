@@ -208,14 +208,14 @@
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
 @media (prefers-reduced-motion: no-preference) {
-  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
     transition: transform 450ms cubic-bezier(0.32, 0.72, 0, 1), box-shadow 450ms cubic-bezier(0.32, 0.72, 0, 1), background 160ms ease-out;
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible) {
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible) {
     transform: scale(1.03);
     box-shadow: 0 4px 0 #8a6519, 0 10px 24px rgba(164, 123, 34, 0.45);
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:active {
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:active {
     transform: translateY(2px) scale(0.99);
     box-shadow: 0 1px 0 #8a6519, 0 4px 10px rgba(164, 123, 34, 0.3);
   }
@@ -333,27 +333,27 @@
 .settings-switch.is-on .settings-switch__knob { transform: translateX(calc(2.1rem - 1.05rem)); background: #f5c451; box-shadow: inset -2px -2px 0 #a47b22; }
 
 @media (prefers-reduced-motion: no-preference) {
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .settings-menu .settings-menu__pill {
+  :root .top-frame-panels .settings-menu .settings-menu__pill {
     transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1), width 320ms cubic-bezier(0.32, 0.72, 0, 1), height 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 160ms ease-out;
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .settings-switch__knob,
-  :root:not(.is-tv-runtime, .is-silk-browser) .settings-switch__track {
+  :root .settings-switch__knob,
+  :root .settings-switch__track {
     transition: transform 220ms steps(4, end), background-color 220ms steps(2, end);
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .settings-menu .settings-menu__avatar-wrap {
+  :root .top-frame-panels .settings-menu .settings-menu__avatar-wrap {
     animation: settingsAvatarTilt 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .settings-menu .settings-menu__avatar-badge {
+  :root .top-frame-panels .settings-menu .settings-menu__avatar-badge {
     animation: settingsPop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) 80ms both;
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip {
+  :root .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip {
     transition: transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 160ms ease-out;
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip:active { transform: scale(0.94); }
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip.is-active {
+  :root .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip:active { transform: scale(0.94); }
+  :root .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip.is-active {
     animation: settingsPop 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  :root:not(.is-tv-runtime, .is-silk-browser) .top-frame-panels .settings-menu .settings-menu__chip.is-active .settings-menu__check {
+  :root .top-frame-panels .settings-menu .settings-menu__chip.is-active .settings-menu__check {
     animation: settingsPop 220ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms both;
   }
 }

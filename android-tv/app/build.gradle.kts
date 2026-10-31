@@ -9,8 +9,8 @@ android {
         applicationId = "lol.alw.electron"
         minSdk = 30
         targetSdk = 30 // Fire OS 8 / AFTKM sideload target; no Play Store publication.
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
         ndk { abiFilters += "armeabi-v7a" }
     }
     // This companion is sideloaded on API 30 Fire OS, not submitted to Google Play.
