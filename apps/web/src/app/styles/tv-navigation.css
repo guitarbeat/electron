@@ -94,3 +94,24 @@
 .is-silk-browser .drift-wall__tile img {
   transition: none;
 }
+
+/* Book and detail chips are read from the couch. Desktop sizes stay put. */
+.is-tv-runtime .booklet-nav button {
+  min-height: 2.75rem;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+  font-size: 1rem;
+}
+.is-tv-runtime .booklet-nav__hint {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.86);
+}
+@media (max-height: 640px) {
+  .is-tv-runtime .booklet-nav__hint { display: none; }
+}
+.is-tv-runtime .movie-details-modal__poster-pill,
+.is-tv-runtime .movie-details-modal__fact-pill,
+.is-tv-runtime .flipbook-avatar-btn__name,
+.is-tv-runtime .flipbook-avatar-btn__status {
+  font-size: 0.95rem;
+}

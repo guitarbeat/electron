@@ -75,6 +75,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
     isMoviesWorkspaceDegraded,
     isMoviesWorkspaceSyncBlocked,
     moviesWorkspaceSyncWarning,
+    error: moviesLoadError,
     retryMoviesWorkspaceSync,
     toggleWatched,
     editMovie,
@@ -173,6 +174,8 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
           onRejectSuggestion={handleRejectSuggestion}
           onDeleteRequest={setMovieToDelete}
           onToggleError={(message) => setToast({ message, type: "error" })}
+          loadError={moviesLoadError}
+          onRetryLoad={() => void retryMoviesWorkspaceSync()}
           actions={{
             toggleWatched,
             editMovie,
