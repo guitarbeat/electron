@@ -55,6 +55,23 @@ test.describe("desktop arrow-key navigation", () => {
     await expect(settings).toBeFocused();
   });
 
+  test("the big Pick a movie button sits beside the switches and is one arrow away from each", async ({ page }) => {
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    const menu = page.getByRole("dialog", { name: "Settings", exact: true });
+    const pick = menu.getByRole("button", { name: "Pick a movie", exact: true });
+    await menu.getByRole("switch", { name: "Moving wall", exact: true }).focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(menu.getByRole("switch", { name: "Menu sounds", exact: true })).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect(pick).toBeFocused();
+    await page.keyboard.press("ArrowLeft");
+    await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute("role"))).toBe("switch");
+    await pick.focus();
+    expect((await pick.boundingBox())!.height).toBeGreaterThanOrEqual(64);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog", { name: "Movie picker", exact: true })).toBeVisible();
+  });
+
   test("chat opens from the keyboard, keeps arrows inside, and closes back to its button", async ({ page }) => {
     const chat = page.getByRole("button", { name: "Messages", exact: true });
     await chat.focus();

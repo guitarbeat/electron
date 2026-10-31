@@ -781,6 +781,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     {renderFilterSlot(
                       <>
                         {viewSlot}
+                        {soundSlot}
               <button
                 ref={pickerTriggerRef}
                 type="button"
@@ -793,7 +794,6 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>
-                        {soundSlot}
                       </>,
                     )}
                   </div>
