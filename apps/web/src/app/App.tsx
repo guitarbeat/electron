@@ -6,7 +6,14 @@ import {
   type StoredAppViewState,
 } from "@/app/appViewState";
 
-import { useViewport } from "@/app/providerContexts";
+import { buildFeatureModals } from "@/app/buildMinigameModals";
+import {
+  readQuizCompletionState,
+  writeQuizCompletionState,
+  writeUserQuizOutcome,
+} from "@/app/quizCompletionStorage";
+import type { QuizResult } from "@/shared/types";
+import { useUser, useViewport } from "@/app/providerContexts";
 import { ThemeProvider } from "@/app/providers";
 import { usePwaRuntime } from "@/hooks";
 import WorkspaceErrorBoundary from "@/app/WorkspaceErrorBoundary";
@@ -15,6 +22,7 @@ import { useMediaQuery } from "@/hooks";
 import { useTvSpatialNavigation } from "@/hooks";
 
 import {
+  MinigameModal,
   ProfilePinPanel,
   WorkspaceTabFallback,
   ViewportFrame,
@@ -30,7 +38,22 @@ import { GlobalErrorBoundary } from "@/app/GlobalErrorBoundary";
 import "./globals.css";
 import "./component-styles.css";
 
+const modalBodyStyle = {
+  flex: 1,
+  overflowY: "auto",
+} satisfies React.CSSProperties;
+
+/** Settings, the wall's own way back in, gets focus when the quiz closes. */
+const focusSettingsTrigger = () => {
+  window.requestAnimationFrame(() => {
+    document
+      .querySelector<HTMLElement>('.y2k-command-dock__filters [data-notch-trigger="bottom"]')
+      ?.focus({ preventScroll: true });
+  });
+};
+
 const App: React.FC = () => {
+  const { currentUser } = useUser();
   usePwaRuntime();
   const { isMobile, isTv } = useViewport();
   useTvSpatialNavigation(isTv);
@@ -50,6 +73,68 @@ const App: React.FC = () => {
     if (initialViewState.showMessages) next.add("messages");
     return next;
   });
+
+  const [quizCompleted, setQuizCompleted] = useState<boolean>(() =>
+    readQuizCompletionState(currentUser),
+  );
+  const [showQuizExperience, setShowQuizExperience] = useState(false);
+  const [showQuizEditor, setShowQuizEditor] = useState(false);
+
+  useEffect(() => {
+    setQuizCompleted(readQuizCompletionState(currentUser));
+  }, [currentUser]);
+
+  const updateQuizCompletion = useCallback(
+    (completed: boolean, outcome?: QuizResult | null) => {
+      setQuizCompleted(completed);
+      writeQuizCompletionState(currentUser, completed);
+      if (completed && outcome) {
+        writeUserQuizOutcome(currentUser, outcome);
+      } else if (!completed) {
+        writeUserQuizOutcome(currentUser, null);
+      }
+    },
+    [currentUser],
+  );
+
+  // The Movie quiz button in Settings opens the quiz with this event.
+  useEffect(() => {
+    const handleOpenQuiz = () => setShowQuizExperience(true);
+    window.addEventListener("open-quiz-experience", handleOpenQuiz);
+    return () => window.removeEventListener("open-quiz-experience", handleOpenQuiz);
+  }, []);
+
+  const setQuizExperienceOpen = useCallback((open: boolean) => {
+    setShowQuizExperience(open);
+    if (!open) focusSettingsTrigger();
+  }, []);
+  const setQuizEditorOpen = useCallback((open: boolean) => {
+    setShowQuizEditor(open);
+    if (!open) focusSettingsTrigger();
+  }, []);
+
+  const featureModals = useMemo(
+    () =>
+      buildFeatureModals({
+        showMessages: false,
+        showQuizEditor,
+        showQuizExperience,
+        showSpinMatch: false,
+        quizCompleted,
+        currentUser,
+        setShowMessages: () => {},
+        setShowQuizEditor: setQuizEditorOpen,
+        setShowQuizExperience: setQuizExperienceOpen,
+        setShowSpinMatch: () => {},
+        onQuizComplete: (outcome?: QuizResult) => updateQuizCompletion(true, outcome),
+        onQuizRetake: () => updateQuizCompletion(false, null),
+        onQuizEdit: () => {
+          setShowQuizExperience(false);
+          setShowQuizEditor(true);
+        },
+      }).filter((modal) => modal.key.startsWith("quiz")),
+    [currentUser, quizCompleted, setQuizEditorOpen, setQuizExperienceOpen, showQuizEditor, showQuizExperience, updateQuizCompletion],
+  );
 
   const togglePanel = useCallback((panel: TogglePanel) => {
     setOpenPanels((prev) => {
@@ -147,6 +232,25 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {featureModals.map((modal) => (
+          <MinigameModal
+            key={modal.key}
+            isOpen={modal.isOpen}
+            onClose={modal.onClose}
+            title={modal.title}
+            ariaLabel={modal.ariaLabel}
+            maxWidth={modal.maxWidth}
+            maxHeight={modal.maxHeight}
+            closeDisabled={modal.closeDisabled}
+            closeDisabledLabel={modal.closeDisabledLabel}
+            isUnstyled={modal.isUnstyled}
+          >
+            <div style={modal.contentStyle ?? modalBodyStyle}>
+              {modal.isOpen ? modal.content : null}
+            </div>
+          </MinigameModal>
+        ))}
 
         <ProfilePinPanel />
       </div>
