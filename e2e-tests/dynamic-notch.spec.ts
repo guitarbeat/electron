@@ -80,6 +80,8 @@ test.describe("dynamic notches", () => {
       };
     });
     expect(look).toEqual({ rounded: true, inputOutline: "none", glow: true, artInside: true, kbdInside: true, underline: "none" });
+    // The field takes focus once the island has expanded; typing earlier is lost on slow runners.
+    await expect(field.locator("input")).toBeFocused();
     await page.keyboard.type("ma");
     await expect(page.locator(".dyn-notch-hint")).toContainText("of 5 titles match");
     await page.keyboard.press("Escape");

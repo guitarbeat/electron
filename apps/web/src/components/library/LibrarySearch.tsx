@@ -824,6 +824,18 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>
+              <button
+                type="button"
+                className="frame-quiz-trigger"
+                data-closes-settings
+                aria-label="Movie quiz"
+                aria-haspopup="dialog"
+                title="Which movie character are you?"
+                onClick={() => window.dispatchEvent(new CustomEvent("open-quiz-experience"))}
+              >
+                <img className="frame-quiz-art" src="/movie-quiz-cover.svg" alt="" aria-hidden="true" width={400} height={600} draggable={false} />
+                <span>Movie quiz</span>
+              </button>
                       </>,
                     )}
                   </div>

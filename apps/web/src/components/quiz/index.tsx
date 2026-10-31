@@ -455,6 +455,7 @@ export const calculateQuizResults = (
 };
 
 import React, {
+  useSyncExternalStore,
   useEffect,
   useMemo,
   useState,
@@ -500,6 +501,25 @@ export {
 import { WorkspaceFeatureSectionLoading, PageFlip, type PageFlipLeaf } from "@/components/ui";
 import { useViewport } from "@/app/providerContexts";
 import { useQuiz, type QuizData, useFeatureFonts } from "@/hooks";
+
+/** Space the booklet leaves for the modal padding and the button row under it. */
+const QUIZ_BOOK_CHROME_PX = 140;
+const subscribeToResize = (onChange: () => void) => {
+  window.addEventListener("resize", onChange);
+  return () => window.removeEventListener("resize", onChange);
+};
+const useWindowInnerHeight = () =>
+  useSyncExternalStore(
+    subscribeToResize,
+    () => window.innerHeight,
+    () => 800,
+  );
+const useWindowInnerWidth = () =>
+  useSyncExternalStore(
+    subscribeToResize,
+    () => window.innerWidth,
+    () => 1280,
+  );
 
 export const BLINK_COLORS = [
   "#ff0000",
@@ -1075,6 +1095,8 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
     () => initialState.currentQuestionIndex > 0 || initialState.answers.length > 0 || Boolean(initialState.showResults),
   );
   const { isMobile } = useViewport();
+  const viewportHeight = useWindowInnerHeight();
+  const viewportWidth = useWindowInnerWidth();
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -1673,9 +1695,13 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
     );
   }
 
-  // Match the exact dimensions of the Movie Booklet
-  const bookWidth = isMobile ? 280 : 380;
-  const bookHeight = isMobile ? 420 : 560;
+  // Match the Movie Booklet's proportions, shrinking on short screens so the
+  // whole page and the button row under it stay visible (1024x640, TV 960x540).
+  const baseBookHeight = isMobile ? 420 : 560;
+  const bookHeight = Math.round(
+    Math.max(340, Math.min(baseBookHeight, viewportHeight - QUIZ_BOOK_CHROME_PX)),
+  );
+  const bookWidth = Math.round(bookHeight * (isMobile ? 280 / 420 : 380 / 560));
 
   const currentTurnedCount = !isQuizStarted
     ? 0
@@ -1700,7 +1726,12 @@ export const QuizFlow: React.FC<QuizFlowProps> = ({
             pages={pages}
             pageWidth={bookWidth}
             pageHeight={bookHeight}
-            spineShift={isMobile ? 85 : 130}
+            spineShift={
+              isMobile
+                ? // Keep the open right-hand page on screen on narrow phones.
+                  Math.max(0, Math.min(85, (viewportWidth - bookWidth) / 2 - 8))
+                : 130
+            }
             pageRadius={isMobile ? 6 : 8}
             turnAngle={180}
             shadow={0.45}
