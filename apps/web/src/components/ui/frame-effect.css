@@ -1,6 +1,8 @@
 :root {
   --frame-border-width: 5px;
-  --frame-border-top-width: var(--frame-border-width);
+  /* The top edge is thinner than the sides so the frosted band starts close to the screen edge. */
+  --frame-top-edge: 2px;
+  --frame-border-top-width: var(--frame-top-edge);
   --frame-color: #999999;
   --frame-border-radius: 20px;
   --frame-account-width: 8rem;
@@ -16,7 +18,7 @@
 @media (max-width: 768px) {
   :root {
     --frame-border-width: 5px;
-    --frame-border-top-width: var(--frame-border-width);
+    --frame-border-top-width: var(--frame-top-edge);
     --frame-border-radius: 16px;
     --loader-badge-width: min(18.5rem, calc(100vw - 2rem));
     --loader-badge-height: 12.25rem;
@@ -58,7 +60,9 @@
   inset: 0;
   border: var(--frame-border);
   border-radius: var(--frame-border-radius, 20px) !important;
+  border-top-width: var(--frame-border-top-width, 7px);
   margin: calc(-1 * var(--frame-border-width, 7px));
+  margin-top: calc(-1 * var(--frame-border-top-width, 7px));
   box-sizing: border-box;
   pointer-events: none;
   transition: border-radius 720ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -765,7 +769,7 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
 }
 
 @media (max-width: 600px) {
-  :root { --frame-corner-height: 4.5rem; --frame-border-top-width: 4.5rem; }
+  :root { --frame-corner-height: 4.5rem; --frame-top-edge: var(--frame-border-width); --frame-border-top-width: 4.5rem; }
   body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) {
     border-top-width: 4.5rem;
     border-bottom-width: var(--frame-border-width);
