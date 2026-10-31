@@ -98,4 +98,21 @@ describe("stremio utilities", () => {
       assert.strictEqual(getStremioUrls({ title: "E", imdbID: "tt1111111", imdbId: "tt2222222" }).detailUrl, "stremio:///detail/movie/tt1111111/tt1111111");
     });
   });
+  describe("TV autoplay", () => {
+    it("adds autoPlay=true to movie links on TV only", () => {
+      assert.strictEqual(buildStremioDetailUrl("movie", "tt0133093", { isTv: true }), "stremio:///detail/movie/tt0133093/tt0133093?autoPlay=true");
+      assert.strictEqual(buildStremioDetailUrl("movie", "tt0133093", { isTv: false }), "stremio:///detail/movie/tt0133093/tt0133093");
+      assert.strictEqual(buildStremioDetailUrl("movie", "tt0133093"), "stremio:///detail/movie/tt0133093/tt0133093");
+    });
+
+    it("leaves series links and the search fallback alone on TV", () => {
+      assert.strictEqual(buildStremioDetailUrl("series", "tt0903747", { isTv: true }), "stremio:///detail/series/tt0903747");
+      const tv = getStremioUrls({ title: "Inception", imdbID: "tt1375666" }, "movie", undefined, { isTv: true });
+      assert.strictEqual(tv.appUrl, "stremio:///detail/movie/tt1375666/tt1375666?autoPlay=true");
+      assert.strictEqual(tv.searchUrl, "stremio:///search?search=Inception");
+      const noId = getStremioUrls({ title: "Unknown" }, "movie", undefined, { isTv: true });
+      assert.strictEqual(noId.appUrl, "stremio:///search?search=Unknown");
+      assert.strictEqual(getStremioUrls({ title: "BB", type: "series", imdbID: "tt0903747" }, "movie", undefined, { isTv: true }).appUrl, "stremio:///detail/series/tt0903747");
+    });
+  });
 });

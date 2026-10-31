@@ -7,6 +7,8 @@
  *                                             IMDb id again, which opens its streams list
  *   stremio:///detail/series/{id}             a series' page with its episode list
  *   stremio:///search?search={query}          a search, used only when no IMDb id is known
+ * On a TV, movie links add `?autoPlay=true`, which only Stremio's Android TV app honours: it
+ * starts the first stream instead of stopping on the streams list.
  * The path needs three slashes. `stremio://detail/...` makes "detail" the URI host, so the
  * app opens without navigating anywhere.
  */
@@ -43,21 +45,27 @@ export function buildStremioSearchUrl(query: string): string {
   return `stremio:///search?search=${encodeURIComponent(clean)}`;
 }
 
+export interface StremioLinkOptions {
+  /** Running on a TV, where Stremio's Android TV app can start a movie straight away. */
+  isTv?: boolean;
+}
+
 export function buildStremioDetailUrl(
   type: StremioTarget,
   imdbId?: string | null,
+  { isTv = false }: StremioLinkOptions = {},
 ): string | null {
   const id = normalizeImdbId(imdbId);
   if (!id) return null;
-  return type === "series"
-    ? `stremio:///detail/series/${id}`
-    : `stremio:///detail/movie/${id}/${id}`;
+  if (type === "series") return `stremio:///detail/series/${id}`;
+  return `stremio:///detail/movie/${id}/${id}${isTv ? "?autoPlay=true" : ""}`;
 }
 
 export function getStremioUrls(
   target: string | StremioMediaObject,
   typeArg: StremioTarget = "movie",
   imdbIdArg?: string | null,
+  options: StremioLinkOptions = {},
 ): {
   detailUrl: string | null;
   searchUrl: string;
@@ -78,7 +86,7 @@ export function getStremioUrls(
     imdbId = imdbIdArg;
   }
 
-  const detailUrl = buildStremioDetailUrl(type, imdbId);
+  const detailUrl = buildStremioDetailUrl(type, imdbId, options);
   const searchUrl = buildStremioSearchUrl(title);
   // Open the title itself when its IMDb id is known; search only as a fallback.
   const appUrl = detailUrl ?? searchUrl;

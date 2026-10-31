@@ -2685,6 +2685,7 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
   variant = "pill",
   className = "",
 }) => {
+  const { isTv } = useViewport();
   // Older watchlist entries were saved without an IMDb id. The book's Watch button looks it up
   // (the metadata lookup is cached) so it can open the title instead of a search.
   const known = typeof movie === "string" ? null : normalizeImdbId(movie.imdbID ?? movie.imdbId);
@@ -2702,8 +2703,8 @@ export const StremioButton: React.FC<StremioButtonProps> = ({
     return () => { cancelled = true; };
   }, [variant, known, lookupTitle, lookupType]);
   const urls = typeof movie === "string"
-    ? getStremioUrls(movie)
-    : getStremioUrls({ ...movie, imdbID: known ?? resolvedImdbId ?? undefined });
+    ? getStremioUrls(movie, "movie", undefined, { isTv })
+    : getStremioUrls({ ...movie, imdbID: known ?? resolvedImdbId ?? undefined }, "movie", undefined, { isTv });
   const action = urls.hasDirectImdbMatch ? "Open" : "Search";
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
