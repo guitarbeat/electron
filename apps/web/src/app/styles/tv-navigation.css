@@ -30,3 +30,67 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Dock, filters, and chat sit outside the poster grid and were losing the couch-distance ring. */
+.is-tv-runtime :is(
+  .y2k-command-dock,
+  .library-settings,
+  .movie-wall-filters,
+  .frame-corner-profiles,
+  .chat-fab,
+  .chat-dock,
+  .account-corner-pin-sheet
+) :focus-visible {
+  outline: 4px solid #fff8a6 !important;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px #183b48, 0 0 26px 9px #6de8d180 !important;
+}
+
+.is-tv-runtime .library-settings summary,
+.is-tv-runtime .library-view-options legend,
+.is-tv-runtime .library-view-options button,
+.is-tv-runtime .top-frame-panels .movie-wall-filters__section-title,
+.is-tv-runtime .top-frame-panels .movie-wall-filters__preset-title {
+  font-size: 1.05rem;
+}
+
+/* Backdrop blur and per-poster filters are a common stall on Fire TV Stick. */
+.is-tv-runtime *,
+.is-silk-browser * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.is-tv-runtime .chat-dock,
+.is-silk-browser .chat-dock {
+  background: rgba(15, 23, 42, 0.97);
+}
+
+.is-tv-runtime .library-settings__body,
+.is-silk-browser .library-settings__body {
+  background: #e6e0ce;
+}
+
+.is-tv-runtime .movie-details-modal__backdrop,
+.is-silk-browser .movie-details-modal__backdrop {
+  background: rgba(3, 6, 12, 0.78);
+}
+
+.is-tv-runtime .drift-wall__tile img,
+.is-silk-browser .drift-wall__tile img,
+.is-tv-runtime .drift-wall.drift-wall--modal-open,
+.is-silk-browser .drift-wall.drift-wall--modal-open {
+  filter: none;
+}
+
+.is-tv-runtime .drift-wall.drift-wall--modal-open,
+.is-silk-browser .drift-wall.drift-wall--modal-open {
+  opacity: 0.5;
+}
+
+.is-tv-runtime .drift-wall__tile,
+.is-tv-runtime .drift-wall__tile img,
+.is-silk-browser .drift-wall__tile,
+.is-silk-browser .drift-wall__tile img {
+  transition: none;
+}

@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { MessageCircle } from "lucide-react";
 import { prefersReducedMotion } from "../utils";
 import { logger } from "../services/logger";
 import type { MainTab } from "../shared/types";
@@ -201,18 +202,35 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
         {/* Search portal for workspace components */}
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
 
+        {isLibraryWorkspaceTab(activeTab) ? (
+          <div className="chat-fab-anchor">
+            <button
+              type="button"
+              className={`chat-fab${isChatOpen ? " is-open" : ""}`}
+              aria-label="Messages"
+              aria-pressed={isChatOpen}
+              aria-controls={chatRendered ? "floating-chat-panel" : undefined}
+              onClick={() => handleTogglePanel("messages")}
+            >
+              <MessageCircle size={22} aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
+
         {/* Floating Chat Panel Dock */}
         {chatRendered ? (
           <section
             id="floating-chat-panel"
             className={`chat-dock${chatClosing ? " is-closing" : ""}`}
+            role="dialog"
+            aria-modal="true"
             aria-label="Messages"
-            aria-live="polite"
             aria-hidden={chatClosing}
           >
             <button
               type="button"
               className="chat-dock__close"
+              data-tv-close=""
               onClick={() => handleTogglePanel("messages")}
               aria-label="Close chat"
             >

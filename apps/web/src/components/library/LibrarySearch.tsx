@@ -66,13 +66,14 @@ export interface LibrarySearchHandle {
 export interface LibrarySearchProps {
   filterSlot?: React.ReactNode;
   viewSlot?: React.ReactNode;
+  soundSlot?: React.ReactNode;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   onOpenMovie: (movieId: string) => void;
 }
 
 const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
-  ({ filterSlot, viewSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
+  ({ filterSlot, viewSlot, soundSlot, searchQuery, onSearchQueryChange, onOpenMovie }, forwardedRef) => {
     const settingsRef = useRef<HTMLDetailsElement>(null);
     useEffect(() => {
       const dismiss = (event: PointerEvent | KeyboardEvent) => {
@@ -810,6 +811,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>
+                  {soundSlot}
                 </div>
               </details>
               <NavbarToastViewport />

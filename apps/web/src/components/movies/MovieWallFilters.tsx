@@ -450,6 +450,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                 type="button"
                 className="movie-wall-filters__close-btn"
                 onClick={() => setIsOpen(false)}
+                data-tv-close
                 aria-label="Close filters"
               >
                 <X size={15} aria-hidden="true" />

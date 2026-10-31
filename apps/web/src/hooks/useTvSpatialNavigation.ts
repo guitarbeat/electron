@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { spatialScore, type Direction } from "./tvSpatialGeometry";
+import {
+  noteXmbUserInput,
+  playXmbCue,
+  playXmbOpen,
+  playXmbSelect,
+  preloadXmbSounds,
+} from "@/services/xmbAudio";
+import { isMostlyOnScreen, spatialScore, type Direction } from "./tvSpatialGeometry";
 
 declare global {
   interface Window { electronTvBack?: () => boolean; }
@@ -15,8 +22,11 @@ function visible(element: HTMLElement) {
   if (element.closest("details:not([open])") && element.tagName !== "SUMMARY") return false;
   if (element.closest(".drift-wall")) {
     const box = element.getBoundingClientRect();
-    const centerY = box.top + box.height / 2;
-    if (box.right <= 0 || box.left >= innerWidth || centerY < 80 || centerY > innerHeight - 80) return false;
+    if (!isMostlyOnScreen(
+      { left: box.left, top: box.top, right: box.right, bottom: box.bottom },
+      innerWidth,
+      innerHeight,
+    )) return false;
   }
   return element.getClientRects().length > 0 && element.offsetWidth > 0 && element.offsetHeight > 0;
 }
@@ -25,8 +35,8 @@ function focusables(scope: ParentNode): HTMLElement[] {
   return Array.from(scope.querySelectorAll<HTMLElement>(SELECTOR)).filter(element =>
     element.tabIndex >= 0 && visible(element) &&
     !element.matches(':disabled,[aria-disabled="true"],.movie-details-modal__backdrop') &&
-    // DriftWall wrappers duplicate their nested poster buttons. Choose the real action.
-    !(element.matches('[role="gridcell"]') && element.querySelector('button,a[href]')),
+    // Wrappers duplicate their nested actions. Choose the real button or link.
+    !(element.matches('[role="gridcell"],[role="button"]') && element.querySelector("button,a[href],input,select,textarea")),
   );
 }
 
@@ -77,9 +87,15 @@ export function useTvSpatialNavigation(enabled = true) {
     const returnFocus = new WeakMap<HTMLElement, HTMLElement>();
     let lastFocus: HTMLElement | null = null;
     let frame = 0;
+    let dialogOpen = false;
+    preloadXmbSounds();
 
     const reconcile = () => {
       const nextScope = scopeForFocus();
+      const nextDialog = nextScope !== document.body
+        && (nextScope.getAttribute("role") === "dialog" || nextScope.getAttribute("role") === "alertdialog");
+      if (nextDialog && !dialogOpen) playXmbOpen();
+      dialogOpen = nextDialog;
       if (nextScope !== currentScope) {
         if (nextScope !== document.body && lastFocus && !returnFocus.has(nextScope)) returnFocus.set(nextScope, lastFocus);
         const restore = returnFocus.get(currentScope);
@@ -93,7 +109,10 @@ export function useTvSpatialNavigation(enabled = true) {
           return;
         }
         if (nextScope !== document.body) {
-          const first = focusables(nextScope).find(element => element.tagName !== "SUMMARY");
+          const preferred = nextScope.querySelector<HTMLElement>("[data-tv-autofocus]");
+          const first = preferred && visible(preferred) && !preferred.matches(':disabled,[aria-disabled="true"]')
+            ? preferred
+            : focusables(nextScope).find(element => element.tagName !== "SUMMARY");
           if (first) { focusAndReveal(first); return; }
         }
       }
@@ -117,21 +136,27 @@ export function useTvSpatialNavigation(enabled = true) {
       toggle.click(); return true;
     };
     const back = () => {
-      if (collapseSuggestion()) return true;
+      noteXmbUserInput();
+      if (collapseSuggestion()) {
+        playXmbCue("cancel");
+        return true;
+      }
       const scope = scopeForFocus();
       if (scope !== document.body) {
         if (scope instanceof HTMLDetailsElement) {
           scope.open = false;
           scope.querySelector<HTMLElement>("summary")?.focus();
         } else {
-          const close = scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close"],button[aria-label="Cancel"]');
+          const close = scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close filters"],button[aria-label="Close chat"],button[aria-label="Close"],button[aria-label="Cancel"]');
           if (close) close.click();
           else dispatchEscape();
         }
+        playXmbCue("cancel");
         return true;
       }
       if (document.querySelector('.is-autocomplete-active,.y2k-library-search.is-expanded,.y2k-add-form.is-expanded')) {
         dispatchEscape();
+        playXmbCue("cancel");
         return true;
       }
       return false;
@@ -140,6 +165,7 @@ export function useTvSpatialNavigation(enabled = true) {
 
     const onKey = (event: KeyboardEvent) => {
       if (!enabled && (!DIRECTIONS.has(event.key) || !document.activeElement?.closest(".movie-library-grid"))) return;
+      noteXmbUserInput();
       const audio = (window as Window & { _sharedAudioContext?: AudioContext })._sharedAudioContext;
       if (audio?.state === "suspended") void audio.resume().catch(() => {});
       // Existing form, autocomplete, and dialog Escape/Enter handlers keep their behavior.
@@ -185,24 +211,37 @@ export function useTvSpatialNavigation(enabled = true) {
           const value = spatialScore(from, candidate.getBoundingClientRect(), event.key as Direction);
           if (value < score) { score = value; best = candidate; }
         }
-        if (best) focusAndReveal(best);
+        if (best && best !== origin) {
+          playXmbCue("cursor", event.repeat);
+          focusAndReveal(best);
+        }
         event.preventDefault();
         event.stopPropagation();
       } else if (event.key === "Escape") {
-        if (collapseSuggestion()) { event.preventDefault(); event.stopPropagation(); return; }
+        if (collapseSuggestion()) {
+          playXmbCue("cancel");
+          event.preventDefault(); event.stopPropagation(); return;
+        }
         // Handle Back before component listeners, without redispatching recursively.
         const scope = scopeForFocus();
-        const close = scope !== document.body && scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"]');
+        const close = scope !== document.body && scope.querySelector<HTMLElement>('[data-tv-close],button[aria-label="Close details"],button[aria-label="Close movie picker"],button[aria-label="Close filters"],button[aria-label="Close chat"]');
         if (scope instanceof HTMLDetailsElement) {
           scope.open = false;
           scope.querySelector<HTMLElement>("summary")?.focus();
+          playXmbCue("cancel");
           event.preventDefault(); event.stopPropagation();
         } else if (close) {
-          close.click(); event.preventDefault(); event.stopPropagation();
+          close.click();
+          playXmbCue("cancel");
+          event.preventDefault(); event.stopPropagation();
         }
-      } else if (event.key === "Enter" && active?.matches('[role="button"]:not(button),[role="gridcell"]')) {
-        if (!event.repeat) active.click();
-        event.preventDefault(); event.stopPropagation();
+      } else if (event.key === "Enter" && !event.repeat && active?.matches('button,a[href],summary,[role="button"],[role="gridcell"]')) {
+        playXmbSelect();
+        if (active.matches('[role="button"]:not(button),[role="gridcell"]')) {
+          active.click();
+          event.preventDefault();
+          event.stopPropagation();
+        }
       } else if (event.key === "MediaPlayPause" || event.key === "MediaPlay" || event.key === "MediaPause") {
         if (event.repeat) { event.preventDefault(); return; }
         const media = document.querySelector<HTMLMediaElement>("video,audio");
@@ -233,10 +272,12 @@ export function useTvSpatialNavigation(enabled = true) {
     window.addEventListener("resize", resize);
     // Capture directions before DriftWall's local roving focus can trap the remote in the wall.
     document.addEventListener("keydown", onKey, true);
+    document.addEventListener("pointerdown", noteXmbUserInput, true);
     document.addEventListener("focusin", onFocus);
     return () => {
       observer.disconnect(); cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKey, true);
+      document.removeEventListener("pointerdown", noteXmbUserInput, true);
       document.removeEventListener("focusin", onFocus);
       window.removeEventListener("resize", resize);
       if (enabled) delete window.electronTvBack;

@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from "react";
 import type { User, MainTab } from "@/shared/types";
 import type { AppThemeDefinition, ThemeName } from "@/theme/tokens";
+import { isTelevisionRuntime } from "./televisionRuntime";
 
 // ============================================================================
 // Theme Context & Hooks
@@ -202,11 +203,7 @@ export const ViewportProvider: React.FC<{ children: ReactNode }> = ({
 
   const isTv = useMemo(() => {
     if (typeof navigator === "undefined") return false;
-    return (
-      new URLSearchParams(window.location.search).get("tv") === "1" ||
-      isSilkBrowser ||
-      /ElectronTV|AFTKM|tv|smarttv|googletv|appletv|firetv|hbbtv/i.test(navigator.userAgent)
-    );
+    return isSilkBrowser || isTelevisionRuntime(navigator.userAgent, window.location.search);
   }, [isSilkBrowser]);
 
   useEffect(() => {

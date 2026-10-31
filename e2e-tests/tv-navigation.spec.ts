@@ -97,6 +97,55 @@ test.describe("Fire TV remote navigation", () => {
     await expect(page.locator(".viewport-frame")).toHaveCSS("mix-blend-mode", "difference");
   });
 
+  test("D-pad reaches Watch on Stremio without turning the page instead", async ({ page }) => {
+    await page.locator(".movie-library-grid [data-movie-id] .movie-item-details-hit-area").first().click();
+    const dialog = page.locator('[role="dialog"][aria-modal="true"]').last();
+    await expect(dialog).toBeVisible();
+    const link = dialog.locator("a.stremio-btn");
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute("href", /^stremio:\/\/\/search\?search=/);
+    await dialog.getByRole("button", { name: /Close details/ }).first().focus();
+
+    const reached = await page.evaluate(async () => {
+      const controls = [...document.querySelectorAll<HTMLElement>('a[href],button,[tabindex]')]
+        .filter(element => element.tabIndex >= 0);
+      controls.forEach((element, index) => { element.dataset.focusProbe = String(index); });
+      const idOf = (element: Element | null) => element instanceof HTMLElement ? element.dataset.focusProbe ?? "" : "";
+      const seen = new Set<string>();
+      const queue = [idOf(document.activeElement)];
+      const directions = ["ArrowDown", "ArrowRight", "ArrowLeft", "ArrowUp"];
+      while (queue.length && seen.size < 48) {
+        const current = queue.shift();
+        if (!current || seen.has(current)) continue;
+        seen.add(current);
+        const origin = document.querySelector<HTMLElement>(`[data-focus-probe="${current}"]`);
+        if (origin?.getAttribute("href")?.startsWith("stremio:///search?search=")) return true;
+        for (const key of directions) {
+          origin?.focus();
+          document.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+          const next = idOf(document.activeElement);
+          if (next && !seen.has(next)) queue.push(next);
+        }
+      }
+      return false;
+    });
+    expect(reached).toBe(true);
+
+    const activation = await link.evaluate(element => {
+      element.focus();
+      const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+      const unhandled = element.dispatchEvent(event);
+      return {
+        unhandled,
+        defaultPrevented: event.defaultPrevented,
+        href: element.getAttribute("href"),
+      };
+    });
+    expect(activation.defaultPrevented).toBe(false);
+    expect(activation.unhandled).toBe(true);
+    expect(activation.href).toMatch(/^stremio:\/\/\/search\?search=/);
+  });
+
 });
 
 test("desktop and Fire TV share the same grid density and frame geometry", async ({ browser }) => {
