@@ -1,3 +1,4 @@
+import { burstConfetti } from "@/components/movies/settingsFun";
 import React, {
   useCallback,
   useEffect,
@@ -820,7 +821,10 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                 aria-label="Pick a movie"
                 aria-expanded={pickerOpen}
                 aria-controls="top-frame-movie-picker"
-                onClick={() => setPickerOpen((open) => !open)}
+                onClick={(event) => {
+                  if (!pickerOpen) burstConfetti(event.currentTarget);
+                  setPickerOpen((open) => !open);
+                }}
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>

@@ -9,6 +9,8 @@ export interface SegmentOption<T extends string> {
   /** Zero-count options recede but stay reachable. */
   empty?: boolean;
   autofocus?: boolean;
+  /** Colour key for the option; the highlight takes the chosen option's tone. */
+  tone?: string;
 }
 
 /**
@@ -68,6 +70,7 @@ export function SlidingSegments<T extends string>({
         ? ({ "--pill-x": `${pill.x}px`, "--pill-y": `${pill.y}px`, "--pill-w": `${pill.w}px`, "--pill-h": `${pill.h}px` } as React.CSSProperties)
         : undefined}
       data-has-pill={pill ? "true" : "false"}
+      data-active-tone={options.find((option) => option.value === value)?.tone}
     >
       <span className="settings-menu__pill" aria-hidden="true" />
       {options.map((option) => {
@@ -85,6 +88,7 @@ export function SlidingSegments<T extends string>({
             title={option.title}
             {...state}
             {...(option.autofocus ? { "data-tv-autofocus": "" } : {})}
+            {...(option.tone ? { "data-tone": option.tone } : {})}
             onClick={() => onSelect(option.value)}
           >
             {option.content}
