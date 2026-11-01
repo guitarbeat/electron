@@ -1,0 +1,306 @@
+/* ==========================================================================
+   Settings sheet, the fun pass
+   Colour per section and per person, tinted genre chips with little icons, springy presses and
+   highlights, avatar and status reactions, counts that pop, a snappy pixel switch, and a
+   shimmering Pick a movie. Motion is transform / opacity only. TV keeps the one-shot reactions
+   but drops the looping ones, and reduced motion turns all of it off.
+   ========================================================================== */
+
+.top-frame-panels .movie-wall-filters__panel.settings-menu {
+  --fun-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --fun-gold: #f5c451;
+  --fun-gold-deep: #a47b22;
+  --fun-aaron: #1d6fa5;
+  --fun-aaron-soft: rgb(56 189 248 / 0.22);
+  --fun-electra: #b8336f;
+  --fun-electra-soft: rgb(244 114 182 / 0.24);
+}
+
+/* ---- Section tones ---- */
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone="status"] { --tone: var(--fun-gold-deep); --tone-soft: rgb(255 250 236 / 0.28); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone="people"] { --tone: #7a4fb0; }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone="format"] { --tone: #1f7a6d; --tone-soft: rgb(31 122 109 / 0.14); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone="sort"] { --tone: #6a3fa0; --tone-soft: rgb(106 63 160 / 0.13); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone="genre"] { --tone: #c2410c; }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: color-mix(in srgb, var(--tone, var(--settings-muted)) 70%, #000);
+  letter-spacing: 0.05em;
+}
+/* A tiny pixel gem in the section colour. */
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__label::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--tone, var(--settings-muted));
+  box-shadow: inset -2px -2px 0 rgb(0 0 0 / 0.25), inset 1px 1px 0 rgb(255 255 255 / 0.45);
+  transform: rotate(45deg);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone] .settings-menu__seg {
+  border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+  background: var(--tone-soft, transparent);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__section[data-tone] .settings-menu__pill { background: var(--tone); }
+
+/* Status tabs: the highlight takes the chosen shelf's colour. */
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__seg--status[data-active-tone="queue"] .settings-menu__pill { background: linear-gradient(180deg, #c99a2e, var(--fun-gold-deep)); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__seg--status[data-active-tone="watching"] .settings-menu__pill { background: linear-gradient(180deg, #2a9a8a, #1f7a6d); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__seg--status[data-active-tone="seen"] .settings-menu__pill { background: linear-gradient(180deg, #3f8a3f, #2f6b2f); }
+
+/* ---- People: Aaron is sky blue, Electra is pink ---- */
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person.is-aaron { --tone: var(--fun-aaron); --tone-soft: var(--fun-aaron-soft); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person.is-electra { --tone: var(--fun-electra); --tone-soft: var(--fun-electra-soft); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person .settings-menu__seg {
+  border-color: color-mix(in srgb, var(--tone) 50%, transparent);
+  background: var(--tone-soft);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person .settings-menu__pill { background: var(--tone); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person-name { color: color-mix(in srgb, var(--tone) 80%, #000); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person .settings-menu__avatar {
+  border-radius: 999px;
+  background: var(--tone-soft);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person .settings-menu__picked {
+  border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+  background: var(--tone-soft);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__person .settings-menu__picked.is-active { background: var(--tone); color: #fff; }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__picked svg { color: var(--fun-gold-deep); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__picked.is-active svg { color: var(--fun-gold); fill: var(--fun-gold); }
+
+/* ---- Genre chips: each its own colour with a small icon ---- */
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip {
+  --chip-hue: 42;
+  gap: 0.25rem;
+  padding-inline: 0.35rem 0.45rem;
+  border-color: hsl(var(--chip-hue) 45% 45% / 0.55);
+  background: hsl(var(--chip-hue) 75% 86% / 0.7);
+  color: hsl(var(--chip-hue) 60% 18%);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip:hover:not(:disabled) { background: hsl(var(--chip-hue) 80% 90%); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip.is-active {
+  border-color: hsl(var(--chip-hue) 55% 24%);
+  background: hsl(var(--chip-hue) 55% 32%);
+  color: #fff;
+  box-shadow: 0 2px 0 hsl(var(--chip-hue) 55% 20%);
+}
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip .settings-menu__count { background: hsl(var(--chip-hue) 50% 35% / 0.16); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip.is-active .settings-menu__count { background: rgb(255 255 255 / 0.22); }
+.top-frame-panels .settings-menu .settings-menu__chip-icon {
+  display: inline-block;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* ---- Pixel switches: a fill that sweeps in behind a snapping knob ---- */
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-switch { background: rgb(255 250 236 / 0.25); }
+.top-frame-panels .movie-wall-filters__panel.settings-menu .settings-switch.is-on {
+  border-color: rgb(31 122 109 / 0.55);
+  background: rgb(31 122 109 / 0.14);
+}
+.top-frame-panels .settings-menu .settings-switch__track { overflow: hidden; }
+.top-frame-panels .settings-menu .settings-switch__track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, #2a9a8a 0 4px, #1f7a6d 4px 8px);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.top-frame-panels .settings-menu .settings-switch.is-on .settings-switch__track { background: #b9b19b; }
+.top-frame-panels .settings-menu .settings-switch.is-on .settings-switch__track::before { transform: scaleX(1); }
+.top-frame-panels .settings-menu .settings-switch__knob { z-index: 1; }
+
+/* ---- Pick a movie and Movie quiz ---- */
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.65), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger {
+  position: relative;
+  border-color: rgb(106 63 160 / 0.45);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.7), rgb(226 214 245 / 0.75));
+  perspective: 300px;
+}
+/* The glow is a pre-drawn shadow on a layer that only fades, so it costs no repaints. */
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px rgb(106 63 160 / 0.55), 0 0 16px rgb(168 85 247 / 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger:is(:hover, :focus-visible)::before { opacity: 1; }
+
+/* ---- Reactions ---- */
+.top-frame-panels .settings-menu .settings-menu__seg--status .settings-menu__opt { overflow: visible; }
+.top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx) > i {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  font-style: normal;
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0;
+}
+.top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx)[data-kind="seen"] > i::before { content: "✨"; }
+.top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx)[data-kind="watching"] > i::before { content: "🍿"; }
+.top-frame-panels .settings-menu .settings-menu__reaction[data-kind="queue"] > i::before { content: "⏳"; }
+.top-frame-panels .settings-menu .settings-menu__avatar-fx[data-kind="picked"] > i::before { content: "⭐"; }
+.top-frame-panels .settings-menu .settings-menu__avatar-fx > i { font-size: 0.65rem; top: 20%; }
+
+/* ---- Pixel confetti for Pick a movie (lives on the body) ---- */
+.settings-confetti {
+  position: fixed;
+  z-index: 2147483000;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.settings-confetti > i {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  box-shadow: inset -2px -2px 0 rgb(0 0 0 / 0.2);
+  animation: funConfetti 850ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Every control squishes on press and springs back. */
+  :root .top-frame-panels .movie-wall-filters__panel.settings-menu :is(.settings-menu__opt, .settings-menu__chip, .settings-switch, .settings-menu__person-name, .settings-menu__close) {
+    transition: transform 260ms var(--fun-spring), background-color 160ms ease-out, color 160ms ease-out;
+  }
+  :root .top-frame-panels .movie-wall-filters__panel.settings-menu :is(.settings-menu__opt, .settings-menu__chip, .settings-switch, .settings-menu__person-name, .settings-menu__close):active {
+    transform: scale(0.9, 0.86);
+    transition-duration: 80ms;
+  }
+  /* The highlight overshoots a little as it lands. */
+  :root .top-frame-panels .settings-menu .settings-menu__pill {
+    transition: transform 460ms var(--fun-spring), width 460ms var(--fun-spring), height 320ms ease-out, opacity 160ms ease-out;
+  }
+  /* Counts pop when their number changes (each one remounts with its value). */
+  :root .top-frame-panels .settings-menu .settings-menu__count { display: inline-block; animation: funCountPop 380ms var(--fun-spring); }
+  :root .top-frame-panels .settings-menu .settings-menu__opt.is-active .settings-menu__status-art { animation: funHop 520ms var(--fun-spring); }
+  :root .top-frame-panels .settings-menu .settings-menu__avatar-wrap { animation: funWiggle 560ms var(--fun-spring); }
+  :root .top-frame-panels .settings-menu .settings-menu__chip.is-active .settings-menu__chip-icon { animation: funSpinPop 480ms var(--fun-spring); }
+  :root .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__chip.is-active { animation: funSquishIn 360ms var(--fun-spring); }
+  :root .top-frame-panels .settings-menu .settings-menu__opt.is-active .settings-menu__reaction > i,
+  :root .top-frame-panels .settings-menu .settings-menu__avatar-fx > i { animation: funFloat 900ms ease-out forwards; }
+  :root .top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx) > i:nth-child(1) { --fx-x: -1.3rem; --fx-r: -20deg; }
+  :root .top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx) > i:nth-child(2) { --fx-x: 0rem; --fx-r: 10deg; animation-delay: 90ms; }
+  :root .top-frame-panels .settings-menu :is(.settings-menu__reaction, .settings-menu__avatar-fx) > i:nth-child(3) { --fx-x: 1.3rem; --fx-r: 25deg; animation-delay: 170ms; }
+
+  /* Switch: the fill sweeps in, then the knob lands with a squash. */
+  :root .top-frame-panels .settings-menu .settings-switch__track::before { transition: transform 240ms steps(5, end); }
+  :root .top-frame-panels .settings-menu .settings-switch.is-on .settings-switch__knob { animation: funKnobOn 300ms var(--fun-spring); }
+  :root .top-frame-panels .settings-menu .settings-switch:not(.is-on) .settings-switch__knob { animation: funKnobOff 300ms var(--fun-spring); }
+
+  /* Pick a movie wobbles on hover / focus; the shimmer runs on its own off TV and on focus on TV. */
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible) .frame-picker-art { animation: funWobble 600ms var(--fun-spring); }
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible)::after { animation: funShimmer 900ms ease-out; }
+  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:not(:hover, :focus-visible)::after { animation: funShimmer 4s ease-in-out 1.2s infinite; }
+
+  /* Movie quiz: the cover flips and the glow fades in. */
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger::before { transition: opacity 220ms ease-out; }
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger:is(:hover, :focus-visible) .frame-quiz-art { animation: funFlip 700ms var(--fun-spring); }
+  :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger:not(:hover, :focus-visible)::before { animation: funGlow 3.2s ease-in-out 1s infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-confetti { display: none; }
+}
+
+@keyframes funCountPop {
+  0% { transform: scale(0.4); opacity: 0.2; }
+  60% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes funHop {
+  0% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-5px) scale(1.12, 0.92); }
+  60% { transform: translateY(0) scale(0.94, 1.06); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes funWiggle {
+  0% { transform: rotate(0) translateY(0) scale(1); }
+  20% { transform: rotate(-14deg) translateY(-4px) scale(1.12); }
+  45% { transform: rotate(10deg) translateY(0) scale(1.04); }
+  70% { transform: rotate(-5deg); }
+  100% { transform: rotate(0) scale(1); }
+}
+@keyframes funSpinPop {
+  0% { transform: scale(0.5) rotate(-40deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes funSquishIn {
+  0% { transform: scale(0.88, 0.8); }
+  55% { transform: scale(1.06, 1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes funFloat {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.4) rotate(0); }
+  25% { opacity: 1; transform: translate(calc(-50% + var(--fx-x, 0) * 0.5), -0.9rem) scale(1.1) rotate(var(--fx-r, 0deg)); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--fx-x, 0)), -2rem) scale(0.8) rotate(var(--fx-r, 0deg)); }
+}
+@keyframes funKnobOn {
+  0% { transform: translateX(0) scaleX(1); }
+  70% { transform: translateX(calc(2.1rem - 1.05rem + 2px)) scaleX(1.3); }
+  100% { transform: translateX(calc(2.1rem - 1.05rem)) scaleX(1); }
+}
+@keyframes funKnobOff {
+  0% { transform: translateX(calc(2.1rem - 1.05rem)) scaleX(1); }
+  70% { transform: translateX(-2px) scaleX(1.3); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+@keyframes funWobble {
+  0% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-5deg) scale(1.08); }
+  55% { transform: rotate(4deg) scale(1.04); }
+  80% { transform: rotate(-2deg); }
+  100% { transform: rotate(0) scale(1); }
+}
+@keyframes funShimmer {
+  0% { opacity: 1; transform: translateX(-150%) skewX(-20deg); }
+  30% { opacity: 1; transform: translateX(380%) skewX(-20deg); }
+  31%, 100% { opacity: 0; transform: translateX(380%) skewX(-20deg); }
+}
+@keyframes funFlip {
+  0% { transform: rotateY(0) scale(1); }
+  60% { transform: rotateY(200deg) scale(1.12); }
+  100% { transform: rotateY(360deg) scale(1); }
+}
+@keyframes funGlow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.7; }
+}
+@keyframes funConfetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 40px)) rotate(var(--spin)) scale(0.7); }
+}

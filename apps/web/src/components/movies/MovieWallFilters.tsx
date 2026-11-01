@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { WatchStatusArtwork } from "./WatchStatusArtwork";
 import { SlidingSegments } from "./SettingsControls";
+import { getGenreLook } from "./settingsFun";
 import type { Movie, User } from "@/shared/types";
 import {
   cycleProgressFilter,
@@ -461,7 +462,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             </button>
           </header>
 
-          <section className="settings-menu__section" aria-labelledby="settings-menu-status">
+          <section className="settings-menu__section" data-tone="status" aria-labelledby="settings-menu-status">
             <h3 id="settings-menu-status" className="settings-menu__label">Status</h3>
             <SlidingSegments
               label="Watch status filters"
@@ -471,6 +472,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
               onSelect={handleSelectCouplePreset}
               options={WATCH_STATUS_OPTIONS.map((status) => ({
                 value: status.value,
+                tone: status.artwork,
                 ariaLabel: `${status.label}: ${optionCounts.presets[status.value]} titles`,
                 title: status.description,
                 empty: optionCounts.presets[status.value] === 0,
@@ -479,15 +481,16 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                   <>
                     <WatchStatusArtwork status={status.artwork} className="settings-menu__status-art" />
                     <span>{status.label}</span>
-                    <span className="settings-menu__count">{optionCounts.presets[status.value]}</span>
+                    <span key={optionCounts.presets[status.value]} className="settings-menu__count">{optionCounts.presets[status.value]}</span>
+                    <span className="settings-menu__reaction" data-kind={status.artwork} aria-hidden="true"><i /><i /><i /></span>
                   </>
                 ),
               }))}
             />
           </section>
 
-          <section className="settings-menu__section" aria-labelledby="settings-menu-people">
-            <h3 id="settings-menu-people" className="settings-menu__label">By person</h3>
+          <section className="settings-menu__section" data-tone="people" aria-labelledby="settings-menu-people">
+            <h3 id="settings-menu-people" className="settings-menu__label">Who&rsquo;s watching?</h3>
             <div className="settings-menu__people">
               {(["Aaron", "Electra"] as const).map((user) => {
                 const cfg = PARTNER_CONFIG[user];
@@ -501,8 +504,11 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                       aria-label={`Cycle ${user} watch status filter. Currently ${progressLabels[filters[user]]}`}
                       title={`Cycle ${user}'s watch status`}
                     >
-                      <span key={filters[user]} className="settings-menu__avatar-wrap" data-status={filters[user]}>
+                      <span key={`${filters[user]}-${isPickedByUser}`} className="settings-menu__avatar-wrap" data-status={filters[user]}>
                         <img src={cfg.avatarSrc} alt="" className="settings-menu__avatar" />
+                        {filters[user] === "watching" || filters[user] === "watched" || isPickedByUser ? (
+                          <span className="settings-menu__avatar-fx" data-kind={filters[user] === "watching" ? "watching" : filters[user] === "watched" ? "seen" : "picked"} aria-hidden="true"><i /><i /><i /></span>
+                        ) : null}
                         {filters[user] !== "all" ? (
                           <span className="settings-menu__avatar-badge" aria-hidden="true">
                             {STATUS_GLYPHS[filters[user]]}
@@ -519,12 +525,13 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                         const count = optionCounts.viewers[user][status];
                         return {
                           value: status,
+                          tone: user.toLowerCase(),
                           ariaLabel: status === "all" ? `${user}: any status` : `${user}: ${label}, ${count} titles`,
                           empty: status !== "all" && count === 0,
                           content: (
                             <>
                               <span>{label}</span>
-                              {status !== "all" ? <span className="settings-menu__count">{count}</span> : null}
+                              {status !== "all" ? <span key={count} className="settings-menu__count">{count}</span> : null}
                             </>
                           ),
                         };
@@ -539,7 +546,7 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                     >
                       <Star size={12} aria-hidden="true" />
                       <span>Picked</span>
-                      <span className="settings-menu__count">{optionCounts.addedBy[user]}</span>
+                      <span key={optionCounts.addedBy[user]} className="settings-menu__count">{optionCounts.addedBy[user]}</span>
                     </button>
                   </div>
                 );
@@ -548,8 +555,8 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           </section>
 
           <div className="settings-menu__columns">
-            <section className="settings-menu__section" aria-labelledby="settings-menu-format">
-              <h3 id="settings-menu-format" className="settings-menu__label">Format</h3>
+            <section className="settings-menu__section" data-tone="format" aria-labelledby="settings-menu-format">
+              <h3 id="settings-menu-format" className="settings-menu__label">What kind</h3>
               <SlidingSegments
                 label="Format"
                 value={filters.format}
@@ -562,15 +569,15 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                     <>
                       <Icon size={12} aria-hidden="true" />
                       <span>{label}</span>
-                      <span className="settings-menu__count">{optionCounts.formats[value]}</span>
+                      <span key={optionCounts.formats[value]} className="settings-menu__count">{optionCounts.formats[value]}</span>
                     </>
                   ),
                 }))}
               />
             </section>
 
-            <section className="settings-menu__section" aria-labelledby="settings-menu-sort">
-              <h3 id="settings-menu-sort" className="settings-menu__label">Sort by</h3>
+            <section className="settings-menu__section" data-tone="sort" aria-labelledby="settings-menu-sort">
+              <h3 id="settings-menu-sort" className="settings-menu__label">Line &rsquo;em up</h3>
               <SlidingSegments
                 label="Sort by"
                 value={currentSort}
@@ -590,34 +597,37 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           </div>
 
           {genres.length > 0 ? (
-            <section className="settings-menu__section" aria-labelledby="settings-menu-genre">
-              <h3 id="settings-menu-genre" className="settings-menu__label">Genre</h3>
+            <section className="settings-menu__section" data-tone="genre" aria-labelledby="settings-menu-genre">
+              <h3 id="settings-menu-genre" className="settings-menu__label">Genre vibes</h3>
               <div className="settings-menu__chips" role="radiogroup" aria-label="Genre">
                 <button
                   type="button"
                   role="radio"
                   className={`settings-menu__chip${filters.genre === "all" ? " is-active" : ""}`}
+                  style={{ "--chip-hue": 42 } as React.CSSProperties}
                   onClick={() => update("genre", "all")}
                   aria-checked={filters.genre === "all"}
                 >
-                  <Check size={11} className="settings-menu__check" aria-hidden="true" />
+                  <span className="settings-menu__chip-icon" aria-hidden="true">🍿</span>
                   <span>All</span>
                   <span className="settings-menu__count">{movies.length}</span>
                 </button>
                 {genreCounts.map(({ genre, count }) => {
                   const isSelected = filters.genre.toLowerCase() === genre.toLowerCase();
+                  const look = getGenreLook(genre);
                   return (
                     <button
                       key={genre}
                       type="button"
                       role="radio"
                       className={`settings-menu__chip${isSelected ? " is-active" : ""}`}
+                      style={{ "--chip-hue": look.hue } as React.CSSProperties}
                       onClick={() => update("genre", genre)}
                       aria-checked={isSelected}
                     >
-                      <Check size={11} className="settings-menu__check" aria-hidden="true" />
+                      <span className="settings-menu__chip-icon" aria-hidden="true">{look.emoji}</span>
                       <span>{genre}</span>
-                      <span className="settings-menu__count">{count}</span>
+                      <span key={count} className="settings-menu__count">{count}</span>
                     </button>
                   );
                 })}
