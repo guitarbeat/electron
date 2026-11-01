@@ -1,0 +1,179 @@
+/* ==========================================================================
+   Notch sheets open like the movie book
+   The poster-to-book details view lifts the poster out with an expo-out grow and then swings
+   its cover open around the spine (rotateY to -180deg, 550ms ease-in-out, 1200px perspective)
+   while the spread slides over. The Settings, Pick a movie and profile sheets reuse that feel:
+   the corner notch grows out on the same expo-out curve, a cover in the notch colour sits on
+   the sheet and swings open from the edge it hangs from, and the sections arrive one after
+   another like pages. Closing swings the cover shut over the fading copy as the notch folds
+   back. Transform / opacity only; TV gets a flat fold, reduced motion gets none of it.
+   ========================================================================== */
+
+:root {
+  --book-lift: 460ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* The sheet sits in a screen corner and the notch clips it, so the cover swings away into the
+     screen on its spine (a cover lifted toward you would be clipped) and is edge-on as it leaves. */
+  --book-swing-ms: 520ms;
+  --book-swing-ease: cubic-bezier(0.5, 0, 0.25, 1);
+  --book-depth: 1000px;
+  --book-swing-delay: 110ms;
+  --book-close-ms: 200ms;
+}
+
+/* ---- The notch grows out of its corner on the poster's lift curve ---- */
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
+.frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
+  transition: width var(--book-lift), height var(--book-lift), border-radius var(--book-lift);
+}
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels[data-expanded="true"] {
+  transition: height var(--book-lift), width var(--book-lift);
+}
+
+/* ---- The cover ---- */
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]),
+.frame-corner-profiles .profile-settings-menu { isolation: isolate; }
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]) { position: relative; }
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"])::before,
+.frame-corner-profiles .profile-settings-menu::before {
+  content: var(--book-cover-title, "");
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 18%;
+  border-radius: 0 var(--notch-radius-open) var(--notch-radius-open) 0;
+  /* A cloth-bound cover in the frame's colours: the corner art, a spine shadow, and a gilt rule. */
+  background:
+    var(--book-cover-art) center 38% / auto min(44%, 7.5rem) no-repeat,
+    linear-gradient(90deg, rgb(21 20 15 / 0.35), rgb(21 20 15 / 0) 7%, rgb(255 250 236 / 0.1) 55%, rgb(21 20 15 / 0.12)),
+    repeating-linear-gradient(0deg, rgb(255 250 236 / 0.05) 0 2px, transparent 2px 4px),
+    linear-gradient(160deg, var(--book-cover-a, #b9a77a), var(--book-cover-b, #8f7c52));
+  box-shadow: inset 0 0 0 2px rgb(21 20 15 / 0.2), inset 0 0 0 7px var(--book-cover-b, #8f7c52), inset 0 0 0 8px rgb(245 196 81 / 0.7);
+  color: #fff6dc;
+  font-size: 1.05rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 0 rgb(21 20 15 / 0.35);
+  text-transform: uppercase;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-origin: left center;
+  pointer-events: none;
+  visibility: hidden;
+}
+.y2k-command-dock .top-frame-panel[data-frame-panel="filters"] { --book-cover-art: url("/avatars/aaron-electra-filter-sliders.png"); --book-cover-title: "Settings"; }
+.y2k-command-dock .top-frame-panel[data-frame-panel="picker"] {
+  --book-cover-art: url("/avatars/pick-a-movie-pixel-button.png");
+  --book-cover-title: "Pick a movie";
+  --book-cover-a: #f7d77a;
+  --book-cover-b: #c8922f;
+}
+/* The profile sheet hangs from the right edge, so its cover opens to the right. */
+.frame-corner-profiles .profile-settings-menu { --book-cover-art: url("/avatars/aaron-electra-avatars-seen.png"); }
+.frame-corner-profiles .profile-settings-menu::before {
+  border-radius: var(--notch-radius-open) 0 0 var(--notch-radius-open);
+  background:
+    var(--book-cover-art) center 45% / auto min(42%, 5rem) no-repeat,
+    linear-gradient(270deg, rgb(21 20 15 / 0.35), rgb(21 20 15 / 0) 7%, rgb(255 250 236 / 0.1) 55%, rgb(21 20 15 / 0.12)),
+    repeating-linear-gradient(0deg, rgb(255 250 236 / 0.05) 0 2px, transparent 2px 4px),
+    linear-gradient(200deg, #b9a77a, #8f7c52);
+  transform-origin: right center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"])::before,
+  .frame-corner-profiles .profile-settings-menu::before { display: flex; }
+
+  /* Opening: the cover sits on the sheet while the notch grows, then swings open on its spine. */
+  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]):not(.dyn-notch-ghost)::before {
+    animation: bookCoverOpen var(--book-swing-ms) var(--book-swing-ease) var(--book-swing-delay) both;
+  }
+  .frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)::before {
+    animation: bookCoverOpenRight var(--book-swing-ms) var(--book-swing-ease) var(--book-swing-delay) both;
+  }
+  /* The spread slides a little away from the spine as the cover turns, like the book does. */
+  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]):not(.dyn-notch-ghost) {
+    animation: bookSpread 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost) {
+    --book-spread-x: 10px;
+    animation: bookSpread 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  /* Pages: each block of the sheet arrives just after the cover passes it. */
+  .y2k-command-dock .top-frame-panel:not(.dyn-notch-ghost) .movie-wall-filters__panel.settings-menu > * {
+    animation: bookPageIn 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--book-swing-delay) + 80ms + var(--page, 0) * 45ms);
+  }
+  .y2k-command-dock .top-frame-panel .settings-menu > :nth-child(2) { --page: 1; }
+  .y2k-command-dock .top-frame-panel .settings-menu > :nth-child(3) { --page: 2; }
+  .y2k-command-dock .top-frame-panel .settings-menu > :nth-child(4) { --page: 3; }
+  .y2k-command-dock .top-frame-panel .settings-menu > :nth-child(5) { --page: 4; }
+  .y2k-command-dock .top-frame-panel .settings-menu > :nth-child(n + 6) { --page: 5; }
+
+  /* Closing: the copy left behind stays put while the cover swings shut over it, then fades. */
+  .y2k-command-dock .top-frame-panel.dyn-notch-ghost:is([data-frame-panel="filters"], [data-frame-panel="picker"]),
+  .frame-corner-profiles .profile-settings-menu.dyn-notch-ghost {
+    animation: bookGhost var(--book-close-ms) linear forwards !important;
+  }
+  .y2k-command-dock .top-frame-panel.dyn-notch-ghost:is([data-frame-panel="filters"], [data-frame-panel="picker"])::before {
+    animation: bookCoverClose calc(var(--book-close-ms) * 0.8) cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  .frame-corner-profiles .profile-settings-menu.dyn-notch-ghost::before {
+    animation: bookCoverCloseRight calc(var(--book-close-ms) * 0.8) cubic-bezier(0.4, 0, 1, 1) both;
+  }
+}
+
+/* TV: no 3D. The cover folds flat toward its spine and the pages arrive together. */
+:is(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]):not(.dyn-notch-ghost)::before {
+  animation-name: bookCoverFold;
+  animation-duration: 340ms;
+}
+:is(.is-tv-runtime, .is-silk-browser) .frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)::before {
+  animation-name: bookCoverFold;
+  animation-duration: 340ms;
+}
+:is(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panel .movie-wall-filters__panel.settings-menu > * { animation: none; }
+:is(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panel.dyn-notch-ghost::before,
+:is(.is-tv-runtime, .is-silk-browser) .frame-corner-profiles .profile-settings-menu.dyn-notch-ghost::before { animation-name: bookCoverUnfold; }
+
+@keyframes bookCoverOpen {
+  0% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(0); }
+  99% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(92deg); }
+  100% { visibility: hidden; transform: perspective(var(--book-depth)) rotateY(92deg); }
+}
+@keyframes bookCoverOpenRight {
+  0% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(0); }
+  99% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(-92deg); }
+  100% { visibility: hidden; transform: perspective(var(--book-depth)) rotateY(-92deg); }
+}
+@keyframes bookCoverClose {
+  0% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(92deg); }
+  100% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(0); }
+}
+@keyframes bookCoverCloseRight {
+  0% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(-92deg); }
+  100% { visibility: visible; transform: perspective(var(--book-depth)) rotateY(0); }
+}
+@keyframes bookCoverFold {
+  0% { visibility: visible; opacity: 1; transform: scaleX(1); }
+  99% { visibility: visible; opacity: 0; transform: scaleX(0.05); }
+  100% { visibility: hidden; opacity: 0; transform: scaleX(0.05); }
+}
+@keyframes bookCoverUnfold {
+  0% { visibility: visible; opacity: 0; transform: scaleX(0.05); }
+  100% { visibility: visible; opacity: 1; transform: scaleX(1); }
+}
+@keyframes bookSpread {
+  0%, 25% { transform: translateX(var(--book-spread-x, -10px)); }
+  100% { transform: none; }
+}
+@keyframes bookPageIn {
+  0% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes bookGhost {
+  0%, 85% { opacity: 1; }
+  100% { opacity: 0; }
+}
