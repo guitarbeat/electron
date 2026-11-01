@@ -1549,37 +1549,6 @@
   border: 0;
 }
 
-.library-workspace.has-search::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(var(--frame-border-top-width, 4.65rem) + 2.25rem);
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-surface-0) 78%, transparent) 0%,
-    color-mix(in srgb, var(--color-surface-0) 52%, transparent) 62%,
-    transparent 100%
-  );
-  -webkit-backdrop-filter: blur(42px) saturate(190%);
-  backdrop-filter: blur(42px) saturate(190%);
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000000 0%,
-    #000000 68%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000000 0%,
-    #000000 68%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 14;
-}
-
 .library-workspace > .workspace-search__stage,
 .workspace-search__stage.y2k-command-dock {
   position: fixed;
@@ -1749,16 +1718,4 @@ body:has(.frame-corner-profiles) .movies-wall-container {
 .top-frame-panels .movie-wall-filters__search-input:focus-visible {
   outline: 2px solid #665024;
   outline-offset: 2px;
-}
-/* On phones the pockets merge into shallow shelves; posters get the usable center. */
-@media (max-width: 600px) {
-  body:has(.frame-corner-profiles) .movies-wall-container {
-    mask-image: linear-gradient(#000, #000), var(--frame-bottom-left-shape), var(--frame-account-shape);
-    mask-size: 100% calc(100% - 4.5rem),
-      calc(var(--frame-filter-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-filter-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
-      calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-account-grow, 0px)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
-    mask-position: center bottom, left bottom, right bottom;
-    mask-repeat: no-repeat;
-    mask-composite: subtract, add, add;
-  }
 }
