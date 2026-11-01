@@ -768,14 +768,18 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
   :root:has(.y2k-add-form.is-expanded) { --frame-create-width: calc(100vw - 2 * var(--frame-border-width)); }
 }
 
+/* Phones keep the four corner notches and a thin top edge, like desktop. The top notches drop
+   below the iPhone status bar and the bottom ones clear the home indicator, while the frame
+   band itself stays thin so the screen edge is not a filled bar. */
 @media (max-width: 600px) {
-  :root { --frame-corner-height: 4.5rem; --frame-top-edge: var(--frame-border-width); --frame-border-top-width: 4.5rem; }
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) {
-    border-top-width: 4.5rem;
-    border-bottom-width: var(--frame-border-width);
+  :root {
+    --frame-safe-top: env(safe-area-inset-top, 0px);
+    --frame-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --frame-corner-height: 4.5rem;
+    --frame-border-top-width: var(--frame-border-width);
+    --frame-top-edge: calc(var(--frame-border-width) + var(--frame-safe-top));
+    --frame-bottom-edge: calc(var(--frame-border-width) + var(--frame-safe-bottom));
   }
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-left,
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--top-right { display: none; }
 }
 
 /* Pockets grow a little toward the control under the pointer or keyboard / D-pad focus.

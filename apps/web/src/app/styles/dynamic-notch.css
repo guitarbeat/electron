@@ -444,25 +444,36 @@ body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .m
   :is(.is-tv-runtime, .is-silk-browser) .movies-wall-container :is(.movie-library-grid, .drift-wall) { transition: none; }
 }
 
-/* ---- Phones: the top bar is the notch, and it drops down as a sheet ---- */
+/* ---- Phones: the same four corner notches as desktop, sized for touch ---- */
 @media (max-width: 600px) {
-  .dyn-notch[data-notch="search"],
-  .dyn-notch[data-notch="add"],
-  .dyn-notch-hint { display: none; }
+  /* The frame band is thin; the top fillets meet it rather than the safe-area offset. */
+  .dyn-notch:is([data-notch="search"], [data-notch="add"])::after { top: var(--frame-border-top-width); }
+  /* Bottom notches grow down over the home indicator so their buttons sit above it. */
+  .dyn-notch[data-notch="settings"] { --dyn-h: calc(var(--frame-bottom-edge) + var(--frame-corner-height)); }
+  .dyn-notch[data-notch="profiles"] { --dyn-h: calc(var(--frame-bottom-edge) + max(var(--frame-account-height), var(--frame-corner-height))); }
+  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] {
+    --dyn-h: calc(var(--frame-bottom-edge) + var(--frame-corner-height) + var(--dyn-panel-h));
+  }
+  .frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
+    --dyn-h: calc(var(--frame-bottom-edge) + var(--frame-corner-height) + var(--dyn-profile-h));
+  }
+  .y2k-command-dock .y2k-command-dock__filters { bottom: var(--frame-bottom-edge); }
+  .frame-corner-profiles { bottom: var(--frame-bottom-edge); }
+  .account-pin-viewport { bottom: calc(var(--frame-bottom-edge) + 4.5rem); }
+  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels {
+    bottom: calc(var(--frame-bottom-edge) + var(--frame-corner-height));
+  }
+  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels .top-frame-panels__content {
+    max-height: calc(100dvh - var(--frame-top-edge) - 2 * var(--frame-corner-height) - var(--notch-fillet) - var(--frame-bottom-edge) - 1rem);
+  }
+  .y2k-command-dock .top-frame-panels .top-frame-panels__content {
+    max-height: calc(100dvh - var(--frame-top-edge) - 2 * var(--frame-corner-height) - var(--frame-bottom-edge) - var(--dyn-sub-h, 0px) - 1.5rem);
+  }
   .y2k-command-dock .y2k-command-dock__subbar { top: calc(var(--frame-top-edge) + var(--frame-corner-height)); }
   /* Phone sheets cover the floating chat button's spot. */
   :root:has(.y2k-command-dock .top-frame-panels[data-expanded="true"]) .chat-fab-anchor { display: none; }
-  .y2k-command-dock .y2k-add-form.is-expanded .dyn-notch[data-notch="add"] {
-    display: block;
-    --dyn-w: 100vw;
-    --dyn-h: calc(var(--frame-top-edge) + var(--frame-corner-height) + var(--dyn-sub-h, 0px));
-    border-radius: 0 0 1.25rem 1.25rem;
-  }
-  .y2k-command-dock[data-panel-origin="add"]:has(.top-frame-panels[data-expanded="true"]) .y2k-add-form.is-expanded .dyn-notch[data-notch="add"] {
-    --dyn-h: calc(var(--frame-top-edge) + var(--frame-corner-height) + var(--dyn-panel-h) + var(--dyn-sub-h, 0px));
-  }
-  .dyn-notch[data-notch="add"]::before,
-  .dyn-notch[data-notch="add"]::after { display: none; }
+  /* No Esc key to hint at on a phone. */
+  .dyn-notch-hint__keys { display: none; }
 }
 
 /* ---- Island fields (Search, Add) ----------------------------------------
