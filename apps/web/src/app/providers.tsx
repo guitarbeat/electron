@@ -110,7 +110,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     const onAction = input.onAction || input.onUndo;
 
     setToasts((current) => [
-      ...current,
+      ...current.slice(-2),
       {
         ...input,
         id,

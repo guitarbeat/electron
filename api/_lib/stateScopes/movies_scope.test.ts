@@ -221,6 +221,41 @@ describe("movieScopeDefinition - MAX_MOVIE_TITLE_LENGTH boundaries", () => {
     assert.deepEqual(finished.data[0].watchingBy, []);
     assert.deepEqual(finished.data[0].watchedBy, ["Electra"]);
   });
+
+  it("toggles watched status for Both parties in a single action", () => {
+    const movies: Movie[] = [
+      {
+        id: "m-both",
+        title: "Before Sunrise",
+        addedBy: "Aaron",
+        watchedBy: ["Aaron"],
+        watchingBy: ["Electra"],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    ];
+
+    const markedBoth = movieScopeDefinition.mutate(
+      movies,
+      "toggle_watched",
+      { movieId: "m-both", targetUser: "Both" },
+      context,
+    );
+    assert.equal(markedBoth.ok, true);
+    if (!markedBoth.ok) return;
+    assert.deepEqual(markedBoth.data[0].watchedBy, ["Aaron", "Electra"]);
+    assert.deepEqual(markedBoth.data[0].watchingBy, []);
+
+    const clearedBoth = movieScopeDefinition.mutate(
+      markedBoth.data,
+      "toggle_watched",
+      { movieId: "m-both", targetUser: "Both" },
+      context,
+    );
+    assert.equal(clearedBoth.ok, true);
+    if (!clearedBoth.ok) return;
+    assert.deepEqual(clearedBoth.data[0].watchedBy, []);
+    assert.deepEqual(clearedBoth.data[0].watchingBy, []);
+  });
 });
 
 describe("movieScopeDefinition - update_metadata", () => {

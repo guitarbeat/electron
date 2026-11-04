@@ -96,7 +96,7 @@ describe("independent command dock controls", () => {
     expect(search).toHaveValue("Nolan");
   });
 
-  it("stages a catalog result on Enter and saves that selection on the next Enter", async () => {
+  it("immediately adds a catalog result on Enter or click and keeps the Add input ready for more", async () => {
     fixtures.search.mockResolvedValue([{ title: "Arrival", year: "2016", imdbID: "tt2543164", type: "movie" }]);
     render(<Dock />);
     fireEvent.click(addTrigger());
@@ -107,11 +107,9 @@ describe("independent command dock controls", () => {
     await screen.findByText(/IMDb 8.8/);
     expect(input).toHaveFocus();
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(input).toHaveValue("Arrival");
-    expect(fixtures.addMovie).not.toHaveBeenCalled();
-    fireEvent.submit(input.closest("form")!);
     await waitFor(() => expect(fixtures.addMovie).toHaveBeenCalledWith("Arrival", { imdbID: "tt2543164", type: "movie" }));
     await waitFor(() => expect(input).toHaveValue(""));
+    await waitFor(() => expect(input).toHaveFocus());
   });
 
   it("keeps the draft and exposes the save failure so it can be retried", async () => {

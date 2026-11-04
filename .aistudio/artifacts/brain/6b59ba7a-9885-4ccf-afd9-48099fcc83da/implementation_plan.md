@@ -1,90 +1,74 @@
-# Moving Wall Watch Status Indicators
+# Frameless In-Place Poster Booklets
 
-Add instant visual recognition for **Watched**, **Currently Watching**, and **Not Yet Seen** movies directly on the moving poster wall so Aaron and Electra can scan the drifting grid at a glance without opening individual movie cards.
+Every movie poster on the wall now acts as a physical booklet where it sits: closed posters occupy a single poster slot (`1 column × 1 row`), and clicking or swiping a poster flips its cover open in-place across **2 poster columns at the exact same 1-row poster height**—with no outer frame box, no floating close button, and no `Cover | Spread | Fold closed` button bar.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The visual treatments below incorporate all three preferences confirmed during planning:
-> - **Confirmed Decision 1 (Watched & Watching Indicators)**: Combine color-coded glowing poster borders, compact corner mini-avatars with color-coded status rings, and dimmed/desaturated artwork for already-watched posters.
-> - **Confirmed Decision 2 (Unseen Poster Treatment)**: Keep movies that have not yet been seen completely clean with full-brightness artwork and zero badge clutter.
-> - **Confirmed Decision 3 (Filter Controls)**: Keep status filtering inside the existing Filter popover menu without adding extra quick-toggle pills to the top command bar.
+> The following design and interaction choices reflect your direct feedback and confirmed preferences:
+
+- **Confirmed Decision 1 — Exact 2-Column × 1-Row In-Place Spread (No Outer Frame Box)**: When a poster flips open, its grid slot expands strictly from `1 column` to `2 columns` wide while staying `1 row` tall (matching the exact height of neighboring posters on that row), with zero outer container box, padding frame, or background wrapper.
+- **Confirmed Decision 2 — Direct Page-Flip Open & Shut (No Button Bar)**: Clicking or swiping a closed poster cover flips it open into its two-page spread; clicking or swiping any non-interactive area of the open booklet pages flips it shut back into a 1-column poster cover. The `Cover | Spread | Fold closed` toolbar and corner `✕` button are completely removed.
+- **Confirmed Decision 3 — Multi-Booklet Support & Escape Reset**: Any number of posters can be flipped open at the same time across the grid, and pressing `Escape` flips all open booklets shut at once.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Gives every poster on the moving wall (`DriftWall`) a distinct, immediate visual signature based on whether either partner is currently watching it, has already watched it, or hasn't seen it yet.
-- **Target Audience / Persona**: Aaron and Electra browsing the moving poster wall together to pick their next watch or see what is currently in progress.
-- **Key Value**: Eliminates guesswork while panning across dozens of moving posters—unwatched discoveries pop at full vibrancy, in-progress titles glow warmly, and completed watches recede subtly while showing who watched them.
+- **What It Does**: Unifies the closed poster card and the open 3D `PageFlip` spread so every poster on the wall is itself a 2-leaf booklet.
+- **Target Audience / Persona**: Aaron and Electra browsing their shared movie wall, peeking inside multiple titles side-by-side, and marking watch status without leaving the poster grid or dealing with modal-like wrapper boxes.
+- **Key Value**: Preserves the rhythm and proportions of the poster wall—every open booklet is simply two adjacent poster-sized pages lying open right in the row where the poster sits.
 
 ---
 
 ## 2. User Experience & Visual Design
 
 - **Key User Flows**:
-  1. **Scanning the Moving Wall**:
-     - **Not Yet Seen (Unwatched)**: Renders at 100% poster vibrancy with a clean border and zero corner badges so discovery remains uncluttered.
-     - **Currently Watching**: Stands out with a warm amber/gold glowing border (`#f59e0b` / `rgba(251, 191, 36, 0.78)`), a subtle ambient outer halo, and compact circular mini-avatars in the bottom-right corner ringed in glowing amber with a mini play/watching status badge.
-     - **Already Watched**: Recedes visually with desaturated, dimmed poster artwork (`saturate(0.38) brightness(0.68)` and reduced base opacity), paired with an emerald-green status border (`#10b981` / `rgba(52, 211, 153, 0.55)`) and corner mini-avatars ringed in emerald green with a crisp checkmark status badge.
-  2. **Hover & Focus Inspection**:
-     - Hovering or focusing any dimmed **Watched** poster smoothly restores full poster brightness and color saturation so artwork and details remain effortless to inspect.
-  3. **Toggling Status from Detail Modal**:
-     - Marking a movie as *Watching* or *Watched* inside the detail modal immediately updates the poster's border glow, artwork saturation, and corner watcher badges on the moving wall.
-
+  1. **Closed Cover State (`1 col × 1 row`)**: Each movie sits in its normal poster cell (`aspect-ratio: 2 / 3`) displaying its poster artwork, watch-state border glow (`watching` gold, `watched` emerald), and Aaron/Electra watcher badges in the bottom-right corner. Hovering gives a subtle 3D cover-peek angle.
+  2. **Flipping Open (`2 cols × 1 row`)**: Clicking (or swiping left on) the poster cover smoothly expands the grid cell to `grid-column: span 2` (same 1-row height) as the cover leaf rotates `180°` around the center spine to reveal the two-page interior spread:
+     - **Left Page (Inside Front Cover)**: Compact title, year/runtime/IMDb line, `Aaron` / `Electra` / `Both` watch buttons, and the `Watch on Stremio` / `Edit` action row.
+     - **Right Page (Inside Leaf)**: Scrollable plot overview and added/watch attribution footer.
+  3. **Flipping Shut**: Clicking (or swiping right on) any non-button surface of the open left or right page flips the cover leaf back to `0°` and returns the slot to `1 col × 1 row`. Pressing `Escape` folds all open booklets closed simultaneously.
 - **Visual Identity & Theme**:
-  - *Aesthetic Direction*: Cinematic dark glassmorphism consistent with the existing synthwave/editorial poster wall.
-  - *Color Palette & Status Tokens*:
-    - **Watching Accent**: Warm Amber (`#f59e0b`, border glow `rgba(251, 191, 36, 0.72)`, outer halo `rgba(245, 158, 11, 0.28)`).
-    - **Watched Accent**: Emerald Teal (`#10b981`, border glow `rgba(52, 211, 153, 0.52)`, subtle inner frame).
-    - **Unwatched Surface**: Existing clean glass frame (`var(--color-border)`) at full contrast.
-  - *Corner Mini-Avatar Stack*:
-    - Positioned in the bottom-right corner of the poster (`28px` circular avatars with slight horizontal overlap when both Aaron and Electra appear).
-    - Dark glass backing (`rgba(12, 10, 18, 0.88)`), `2px` color-coded status ring (amber for watching, emerald for watched), and a `12px` corner status indicator dot (`▶` pulse dot for watching, `✓` check for watched).
+  - *Aesthetic Direction*: Tactile physical media booklet embedded directly in the poster grid with zero modal chrome.
+  - *Color Palette & Mood*: Deep obsidian page paper (`#0d111a`), subtle spine shadow, emerald/sky/pink watch-status highlights, and warm gold accents—matching neighboring poster cards.
+  - *Typography & Hierarchy*: Ultra-compact booklet typography scaled specifically to fit inside a single poster-sized leaf (`1 row` height) without overflowing or requiring a 2-row box.
+  - *Component Styling & Layout*: Frameless `PageFlip` occupying 100% of the grid cell height; in the open state, each leaf is exactly one poster wide (`width / 2`) and one poster tall (`height`).
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Three-Signal Hierarchy (Border + Dimming + Corner Avatar Ring)**
-  - *Chosen Approach*: Combine poster-level treatments (glowing status border + watched desaturation) with person-level treatments (compact ringed mini-avatars in the corner).
-  - *Why*: During fast panning or zoomed-out views on the moving wall, border color and poster brightness are readable from afar, while the corner mini-avatars answer *who* watched or is watching up close.
-  - *Alternatives Considered*: Text ribbon banners across the top of posters were passed over because they obscure poster typography and add visual noise.
-- **Decision 2: Zero-Clutter Unseen Posters**
-  - *Chosen Approach*: Render no corner badges, status pills, or extra rings when `watchedBy` and `watchingBy` are both empty.
-  - *Why*: Since the primary goal of the wall is discovering what to watch next, unseen posters should command the strongest visual contrast and cleanest presentation.
+- **Decision 1: True `span 2` Width × `span 1` Height Geometry**
+  - *Chosen Approach*: Size `.movie-library-grid__item--booklet-open` to `grid-column: span 2; grid-row: span 1;` so the open two-page spread is the exact width of two posters and the exact height of one poster row.
+  - *Why*: Eliminates the oversized `4 col × 2 row` black container box that dwarfed neighboring posters and left dead space around the booklet.
+  - *Alternatives Considered*: Spanning 4 columns and 2 rows—rejected because it broke the poster grid's visual scale and looked like an embedded modal rather than the poster itself opening up.
+- **Decision 2: Remove Outer Stage Box, Close `✕`, and `Cover | Spread | Fold closed` Bar**
+  - *Chosen Approach*: Remove `.movie-inline-booklet__nav` and `.movie-inline-booklet__close`, and let `PageFlip`'s built-in leaf click and swipe gestures turn the cover open (`turnedCount = 1`) and closed (`turnedCount = 0`), syncing directly with `openMovieIds`.
+  - *Why*: In the previous design, clicking `Cover` left the single poster stranded inside a huge 4-column black box. Tying the grid slot's open state directly to the cover leaf turn means folding the cover shut immediately restores the normal 1-column poster slot.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
 - **Architecture & Component Diagram**:
-
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         Moving Poster Wall                              │
-│                                                                         │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │ Movie item state derivation (watchedBy[] + watchingBy[])          │  │
-│  │  ├─ "watching"     (watchingBy.length > 0)                        │  │
-│  │  ├─ "watched-both" (watchingBy.length === 0 && watchedBy >= 2)    │  │
-│  │  ├─ "watched"      (watchingBy.length === 0 && watchedBy === 1)   │  │
-│  │  └─ "unwatched"    (both empty)                                   │  │
-│  └───────────────┬───────────────────────────────────┬───────────────┘  │
-│                  │                                   │                  │
-│                  ▼                                   ▼                  │
-│  ┌───────────────────────────────┐   ┌───────────────────────────────┐  │
-│  │ Poster Frame & Artwork Layer  │   │ Corner Watcher Avatar Stack   │  │
-│  │  • Status border & outer glow │   │  • Hidden when "unwatched"    │  │
-│  │  • Dim/desaturate on watched  │   │  • 28px circular avatar photo │  │
-│  │  • Full vibrancy on hover     │   │  • Status ring (Amber/Green)  │  │
-│  └───────────────────────────────┘   └───────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────┐
+│                         MovieSectionBody (Grid)                           │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │ .movie-library-grid__item (1 col × 1 row closed, 2 cols × 1 row open)│  │
+│  │   └── MovieInlineBooklet (Frameless 3D PageFlip Booklet)            │  │
+│  │         ├── Leaf 0 Front: Poster Cover + Watcher Badges (Closed)    │  │
+│  │         ├── Leaf 0 Back : Left Page (Title, Aaron/Electra/Both, CTA)│  │
+│  │         └── Leaf 1 Front: Right Page (Plot Overview & Attribution)  │  │
+│  └─────────────────────────────────────────────────────────────────────┘  │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
 - **Data Model & State**:
-  - Uses existing movie fields (`watchedBy: User[]` and `watchingBy?: User[]`) with no schema migrations required.
-  - Derives a deterministic `watchState` attribute (`"unwatched" | "watching" | "watched" | "watched-both"`) on each poster card container.
+  - `openMovieIds: string[]` in `MovieSectionBody` tracks which posters are currently flipped open (`turnedCount = 1`).
+  - When a user clicks or swipes an open page in `MovieInlineBooklet`, `PageFlip` fires `onPageChange(0)`, which triggers `onClose()` after the page-turn animation so the item smoothly folds back into its 1-column poster slot.
 - **Interactive Component & State Mapping**:
-  - **Poster Container (`data-watch-state`)**: Drives hardware-accelerated CSS border glow, ambient shadow, and poster image filter transitions (`filter`, `opacity`, `border-color`, `box-shadow`).
-  - **Watcher Stack & Mini-Avatar Badges**: Renders only when at least one user is in `watchingBy` or `watchedBy`. Each avatar displays a circular clipped photo (with initial fallback), a status-colored ring (`watching` vs `watched`), and a micro status badge in the lower-right corner of the avatar.
+  - **Leaf Surface Click / Swipe**: Clicking or swiping any non-button area on the left or right page of an open booklet turns the cover leaf back to `0°` and closes that booklet in `openMovieIds`.
+  - **Interactive Controls Inside Left Page**: Clicking `Aaron`, `Electra`, `Both`, `Watch on Stremio`, or `Edit` is ignored by `PageFlip`'s page-turn handler (`isInteractiveChild`) so watch status and actions trigger without closing the booklet.
+  - **Single-Row Booklet Typography Scaling**: `MetadataHeader` and `BookOverview` inside `.movie-inline-booklet` use compact single-row sizing so all controls (`Aaron`, `Electra`, `Both`, and `Watch on Stremio`) fit comfortably within the height of a single grid poster row.

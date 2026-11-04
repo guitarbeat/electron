@@ -5,7 +5,8 @@
 }
 .movie-library-grid__canvas {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-  align-content: start; gap: 16px; padding: 5.5rem 20px; width: 100%;
+  grid-auto-flow: row dense;
+  align-content: start; gap: 16px; padding: 5.5rem 20px 6.5rem; width: 100%;
 }
 /* Extra space lets the first/last row and column reach the same central focus point. */
 .movie-library-grid[data-centered-navigation="true"] .movie-library-grid__canvas {
@@ -18,9 +19,32 @@
 .movie-library-grid .movie-item-poster-wrap { width: 100%; height: 100%; }
 .movie-library-grid .movie-item-container { transform: none; }
 .movie-library-grid--modal-open { filter: blur(5px) brightness(0.68) saturate(0.78); }
+
+/* In-place booklet flips open across 2 poster columns at the exact 1-row poster height */
+.movie-library-grid__item--booklet-open {
+  grid-column: span 2;
+  grid-row: span 1;
+  aspect-ratio: 4 / 3;
+  min-height: 0;
+  z-index: 8;
+}
+@media (max-width: 959px) {
+  .movie-library-grid__item--booklet-open {
+    grid-column: span 2;
+    grid-row: span 1;
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+  }
+}
 @media (max-width: 600px) {
   .movie-library-grid__canvas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 6.5rem 16px 7.5rem; }
   .movie-library-grid[data-centered-navigation="true"] .movie-library-grid__canvas { width: calc(100% - 32px); }
+  .movie-library-grid__item--booklet-open {
+    grid-column: span 2;
+    grid-row: span 1;
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+  }
 }
 
 .suggestion-poster-details {

@@ -17,6 +17,7 @@ import {
   resolvePosterUrl,
 } from "@/utils";
 import { useViewport } from "@/app/providerContexts";
+import { useProfileSelection } from "@/app/ProfilePinContext";
 import { useMediaQuery } from "@/hooks";
 import { getCachedPosterUrlSync } from "@/services/posterCache";
 import { getCachedObjectUrlSync } from "@/utils/imageCache";
@@ -106,7 +107,7 @@ export interface MovieTransitionOrigin {
 }
 
 export interface MovieBodyActions {
-  toggleWatched: (id: string, targetUser?: User) => void | unknown;
+  toggleWatched: (id: string, targetUser?: User | "Both") => void | unknown;
   editMovie: (
     id: string,
     updates: { title: string; customPosterUrl?: string },
@@ -408,7 +409,7 @@ interface MetadataHeaderProps {
   isWatchedByCurrentUser: boolean;
   isUpdatingWatchStatus: boolean;
   onToggleWatched?: () => void | Promise<void>;
-  onToggleUserWatched?: (user: User) => void | Promise<void>;
+  onToggleUserWatched?: (user: User | "Both") => void | Promise<void>;
   activeUsers?: User[];
   onEdit?: () => void;
 }
@@ -423,6 +424,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
   activeUsers = [],
   onEdit,
 }) => {
+  const { requestLogin } = useProfileSelection();
   const isSeries = isTvSeries(movie);
 
   return (
@@ -518,11 +520,7 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
                 void onToggleWatched();
                 return;
               }
-              document
-                .querySelector<HTMLButtonElement>(
-                  `.profile-switcher-btn--${user.toLowerCase()}`,
-                )
-                ?.click();
+              requestLogin(user);
             };
 
             return (
@@ -558,6 +556,65 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
               </button>
             );
           })}
+          {(() => {
+            const isBothWatched =
+              movie.watchedBy.includes("Aaron") &&
+              movie.watchedBy.includes("Electra");
+            const handleBothToggle = () => {
+              if (onToggleUserWatched) {
+                void onToggleUserWatched("Both");
+                return;
+              }
+              requestLogin();
+            };
+
+            return (
+              <button
+                type="button"
+                className={`flipbook-avatar-btn flipbook-avatar-btn--both ${isBothWatched ? "is-watched" : "is-unwatched"}`}
+                onClick={handleBothToggle}
+                disabled={isUpdatingWatchStatus}
+                aria-pressed={isBothWatched}
+                aria-label={
+                  isBothWatched
+                    ? "Both watched. Tap to clear watch status for Aaron and Electra."
+                    : "Watched by both: Tap to mark watched for both Aaron and Electra."
+                }
+                title={
+                  isBothWatched
+                    ? "Both watched (Tap to reset)"
+                    : "Mark watched for both Aaron & Electra"
+                }
+              >
+                <span className="flipbook-avatar-btn__face flipbook-avatar-btn__face--both">
+                  <svg
+                    className="user-avatar-img watch-expression-art watch-expression-art--both"
+                    viewBox="120 85 585 450"
+                    preserveAspectRatio="xMidYMid meet"
+                    aria-hidden="true"
+                  >
+                    <image
+                      href="/avatars/aaron-electra-avatars-seen.png"
+                      width="823"
+                      height="617"
+                    />
+                  </svg>
+                  <span
+                    className="flipbook-avatar-btn__badge"
+                    aria-hidden="true"
+                  >
+                    {isBothWatched ? <CheckIcon size={10} /> : "✓✓"}
+                  </span>
+                </span>
+                <span className="flipbook-avatar-btn__info">
+                  <span className="flipbook-avatar-btn__name">Both</span>
+                  <span className="flipbook-avatar-btn__status">
+                    {isBothWatched ? "Both watched" : "Mark both watched"}
+                  </span>
+                </span>
+              </button>
+            );
+          })()}
         </div>
 
         <div
@@ -635,6 +692,7 @@ export const SummaryBand: React.FC<SummaryBandProps> = ({
  * line with a More toggle, so the spread itself never needs to scroll.
  */
 export const BookOverview: React.FC<{ text: string }> = ({ text }) => {
+  const overviewId = React.useId();
   const boxRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef<HTMLParagraphElement | null>(null);
   const [lines, setLines] = useState<number | null>(null);
@@ -667,7 +725,7 @@ export const BookOverview: React.FC<{ text: string }> = ({ text }) => {
     <div ref={boxRef} className={`book-overview__body${expanded ? " is-expanded" : ""}`}>
       <p
         ref={textRef}
-        id="book-overview-text"
+        id={overviewId}
         className="movie-details-modal__plot book-overview__text"
         style={clamped ? ({ WebkitLineClamp: lines, lineClamp: lines } as React.CSSProperties) : undefined}
         data-clamped={clamped ? "true" : "false"}
@@ -679,7 +737,7 @@ export const BookOverview: React.FC<{ text: string }> = ({ text }) => {
           type="button"
           className="book-overview__more"
           aria-expanded={expanded}
-          aria-controls="book-overview-text"
+          aria-controls={overviewId}
           onClick={() => setExpanded((open) => !open)}
         >
           {expanded ? "Less" : "More"}
@@ -704,7 +762,7 @@ export interface PosterHeroProps {
   isWatchedByCurrentUser: boolean;
   isUpdatingWatchStatus: boolean;
   onToggleWatched?: () => void | Promise<void>;
-  onToggleUserWatched?: (user: User) => void | Promise<void>;
+  onToggleUserWatched?: (user: User | "Both") => void | Promise<void>;
   activeUsers?: User[];
   onEdit?: () => void;
   onClose?: () => void;

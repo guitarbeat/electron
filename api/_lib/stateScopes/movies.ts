@@ -318,7 +318,6 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         const rawTargetUser = extractString(
           (payload as { targetUser?: unknown }).targetUser,
         );
-        const targetUser = rawTargetUser && isUser(rawTargetUser) ? rawTargetUser : context.currentUser!;
 
         const index = findMovieIndexById(movies, movieId);
         if (index === -1) {
@@ -326,6 +325,27 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
         }
 
         const target = movies[index];
+
+        if (rawTargetUser === "Both") {
+          const bothWatched =
+            target.watchedBy.includes("Aaron") &&
+            target.watchedBy.includes("Electra");
+          const updatedMovies = [...movies];
+          updatedMovies[index] = {
+            ...target,
+            watchedBy: bothWatched ? [] : ["Aaron", "Electra"],
+            watchingBy: [],
+          };
+          return {
+            ok: true,
+            data: updatedMovies,
+          };
+        }
+
+        const targetUser =
+          rawTargetUser && isUser(rawTargetUser)
+            ? rawTargetUser
+            : context.currentUser!;
         const watchingBy = target.watchingBy ?? [];
         const watchedBy = watchingBy.includes(targetUser)
           ? [...target.watchedBy, targetUser]

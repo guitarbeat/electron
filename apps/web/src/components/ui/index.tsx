@@ -12,7 +12,11 @@ import React, {
 import type { FC, ReactNode, CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useTopFrame } from "@/app/TopFramePanels";
-import { leaveNotchGhost, useExclusiveNotch, useNotchContentHeight } from "@/app/dynamicNotch";
+import {
+  leaveNotchGhost,
+  useExclusiveNotch,
+  useNotchContentHeight,
+} from "@/app/dynamicNotch";
 import { WatchStatusArtwork } from "@/components/movies/WatchStatusArtwork";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { motion, useInView } from "motion/react";
@@ -897,19 +901,173 @@ export const ProfileMenu: FC<Props_ProfileMenu> = ({ onOpenChange }) => {
   );
 };
 
+export interface ProfileChooserModalProps {
+  isOpen: boolean;
+  onSelect: (user: User) => void;
+  onCancel: () => void;
+}
+
+export const ProfileChooserModal: React.FC<ProfileChooserModalProps> = ({
+  isOpen,
+  onSelect,
+  onCancel,
+}) => {
+  const { accountTarget: frameTarget, setModalOpen } = useTopFrame();
+  const { playClick, playPop } = useAudio();
+  const modalRef = useRef<HTMLDivElement>(null);
+  const firstButtonRef = useRef<HTMLButtonElement>(null);
+
+  useExclusiveNotch("profiles", isOpen, onCancel);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const workspace = document.getElementById("root");
+    const wasInert = workspace?.inert ?? false;
+    if (workspace && !frameTarget) workspace.inert = true;
+    setModalOpen(true);
+    const timer = setTimeout(() => firstButtonRef.current?.focus(), 60);
+    return () => {
+      if (workspace) workspace.inert = wasInert;
+      setModalOpen(false);
+      clearTimeout(timer);
+      window.requestAnimationFrame(() => opener?.focus());
+    };
+  }, [frameTarget, isOpen, setModalOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        playPop();
+        onCancel();
+      } else if (e.key === "1") {
+        e.preventDefault();
+        playClick();
+        onSelect("Aaron");
+      } else if (e.key === "2") {
+        e.preventDefault();
+        playClick();
+        onSelect("Electra");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onCancel, onSelect, playClick, playPop]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div
+      className={frameTarget ? "account-corner-pin-sheet account-corner-chooser-sheet" : "fixed inset-0 z-[10100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          playPop();
+          onCancel();
+        }
+      }}
+      role="presentation"
+    >
+      {frameTarget ? (
+        <div
+          className="account-pin-shield"
+          aria-hidden="true"
+          onClick={() => {
+            playPop();
+            onCancel();
+          }}
+        />
+      ) : null}
+      <section
+        ref={modalRef}
+        className="profile-chooser-dialog w-full max-w-[22rem] my-auto p-5 sm:p-6 rounded-3xl border border-white/15 bg-slate-950/95 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 duration-200 outline-none max-h-[calc(100dvh-2rem)] overflow-y-auto flex flex-col gap-3.5"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-chooser-title"
+        aria-describedby="profile-chooser-desc"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex flex-col gap-0.5">
+            <h2 id="profile-chooser-title" className="m-0 text-[1.05rem] font-extrabold text-slate-50 tracking-[-0.01em]">
+              Who&apos;s signing in?
+            </h2>
+            <p id="profile-chooser-desc" className="m-0 text-[0.76rem] text-slate-400 leading-snug">
+              Pick your profile to unlock member controls
+            </p>
+          </div>
+          <button
+            type="button"
+            className="profile-chooser-close shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-800/60 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-700/80 hover:text-slate-50 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+            onClick={() => {
+              playPop();
+              onCancel();
+            }}
+            aria-label="Close profile selection"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 pt-0.5" role="group" aria-label="Select profile">
+          {(["Aaron", "Electra"] as User[]).map((user, idx) => (
+            <button
+              key={user}
+              ref={idx === 0 ? firstButtonRef : undefined}
+              type="button"
+              className={`profile-chooser-card profile-chooser-card--${user.toLowerCase()} flex flex-col items-center justify-center p-3.5 rounded-2xl border border-white/10 bg-slate-900/80 hover:bg-indigo-600/20 hover:border-indigo-500/50 transition-all duration-150 cursor-pointer group hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500 relative`}
+              onClick={() => {
+                playClick();
+                onSelect(user);
+              }}
+              aria-label={`Sign in as ${user}`}
+            >
+              <kbd className="profile-chooser-card__kbd" aria-hidden="true">
+                {idx + 1}
+              </kbd>
+              <div className="profile-chooser-card__avatar w-12 h-12 rounded-full overflow-hidden mb-1.5 border-2 border-white/10 group-hover:border-indigo-400/60 transition-colors flex items-center justify-center bg-slate-800">
+                <UserAvatar user={user} />
+              </div>
+              <span className="profile-chooser-card__name text-[0.92rem] font-extrabold text-slate-100 group-hover:text-white">{user}</span>
+              <span className="profile-chooser-card__meta text-[0.68rem] text-slate-400 mt-0.5">4-digit PIN</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>,
+    frameTarget ?? document.body,
+  );
+};
+
 export const ProfilePinPanel: React.FC = () => {
   const { userNeedsPin } = useProfileSelection();
   const {
     pendingUser,
     pinSettingsUser,
+    isChoosingProfile,
     pinMode,
     isVerifying,
     isSavingPin,
+    handleChooseProfile,
+    cancelChooser,
     handlePinSubmit,
     handlePinSettingsCancel,
     handlePinSettingsSubmit,
     clearPendingUser,
   } = usePinPanel();
+
+  if (isChoosingProfile) {
+    return (
+      <ProfileChooserModal
+        isOpen
+        onSelect={handleChooseProfile}
+        onCancel={cancelChooser}
+      />
+    );
+  }
 
   if (pendingUser) {
     return (
@@ -921,6 +1079,7 @@ export const ProfilePinPanel: React.FC = () => {
         isLoading={isVerifying}
         onCancel={clearPendingUser}
         onSubmit={handlePinSubmit}
+        onSwitchUser={handleChooseProfile}
       />
     );
   }
@@ -3065,22 +3224,25 @@ interface ToastProps {
 
 export const TOAST_STYLES = {
   error: {
-    backgroundColor: `${colors.error}30`,
-    borderColor: colors.error,
-    iconColor: colors.error,
-    shadow: `0 4px 12px ${colors.error}40, ${shadows.card}`,
+    backgroundColor: "rgba(18, 12, 16, 0.94)",
+    borderColor: "rgba(248, 113, 113, 0.45)",
+    iconColor: "#f87171",
+    shadow:
+      "0 12px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
   },
   success: {
-    backgroundColor: `${colors.success}30`,
-    borderColor: colors.success,
-    iconColor: colors.success,
-    shadow: `0 4px 12px ${colors.success}40, ${shadows.card}`,
+    backgroundColor: "rgba(11, 15, 23, 0.94)",
+    borderColor: "rgba(245, 196, 81, 0.38)",
+    iconColor: "#34d399",
+    shadow:
+      "0 12px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 243, 214, 0.12)",
   },
   info: {
-    backgroundColor: `${colors.secondary}30`,
-    borderColor: colors.secondary,
-    iconColor: colors.secondary,
-    shadow: `0 4px 12px ${colors.secondary}40, ${shadows.card}`,
+    backgroundColor: "rgba(11, 15, 23, 0.94)",
+    borderColor: "rgba(148, 163, 184, 0.32)",
+    iconColor: "#38bdf8",
+    shadow:
+      "0 12px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
   },
 } as const;
 
@@ -3088,39 +3250,46 @@ export const Toast: React.FC<ToastProps> = ({
   message,
   type,
   onDismiss,
-  duration = 3500,
+  duration = 3200,
   actionLabel,
   onAction,
   // Position is part of the interface for future layout customization
-  position: _position = "top-right",
+  position: _position = "bottom-right",
   persistent = false,
 }) => {
   const { playSuccess, playError, playPop } = useAudio();
   const [isExiting, setIsExiting] = useState(false);
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+  const audioRef = useRef({ playSuccess, playError, playPop });
+  audioRef.current = { playSuccess, playError, playPop };
 
   useEffect(() => {
-    // Play sound based on type
-    if (type === "success") playSuccess();
-    else if (type === "error") playError();
-    else playPop();
+    if (type === "success") audioRef.current.playSuccess();
+    else if (type === "error") audioRef.current.playError();
+    else audioRef.current.playPop();
+  }, [type]);
 
+  useEffect(() => {
     if (duration > 0 && !persistent) {
       const exitTimer = setTimeout(
         () => setIsExiting(true),
-        Math.max(0, duration - 250),
+        Math.max(0, duration - 220),
       );
-      const dismissTimer = setTimeout(() => onDismiss?.(), duration);
+      const dismissTimer = setTimeout(() => {
+        onDismissRef.current?.();
+      }, duration);
       return () => {
         clearTimeout(exitTimer);
         clearTimeout(dismissTimer);
       };
     }
     return undefined;
-  }, [duration, onDismiss, persistent, playError, playPop, playSuccess, type]);
+  }, [duration, persistent]);
 
   const handleDismiss = () => {
     setIsExiting(true);
-    setTimeout(() => onDismiss?.(), 250);
+    setTimeout(() => onDismissRef.current?.(), 180);
   };
 
   const styles = TOAST_STYLES[type] || TOAST_STYLES.info;
@@ -3132,25 +3301,19 @@ export const Toast: React.FC<ToastProps> = ({
           <span
             aria-hidden
             style={{
-              width: "2rem",
-              height: "2rem",
+              width: "1.45rem",
+              height: "1.45rem",
               borderRadius: "999px",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               flex: "0 0 auto",
               color: styles.iconColor,
-              background: `linear-gradient(180deg, ${colors.success}26 0%, ${colors.success}12 100%)`,
-              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.18), 0 0 16px ${colors.success}24`,
+              background: "rgba(52, 211, 153, 0.16)",
+              border: "1px solid rgba(52, 211, 153, 0.38)",
             }}
           >
-            <CheckIcon
-              size={18}
-              style={{
-                color: styles.iconColor,
-                filter: `drop-shadow(0 0 4px ${colors.success}60)`,
-              }}
-            />
+            <CheckIcon size={13} style={{ color: styles.iconColor }} />
           </span>
         );
       case "error":
@@ -3158,18 +3321,20 @@ export const Toast: React.FC<ToastProps> = ({
           <span
             aria-hidden
             style={{
-              width: "2rem",
-              height: "2rem",
+              width: "1.45rem",
+              height: "1.45rem",
               borderRadius: "999px",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               flex: "0 0 auto",
-              fontSize: "1rem",
-              background: `linear-gradient(180deg, ${colors.error}20 0%, ${colors.error}10 100%)`,
+              fontSize: "0.8rem",
+              color: styles.iconColor,
+              background: "rgba(248, 113, 113, 0.16)",
+              border: "1px solid rgba(248, 113, 113, 0.38)",
             }}
           >
-            ⚠️
+            !
           </span>
         );
       case "info":
@@ -3178,18 +3343,20 @@ export const Toast: React.FC<ToastProps> = ({
           <span
             aria-hidden
             style={{
-              width: "2rem",
-              height: "2rem",
+              width: "1.45rem",
+              height: "1.45rem",
               borderRadius: "999px",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               flex: "0 0 auto",
-              fontSize: "1rem",
-              background: `linear-gradient(180deg, ${colors.secondary}20 0%, ${colors.secondary}10 100%)`,
+              fontSize: "0.78rem",
+              color: styles.iconColor,
+              background: "rgba(56, 189, 248, 0.16)",
+              border: "1px solid rgba(56, 189, 248, 0.35)",
             }}
           >
-            ℹ️
+            i
           </span>
         );
     }
@@ -3200,31 +3367,32 @@ export const Toast: React.FC<ToastProps> = ({
       variant="elevated"
       role={type === "error" ? "alert" : "status"}
       aria-live={type === "error" ? "assertive" : "polite"}
-      className={`toast-notification toast--${type}`}
+      className={`toast-notification toast--${type}${isExiting ? " is-exiting" : ""}`}
       style={{
-        width: "min(34rem, calc(100vw - 1.5rem))",
-        maxWidth: "100%",
+        width: "auto",
+        maxWidth: "min(23rem, calc(100vw - 1.5rem))",
         height: "auto",
         minHeight: "unset",
-        alignSelf: "center",
-        padding: spacing.md,
+        alignSelf: "flex-start",
+        padding: "0.42rem 0.65rem",
+        borderRadius: "999px",
         backgroundColor: styles.backgroundColor,
         borderColor: styles.borderColor,
-        borderWidth: "2px",
+        borderWidth: "1px",
         boxShadow: styles.shadow,
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
         animation: isExiting
-          ? "toast-slide-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards"
-          : "toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+          ? "toast-slide-out 0.18s cubic-bezier(0.4, 0, 0.2, 1) forwards"
+          : "toast-slide-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: spacing.sm,
-          color: colors.textPrimary,
+          gap: "0.5rem",
+          color: "#f8fafc",
           width: "100%",
           minHeight: "fit-content",
         }}
@@ -3233,14 +3401,14 @@ export const Toast: React.FC<ToastProps> = ({
 
         <span
           style={{
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.medium,
-            lineHeight: 1.35,
+            fontSize: "0.78rem",
+            fontWeight: 650,
+            lineHeight: 1.25,
             wordBreak: "normal",
             overflowWrap: "anywhere",
             flex: "1 1 auto",
             minWidth: 0,
-            textShadow: "0 1px 2px rgba(0,0,0,0.4)",
+            color: "#f8fafc",
           }}
         >
           {message}
@@ -3250,9 +3418,9 @@ export const Toast: React.FC<ToastProps> = ({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: spacing.xs,
+            gap: "0.25rem",
             flex: "0 0 auto",
-            marginLeft: spacing.xs,
+            marginLeft: "0.15rem",
           }}
         >
           {actionLabel && onAction && (
@@ -3264,24 +3432,24 @@ export const Toast: React.FC<ToastProps> = ({
               }}
               aria-label={actionLabel}
               style={{
-                border: `1px solid ${styles.borderColor}`,
-                background: "rgba(255,255,255,0.08)",
-                color: colors.textPrimary,
-                borderRadius: radius.sm,
-                padding: `0 ${spacing.sm}`,
-                minHeight: "30px",
+                border: "1px solid rgba(245, 196, 81, 0.45)",
+                background: "rgba(245, 196, 81, 0.14)",
+                color: "#fde68a",
+                borderRadius: "999px",
+                padding: "0.16rem 0.55rem",
+                minHeight: "1.55rem",
                 cursor: "pointer",
-                fontSize: typography.fontSize.xs,
-                fontWeight: typography.fontWeight.semibold,
-                letterSpacing: typography.letterSpacing.wide,
+                fontSize: "0.7rem",
+                fontWeight: 750,
+                letterSpacing: "0.02em",
                 whiteSpace: "nowrap",
                 transition: `transform ${motionToken.duration.button} ${motionToken.easing.ease}, border-color ${motionToken.duration.button} ${motionToken.easing.ease}, background-color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
+                (e.currentTarget.style.background = "rgba(245, 196, 81, 0.24)")
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "rgba(255,255,255,0.08)")
+                (e.currentTarget.style.background = "rgba(245, 196, 81, 0.14)")
               }
             >
               {actionLabel}
@@ -3297,19 +3465,19 @@ export const Toast: React.FC<ToastProps> = ({
               style={{
                 background: "none",
                 border: "none",
-                color: isExiting ? "transparent" : colors.textSecondary,
+                color: isExiting ? "transparent" : "rgba(226, 232, 240, 0.68)",
                 cursor: "pointer",
-                padding: spacing.xs,
-                fontSize: "1.05rem",
+                padding: "0.15rem 0.25rem",
+                fontSize: "0.82rem",
                 lineHeight: 1,
-                borderRadius: radius.sm,
+                borderRadius: "999px",
                 transition: `color ${motionToken.duration.button} ${motionToken.easing.ease}`,
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.color = colors.textPrimary)
               }
               onMouseLeave={(e) =>
-                (e.currentTarget.style.color = colors.textSecondary)
+                (e.currentTarget.style.color = "rgba(226, 232, 240, 0.68)")
               }
             >
               ✕
@@ -4084,6 +4252,7 @@ export interface PinDialogProps {
   mode: PinFlowMode;
   onSubmit: (pin: string, newPin?: string) => Promise<boolean>;
   onCancel: () => void;
+  onSwitchUser?: (nextUser: User) => void;
   isLoading?: boolean;
   isRequiredSetup?: boolean;
 }
@@ -4094,6 +4263,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
   mode,
   onSubmit,
   onCancel,
+  onSwitchUser,
   isLoading = false,
   isRequiredSetup = false,
 }) => {
@@ -4101,14 +4271,17 @@ export const PinDialog: React.FC<PinDialogProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [flow, dispatch] = useReducer(pinFlowReducer, mode, createPinFlowState);
-  const { playKeypad, playError } = useAudio();
+  const { playKeypad, playError, playClick } = useAudio();
+
+  useExclusiveNotch("profiles", isOpen, () => {
+    if (!isLoading) onCancel();
+  });
 
   useEffect(() => {
     if (!isOpen || !frameTarget) return;
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const workspace = document.getElementById("root");
     const wasInert = workspace?.inert ?? false;
-    if (workspace) workspace.inert = true;
     setModalOpen(true);
     return () => {
       if (workspace) workspace.inert = wasInert;
@@ -4312,6 +4485,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
   const title = getPinFlowTitle(flow, user, isRequiredSetup);
   const subtitle = getPinFlowSubtitle(flow, user, isRequiredSetup);
   const submitLabel = getPinSubmitLabel(flow, isRequiredSetup);
+  const otherUser: User = user === "Aaron" ? "Electra" : "Aaron";
 
   return createPortal(
     <div
@@ -4319,7 +4493,15 @@ export const PinDialog: React.FC<PinDialogProps> = ({
       onClick={handleOverlayClick}
       role="presentation"
     >
-      {frameTarget ? <div className="account-pin-shield" aria-hidden="true" /> : null}
+      {frameTarget ? (
+        <div
+          className="account-pin-shield"
+          aria-hidden="true"
+          onClick={() => {
+            if (!isLoading) onCancel();
+          }}
+        />
+      ) : null}
       <section
         className="w-full max-w-[22rem] my-auto p-5 sm:p-6 rounded-3xl border border-white/15 bg-slate-950/95 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-2xl animate-in zoom-in-95 duration-200 outline-none max-h-[calc(100dvh-2rem)] overflow-y-auto"
         role="dialog"
@@ -4329,7 +4511,7 @@ export const PinDialog: React.FC<PinDialogProps> = ({
       >
         <form ref={formRef} className="w-full flex flex-col gap-[1.1rem]" onSubmit={handleSubmit}>
           {/* Header */}
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-2.5">
             <div className="flex items-center gap-3 min-w-0">
               <div className="pin-dialog-avatar-wrap shrink-0 w-11 h-11 overflow-visible flex items-center justify-center bg-transparent">
                 <UserAvatar user={user} />
@@ -4344,29 +4526,48 @@ export const PinDialog: React.FC<PinDialogProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-800/60 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-700/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
-              onClick={onCancel}
-              disabled={isLoading}
-              aria-label={
-                isRequiredSetup ? "Exit to guest mode" : "Close dialog"
-              }
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div className="flex items-center gap-1.5 shrink-0">
+              {flow.mode === "enter" && onSwitchUser ? (
+                <button
+                  type="button"
+                  className="pin-dialog-switch-user px-2.5 h-8 rounded-full border border-white/15 bg-slate-800/60 text-[0.72rem] font-bold text-slate-300 flex items-center gap-1 cursor-pointer transition-all hover:bg-slate-700/80 hover:text-slate-50 active:scale-95"
+                  onClick={() => {
+                    if (!isLoading) {
+                      playClick();
+                      onSwitchUser(otherUser);
+                    }
+                  }}
+                  disabled={isLoading}
+                  aria-label={`Switch to ${otherUser}`}
+                  title={`Switch to ${otherUser}`}
+                >
+                  <span>{otherUser}</span>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="shrink-0 w-8 h-8 rounded-full border border-transparent bg-slate-800/60 text-slate-400 flex items-center justify-center cursor-pointer transition-all hover:bg-slate-700/80 hover:text-slate-50 hover:border-white/10 hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+                onClick={onCancel}
+                disabled={isLoading}
+                aria-label={
+                  isRequiredSetup ? "Exit to guest mode" : "Close dialog"
+                }
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* PIN slots */}

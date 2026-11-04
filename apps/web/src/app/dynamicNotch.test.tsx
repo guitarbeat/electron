@@ -1,10 +1,17 @@
 /** @vitest-environment jsdom */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { afterEach, expect, it } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { leaveNotchGhost, useExclusiveNotch, type NotchName } from "./dynamicNotch";
-import { TopFramePanel, TopFrameProvider, TopFrameViewport } from "./TopFramePanels";
+import {
+  collapseAllNotches,
+  leaveNotchGhost,
+  useExclusiveNotch,
+  useNotchGripDrag,
+  type NotchName,
+} from "./dynamicNotch";
+import { AccountPinViewport, TopFramePanel, TopFrameProvider, TopFrameViewport, useTopFrame } from "./TopFramePanels";
+import { createPortal } from "react-dom";
 
 afterEach(cleanup);
 
@@ -14,7 +21,7 @@ function Notch({ name }: { name: NotchName }) {
   return <button type="button" aria-expanded={open} onClick={() => setOpen(true)}>{name}</button>;
 }
 
-it("keeps only one notch expanded: opening one collapses the others", () => {
+it("keeps only one notch expanded: opening one collapses the others, and collapseAllNotches closes the active notch", () => {
   render(<><Notch name="search" /><Notch name="settings" /><Notch name="profiles" /></>);
   const button = (name: string) => screen.getByRole("button", { name });
   fireEvent.click(button("settings"));
@@ -25,6 +32,43 @@ it("keeps only one notch expanded: opening one collapses the others", () => {
   fireEvent.click(button("search"));
   expect(button("search")).toHaveAttribute("aria-expanded", "true");
   expect(button("profiles")).toHaveAttribute("aria-expanded", "false");
+  act(() => { collapseAllNotches(); });
+  expect(button("search")).toHaveAttribute("aria-expanded", "false");
+});
+
+it("toggles and drags notches open and closed via useNotchGripDrag", () => {
+  function GripHost() {
+    const [open, setOpen] = useState(false);
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const grip = useNotchGripDrag({
+      edge: "top",
+      isOpen: open,
+      onOpen: () => setOpen(true),
+      onClose: () => setOpen(false),
+      hostRef,
+    });
+    return (
+      <div ref={hostRef} data-testid="notch-host" data-open={open}>
+        <i data-testid="notch-grip" {...grip} />
+      </div>
+    );
+  }
+  render(<GripHost />);
+  const host = screen.getByTestId("notch-host");
+  const grip = screen.getByTestId("notch-grip");
+  expect(host).toHaveAttribute("data-open", "false");
+
+  // Dragging downward (> 24px) opens a top notch
+  fireEvent.pointerDown(grip, { pointerId: 1, clientY: 10 });
+  fireEvent.pointerMove(grip, { pointerId: 1, clientY: 45 });
+  expect(host.style.getPropertyValue("--dyn-drag-h")).toBe("35px");
+  fireEvent.pointerUp(grip, { pointerId: 1, clientY: 45 });
+  expect(host).toHaveAttribute("data-open", "true");
+  expect(host.style.getPropertyValue("--dyn-drag-h")).toBe("");
+
+  // Clicking the grip closes the open notch
+  fireEvent.click(grip);
+  expect(host).toHaveAttribute("data-open", "false");
 });
 
 it("leaves an inert, unlabeled copy of closing content to fade out inside the notch", () => {
@@ -46,15 +90,34 @@ it("leaves an inert, unlabeled copy of closing content to fade out inside the no
   host.remove();
 });
 
-it("publishes the open panel height so the notch body grows around it", () => {
+it("publishes the open panel height and account PIN height so the notch bodies grow around them", () => {
+  function PinPortal({ open }: { open: boolean }) {
+    const { accountTarget } = useTopFrame();
+    if (!open || !accountTarget) return null;
+    return createPortal(<div data-testid="pin-sheet">PIN Pad</div>, accountTarget);
+  }
   function Host() {
     const [open, setOpen] = useState(true);
-    return <TopFrameProvider><TopFrameViewport />{open ? <TopFramePanel name="test"><button type="button" onClick={() => setOpen(false)}>Close</button></TopFramePanel> : null}</TopFrameProvider>;
+    return (
+      <TopFrameProvider>
+        <TopFrameViewport />
+        <AccountPinViewport />
+        <PinPortal open={open} />
+        {open ? (
+          <TopFramePanel name="test">
+            <button type="button" onClick={() => setOpen(false)}>Close</button>
+          </TopFramePanel>
+        ) : null}
+      </TopFrameProvider>
+    );
   }
   const { container } = render(<Host />);
   const viewport = container.querySelector(".top-frame-panels")!;
   expect(viewport).toContainElement(screen.getByRole("button", { name: "Close" }));
   expect(document.documentElement.style.getPropertyValue("--dyn-panel-h")).toMatch(/px$/);
+  expect(document.documentElement.style.getPropertyValue("--dyn-pin-h")).toMatch(/px$/);
+  expect(screen.getByTestId("pin-sheet")).toBeInTheDocument();
   act(() => { fireEvent.click(screen.getByRole("button", { name: "Close" })); });
   expect(screen.queryByRole("button", { name: "Close" })).not.toBeInTheDocument();
+  expect(screen.queryByTestId("pin-sheet")).not.toBeInTheDocument();
 });

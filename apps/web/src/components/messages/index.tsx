@@ -49,6 +49,7 @@ import { TrashIcon, Spinner } from "@/common/Icons";
 import { SyncBanner, ConfirmDialog } from "@/components/ui";
 import { colors, radius, spacing, typography } from "@/theme/tokens";
 import { useToast } from "@/app/providerContexts";
+import { useProfileSelection } from "@/app/ProfilePinContext";
 
 interface MessageBubbleProps {
   message: Message;
@@ -201,28 +202,37 @@ export const MessageBoardHeader: React.FC<MessageBoardHeaderProps> = ({
 /* Sub-component: MessageBoardGuestFooter                                     */
 /* -------------------------------------------------------------------------- */
 
-export const MessageBoardGuestFooter: React.FC = () => (
-  <footer className={"msg-board-guest-prompt"} role="status">
-    <svg
-      className={"msg-board-guest-icon"}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-    <span>Choose Aaron or Electra to join the conversation</span>
-  </footer>
-);
+export const MessageBoardGuestFooter: React.FC = () => {
+  const { requestLogin } = useProfileSelection();
+  return (
+    <footer className="msg-board-guest-prompt" role="status">
+      <button
+        type="button"
+        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl border border-white/10 bg-slate-900/60 hover:bg-slate-800/80 text-slate-200 hover:text-white transition-all cursor-pointer text-xs font-semibold"
+        onClick={() => requestLogin()}
+      >
+        <svg
+          className="msg-board-guest-icon shrink-0"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span>Sign in as Aaron or Electra to message</span>
+      </button>
+    </footer>
+  );
+};
 
 /* -------------------------------------------------------------------------- */
 /* Main Component_MessageBoard: MessageBoard                                               */

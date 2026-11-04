@@ -68,6 +68,40 @@ export function TopFramePanel({ name, children }: { name: string; children: Reac
 }
 
 export function AccountPinViewport() {
-  const { setAccountTarget } = useTopFrame();
-  return <div ref={setAccountTarget} className="account-pin-viewport" />;
+  const { accountTarget, setAccountTarget } = useTopFrame();
+  const [height, setHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (!accountTarget) return;
+    const root = document.documentElement;
+    const measure = () => {
+      const child = accountTarget.firstElementChild as HTMLElement | null;
+      const next = child ? Math.ceil(child.getBoundingClientRect().height) : 0;
+      setHeight(next);
+      root.style.setProperty("--dyn-pin-h", `${next}px`);
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(accountTarget);
+    const mutObserver = new MutationObserver(() => {
+      measure();
+      const child = accountTarget.firstElementChild;
+      if (child) observer.observe(child);
+    });
+    mutObserver.observe(accountTarget, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      mutObserver.disconnect();
+      root.style.setProperty("--dyn-pin-h", "0px");
+    };
+  }, [accountTarget]);
+
+  return (
+    <div
+      ref={setAccountTarget}
+      className="account-pin-viewport"
+      data-expanded={height > 0}
+    />
+  );
 }

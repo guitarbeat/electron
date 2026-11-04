@@ -214,6 +214,17 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     return () => panel.removeEventListener("click", handleClick);
   }, [isOpen]);
 
+  React.useEffect(() => {
+    const onOpenSettings = () => setIsOpen(true);
+    const onToggleSettings = () => setIsOpen((prev) => !prev);
+    window.addEventListener("dynamic-notch:open-settings", onOpenSettings);
+    window.addEventListener("dynamic-notch:toggle-settings", onToggleSettings);
+    return () => {
+      window.removeEventListener("dynamic-notch:open-settings", onOpenSettings);
+      window.removeEventListener("dynamic-notch:toggle-settings", onToggleSettings);
+    };
+  }, []);
+
   const update = <K extends keyof MovieWallFilterState>(
     key: K,
     value: MovieWallFilterState[K],
@@ -355,6 +366,13 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           {activeWatchStatus ? activeWatchStatus.label : "Settings"}
           {activeWatchStatus ? (
             <span className="movie-wall-filters__trigger-count">{optionCounts.presets[activeWatchStatus.value]}</span>
+          ) : isActive && activeTags.length > 0 ? (
+            <span
+              className="movie-wall-filters__trigger-count movie-wall-filters__trigger-count--active"
+              title={`${activeTags.length} active ${activeTags.length === 1 ? "filter" : "filters"}`}
+            >
+              {activeTags.length}
+            </span>
           ) : null}
         </span>
 

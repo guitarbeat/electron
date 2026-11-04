@@ -22,6 +22,7 @@ interface ProfileSelectionContextValue {
   userHasPin: (user: User) => boolean;
   userNeedsPin: (user: User) => boolean;
   selectProfile: (profile: User) => void;
+  requestLogin: (preferredUser?: User) => void;
   handleLogout: () => void;
   handleLogoutUser: (user: User) => void;
   openPinSettings: (userToEdit?: User | null) => void;
@@ -31,9 +32,12 @@ interface ProfileSelectionContextValue {
 interface PinPanelContextValue {
   pendingUser: User | null;
   pinSettingsUser: User | null;
+  isChoosingProfile: boolean;
   pinMode: "set" | "change";
   isVerifying: boolean;
   isSavingPin: boolean;
+  handleChooseProfile: (profile: User) => void;
+  cancelChooser: () => void;
   handlePinSubmit: (pin: string) => Promise<boolean>;
   handlePinSettingsCancel: () => void;
   handlePinSettingsSubmit: (pin: string, newPin?: string) => Promise<boolean>;
@@ -45,14 +49,40 @@ const ProfileSelectionContext =
 
 const PinPanelContext = createContext<PinPanelContextValue | null>(null);
 
+const FALLBACK_PROFILE_SELECTION: ProfileSelectionContextValue = {
+  currentUser: null,
+  activeUsers: [],
+  isDisabled: false,
+  isSavingPin: false,
+  selectionError: null,
+  userHasPin: () => true,
+  userNeedsPin: () => false,
+  selectProfile: (profile: User) => {
+    if (typeof document !== "undefined") {
+      const btn = document.querySelector<HTMLButtonElement>(
+        `.profile-switcher-btn--${profile.toLowerCase()}`,
+      );
+      btn?.click();
+    }
+  },
+  requestLogin: (preferredUser?: User) => {
+    if (typeof document !== "undefined") {
+      const target = preferredUser ?? "Aaron";
+      const btn = document.querySelector<HTMLButtonElement>(
+        `.profile-switcher-btn--${target.toLowerCase()}`,
+      );
+      btn?.click();
+    }
+  },
+  handleLogout: () => {},
+  handleLogoutUser: () => {},
+  openPinSettings: () => {},
+  clearSelectionError: () => {},
+};
+
 export const useProfileSelection = (): ProfileSelectionContextValue => {
   const context = useContext(ProfileSelectionContext);
-  if (!context) {
-    throw new Error(
-      "useProfileSelection must be used within ProfilePinProvider",
-    );
-  }
-  return context;
+  return context ?? FALLBACK_PROFILE_SELECTION;
 };
 
 export const usePinPanel = (): PinPanelContextValue => {
@@ -69,6 +99,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
   const { currentUser, activeUsers, setCurrentUser, logoutUser } = useUser();
   const { userHasPin, userNeedsPin, verifyUserPin, setUserPin, isLoading } =
     usePins();
+  const [isChoosingProfile, setIsChoosingProfile] = useState(false);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [pinSettingsUser, setPinSettingsUser] = useState<User | null>(null);
   const [isSavingPin, setIsSavingPin] = useState(false);
@@ -122,6 +153,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     (profile: User) => {
       if (isLoading || isVerifying) return;
       setSelectionError(null);
+      setIsChoosingProfile(false);
       if (userHasPin(profile) && !activeUsers.includes(profile)) {
         setPendingUser(profile);
         return;
@@ -148,6 +180,31 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       activeUsers,
     ],
   );
+
+  const requestLogin = useCallback(
+    (preferredUser?: User) => {
+      if (isLoading || isVerifying) return;
+      setSelectionError(null);
+      if (preferredUser) {
+        selectProfile(preferredUser);
+      } else if (!currentUser) {
+        setIsChoosingProfile(true);
+      }
+    },
+    [currentUser, isLoading, isVerifying, selectProfile],
+  );
+
+  const handleChooseProfile = useCallback(
+    (profile: User) => {
+      setIsChoosingProfile(false);
+      selectProfile(profile);
+    },
+    [selectProfile],
+  );
+
+  const cancelChooser = useCallback(() => {
+    setIsChoosingProfile(false);
+  }, []);
 
   const handlePinSubmit = useCallback(
     async (pin: string): Promise<boolean> => {
@@ -222,6 +279,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       userHasPin,
       userNeedsPin,
       selectProfile,
+      requestLogin,
       handleLogout: handleLogoutGuarded,
       handleLogoutUser: handleLogoutUserGuarded,
       openPinSettings,
@@ -237,6 +295,7 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
       isVerifying,
       openPinSettings,
       selectProfile,
+      requestLogin,
       selectionError,
       userHasPin,
       userNeedsPin,
@@ -248,9 +307,12 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     () => ({
       pendingUser,
       pinSettingsUser,
+      isChoosingProfile,
       pinMode,
       isVerifying,
       isSavingPin,
+      handleChooseProfile,
+      cancelChooser,
       handlePinSubmit,
       handlePinSettingsCancel,
       handlePinSettingsSubmit,
@@ -258,9 +320,12 @@ export const ProfilePinProvider: FC<{ children: ReactNode }> = ({
     }),
     [
       clearPendingUser,
+      handleChooseProfile,
+      cancelChooser,
       handlePinSettingsCancel,
       handlePinSettingsSubmit,
       handlePinSubmit,
+      isChoosingProfile,
       isSavingPin,
       isVerifying,
       pendingUser,

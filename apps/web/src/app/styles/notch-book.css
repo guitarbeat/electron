@@ -10,20 +10,20 @@
    ========================================================================== */
 
 :root {
-  --book-lift: 460ms cubic-bezier(0.16, 1, 0.3, 1);
+  --book-lift: var(--notch-open, 440ms cubic-bezier(0.16, 1, 0.3, 1));
   /* The sheet sits in a screen corner and the notch clips it, so the cover swings away into the
      screen on its spine (a cover lifted toward you would be clipped) and is edge-on as it leaves. */
-  --book-swing-ms: 520ms;
-  --book-swing-ease: cubic-bezier(0.5, 0, 0.25, 1);
+  --book-swing-ms: 360ms;
+  --book-swing-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --book-depth: 1000px;
-  --book-swing-delay: 110ms;
-  --book-close-ms: 200ms;
+  --book-swing-delay: 45ms;
+  --book-close-ms: 180ms;
 }
 
-/* ---- The notch grows out of its corner on the poster's lift curve ---- */
+/* ---- The notch grows out of its corner on the snappy spring curve ---- */
 .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
 .frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
-  transition: width var(--book-lift), height var(--book-lift), border-radius var(--book-lift);
+  transition: width var(--book-lift), height var(--book-lift), border-radius var(--book-lift), transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels[data-expanded="true"] {
   transition: height var(--book-lift), width var(--book-lift);

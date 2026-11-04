@@ -903,15 +903,15 @@
   transform-origin: bottom right;
 }
 
-/* PIN entry grows from the account corner, sharing its outline cutout. */
+/* Profile Chooser and PIN entry grow from the account corner, sharing its outline cutout. */
 :root:has(.account-pin-viewport:not(:empty)) {
-  --frame-account-width: min(24rem, calc(100vw - 2 * var(--frame-border-width)));
+  --frame-account-width: min(22.5rem, calc(100vw - 2 * var(--frame-border-width)));
   --frame-account-height: min(38rem, calc(100dvh - var(--frame-border-top-width) - 1rem));
 }
 
 .frame-corner-profiles {
   height: 4.5rem;
-  transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 320ms var(--notch-spring, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .account-pin-viewport {
@@ -928,14 +928,15 @@
   max-height: calc(var(--frame-account-height) - 4.5rem);
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 0.75rem;
-  animation: accountPinReveal 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.75rem 0.85rem 0.5rem;
+  animation: accountPinReveal 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .account-corner-pin-sheet > section {
   position: relative;
   max-width: none;
   max-height: none;
   margin: 0;
+  padding: 0.35rem 0.25rem;
   border-radius: 0.75rem;
   box-shadow: none;
 }
@@ -943,18 +944,19 @@
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.12);
+  cursor: pointer;
 }
 @keyframes accountPinReveal {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(8px) scale(0.98); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .frame-corner-profiles { transition: none; }
   .account-corner-pin-sheet { animation: none; }
 }
 
-/* Frame surfaces stay visible through sign-in and the movie picker. */
+/* Frame surfaces stay visible through sign-in, profile chooser, and the movie picker. */
 .account-corner-pin-sheet > section {
   background: transparent;
   border: 0;
@@ -963,14 +965,16 @@
   -webkit-backdrop-filter: none;
   color: #171717;
 }
-.account-corner-pin-sheet #pin-dialog-title { color: #171717; }
-.account-corner-pin-sheet #pin-dialog-desc { color: #35332e; }
+.account-corner-pin-sheet #pin-dialog-title,
+.account-corner-pin-sheet #profile-chooser-title { color: #171717; }
+.account-corner-pin-sheet #pin-dialog-desc,
+.account-corner-pin-sheet #profile-chooser-desc { color: #35332e; }
 .account-corner-pin-sheet button {
   background: transparent;
   color: #171717;
   border-color: rgba(23, 23, 23, 0.25);
   box-shadow: none;
-  border-radius: 0.4rem;
+  border-radius: 0.55rem;
 }
 .account-corner-pin-sheet button:hover:not(:disabled) {
   background: rgba(23, 23, 23, 0.08);
@@ -981,6 +985,59 @@
   outline: 2px solid #5e4b22;
   outline-offset: 2px;
   box-shadow: none;
+}
+.account-corner-pin-sheet .profile-chooser-card {
+  border-radius: 0.85rem;
+  border: 1.5px solid rgba(23, 23, 23, 0.22);
+  background: rgba(255, 250, 236, 0.26);
+  padding: 0.75rem 0.5rem;
+}
+.account-corner-pin-sheet .profile-chooser-card:hover:not(:disabled) {
+  background: rgba(255, 250, 236, 0.48);
+  border-color: #5e4b22;
+  transform: translateY(-2px);
+}
+.account-corner-pin-sheet .profile-chooser-card__avatar {
+  background: rgba(23, 23, 23, 0.08);
+  border-color: rgba(23, 23, 23, 0.2);
+}
+.account-corner-pin-sheet .profile-chooser-card__name {
+  color: #171717 !important;
+}
+.account-corner-pin-sheet .profile-chooser-card__meta {
+  color: #35332e !important;
+}
+.profile-chooser-card__kbd {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.65rem;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.account-corner-pin-sheet .profile-chooser-card__kbd {
+  border-color: rgba(23, 23, 23, 0.22);
+  background: rgba(255, 255, 255, 0.35);
+  color: #35332e;
+}
+.account-corner-pin-sheet .pin-dialog-switch-user {
+  border-radius: 999px;
+  padding: 0 0.65rem;
+  height: 1.85rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+  background: rgba(23, 23, 23, 0.08);
+  border: 1px solid rgba(23, 23, 23, 0.24);
+  color: #171717;
 }
 .account-corner-pin-sheet [aria-label="Keypad"] button span { color: inherit; }
 .account-corner-pin-sheet [aria-label="Keypad"] button span + span { opacity: 0.7; }
@@ -996,6 +1053,31 @@
   box-shadow: none;
 }
 .account-corner-pin-sheet .pin-digit-slot[data-error="true"] { border-color: #8a2323; }
+
+.frame-panel-heading__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.frame-panel-heading__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 1.9rem;
+  padding: 0 0.7rem !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(23, 23, 23, 0.25) !important;
+  background: rgba(255, 250, 236, 0.28) !important;
+  color: #171717 !important;
+  font-size: 0.76rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+.frame-panel-heading__switch:hover {
+  background: rgba(255, 250, 236, 0.48) !important;
+  transform: translateY(-1px);
+}
 
 .frame-movie-picker {
   --color-surface-0: #b4afa2;

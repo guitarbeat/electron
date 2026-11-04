@@ -173,7 +173,7 @@ export function useTvSpatialNavigation(enabled = true) {
         playXmbCue("cancel");
         return true;
       }
-      if (document.querySelector('.is-autocomplete-active,.y2k-library-search.is-expanded,.y2k-add-form.is-expanded')) {
+      if (document.querySelector('.is-autocomplete-active,.y2k-library-search.is-expanded,.y2k-add-form.is-expanded,[data-inline-booklet="true"]')) {
         dispatchEscape();
         playXmbCue("cancel");
         return true;

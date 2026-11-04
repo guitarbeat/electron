@@ -17,12 +17,13 @@
   --notch-radius-open: 28px;
   --notch-peek: 12px;
   --notch-hint-h: 1.9rem;
-  /* A damped spring (about 8% overshoot), close to SwiftUI's .bouncy(duration: 0.4). */
-  --notch-spring: linear(0, 0.045, 0.155, 0.3, 0.457, 0.608, 0.742, 0.854, 0.941, 1.005, 1.048, 1.072, 1.082, 1.082, 1.076, 1.065, 1.052, 1.039, 1.027, 1.017, 1.008, 1.002, 0.998, 0.995, 0.993, 0.993, 0.993, 0.994, 1);
-  --notch-open: 600ms var(--notch-spring);
-  --notch-close: 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* A snappy, responsive damped spring (~9% overshoot) with fast settle. */
+  --notch-spring: linear(0, 0.065, 0.215, 0.405, 0.595, 0.76, 0.89, 0.985, 1.045, 1.078, 1.09, 1.086, 1.072, 1.054, 1.036, 1.021, 1.01, 1.003, 0.999, 0.997, 0.997, 0.998, 1);
+  --notch-open: 460ms var(--notch-spring);
+  --notch-close: 280ms cubic-bezier(0.32, 0.72, 0, 1);
   --dyn-panel-h: 0px;
   --dyn-profile-h: 0px;
+  --dyn-pin-h: 0px;
   --dyn-settings-w: min(38rem, calc(100vw - 2 * var(--frame-border-width)));
 }
 
@@ -97,21 +98,107 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
 .dyn-notch[data-notch="profiles"]::before { right: var(--frame-border-width); --fillet-at: 0 0; }
 .dyn-notch[data-notch="profiles"]::after { right: 100%; --fillet-at: 0 0; }
 
-/* Peek: a hint line shows the notch can open. */
+/* Interactive grip handle: click or drag to open/collapse the notch. */
 .dyn-notch__grip {
   position: absolute;
   left: 50%;
-  width: 2rem;
-  height: 3px;
-  margin-left: -1rem;
+  width: 2.25rem;
+  height: 4px;
+  margin-left: -1.125rem;
   border-radius: 999px;
-  background: rgb(21 20 15 / 0.45);
+  background: rgb(21 20 15 / 0.48);
   opacity: 0;
-  transform: scaleX(0.4);
-  transition: opacity 200ms ease, transform 300ms var(--notch-spring);
+  transform: scaleX(0.45);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  transition:
+    opacity 180ms ease,
+    transform 260ms var(--notch-spring),
+    background-color 150ms ease,
+    height 150ms ease;
+}
+.dyn-notch__grip::before {
+  content: "";
+  position: absolute;
+  inset: -10px -16px;
+}
+.dyn-notch__grip:hover {
+  background: rgb(21 20 15 / 0.78);
+  height: 5px;
+  transform: scaleX(1.12) !important;
+}
+.dyn-notch__grip:active {
+  cursor: grabbing;
+  background: var(--notch-ink);
+  transform: scaleX(0.92) !important;
 }
 .dyn-notch:is([data-notch="search"], [data-notch="add"]) .dyn-notch__grip { bottom: 4px; }
 .dyn-notch:is([data-notch="settings"], [data-notch="profiles"]) .dyn-notch__grip { top: 4px; }
+
+/* Show the grip subtly on expanded notches too so you can click or drag it closed. */
+.y2k-command-dock :is(.y2k-library-search, .y2k-add-form).is-expanded .dyn-notch .dyn-notch__grip,
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] .dyn-notch__grip,
+.frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] .dyn-notch__grip,
+:root:has(.account-pin-viewport:not(:empty)) .dyn-notch[data-notch="profiles"] .dyn-notch__grip {
+  opacity: 0.42;
+  transform: scaleX(0.85);
+}
+
+/* ---- Collapsed Search live status badge ---- */
+.y2k-command-dock .y2k-library-search.has-active-query:not(.is-expanded) {
+  width: auto;
+  max-width: min(20rem, 48vw);
+  padding-right: 0.45rem;
+  gap: 0.25rem;
+}
+.y2k-command-dock .y2k-library-search.has-active-query:not(.is-expanded) .dyn-notch[data-notch="search"] {
+  --dyn-w: calc(var(--frame-border-width) + var(--frame-search-width) + 6.5rem);
+}
+.dyn-notch-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 9.5rem;
+  height: 1.55rem;
+  padding: 0 0.25rem 0 0.5rem;
+  border-radius: 999px;
+  background: rgb(21 20 15 / 0.14);
+  border: 1px solid rgb(21 20 15 / 0.22);
+  color: var(--notch-ink);
+  font-size: 0.7rem;
+  font-weight: 750;
+  white-space: nowrap;
+  animation: dynNotchIn 240ms var(--notch-spring) both;
+}
+.dyn-notch-status-badge__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.dyn-notch-status-badge__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(21 20 15 / 0.14);
+  color: var(--notch-ink);
+  cursor: pointer;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+.dyn-notch-status-badge__clear:hover {
+  background: rgb(21 20 15 / 0.26);
+  transform: scale(1.08);
+}
 
 /* ---- Expanded sizes ---- */
 .y2k-command-dock .y2k-library-search.is-expanded .dyn-notch {
@@ -131,6 +218,10 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   --dyn-w: calc(var(--frame-border-width) + max(var(--frame-account-width), 15rem));
   --dyn-h: calc(var(--frame-border-width) + var(--frame-corner-height) + var(--dyn-profile-h));
 }
+:root:has(.account-pin-viewport:not(:empty)) .dyn-notch[data-notch="profiles"] {
+  --dyn-w: calc(var(--frame-border-width) + var(--frame-account-width));
+  --dyn-h: calc(var(--frame-border-width) + 4.5rem + var(--dyn-pin-h, 16rem));
+}
 .y2k-command-dock .y2k-library-search.is-expanded .dyn-notch,
 .y2k-command-dock .y2k-add-form.is-expanded .dyn-notch,
 .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
@@ -140,7 +231,8 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   transition:
     width var(--notch-open),
     height var(--notch-open),
-    border-radius var(--notch-open);
+    border-radius var(--notch-open),
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* The Search and Add controls widen with their notch rather than jumping to full width. */
@@ -370,21 +462,30 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   z-index: 79;
   background: transparent;
   pointer-events: none;
+  cursor: pointer;
 }
+body:has(.y2k-command-dock .y2k-library-search.is-expanded) .dyn-notch-scrim,
+body:has(.y2k-command-dock .y2k-add-form.is-expanded) .dyn-notch-scrim,
 body:has(.y2k-command-dock .top-frame-panels[data-expanded="true"]) .dyn-notch-scrim,
-body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch-scrim { pointer-events: auto; }
+body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch-scrim,
+body:has(.account-pin-viewport:not(:empty)) .dyn-notch-scrim { pointer-events: auto; }
 .movies-wall-container :is(.movie-library-grid, .drift-wall) {
-  transition: filter 360ms ease;
+  transition: filter 320ms ease;
 }
 body:has(.y2k-command-dock .top-frame-panels[data-expanded="true"]) .movies-wall-container :is(.movie-library-grid, .drift-wall),
-body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .movies-wall-container :is(.movie-library-grid, .drift-wall) {
+body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .movies-wall-container :is(.movie-library-grid, .drift-wall),
+body:has(.account-pin-viewport:not(:empty)) .movies-wall-container :is(.movie-library-grid, .drift-wall) {
   filter: brightness(0.5) saturate(0.8) blur(3px);
 }
 
-/* ---- Peek on hover, keyboard, or D-pad focus: the notch swells and shows its hint line ---- */
+/* ---- Peek, magnetic pull, press physics & live drag ---- */
 .dyn-notch {
-  width: calc(var(--dyn-w) + var(--dyn-peek, 0px));
-  height: calc(var(--dyn-h) + var(--dyn-peek, 0px) * 0.75);
+  width: calc(var(--dyn-w) + var(--dyn-peek, 0px) + var(--dyn-pull-x, 0px) * 0.65);
+  height: max(2.25rem, calc(var(--dyn-h) + var(--dyn-peek, 0px) * 0.75 + var(--dyn-drag-h, 0px) + var(--dyn-pull-y, 0px) * 0.65));
+  transform: scale(calc(1 - var(--dyn-press, 0) * 0.025));
+}
+[data-dragging="true"] .dyn-notch {
+  transition: border-radius 120ms ease !important;
 }
 @media (prefers-reduced-motion: no-preference) {
   :root :is(.y2k-library-search, .y2k-add-form):not(.is-expanded):has(:focus-visible) .dyn-notch,
@@ -410,6 +511,10 @@ body:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .m
   :root:not(.is-tv-runtime, .is-silk-browser) .frame-corner-profiles:not(:has(.profile-settings-menu)):hover .dyn-notch .dyn-notch__grip {
     opacity: 1;
     transform: none;
+  }
+  :root:not(.is-tv-runtime, .is-silk-browser) :is(.y2k-library-search, .y2k-add-form, .y2k-command-dock__filters, .frame-corner-profiles) :is(.y2k-symbol-control__trigger, .movie-wall-filters__trigger, .profiles-switcher-row) {
+    transform: translate3d(calc(var(--dyn-pull-x, 0px) * 0.45), calc(var(--dyn-pull-y, 0px) * 0.45), 0) scale(calc(1 - var(--dyn-press, 0) * 0.03));
+    transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 }
 

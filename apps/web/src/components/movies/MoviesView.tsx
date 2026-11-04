@@ -114,7 +114,7 @@ export const MoviesView: React.FC<MoviesWorkspaceViewProps> = ({
     movies.forEach((movie) => {
       if (movie.watchedBy.length === 2) {
         const prevMovie = previousMoviesMap.get(movie.id);
-        if (prevMovie && prevMovie.watchedBy.length === 1) {
+        if (prevMovie && prevMovie.watchedBy.length < 2) {
           setSuccessMovieId(movie.id);
           setToast({
             message: `🎉 You both watched "${movie.title}"!`,

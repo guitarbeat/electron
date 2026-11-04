@@ -1,5 +1,5 @@
 import { OrbitLoader } from "@/components/ui/OrbitLoader";
-import { MovieDetailsModal } from "./MovieDetailsModal";
+import { MovieInlineBooklet } from "./MovieInlineBooklet";
 import { MovieEditModal } from "./MovieEditModal";
 import { SuggestionCard } from "./SuggestionCard";
 import { MovieCard } from "./MovieCard";
@@ -29,16 +29,21 @@ import {
 } from "@/components/ui";
 
 import { useViewport } from "@/app/providerContexts";
-import { currentXmbSoundsEnabled, setXmbSoundsEnabled, subscribeXmbSounds } from "@/services/xmbAudio";
+import {
+  currentXmbSoundsEnabled,
+  playXmbCue,
+  setXmbSoundsEnabled,
+  subscribeXmbSounds,
+} from "@/services/xmbAudio";
 import { spacing } from "@/theme/tokens";
 import {
   getWorkspaceCollectionState,
 } from "@/utils";
 
 import {
-MovieSections,
-MovieBodyActions,
-MovieTransitionOrigin,
+  MovieSections,
+  MovieBodyActions,
+  MovieTransitionOrigin,
 } from "./shared";
 
 interface Props_MovieSectionBody {
@@ -94,27 +99,38 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     try { localStorage.setItem("movies-view", next); } catch { /* Storage can be unavailable. */ }
   };
   const wallContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
-  const [selectedOrigin, setSelectedOrigin] =
-    React.useState<MovieTransitionOrigin | null>(null);
-  const [isUpdatingWatchStatus, setIsUpdatingWatchStatus] =
-    React.useState(false);
+  const [openMovieIds, setOpenMovieIds] = React.useState<string[]>([]);
+  const [updatingMovieIds, setUpdatingMovieIds] = React.useState<Record<string, boolean>>({});
   const [editMovie, setEditMovie] = React.useState<Movie | null>(null);
   const [wallFilters, setWallFilters] = React.useState<MovieWallFilterState>(
     DEFAULT_MOVIE_WALL_FILTERS,
   );
 
+  const openMovieSet = React.useMemo(() => new Set(openMovieIds), [openMovieIds]);
+
   const openMovieDetails = React.useCallback(
-    (movie: Movie, origin?: MovieTransitionOrigin | null) => {
-      setSelectedMovie(movie);
-      setSelectedOrigin(origin ?? null);
+    (movie: Movie, _origin?: MovieTransitionOrigin | null) => {
+      setOpenMovieIds((prev) =>
+        prev.includes(movie.id) ? prev : [...prev, movie.id],
+      );
     },
     [],
   );
 
-  const closeMovieDetails = React.useCallback(() => {
-    setSelectedMovie(null);
-    setSelectedOrigin(null);
+  const toggleMovieBooklet = React.useCallback((movie: Movie) => {
+    setOpenMovieIds((prev) =>
+      prev.includes(movie.id)
+        ? prev.filter((id) => id !== movie.id)
+        : [...prev, movie.id],
+    );
+  }, []);
+
+  const closeMovieBooklet = React.useCallback((movieId: string) => {
+    setOpenMovieIds((prev) => prev.filter((id) => id !== movieId));
+  }, []);
+
+  const closeAllMovieBooklets = React.useCallback(() => {
+    setOpenMovieIds([]);
   }, []);
 
   const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
@@ -176,18 +192,6 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     isLoadingSuggestions: isSuggestionsLoading,
   });
 
-  const resolvedSelectedMovie = React.useMemo(() => {
-    if (!selectedMovie) {
-      return null;
-    }
-
-    return (
-      [...sections.queue, ...sections.completed].find(
-        (movie) => movie.id === selectedMovie.id,
-      ) ?? selectedMovie
-    );
-  }, [selectedMovie, sections.queue, sections.completed]);
-
   const allMovies = React.useMemo(() => {
     const seenMovieIds = new Set<string>();
     return [...sections.queue, ...sections.completed].filter((movie) => {
@@ -204,14 +208,33 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   const hasActiveFilters = hasActiveMovieWallFilters(wallFilters);
 
   React.useEffect(() => {
-    if (
-      selectedMovie &&
-      hasActiveFilters &&
-      !filteredMovies.some((movie) => movie.id === selectedMovie.id)
-    ) {
-      closeMovieDetails();
-    }
-  }, [selectedMovie, hasActiveFilters, filteredMovies, closeMovieDetails]);
+    if (!hasActiveFilters || openMovieIds.length === 0) return;
+    const visibleIds = new Set(filteredMovies.map((movie) => movie.id));
+    setOpenMovieIds((prev) => {
+      const next = prev.filter((id) => visibleIds.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [hasActiveFilters, filteredMovies, openMovieIds.length]);
+
+  // Pressing Escape closes all open in-place booklets when no dialog or notch is active
+  React.useEffect(() => {
+    if (openMovieIds.length === 0) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      const hasOpenOverlay = document.querySelector(
+        '[role="dialog"], [role="alertdialog"], [data-notch-panel]:not(.dyn-notch-ghost), details[open]',
+      );
+      if (hasOpenOverlay) return;
+      event.preventDefault();
+      event.stopPropagation();
+      playXmbCue("cancel");
+      closeAllMovieBooklets();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [openMovieIds.length, closeAllMovieBooklets]);
 
   React.useEffect(() => {
     if (collectionState !== "loading" && typeof window !== "undefined") {
@@ -219,6 +242,63 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       window.dispatchEvent(new CustomEvent("workspace-collection-ready"));
     }
   }, [collectionState]);
+
+  const hasLoggedInUser = Boolean(currentUser || activeUsers.length > 0);
+
+  const handleToggleMovieWatch = React.useCallback(
+    async (movieId: string, targetUser?: User | "Both") => {
+      setUpdatingMovieIds((prev) => ({ ...prev, [movieId]: true }));
+      try {
+        await actions.toggleWatched(movieId, targetUser);
+      } finally {
+        setUpdatingMovieIds((prev) => ({ ...prev, [movieId]: false }));
+      }
+    },
+    [actions],
+  );
+
+  const renderInlineBooklet = React.useCallback(
+    (movie: Movie) => (
+      <MovieInlineBooklet
+        key={`booklet-${movie.id}`}
+        movie={movie}
+        currentUser={currentUser}
+        activeUsers={activeUsers}
+        isWatchedByCurrentUser={Boolean(
+          currentUser && movie.watchedBy.includes(currentUser),
+        )}
+        isUpdatingWatchStatus={Boolean(updatingMovieIds[movie.id])}
+        onToggleWatched={
+          hasLoggedInUser
+            ? () => handleToggleMovieWatch(movie.id)
+            : undefined
+        }
+        onToggleUserWatched={
+          hasLoggedInUser
+            ? (user) => handleToggleMovieWatch(movie.id, user)
+            : undefined
+        }
+        onEdit={
+          hasLoggedInUser
+            ? () => {
+                setEditMovie(movie);
+              }
+            : undefined
+        }
+        onClose={() => closeMovieBooklet(movie.id)}
+        isMobile={isMobile}
+      />
+    ),
+    [
+      currentUser,
+      activeUsers,
+      updatingMovieIds,
+      hasLoggedInUser,
+      handleToggleMovieWatch,
+      closeMovieBooklet,
+      isMobile,
+    ],
+  );
 
   const unifiedCards = React.useMemo(() => {
     const renderMovie = (movie: Movie, index: number) => {
@@ -257,18 +337,19 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       }
     }
 
-    const hasLoggedInUser = Boolean(currentUser || activeUsers.length > 0);
-    const suggestionCards = uniqueSuggestions.map((suggestion) => (
-      <SuggestionCard
-        key={`suggestion-${suggestion.id}`}
-        suggestion={suggestion}
-        onAccept={() => void onAcceptSuggestion(suggestion)}
-        onReject={() => void onRejectSuggestion(suggestion)}
-        canRespond={hasLoggedInUser}
-        disableActions={!hasLoggedInUser}
-        isProcessing={processingSuggestionId === suggestion.id}
-      />
-    ));
+    const suggestionCards = hasLoggedInUser
+      ? uniqueSuggestions.map((suggestion) => (
+          <SuggestionCard
+            key={`suggestion-${suggestion.id}`}
+            suggestion={suggestion}
+            onAccept={() => void onAcceptSuggestion(suggestion)}
+            onReject={() => void onRejectSuggestion(suggestion)}
+            canRespond={hasLoggedInUser}
+            disableActions={!hasLoggedInUser}
+            isProcessing={processingSuggestionId === suggestion.id}
+          />
+        ))
+      : [];
     const movieCards = filteredMovies.map(renderMovie);
 
     if (hasActiveFilters) return movieCards;
@@ -285,6 +366,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     sections.suggestions,
     currentUser,
     activeUsers,
+    hasLoggedInUser,
     processingSuggestionId,
     successMovieId,
     onAcceptSuggestion,
@@ -326,22 +408,16 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       return;
     }
 
-    const container = document.querySelector(`[data-movie-id="${movie.id}"]`);
-    const poster = container?.querySelector(".movie-item-poster-wrap");
-    const rect = poster?.getBoundingClientRect();
-    const origin = rect
-      ? {
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        }
-      : null;
-
-    openMovieDetails(movie, origin);
+    toggleMovieBooklet(movie);
   };
 
-  const hasLoggedInUser = Boolean(currentUser || activeUsers.length > 0);
+  const openWallMovies = React.useMemo(() => {
+    if (openMovieIds.length === 0) return [];
+    const movieById = new Map(allMovies.map((m) => [m.id, m]));
+    return openMovieIds
+      .map((id) => movieById.get(id))
+      .filter((m): m is Movie => Boolean(m));
+  }, [openMovieIds, allMovies]);
 
   // ── Full section body ─────────────────────────────────────────────────────
   return (
@@ -384,37 +460,74 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         />
 
         {collectionState === "loading" ? <OrbitLoader /> : unifiedCards.length > 0 ? (
-          view === "grid" ? <div className={`movie-library-grid${selectedMovie ? " movie-library-grid--modal-open" : ""}`} aria-label="Movie grid">
-            <div className="movie-library-grid__canvas">
-            {unifiedCards.map((card, index) => <div className="movie-library-grid__item" key={React.isValidElement(card) ? card.key ?? index : index}>{card}</div>)}
+          view === "grid" ? (
+            <div className="movie-library-grid" aria-label="Movie grid">
+              <div className="movie-library-grid__canvas">
+                {unifiedCards.map((card, index) => {
+                  const cardMovie = React.isValidElement(card)
+                    ? (card.props as { movie?: Movie })?.movie
+                    : undefined;
+                  const isBookletOpen = Boolean(
+                    cardMovie && openMovieSet.has(cardMovie.id),
+                  );
+                  return (
+                    <div
+                      className={`movie-library-grid__item${isBookletOpen ? " movie-library-grid__item--booklet-open" : ""}`}
+                      key={React.isValidElement(card) ? card.key ?? index : index}
+                    >
+                      {cardMovie && isBookletOpen
+                        ? renderInlineBooklet(cardMovie)
+                        : card}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div> : <DriftWall
-            items={unifiedCards}
-            columns={dynamicColumns}
-            tileWidth={tileWidth}
-            tileHeight={tileHeight}
-            gap={gap}
-            tilt={0}
-            turn={0}
-            roll={0}
-            perspective={1000}
-            depth={0}
-            speed={isTv ? 22 : isMobile ? 22 : 32}
-            direction="up"
-            variance={0}
-            parallax={0}
-            lift={24}
-            fade={0.08}
-            dim={0.96}
-            overlayColor="#060010"
-            radius={isMobile ? 10 : 12}
-            pauseOnHover
-            grayscale={false}
-            onTileClick={handleTileClick}
-            scrollStorageKey="movies-workspace-wall"
-            isPaused={Boolean(selectedMovie)}
-            className={selectedMovie ? "drift-wall--modal-open" : ""}
-          />
+          ) : (
+            <>
+              <DriftWall
+                items={unifiedCards}
+                columns={dynamicColumns}
+                tileWidth={tileWidth}
+                tileHeight={tileHeight}
+                gap={gap}
+                tilt={0}
+                turn={0}
+                roll={0}
+                perspective={1000}
+                depth={0}
+                speed={isTv ? 22 : isMobile ? 22 : 32}
+                direction="up"
+                variance={0}
+                parallax={0}
+                lift={24}
+                fade={0.08}
+                dim={0.96}
+                overlayColor="#060010"
+                radius={isMobile ? 10 : 12}
+                pauseOnHover
+                grayscale={false}
+                onTileClick={handleTileClick}
+                scrollStorageKey="movies-workspace-wall"
+                isPaused={false}
+              />
+              {openWallMovies.length > 0 ? (
+                <div
+                  className="movie-wall-booklet-deck"
+                  aria-label="Open movie booklets"
+                >
+                  {openWallMovies.map((movie) => (
+                    <div
+                      key={`wall-booklet-${movie.id}`}
+                      className="movie-wall-booklet-deck__item"
+                    >
+                      {renderInlineBooklet(movie)}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          )
         ) : (
           <CollectionEmptyState
             padding={isMobile ? spacing.md : spacing["3xl"]}
@@ -443,61 +556,32 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
             ) : null}
           </CollectionEmptyState>
         )}
-      </div>
 
-      {resolvedSelectedMovie ? (
-        <React.Suspense fallback={null}>
-          <MovieDetailsModal
-            movie={resolvedSelectedMovie}
-            isOpen={Boolean(resolvedSelectedMovie)}
-            origin={selectedOrigin}
-            container={wallContainerRef.current}
-            contained={true}
-            currentUser={currentUser}
-            activeUsers={activeUsers}
-            isWatchedByCurrentUser={Boolean(
-              currentUser &&
-                resolvedSelectedMovie.watchedBy.includes(currentUser),
-            )}
-            isUpdatingWatchStatus={isUpdatingWatchStatus}
-            onToggleWatched={
-              hasLoggedInUser
-                ? async () => {
-                    setIsUpdatingWatchStatus(true);
-                    try {
-                      await actions.toggleWatched(resolvedSelectedMovie.id);
-                    } finally {
-                      setIsUpdatingWatchStatus(false);
-                    }
-                  }
-                : undefined
-            }
-            onToggleUserWatched={
-              hasLoggedInUser
-                ? async (user) => {
-                    setIsUpdatingWatchStatus(true);
-                    try {
-                      await actions.toggleWatched(
-                        resolvedSelectedMovie.id,
-                        user,
-                      );
-                    } finally {
-                      setIsUpdatingWatchStatus(false);
-                    }
-                  }
-                : undefined
-            }
-            onEdit={
-              hasLoggedInUser
-                ? () => {
-                    setEditMovie(resolvedSelectedMovie);
-                  }
-                : undefined
-            }
-            onClose={closeMovieDetails}
-          />
-        </React.Suspense>
-      ) : null}
+        {openMovieIds.length > 0 ? (
+          <div
+            className="movie-booklets-floating-bar"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="movie-booklets-floating-bar__count">
+              {openMovieIds.length === 1
+                ? "1 booklet open"
+                : `${openMovieIds.length} booklets open`}
+            </span>
+            <button
+              type="button"
+              className="movie-booklets-floating-bar__close-all"
+              onClick={() => {
+                playXmbCue("cancel");
+                closeAllMovieBooklets();
+              }}
+              aria-label="Close all open movie booklets"
+            >
+              Close all <kbd>Esc</kbd>
+            </button>
+          </div>
+        ) : null}
+      </div>
 
       {editMovie ? (
         <MovieEditModal
@@ -518,3 +602,4 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     </div>
   );
 };
+

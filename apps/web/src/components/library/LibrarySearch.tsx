@@ -10,13 +10,19 @@ import React, {
 } from "react";
 import { createPortal } from "react-dom";
 import { AccountPinViewport, TopFramePanel, TopFrameViewport, useTopFrame } from "@/app/TopFramePanels";
-import { useExclusiveNotch } from "@/app/dynamicNotch";
+import {
+  collapseAllNotches,
+  useExclusiveNotch,
+  useNotchGripDrag,
+  useNotchMagneticPhysics,
+} from "@/app/dynamicNotch";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-import { CornerDownLeft, X } from "lucide-react";
+import { CornerDownLeft, SlidersHorizontal, X } from "lucide-react";
 import { Button, ProfileMenu } from "@/components/ui";
 import { concurrentMap } from "@/utils/concurrency";
 import { PlusIcon } from "@/common/Icons";
 import { NavbarToastViewport, useUser, useToast } from "@/app/providerContexts";
+import { useProfileSelection } from "@/app/ProfilePinContext";
 import { useMovies } from "@/hooks/movies";
 import { useSuggestions } from "@/hooks/suggestions";
 import {
@@ -107,13 +113,25 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
       return () => document.removeEventListener("keydown", handleEscape);
     }, [pickerOpen, modalOpen, closePicker]);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [isSearchPinnedCollapsed, setIsSearchPinnedCollapsed] = useState(false);
     const [isAddExpanded, setIsAddExpanded] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchTriggerRef = useRef<HTMLButtonElement>(null);
     const addTriggerRef = useRef<HTMLButtonElement>(null);
+    const searchHostRef = useRef<HTMLDivElement>(null);
+    const addHostRef = useRef<HTMLFormElement>(null);
+    const settingsHostRef = useRef<HTMLDivElement>(null);
+    const profilesHostRef = useRef<HTMLDivElement>(null);
     const searchInputId = useId();
     const addInputId = useId();
-    const searchExpanded = isSearchExpanded || (Boolean(searchQuery) && !isAddExpanded);
+    const searchExpanded =
+      isSearchExpanded ||
+      (Boolean(searchQuery) && !isAddExpanded && !isSearchPinnedCollapsed);
+
+    useNotchMagneticPhysics(searchHostRef);
+    useNotchMagneticPhysics(addHostRef);
+    useNotchMagneticPhysics(settingsHostRef);
+    useNotchMagneticPhysics(profilesHostRef);
 
     const { currentUser } = useUser();
     const { showToast } = useToast();
@@ -182,7 +200,10 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     const addExpanded = isAddExpanded || (Boolean(query) && !isSearchExpanded) || isBusy;
 
     // One notch at a time: opening Search, Add, or the picker collapses the others.
-    useExclusiveNotch("search", isSearchExpanded, () => setIsSearchExpanded(false));
+    useExclusiveNotch("search", isSearchExpanded, () => {
+      setIsSearchExpanded(false);
+      if (searchQuery) setIsSearchPinnedCollapsed(true);
+    });
     useExclusiveNotch("add", isAddExpanded || isOpen, () => {
       setIsOpen(false);
       setIsMounted(false);
@@ -210,20 +231,76 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
 
       });
 
+    const { requestLogin, currentUser: profileUser } = useProfileSelection();
     const focusAddInputHandle = useWorkspaceSearchInputHandle(inputRef);
     const focusAddInput = useCallback(() => {
+      if (!currentUser) {
+        requestLogin();
+        return;
+      }
       setIsSearchExpanded(false);
       setIsAddExpanded(true);
       window.requestAnimationFrame(focusAddInputHandle);
-    }, [focusAddInputHandle]);
+    }, [currentUser, focusAddInputHandle, requestLogin]);
     const focusSearchInput = useCallback(() => {
       setIsAddExpanded(false);
+      setIsSearchPinnedCollapsed(false);
       setIsSearchExpanded(true);
       window.requestAnimationFrame(() => {
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
       });
     }, []);
+    const collapseSearchNotch = useCallback(() => {
+      setIsSearchExpanded(false);
+      if (searchQuery) setIsSearchPinnedCollapsed(true);
+    }, [searchQuery]);
+    const collapseAddNotch = useCallback(() => {
+      hideAutocomplete();
+      setIsAddExpanded(false);
+    }, [hideAutocomplete]);
+
+    const searchGrip = useNotchGripDrag({
+      edge: "top",
+      isOpen: searchExpanded,
+      onOpen: focusSearchInput,
+      onClose: collapseSearchNotch,
+      hostRef: searchHostRef,
+    });
+    const addGrip = useNotchGripDrag({
+      edge: "top",
+      isOpen: addExpanded,
+      onOpen: focusAddInput,
+      onClose: collapseAddNotch,
+      hostRef: addHostRef,
+    });
+    const settingsGrip = useNotchGripDrag({
+      edge: "bottom",
+      isOpen: pickerOpen,
+      onOpen: () => window.dispatchEvent(new CustomEvent("dynamic-notch:toggle-settings")),
+      onClose: () => {
+        if (pickerOpen) setPickerOpen(false);
+        else window.dispatchEvent(new CustomEvent("dynamic-notch:toggle-settings"));
+      },
+      hostRef: settingsHostRef,
+    });
+    const profilesGrip = useNotchGripDrag({
+      edge: "bottom",
+      isOpen: false,
+      onOpen: () => {
+        if (profileUser) {
+          const btn = document.querySelector<HTMLButtonElement>(
+            `.profile-switcher-btn--${profileUser.toLowerCase()}`,
+          );
+          btn?.click();
+        } else {
+          requestLogin();
+        }
+      },
+      onClose: collapseAllNotches,
+      hostRef: profilesHostRef,
+    });
+
     useImperativeHandle(forwardedRef, () => ({ focusSearchInput, focusAddInput }), [
       focusSearchInput, focusAddInput,
     ]);
@@ -363,95 +440,46 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
       hideAutocomplete();
     }, [hideAutocomplete]);
 
-    const selectRow = useCallback(
-      async (row: LibraryAutocompleteRow) => {
-        if (row.selection?.kind === "library-movie") {
-          revealLibraryItem(row.selection);
-          hideAutocomplete();
-          clearQuery();
-          return;
-        }
-        if (row.selection?.kind === "movie-result") {
-          setSelection(row.selection);
-          setQuery(row.selection.title);
-          setActionError(null);
-          hideAutocomplete();
-          window.requestAnimationFrame(() => inputRef.current?.focus());
-          return;
-        }
-
-        setSelection(row.selection);
-        setQuery(row.title);
-        hideAutocomplete();
-        inputRef.current?.focus();
-      },
-      [
-        clearQuery,
-        hideAutocomplete,
-        revealLibraryItem,
-      ],
-    );
-
-    const submitKindAction = useCallback(
-      async (kind: LibrarySubmitKind) => {
-        if (isBusy || !trimmed) {
-          return;
-        }
-        if (kind === "show-movie" || kind === "show-place") {
-          revealLibraryItem(selection);
-          hideAutocomplete();
+    const saveMovieEntry = useCallback(
+      async (
+        movieTitle: string,
+        movieMeta?: { imdbID?: string; type?: string },
+      ) => {
+        const cleanTitle = movieTitle.trim();
+        if (isBusy || !cleanTitle) {
           return;
         }
 
         setIsBusy(true);
         setActionError(null);
+        hideAutocomplete();
         try {
-          const movieTitle =
-            selection?.kind === "movie-result" ? selection.title : trimmed;
-          const movieMeta =
-            selection?.kind === "movie-result"
-              ? { imdbID: selection.imdbID, type: selection.type }
-              : undefined;
-
           if (isGuest) {
             const suggestion = await addSuggestion(
-              movieTitle,
+              cleanTitle,
               undefined,
               guestName.trim() || undefined,
               movieMeta,
             );
             showToast({
-              message: `"${movieTitle}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
+              message: `"${cleanTitle}" sent to movie suggestions as ${suggestion.suggestedBy}.`,
               type: "success",
             });
           } else {
-            const added = await addMovie(movieTitle, movieMeta);
+            const added = await addMovie(cleanTitle, movieMeta);
             showToast({
-              message: `"${movieTitle}" added to movies!`,
+              message: `"${cleanTitle}" added to movies!`,
               type: "success",
               actionLabel: "Undo",
-              persistent: true, // Keep Undo available while the newly added movie's details are open.
               onAction: () => void deleteMovie(added.id),
-            });
-            window.requestAnimationFrame(() => {
-              window.setTimeout(() => {
-                const movieElement = document.querySelector(
-                  `[data-movie-id="${added.id}"]`,
-                );
-                movieElement?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-                movieElement
-                  ?.querySelector<HTMLButtonElement>(
-                    ".movie-item-details-hit-area",
-                  )
-                  ?.click();
-              }, 120);
             });
           }
           clearQuery();
-          window.requestAnimationFrame(focusAddInput);
+          setIsAddExpanded(true);
+          setIsFocused(true);
+          window.requestAnimationFrame(() => {
+            inputRef.current?.focus();
+          });
         } catch (error) {
           const message =
             error instanceof Error
@@ -468,15 +496,69 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         addSuggestion,
         clearQuery,
         deleteMovie,
-        focusAddInput,
         guestName,
         hideAutocomplete,
         isBusy,
         isGuest,
-        selection,
         showToast,
-        trimmed,
+      ],
+    );
+
+    const selectRow = useCallback(
+      async (row: LibraryAutocompleteRow) => {
+        if (row.selection?.kind === "library-movie") {
+          revealLibraryItem(row.selection);
+          hideAutocomplete();
+          clearQuery();
+          return;
+        }
+        if (row.selection?.kind === "movie-result") {
+          await saveMovieEntry(row.selection.title, {
+            imdbID: row.selection.imdbID,
+            type: row.selection.type,
+          });
+          return;
+        }
+        if (row.selection?.kind === "movie-draft") {
+          await saveMovieEntry(row.selection.title || row.title);
+          return;
+        }
+
+        setSelection(row.selection);
+        setQuery(row.title);
+        hideAutocomplete();
+        inputRef.current?.focus();
+      },
+      [clearQuery, hideAutocomplete, revealLibraryItem, saveMovieEntry],
+    );
+
+    const submitKindAction = useCallback(
+      async (kind: LibrarySubmitKind) => {
+        if (isBusy || !trimmed) {
+          return;
+        }
+        if (kind === "show-movie" || kind === "show-place") {
+          revealLibraryItem(selection);
+          hideAutocomplete();
+          return;
+        }
+
+        const movieTitle =
+          selection?.kind === "movie-result" ? selection.title : trimmed;
+        const movieMeta =
+          selection?.kind === "movie-result"
+            ? { imdbID: selection.imdbID, type: selection.type }
+            : undefined;
+
+        await saveMovieEntry(movieTitle, movieMeta);
+      },
+      [
+        hideAutocomplete,
+        isBusy,
         revealLibraryItem,
+        saveMovieEntry,
+        selection,
+        trimmed,
       ],
     );
 
@@ -582,12 +664,15 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
           >
             <div className="y2k-command-dock__bar" inert={modalOpen}>
               <div
-                className={`y2k-library-search y2k-symbol-control${searchExpanded ? " is-expanded" : ""}`}
+                ref={searchHostRef}
+                className={`y2k-library-search y2k-symbol-control${searchExpanded ? " is-expanded" : ""}${searchQuery && !searchExpanded ? " has-active-query" : ""}`}
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget) && !searchQuery) setIsSearchExpanded(false);
                 }}
               >
-                <span className="dyn-notch" data-notch="search" aria-hidden="true"><i className="dyn-notch__grip" /></span>
+                <span className="dyn-notch" data-notch="search" aria-hidden="true">
+                  <i className="dyn-notch__grip" {...searchGrip} />
+                </span>
                 <button
                   ref={searchTriggerRef}
                   type="button"
@@ -601,6 +686,32 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   <svg className="frame-command-art" viewBox="0 145 865 550" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/search_aaron_electra_pixel_icon.png" width="865" height="865" /></svg>
                   <span className="frame-command-label" aria-hidden="true">Search</span>
                 </button>
+                {searchQuery && !searchExpanded ? (
+                  <span className="dyn-notch-status-badge" aria-live="polite">
+                    <button
+                      type="button"
+                      className="dyn-notch-status-badge__text"
+                      onClick={focusSearchInput}
+                      title={`Filtering by "${searchQuery}" — click to edit`}
+                    >
+                      &ldquo;{searchQuery}&rdquo;
+                      {searchResultCount !== undefined ? ` · ${searchResultCount}` : ""}
+                    </button>
+                    <button
+                      type="button"
+                      className="dyn-notch-status-badge__clear"
+                      aria-label="Clear active search filter"
+                      title="Clear search filter"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSearchQueryChange("");
+                        setIsSearchPinnedCollapsed(false);
+                      }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                ) : null}
                 <div className="y2k-symbol-control__field" hidden={!searchExpanded}>
                   <input
                     id={searchInputId}
@@ -608,7 +719,10 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     type="search"
                     className="y2k-search-capsule__input"
                     value={searchQuery}
-                    onChange={(event) => onSearchQueryChange(event.target.value)}
+                    onChange={(event) => {
+                      setIsSearchPinnedCollapsed(false);
+                      onSearchQueryChange(event.target.value);
+                    }}
                     placeholder="Search movies..."
                     aria-label="Search your watchlist"
                     autoComplete="off"
@@ -618,6 +732,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                         event.preventDefault();
                         event.stopPropagation();
                         onSearchQueryChange("");
+                        setIsSearchPinnedCollapsed(false);
                         setIsSearchExpanded(false);
                         searchTriggerRef.current?.focus();
                       }
@@ -629,6 +744,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     aria-label="Clear watchlist search"
                     onClick={() => {
                       onSearchQueryChange("");
+                      setIsSearchPinnedCollapsed(false);
                       searchInputRef.current?.focus();
                     }}
                   ><X size={14} /></button> : <kbd className="y2k-search-capsule__kbd" aria-hidden="true">/</kbd>}
@@ -643,9 +759,13 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                 ) : null}
               </div>
               <form
+                ref={addHostRef}
                 className={`y2k-search-form y2k-add-form y2k-symbol-control${addExpanded ? " is-expanded" : ""}`}
                 onBlur={(event) => {
-                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                  if (
+                    !event.currentTarget.contains(event.relatedTarget) &&
+                    !dropdownInteractionPendingRef.current
+                  ) {
                     setIsFocused(false);
                     if (!query && !isBusy) setIsAddExpanded(false);
                   }
@@ -655,11 +775,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   if (isBusy || !hasQuery) return;
                   clearFocusBoundaryCheck();
                   hideAutocomplete();
-                  inputRef.current?.blur();
                   handlePrimary();
                 }}
               >
-                <span className="dyn-notch" data-notch="add" aria-hidden="true"><i className="dyn-notch__grip" /></span>
+                <span className="dyn-notch" data-notch="add" aria-hidden="true">
+                  <i className="dyn-notch__grip" {...addGrip} />
+                </span>
                 <div
                   className={`y2k-search-capsule${isFocused ? " is-focused" : ""}${isLoading || isBusy ? " is-loading" : ""}`}
                 >
@@ -801,6 +922,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     aria-hidden="true"
                   />
                   <div
+                    ref={settingsHostRef}
                     className="y2k-command-dock__filters"
                     onPointerDown={() => {
                       if (isOpen) {
@@ -808,7 +930,9 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                       }
                     }}
                   >
-                    <span className="dyn-notch" data-notch="settings" aria-hidden="true"><i className="dyn-notch__grip" /></span>
+                    <span className="dyn-notch" data-notch="settings" aria-hidden="true">
+                      <i className="dyn-notch__grip" {...settingsGrip} />
+                    </span>
                     {renderFilterSlot(
                       <>
                         {viewSlot}
@@ -828,18 +952,20 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
               </button>
-              <button
-                type="button"
-                className="frame-quiz-trigger"
-                data-closes-settings
-                aria-label="Movie quiz"
-                aria-haspopup="dialog"
-                title="Which movie character are you?"
-                onClick={() => window.dispatchEvent(new CustomEvent("open-quiz-experience"))}
-              >
-                <img className="frame-quiz-art" src="/movie-quiz-cover.svg" alt="" aria-hidden="true" width={400} height={600} draggable={false} />
-                <span>Movie quiz</span>
-              </button>
+              {currentUser ? (
+                <button
+                  type="button"
+                  className="frame-quiz-trigger"
+                  data-closes-settings
+                  aria-label="Movie quiz"
+                  aria-haspopup="dialog"
+                  title="Which movie character are you?"
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-quiz-experience"))}
+                >
+                  <img className="frame-quiz-art" src="/movie-quiz-cover.svg" alt="" aria-hidden="true" width={400} height={600} draggable={false} />
+                  <span>Movie quiz</span>
+                </button>
+              ) : null}
                       </>,
                     )}
                   </div>
@@ -850,7 +976,27 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
             <TopFrameViewport />
             {pickerOpen ? <TopFramePanel name="picker">
               <section id="top-frame-movie-picker" className="frame-movie-picker" role="dialog" aria-label="Movie picker">
-                <div className="frame-panel-heading"><h2>Pick a movie</h2><button type="button" onClick={closePicker} aria-label="Close movie picker"><X size={20} /></button></div>
+                <div className="frame-panel-heading">
+                  <h2>Pick a movie</h2>
+                  <div className="frame-panel-heading__actions">
+                    <button
+                      type="button"
+                      className="frame-panel-heading__switch"
+                      onClick={() => {
+                        setPickerOpen(false);
+                        window.setTimeout(() => {
+                          window.dispatchEvent(new CustomEvent("dynamic-notch:open-settings"));
+                        }, 0);
+                      }}
+                      aria-label="Switch to Settings"
+                      title="Switch back to Settings"
+                    >
+                      <SlidersHorizontal size={14} aria-hidden="true" />
+                      <span>Settings</span>
+                    </button>
+                    <button type="button" onClick={closePicker} aria-label="Close movie picker"><X size={20} /></button>
+                  </div>
+                </div>
                 <React.Suspense fallback={<p role="status">Loading movie picker…</p>}><MoviePickerPanel /></React.Suspense>
               </section>
             </TopFramePanel> : null}
@@ -990,7 +1136,30 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     return (
       <>
         {typeof document !== "undefined"
-          ? createPortal(<><div className="dyn-notch-scrim" aria-hidden="true" />{commandDock}<div className="frame-corner-profiles y2k-command-dock__profiles" role="region" aria-label="Account controls" inert={modalOpen}><span className="dyn-notch" data-notch="profiles" aria-hidden="true"><i className="dyn-notch__grip" /></span><ProfileMenu /></div><AccountPinViewport /></>, document.body)
+          ? createPortal(
+              <>
+                <div
+                  className="dyn-notch-scrim"
+                  aria-hidden="true"
+                  onClick={collapseAllNotches}
+                />
+                {commandDock}
+                <div
+                  ref={profilesHostRef}
+                  className="frame-corner-profiles y2k-command-dock__profiles"
+                  role="region"
+                  aria-label="Account controls"
+                  inert={modalOpen}
+                >
+                  <span className="dyn-notch" data-notch="profiles" aria-hidden="true">
+                    <i className="dyn-notch__grip" {...profilesGrip} />
+                  </span>
+                  <ProfileMenu />
+                </div>
+                <AccountPinViewport />
+              </>,
+              document.body,
+            )
           : commandDock}
         {showRecommend && currentUser && hasQuery ? (
           <MovieRecommendationComposer

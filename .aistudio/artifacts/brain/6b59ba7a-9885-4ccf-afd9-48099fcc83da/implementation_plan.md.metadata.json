@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for adding visual watch-status treatments (color-coded glowing borders, corner mini-avatars with status rings, dimmed watched posters, and clean unseen posters) to the moving movie poster wall.",
-  "updatedAt":  "2026-10-29T05:08:09.555083257Z",
-  "requestFeedback":  true,
-  "userFacing":  true
+  "summary": "Implementation plan to make every movie poster on the wall a true frameless 3D booklet that flips open in-place across 2 poster columns at the exact 1-row poster height, with direct click/swipe page turning and no outer frame box or Cover/Spread button bar.",
+  "updatedAt": "2026-11-04T05:48:27.660744435Z",
+  "requestFeedback": true,
+  "userFacing": true
 }

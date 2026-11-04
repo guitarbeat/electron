@@ -298,11 +298,32 @@ export const useMovies = (
   );
 
   const toggleWatched = useCallback(
-    async (movieId: string, targetUser?: User) => {
+    async (movieId: string, targetUser?: User | "Both") => {
       if (!currentUser && !targetUser) {
         throw new Error("Profile required");
       }
-      
+
+      if (targetUser === "Both") {
+        await performMutation(
+          "toggle_watched",
+          { movieId, targetUser: "Both" },
+          movies.map((movie: Movie) => {
+            if (movie.id !== movieId) {
+              return movie;
+            }
+            const bothWatched =
+              movie.watchedBy.includes("Aaron") &&
+              movie.watchedBy.includes("Electra");
+            return {
+              ...movie,
+              watchedBy: bothWatched ? [] : ["Aaron", "Electra"],
+              watchingBy: [],
+            };
+          }),
+        );
+        return;
+      }
+
       const userToToggle = targetUser || currentUser!;
 
       await performMutation(
