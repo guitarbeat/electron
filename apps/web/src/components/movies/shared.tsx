@@ -587,24 +587,10 @@ export const MetadataHeader: React.FC<MetadataHeaderProps> = ({
                 }
               >
                 <span className="flipbook-avatar-btn__face flipbook-avatar-btn__face--both">
-                  <svg
+                  <WatchStatusArtwork
+                    status={isBothWatched ? "seen" : "watching"}
                     className="user-avatar-img watch-expression-art watch-expression-art--both"
-                    viewBox="120 85 585 450"
-                    preserveAspectRatio="xMidYMid meet"
-                    aria-hidden="true"
-                  >
-                    <image
-                      href="/avatars/aaron-electra-avatars-seen.png"
-                      width="823"
-                      height="617"
-                    />
-                  </svg>
-                  <span
-                    className="flipbook-avatar-btn__badge"
-                    aria-hidden="true"
-                  >
-                    {isBothWatched ? <CheckIcon size={10} /> : "✓✓"}
-                  </span>
+                  />
                 </span>
                 <span className="flipbook-avatar-btn__info">
                   <span className="flipbook-avatar-btn__name">Both</span>

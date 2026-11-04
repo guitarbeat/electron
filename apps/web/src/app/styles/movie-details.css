@@ -878,8 +878,151 @@
 
 /* Compact booklet page scaling so 2-column by 1-row in-place booklets fit cleanly */
 .book-page[data-compact-page="true"] {
-  padding: 0.42rem 0.46rem 0.4rem;
+  padding: 0.48rem 0.5rem 0.46rem;
 }
+
+/* Left Page: Stacked Full-Width User Action Cards */
+.book-page--actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.book-actions-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.book-actions-stack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.28rem;
+  min-height: 0;
+}
+.book-page--actions .flipbook-avatar-btn--stacked {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 1.85rem;
+  max-height: 2.65rem;
+  padding: 0.22rem 0.45rem;
+  gap: 0.38rem;
+  border-radius: 0.55rem;
+}
+.book-page--actions .flipbook-avatar-btn__face {
+  width: 1.45rem;
+  height: 1.45rem;
+  flex-shrink: 0;
+}
+.book-page--actions .flipbook-avatar-btn__face--both {
+  width: 2.15rem;
+  height: 1.35rem;
+}
+.flipbook-avatar-btn--both.is-unwatched .flipbook-avatar-btn__face .user-avatar-img {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  opacity: 0.96;
+}
+.book-page--actions .flipbook-avatar-btn__row {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.book-page--actions .flipbook-avatar-btn__name {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+}
+.book-page--actions .flipbook-avatar-btn__status {
+  font-size: 0.56rem;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  opacity: 0.88;
+}
+.book-page--actions .movie-details-modal__primary-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+.book-page--actions .movie-details-modal__primary-row .stremio-btn,
+.book-page--actions .movie-details-modal__primary-row .workspace-card-action {
+  min-height: 1.95rem;
+  padding: 0.24rem 0.48rem;
+  font-size: 0.66rem;
+  border-radius: 0.55rem;
+  white-space: nowrap;
+}
+
+/* Right Page: Title + Compact Single-Line Metadata + Plot Overview */
+.book-page--info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+.book-info__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  flex-shrink: 0;
+}
+.book-info__title {
+  margin: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: clamp(0.86rem, 0.74rem + 0.45vw, 1.04rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+.book-info__title[data-title-length="long"] {
+  font-size: clamp(0.78rem, 0.68rem + 0.35vw, 0.92rem);
+}
+.book-info__title[data-title-length="xlong"] {
+  font-size: clamp(0.72rem, 0.64rem + 0.28vw, 0.84rem);
+}
+.book-info__meta-line {
+  margin: 0;
+  font-size: 0.56rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgba(226, 232, 240, 0.76);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.book-page--info .book-overview {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+.book-page--info .book-overview__text {
+  font-size: 0.66rem;
+  line-height: 1.36;
+  color: rgba(241, 245, 249, 0.92);
+}
+.book-page--info .book-overview__more {
+  padding: 0.08rem 0.36rem;
+  font-size: 0.54rem;
+}
+
 .book-page--meta[data-compact-page="true"] .movie-details-modal__header {
   gap: 0.2rem;
 }
@@ -969,7 +1112,7 @@
   position: relative;
   display: flex;
   align-items: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   height: 100%;
   padding: 0;
@@ -977,6 +1120,7 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  overflow: visible;
 }
 
 .movie-inline-booklet__stage {
@@ -986,16 +1130,17 @@
   width: 100%;
   height: 100%;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 0;
+  overflow: visible;
 }
 
 .movie-inline-booklet__spread-frame {
   position: relative;
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 100%;
   height: 100%;
 }
 

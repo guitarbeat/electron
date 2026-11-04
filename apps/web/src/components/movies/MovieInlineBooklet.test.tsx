@@ -21,7 +21,9 @@ const sampleMovie: Movie = {
 };
 
 describe("MovieInlineBooklet", () => {
-  it("renders a frameless two-page spread with metadata, watch controls, plot, and flips shut when a page is clicked", () => {
+  it("opens as a two-page booklet, notifies onStartClose immediately on click, and calls onClose after flipping shut", () => {
+    vi.useFakeTimers();
+    const onStartClose = vi.fn();
     const onClose = vi.fn();
     const onToggleUserWatched = vi.fn();
 
@@ -34,31 +36,48 @@ describe("MovieInlineBooklet", () => {
           isWatchedByCurrentUser={true}
           isUpdatingWatchStatus={false}
           onToggleUserWatched={onToggleUserWatched}
+          onStartClose={onStartClose}
           onClose={onClose}
         />
       </ViewportProvider>,
     );
 
-    expect(screen.getByRole("region", { name: "Mulholland Drive booklet" })).toBeTruthy();
+    const booklet = screen.getByRole("region", { name: "Mulholland Drive booklet" });
+    expect(booklet).toBeTruthy();
+
+    // Advance past initial open timer so the cover flips open
+    vi.advanceTimersByTime(50);
+
+    // Right page shows title, compact metadata line, and plot without duplicate OVERVIEW header or footer
     expect(screen.getByText("Mulholland Drive")).toBeTruthy();
+    expect(screen.getByText("2001 · 147m · Mystery · ★ 7.9")).toBeTruthy();
     expect(screen.getByText(/After a car wreck on the winding Mulholland Drive/i)).toBeTruthy();
+    expect(screen.queryByText(/^Overview$/i)).toBeNull();
+    expect(screen.queryByText(/Watched by Aaron/i)).toBeNull();
 
-    // No Cover / Spread / Fold closed button bar
-    expect(screen.queryByRole("group", { name: "Booklet pages" })).toBeNull();
-
+    // Left page has stacked user actions; clicking watch buttons does not close the booklet
     const aaronBtn = screen.getByRole("button", { name: /Aaron: Watched/i });
     fireEvent.click(aaronBtn);
     expect(onToggleUserWatched).toHaveBeenCalledWith("Aaron");
+    expect(onStartClose).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
 
     const bothBtn = screen.getByRole("button", {
       name: /Watched by both: Tap to mark watched for both Aaron and Electra/i,
     });
     fireEvent.click(bothBtn);
     expect(onToggleUserWatched).toHaveBeenCalledWith("Both");
+    expect(onStartClose).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
 
-    // Clicking an open booklet page flips it shut and calls onClose
-    const openPage = screen.getByRole("button", { name: /Page 1 of 2/i });
-    fireEvent.click(openPage);
+    // Clicking the booklet again immediately triggers onStartClose (so neighbors slide back) and calls onClose after flipping shut
+    fireEvent.click(screen.getByText("Mulholland Drive"));
+    expect(booklet.getAttribute("data-booklet-closing")).toBe("true");
+    expect(onStartClose).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(450);
     expect(onClose).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
   });
 });

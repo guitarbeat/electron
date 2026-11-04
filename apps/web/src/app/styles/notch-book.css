@@ -21,19 +21,19 @@
 }
 
 /* ---- The notch grows out of its corner on the snappy spring curve ---- */
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
 .frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
   transition: width var(--book-lift), height var(--book-lift), border-radius var(--book-lift), transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels[data-expanded="true"] {
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels[data-expanded="true"] {
   transition: height var(--book-lift), width var(--book-lift);
 }
 
 /* ---- The cover ---- */
-.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]),
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"]),
 .frame-corner-profiles .profile-settings-menu { isolation: isolate; }
-.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]) { position: relative; }
-.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"])::before,
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"]) { position: relative; }
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"])::before,
 .frame-corner-profiles .profile-settings-menu::before {
   content: var(--book-cover-title, "");
   position: absolute;
@@ -70,6 +70,12 @@
   --book-cover-a: #f7d77a;
   --book-cover-b: #c8922f;
 }
+.y2k-command-dock .top-frame-panel[data-frame-panel="messages"] {
+  --book-cover-art: url("/avatars/pixel-orbit-speech-bubble.png");
+  --book-cover-title: "Messages";
+  --book-cover-a: #243263;
+  --book-cover-b: #101a3a;
+}
 /* The profile sheet hangs from the right edge, so its cover opens to the right. */
 .frame-corner-profiles .profile-settings-menu { --book-cover-art: url("/avatars/aaron-electra-avatars-seen.png"); }
 .frame-corner-profiles .profile-settings-menu::before {
@@ -83,18 +89,18 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"])::before,
+  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"])::before,
   .frame-corner-profiles .profile-settings-menu::before { display: flex; }
 
   /* Opening: the cover sits on the sheet while the notch grows, then swings open on its spine. */
-  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]):not(.dyn-notch-ghost)::before {
+  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"]):not(.dyn-notch-ghost)::before {
     animation: bookCoverOpen var(--book-swing-ms) var(--book-swing-ease) var(--book-swing-delay) both;
   }
   .frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)::before {
     animation: bookCoverOpenRight var(--book-swing-ms) var(--book-swing-ease) var(--book-swing-delay) both;
   }
   /* The spread slides a little away from the spine as the cover turns, like the book does. */
-  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]):not(.dyn-notch-ghost) {
+  .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"]):not(.dyn-notch-ghost) {
     animation: bookSpread 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost) {
@@ -113,11 +119,11 @@
   .y2k-command-dock .top-frame-panel .settings-menu > :nth-child(n + 6) { --page: 5; }
 
   /* Closing: the copy left behind stays put while the cover swings shut over it, then fades. */
-  .y2k-command-dock .top-frame-panel.dyn-notch-ghost:is([data-frame-panel="filters"], [data-frame-panel="picker"]),
+  .y2k-command-dock .top-frame-panel.dyn-notch-ghost:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"]),
   .frame-corner-profiles .profile-settings-menu.dyn-notch-ghost {
     animation: bookGhost var(--book-close-ms) linear forwards !important;
   }
-  .y2k-command-dock .top-frame-panel.dyn-notch-ghost:is([data-frame-panel="filters"], [data-frame-panel="picker"])::before {
+  .y2k-command-dock .top-frame-panel.dyn-notch-ghost:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"])::before {
     animation: bookCoverClose calc(var(--book-close-ms) * 0.8) cubic-bezier(0.4, 0, 1, 1) both;
   }
   .frame-corner-profiles .profile-settings-menu.dyn-notch-ghost::before {
@@ -126,7 +132,7 @@
 }
 
 /* TV: no 3D. The cover folds flat toward its spine and the pages arrive together. */
-:is(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"]):not(.dyn-notch-ghost)::before {
+:is(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panel:is([data-frame-panel="filters"], [data-frame-panel="picker"], [data-frame-panel="messages"]):not(.dyn-notch-ghost)::before {
   animation-name: bookCoverFold;
   animation-duration: 340ms;
 }

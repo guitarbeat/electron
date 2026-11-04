@@ -98,8 +98,40 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     setView(next);
     try { localStorage.setItem("movies-view", next); } catch { /* Storage can be unavailable. */ }
   };
+  const [showBadges, setShowBadgesState] = React.useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem("movies-show-badges");
+      return stored !== null ? stored === "true" : true;
+    } catch {
+      return true;
+    }
+  });
+  const setShowBadges = (next: boolean) => {
+    setShowBadgesState(next);
+    try { localStorage.setItem("movies-show-badges", String(next)); } catch { /* Storage can be unavailable. */ }
+  };
+  const [dimWatched, setDimWatchedState] = React.useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem("movies-dim-watched");
+      return stored !== null ? stored === "true" : true;
+    } catch {
+      return true;
+    }
+  });
+  const setDimWatched = (next: boolean) => {
+    setDimWatchedState(next);
+    try { localStorage.setItem("movies-dim-watched", String(next)); } catch { /* Storage can be unavailable. */ }
+  };
   const wallContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const gridCanvasRef = React.useRef<HTMLDivElement | null>(null);
+  const gridSnapshotRef = React.useRef<Map<string, { left: number; top: number }> | null>(
+    null,
+  );
   const [openMovieIds, setOpenMovieIds] = React.useState<string[]>([]);
+  const [closingMovieIds, setClosingMovieIds] = React.useState<string[]>([]);
+  const [movieOrigins, setMovieOrigins] = React.useState<
+    Record<string, MovieTransitionOrigin>
+  >({});
   const [updatingMovieIds, setUpdatingMovieIds] = React.useState<Record<string, boolean>>({});
   const [editMovie, setEditMovie] = React.useState<Movie | null>(null);
   const [wallFilters, setWallFilters] = React.useState<MovieWallFilterState>(
@@ -107,31 +139,98 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
   );
 
   const openMovieSet = React.useMemo(() => new Set(openMovieIds), [openMovieIds]);
+  const closingMovieSet = React.useMemo(() => new Set(closingMovieIds), [closingMovieIds]);
+
+  const snapshotGridPositions = React.useCallback(() => {
+    const canvas = gridCanvasRef.current;
+    if (!canvas) return;
+    const map = new Map<string, { left: number; top: number }>();
+    const items = canvas.querySelectorAll<HTMLElement>("[data-grid-item-key]");
+    items.forEach((el) => {
+      const key = el.getAttribute("data-grid-item-key");
+      if (!key) return;
+      const rect = el.getBoundingClientRect();
+      map.set(key, { left: rect.left, top: rect.top });
+    });
+    gridSnapshotRef.current = map;
+  }, []);
+
+  React.useLayoutEffect(() => {
+    const prevMap = gridSnapshotRef.current;
+    const canvas = gridCanvasRef.current;
+    if (!prevMap || !canvas) return;
+    gridSnapshotRef.current = null;
+
+    const items = canvas.querySelectorAll<HTMLElement>("[data-grid-item-key]");
+    items.forEach((el) => {
+      const key = el.getAttribute("data-grid-item-key");
+      if (!key) return;
+      const prev = prevMap.get(key);
+      if (!prev) return;
+      const next = el.getBoundingClientRect();
+      const dx = prev.left - next.left;
+      const dy = prev.top - next.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      if (typeof el.animate !== "function") return;
+      el.getAnimations?.().forEach((anim) => anim.cancel());
+      el.animate(
+        [
+          { transform: `translate3d(${dx}px, ${dy}px, 0)` },
+          { transform: "translate3d(0, 0, 0)" },
+        ],
+        {
+          duration: 420,
+          easing: "cubic-bezier(0.34, 1.38, 0.64, 1)",
+        },
+      );
+    });
+  }, [openMovieIds, closingMovieIds]);
 
   const openMovieDetails = React.useCallback(
-    (movie: Movie, _origin?: MovieTransitionOrigin | null) => {
+    (movie: Movie, origin?: MovieTransitionOrigin | null) => {
+      snapshotGridPositions();
+      if (origin && origin.width > 0 && origin.height > 0) {
+        setMovieOrigins((prev) => ({ ...prev, [movie.id]: origin }));
+      }
+      setClosingMovieIds((prev) => prev.filter((id) => id !== movie.id));
       setOpenMovieIds((prev) =>
         prev.includes(movie.id) ? prev : [...prev, movie.id],
       );
     },
-    [],
+    [snapshotGridPositions],
   );
 
-  const toggleMovieBooklet = React.useCallback((movie: Movie) => {
-    setOpenMovieIds((prev) =>
-      prev.includes(movie.id)
-        ? prev.filter((id) => id !== movie.id)
-        : [...prev, movie.id],
-    );
-  }, []);
+  const startClosingMovieBooklet = React.useCallback(
+    (movieId: string) => {
+      snapshotGridPositions();
+      setClosingMovieIds((prev) =>
+        prev.includes(movieId) ? prev : [...prev, movieId],
+      );
+    },
+    [snapshotGridPositions],
+  );
 
   const closeMovieBooklet = React.useCallback((movieId: string) => {
+    setClosingMovieIds((prev) => prev.filter((id) => id !== movieId));
     setOpenMovieIds((prev) => prev.filter((id) => id !== movieId));
   }, []);
 
+  const toggleMovieBooklet = React.useCallback(
+    (movie: Movie) => {
+      if (openMovieIds.includes(movie.id)) {
+        startClosingMovieBooklet(movie.id);
+      } else {
+        openMovieDetails(movie);
+      }
+    },
+    [openMovieIds, startClosingMovieBooklet, openMovieDetails],
+  );
+
   const closeAllMovieBooklets = React.useCallback(() => {
-    setOpenMovieIds([]);
-  }, []);
+    if (openMovieIds.length === 0) return;
+    snapshotGridPositions();
+    setClosingMovieIds([...openMovieIds]);
+  }, [openMovieIds, snapshotGridPositions]);
 
   const [viewportWidth, setViewportWidth] = React.useState<number>(() =>
     typeof window !== "undefined" ? window.innerWidth : 1440,
@@ -285,8 +384,11 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
               }
             : undefined
         }
+        onStartClose={() => startClosingMovieBooklet(movie.id)}
         onClose={() => closeMovieBooklet(movie.id)}
+        isClosingExternal={closingMovieSet.has(movie.id)}
         isMobile={isMobile}
+        initialPosterSize={movieOrigins[movie.id] ?? null}
       />
     ),
     [
@@ -295,8 +397,11 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       updatingMovieIds,
       hasLoggedInUser,
       handleToggleMovieWatch,
+      startClosingMovieBooklet,
       closeMovieBooklet,
+      closingMovieSet,
       isMobile,
+      movieOrigins,
     ],
   );
 
@@ -320,6 +425,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           isHighlighted={successMovieId === movie.id}
           onOpenDetails={openMovieDetails}
           priorityPoster={index < (isMobile ? 6 : 8)}
+          showBadges={showBadges}
+          dimWatched={dimWatched}
         />
       );
       return React.cloneElement(element, { "data-height-ratio": hasPoster ? 1 : 0.55 } as React.HTMLAttributes<HTMLElement>);
@@ -375,6 +482,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
     onDeleteRequest,
     onToggleError,
     openMovieDetails,
+    showBadges,
+    dimWatched,
   ]);
   const wallPlaceholder = movieWallPlaceholder({
     hasActiveFilters,
@@ -432,6 +541,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
       <div
         ref={wallContainerRef}
         className={isMobile ? "movies-wall-container movies-wall-container--mobile" : "movies-wall-container"}
+        data-show-badges={showBadges}
+        data-dim-watched={dimWatched}
         style={{ position: "relative", width: "100%", height: "100%", flex: 1, overflow: "hidden", borderRadius: 0 }}
       >
         <LibrarySearch
@@ -447,6 +558,8 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
           onSearchQueryChange={(query) => setWallFilters((filters) => ({ ...filters, query }))}
           viewSlot={<SettingsSwitch label="Moving wall" checked={view === "wall"} onChange={(on) => changeView(on ? "wall" : "grid")} />}
           soundSlot={<SettingsSwitch label="Menu sounds" checked={soundsOn} silent onChange={setXmbSoundsEnabled} />}
+          badgeSlot={<SettingsSwitch label="Poster badges" checked={showBadges} onChange={setShowBadges} />}
+          dimSlot={<SettingsSwitch label="Dim watched" checked={dimWatched} onChange={setDimWatched} />}
           renderFilterSlot={(settings) => (
             <MovieWallFilters
               movies={allMovies}
@@ -462,7 +575,7 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
         {collectionState === "loading" ? <OrbitLoader /> : unifiedCards.length > 0 ? (
           view === "grid" ? (
             <div className="movie-library-grid" aria-label="Movie grid">
-              <div className="movie-library-grid__canvas">
+              <div ref={gridCanvasRef} className="movie-library-grid__canvas">
                 {unifiedCards.map((card, index) => {
                   const cardMovie = React.isValidElement(card)
                     ? (card.props as { movie?: Movie })?.movie
@@ -470,10 +583,28 @@ export const MovieSectionBody: React.FC<Props_MovieSectionBody> = ({
                   const isBookletOpen = Boolean(
                     cardMovie && openMovieSet.has(cardMovie.id),
                   );
+                  const isBookletClosing = Boolean(
+                    cardMovie && closingMovieSet.has(cardMovie.id),
+                  );
+                  const itemKey = String(
+                    React.isValidElement(card) ? card.key ?? index : index,
+                  );
+                  const itemClassName = [
+                    "movie-library-grid__item",
+                    isBookletOpen && !isBookletClosing
+                      ? "movie-library-grid__item--booklet-open"
+                      : "",
+                    isBookletOpen && isBookletClosing
+                      ? "movie-library-grid__item--booklet-closing"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
                   return (
                     <div
-                      className={`movie-library-grid__item${isBookletOpen ? " movie-library-grid__item--booklet-open" : ""}`}
-                      key={React.isValidElement(card) ? card.key ?? index : index}
+                      className={itemClassName}
+                      key={itemKey}
+                      data-grid-item-key={itemKey}
                     >
                       {cardMovie && isBookletOpen
                         ? renderInlineBooklet(cardMovie)

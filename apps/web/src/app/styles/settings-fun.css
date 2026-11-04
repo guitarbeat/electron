@@ -115,7 +115,7 @@
 .top-frame-panels .settings-menu .settings-switch.is-on .settings-switch__track::before { transform: scaleX(1); }
 .top-frame-panels .settings-menu .settings-switch__knob { z-index: 1; }
 
-/* ---- Pick a movie and Movie quiz ---- */
+/* ---- Pick a movie, Messages and Movie quiz ---- */
 .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
   position: relative;
   overflow: hidden;
@@ -134,6 +134,22 @@
   opacity: 0;
   pointer-events: none;
 }
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-messages-trigger {
+  position: relative;
+  border-color: rgb(36 50 99 / 0.45);
+  background: linear-gradient(180deg, rgb(255 251 240 / 0.72), rgb(219 228 248 / 0.78));
+  perspective: 300px;
+}
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-messages-trigger::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px rgb(36 50 99 / 0.55), 0 0 16px rgb(245 196 81 / 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+.y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-messages-trigger:is(:hover, :focus-visible)::before { opacity: 1; }
 .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger {
   position: relative;
   border-color: rgb(106 63 160 / 0.45);
@@ -226,6 +242,10 @@
   :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible) .frame-picker-art { animation: funWobble 600ms var(--fun-spring); }
   :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:is(:hover, :focus-visible)::after { animation: funShimmer 900ms ease-out; }
   :root:not(.is-tv-runtime, .is-silk-browser) .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger:not(:hover, :focus-visible)::after { animation: funShimmer 4s ease-in-out 1.2s infinite; }
+
+  /* Messages: the cosmic badge wobbles and its golden ring glows. */
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-messages-trigger::before { transition: opacity 220ms ease-out; }
+  :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-messages-trigger:is(:hover, :focus-visible) .frame-messages-art { animation: funWobble 620ms var(--fun-spring); }
 
   /* Movie quiz: the cover flips and the glow fades in. */
   :root .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-quiz-trigger::before { transition: opacity 220ms ease-out; }

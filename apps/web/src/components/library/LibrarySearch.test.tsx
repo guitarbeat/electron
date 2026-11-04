@@ -41,11 +41,25 @@ vi.mock("@/components/ui", () => ({
   WorkspaceAutocompleteCopy: ({ title, meta }: { title: string; meta: string }) => <span>{title} {meta}</span>,
   WorkspaceAutocompleteOption: ({ children, onSelect, id }: { children: React.ReactNode; onSelect: () => void; id: string }) => <button id={id} role="option" aria-selected="false" onClick={onSelect}>{children}</button>,
 }));
+vi.mock("@/components/messages", () => ({
+  MessageBoard: () => <div data-testid="inline-message-board">Message board content</div>,
+}));
+import { TopFrameProvider } from "@/app/TopFramePanels";
 import LibrarySearch from "./LibrarySearch";
 
-function Dock() {
+function Dock({ withFilters = false }: { withFilters?: boolean }) {
   const [query, setQuery] = useState("");
-  return <><output aria-label="Library query">{query}</output><LibrarySearch searchQuery={query} onSearchQueryChange={setQuery} onOpenMovie={fixtures.openMovie} /></>;
+  return (
+    <TopFrameProvider>
+      <output aria-label="Library query">{query}</output>
+      <LibrarySearch
+        searchQuery={query}
+        onSearchQueryChange={setQuery}
+        onOpenMovie={fixtures.openMovie}
+        renderFilterSlot={withFilters ? (settings) => <div data-testid="settings-slot">{settings}</div> : undefined}
+      />
+    </TopFrameProvider>
+  );
 }
 
 beforeEach(() => {
@@ -123,5 +137,46 @@ describe("independent command dock controls", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Shared sync is unavailable");
     expect(input).toHaveValue("Arrival");
     expect(screen.getByRole("button", { name: "Add movie" })).toBeEnabled();
+  });
+
+  it("renders the Messages button inside the bottom-left Settings notch and expands the notch inline when clicked", async () => {
+    render(<Dock withFilters />);
+    const settingsSlot = screen.getByTestId("settings-slot");
+    const messagesBtn = screen.getByRole("button", { name: "Messages" });
+    expect(settingsSlot).toContainElement(messagesBtn);
+    expect(messagesBtn).toHaveAttribute("data-closes-settings");
+
+    fireEvent.click(messagesBtn);
+    const dialog = await screen.findByRole("dialog", { name: "Messages" });
+    expect(dialog).toHaveAttribute("data-notch-panel", "settings");
+    expect(await screen.findByTestId("inline-message-board")).toBeInTheDocument();
+    expect(document.querySelector(".y2k-command-dock")).toHaveAttribute("data-panel-origin", "messages");
+
+    fireEvent.click(screen.getByRole("button", { name: "Close messages" }));
+    expect(screen.queryByRole("dialog", { name: "Messages" })).not.toBeInTheDocument();
+  });
+
+  it("renders poster badges and dim watched switches inside the settings-menu__switches container", () => {
+    render(
+      <TopFrameProvider>
+        <LibrarySearch
+          searchQuery=""
+          onSearchQueryChange={vi.fn()}
+          onOpenMovie={fixtures.openMovie}
+          renderFilterSlot={(settings) => <div data-testid="settings-slot">{settings}</div>}
+          viewSlot={<button type="button">Moving wall</button>}
+          soundSlot={<button type="button">Menu sounds</button>}
+          badgeSlot={<button type="button">Poster badges</button>}
+          dimSlot={<button type="button">Dim watched</button>}
+        />
+      </TopFrameProvider>
+    );
+
+    const switchesContainer = screen.getByTestId("settings-slot").querySelector(".settings-menu__switches");
+    expect(switchesContainer).toBeInTheDocument();
+    expect(switchesContainer).toContainElement(screen.getByRole("button", { name: "Moving wall" }));
+    expect(switchesContainer).toContainElement(screen.getByRole("button", { name: "Menu sounds" }));
+    expect(switchesContainer).toContainElement(screen.getByRole("button", { name: "Poster badges" }));
+    expect(switchesContainer).toContainElement(screen.getByRole("button", { name: "Dim watched" }));
   });
 });

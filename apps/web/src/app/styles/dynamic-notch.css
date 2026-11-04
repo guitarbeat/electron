@@ -138,7 +138,7 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
 
 /* Show the grip subtly on expanded notches too so you can click or drag it closed. */
 .y2k-command-dock :is(.y2k-library-search, .y2k-add-form).is-expanded .dyn-notch .dyn-notch__grip,
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] .dyn-notch__grip,
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] .dyn-notch__grip,
 .frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] .dyn-notch__grip,
 :root:has(.account-pin-viewport:not(:empty)) .dyn-notch[data-notch="profiles"] .dyn-notch__grip {
   opacity: 0.42;
@@ -210,7 +210,7 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
 .y2k-command-dock[data-panel-origin="add"]:has(.top-frame-panels[data-expanded="true"]) .y2k-add-form.is-expanded .dyn-notch {
   --dyn-h: calc(var(--frame-top-edge) + var(--frame-corner-height) + var(--dyn-panel-h) + var(--dyn-sub-h, 0px));
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] {
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] {
   --dyn-w: calc(var(--frame-border-width) + var(--dyn-settings-w));
   --dyn-h: calc(var(--frame-border-width) + var(--frame-corner-height) + var(--dyn-panel-h));
 }
@@ -224,7 +224,7 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
 }
 .y2k-command-dock .y2k-library-search.is-expanded .dyn-notch,
 .y2k-command-dock .y2k-add-form.is-expanded .dyn-notch,
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
 .frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"],
 :root:has(.account-pin-viewport:not(:empty)) .dyn-notch[data-notch="profiles"] {
   --notch-radius: var(--notch-radius-open);
@@ -303,7 +303,7 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels {
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels {
   --dyn-panel-w: var(--dyn-settings-w);
   top: auto;
   right: auto;
@@ -311,10 +311,10 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   bottom: calc(var(--frame-border-width) + var(--frame-corner-height));
   width: var(--frame-filter-width);
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels[data-expanded="true"] {
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels[data-expanded="true"] {
   width: var(--dyn-settings-w);
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels .top-frame-panels__content {
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels .top-frame-panels__content {
   /* Stay clear of the Search notch and its fillet at the top of the screen. */
   max-height: calc(100dvh - var(--frame-top-edge) - 2 * var(--frame-corner-height) - var(--notch-fillet) - var(--frame-border-width) - 1rem);
 }
@@ -324,7 +324,7 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   --dyn-in-y: -10px;
   animation: dynNotchIn 340ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panel { --dyn-in-y: 12px; }
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panel { --dyn-in-y: 12px; }
 .dyn-notch-ghost {
   position: absolute;
   left: 0;
@@ -332,7 +332,7 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   pointer-events: none;
   animation: dynNotchOut 200ms ease-in forwards !important;
 }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .dyn-notch-ghost { top: auto; bottom: 0; }
+.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .dyn-notch-ghost { top: auto; bottom: 0; }
 
 @keyframes dynNotchIn {
   from { opacity: 0; filter: blur(10px); transform: translateY(var(--dyn-in-y, 8px)) scale(0.97); }
@@ -347,9 +347,10 @@ body:has(.dyn-notch) .viewport-frame .viewport-frame__corner { visibility: hidde
   to { opacity: 1; }
 }
 
-/* Settings and the picker sit directly on the notch surface. */
+/* Settings, the picker, and Messages sit directly on the notch surface. */
 .y2k-command-dock .top-frame-panels .movie-wall-filters__panel.settings-menu,
-.y2k-command-dock .top-frame-panels .frame-movie-picker { color: var(--notch-ink); }
+.y2k-command-dock .top-frame-panels .frame-movie-picker,
+.y2k-command-dock .top-frame-panels .frame-messages-panel { color: var(--notch-ink); }
 
 /* Add suggestions read as rows of the notch, not a separate list card. */
 .y2k-command-dock .top-frame-panels [role="listbox"] {
@@ -556,7 +557,7 @@ body:has(.account-pin-viewport:not(:empty)) .movies-wall-container :is(.movie-li
   /* Bottom notches grow down over the home indicator so their buttons sit above it. */
   .dyn-notch[data-notch="settings"] { --dyn-h: calc(var(--frame-bottom-edge) + var(--frame-corner-height)); }
   .dyn-notch[data-notch="profiles"] { --dyn-h: calc(var(--frame-bottom-edge) + max(var(--frame-account-height), var(--frame-corner-height))); }
-  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] {
+  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"] {
     --dyn-h: calc(var(--frame-bottom-edge) + var(--frame-corner-height) + var(--dyn-panel-h));
   }
   .frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
@@ -565,10 +566,10 @@ body:has(.account-pin-viewport:not(:empty)) .movies-wall-container :is(.movie-li
   .y2k-command-dock .y2k-command-dock__filters { bottom: var(--frame-bottom-edge); }
   .frame-corner-profiles { bottom: var(--frame-bottom-edge); }
   .account-pin-viewport { bottom: calc(var(--frame-bottom-edge) + 4.5rem); }
-  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels {
+  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels {
     bottom: calc(var(--frame-bottom-edge) + var(--frame-corner-height));
   }
-  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"]) .top-frame-panels .top-frame-panels__content {
+  .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels .top-frame-panels__content {
     max-height: calc(100dvh - var(--frame-top-edge) - 2 * var(--frame-corner-height) - var(--notch-fillet) - var(--frame-bottom-edge) - 1rem);
   }
   .y2k-command-dock .top-frame-panels .top-frame-panels__content {

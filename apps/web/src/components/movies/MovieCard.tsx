@@ -40,6 +40,8 @@ interface MovieCardProps {
   isCompact?: boolean;
   priorityPoster?: boolean;
   onOpenDetails?: (movie: Movie, origin?: MovieTransitionOrigin | null) => void;
+  showBadges?: boolean;
+  dimWatched?: boolean;
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -54,6 +56,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   isCompact = false,
   priorityPoster = false,
   onOpenDetails,
+  showBadges = true,
+  dimWatched = true,
 }) => {
   const [isTitleEditorOpen, setIsTitleEditorOpen] = React.useState(false);
   const [isTitleVisible, setIsTitleVisible] = React.useState(false);
@@ -167,6 +171,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
         className={`movie-item-container movie-item-container--${watchState} ${isHighlighted ? "movie-item-container--highlighted" : ""} ${isTitleVisible ? "movie-item-container--title-visible" : ""} ${isDetailsOpen ? "movie-item-container--details-open" : ""}`}
         data-movie-id={movie.id}
         data-watch-state={watchState}
+        data-show-badges={showBadges}
+        data-dim-watched={dimWatched}
         aria-label={`${movie.title}${movie.year ? ` (${movie.year})` : ""}`}
       >
         <CardTiltShell disabled={isCompact}>
@@ -176,6 +182,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             className={`movie-item-card movie-item-card--${watchState} chroma-card`}
             data-added-by={movie.addedBy}
             data-watch-state={watchState}
+            data-show-badges={showBadges}
+            data-dim-watched={dimWatched}
             style={{
               padding: 0,
               overflow: "hidden",
@@ -194,7 +202,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 priority={priorityPoster}
               />
 
-              {watchState !== "unwatched" && (
+              {showBadges && watchState !== "unwatched" && (
                 <MediaCardWatcherStack
                   watchers={movie.watchedBy}
                   watching={movie.watchingBy}

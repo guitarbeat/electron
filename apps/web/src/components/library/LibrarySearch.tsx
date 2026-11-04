@@ -65,6 +65,9 @@ import {
 } from "./lib";
 
 const MoviePickerPanel = lazyWithRetry(() => import("@/components/spin-wheel/SpinWheelGame"));
+const MessageBoardPanel = lazyWithRetry(() =>
+  import("@/components/messages").then((m) => ({ default: m.MessageBoard })),
+);
 
 export interface LibrarySearchHandle {
   focusSearchInput: () => void;
@@ -76,6 +79,8 @@ export interface LibrarySearchProps {
   renderFilterSlot?: (settings: React.ReactNode) => React.ReactNode;
   viewSlot?: React.ReactNode;
   soundSlot?: React.ReactNode;
+  badgeSlot?: React.ReactNode;
+  dimSlot?: React.ReactNode;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   /** Titles left on the wall after the search, shown inside the expanded Search notch. */
@@ -85,12 +90,14 @@ export interface LibrarySearchProps {
 }
 
 const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
-  ({ renderFilterSlot, viewSlot, soundSlot, searchQuery, onSearchQueryChange, onOpenMovie, searchResultCount, libraryCount }, forwardedRef) => {
+  ({ renderFilterSlot, viewSlot, soundSlot, badgeSlot, dimSlot, searchQuery, onSearchQueryChange, onOpenMovie, searchResultCount, libraryCount }, forwardedRef) => {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const { modalOpen } = useTopFrame();
     const [pickerOpen, setPickerOpen] = useState(false);
+    const [messagesOpen, setMessagesOpen] = useState(false);
     const pickerTriggerRef = useRef<HTMLButtonElement>(null);
+    const messagesTriggerRef = useRef<HTMLButtonElement>(null);
     const closePicker = useCallback(() => {
       setPickerOpen(false);
       window.requestAnimationFrame(() => {
@@ -101,17 +108,45 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         trigger?.focus();
       });
     }, []);
+    const closeMessages = useCallback(() => {
+      setMessagesOpen(false);
+      window.requestAnimationFrame(() => {
+        const trigger = messagesTriggerRef.current?.isConnected
+          ? messagesTriggerRef.current
+          : document.querySelector<HTMLElement>(".y2k-command-dock .movie-wall-filters__trigger");
+        trigger?.focus();
+      });
+    }, []);
     useEffect(() => {
-      if (!pickerOpen || modalOpen) return;
+      if ((!pickerOpen && !messagesOpen) || modalOpen) return;
       const handleEscape = (event: KeyboardEvent) => {
         if (event.key === "Escape" && !event.defaultPrevented) {
           event.preventDefault();
-          closePicker();
+          if (pickerOpen) closePicker();
+          if (messagesOpen) closeMessages();
         }
       };
       document.addEventListener("keydown", handleEscape);
       return () => document.removeEventListener("keydown", handleEscape);
-    }, [pickerOpen, modalOpen, closePicker]);
+    }, [pickerOpen, messagesOpen, modalOpen, closePicker, closeMessages]);
+    useEffect(() => {
+      const handleOpenMessages = () => {
+        setPickerOpen(false);
+        setMessagesOpen(true);
+      };
+      const handleToggleMessages = () => {
+        setPickerOpen(false);
+        setMessagesOpen((open) => !open);
+      };
+      window.addEventListener("open-chat-experience", handleOpenMessages);
+      window.addEventListener("open-messages-experience", handleOpenMessages);
+      window.addEventListener("toggle-chat-panel", handleToggleMessages);
+      return () => {
+        window.removeEventListener("open-chat-experience", handleOpenMessages);
+        window.removeEventListener("open-messages-experience", handleOpenMessages);
+        window.removeEventListener("toggle-chat-panel", handleToggleMessages);
+      };
+    }, []);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isSearchPinnedCollapsed, setIsSearchPinnedCollapsed] = useState(false);
     const [isAddExpanded, setIsAddExpanded] = useState(false);
@@ -210,6 +245,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
       setIsAddExpanded(false);
     });
     useExclusiveNotch("settings", pickerOpen, () => setPickerOpen(false));
+    useExclusiveNotch("settings", messagesOpen, () => setMessagesOpen(false));
 
     useEffect(() => {
       if (currentUser) return;
@@ -276,10 +312,11 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
     });
     const settingsGrip = useNotchGripDrag({
       edge: "bottom",
-      isOpen: pickerOpen,
+      isOpen: pickerOpen || messagesOpen,
       onOpen: () => window.dispatchEvent(new CustomEvent("dynamic-notch:toggle-settings")),
       onClose: () => {
         if (pickerOpen) setPickerOpen(false);
+        else if (messagesOpen) setMessagesOpen(false);
         else window.dispatchEvent(new CustomEvent("dynamic-notch:toggle-settings"));
       },
       hostRef: settingsHostRef,
@@ -655,7 +692,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
         trimmed.length >= 2);
 
     const commandDock = (
-      <div className="workspace-search__stage curved-library-search y2k-command-dock" data-panel-origin={pickerOpen ? "picker" : isOpen ? "add" : "filters"} role="navigation" aria-label="Movie controls">
+      <div className="workspace-search__stage curved-library-search y2k-command-dock" data-panel-origin={pickerOpen ? "picker" : messagesOpen ? "messages" : isOpen ? "add" : "filters"} role="navigation" aria-label="Movie controls">
         <div
             ref={autocompleteRegionRef}
             className={`curved-library-search__boundary y2k-command-dock__boundary${showPanel && isOpen ? " is-autocomplete-active" : ""}${isFocused ? " is-focused" : ""}`}
@@ -924,9 +961,16 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   <div
                     ref={settingsHostRef}
                     className="y2k-command-dock__filters"
-                    onPointerDown={() => {
+                    onPointerDown={(event) => {
                       if (isOpen) {
                         hideAutocomplete();
+                      }
+                      if (
+                        (pickerOpen || messagesOpen) &&
+                        (event.target as Element | null)?.closest(".movie-wall-filters__trigger")
+                      ) {
+                        setPickerOpen(false);
+                        setMessagesOpen(false);
                       }
                     }}
                   >
@@ -935,8 +979,12 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                     </span>
                     {renderFilterSlot(
                       <>
-                        {viewSlot}
-                        {soundSlot}
+                        <div className="settings-menu__switches">
+                          {viewSlot}
+                          {soundSlot}
+                          {badgeSlot}
+                          {dimSlot}
+                        </div>
               <button
                 ref={pickerTriggerRef}
                 type="button"
@@ -947,10 +995,36 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                 aria-controls="top-frame-movie-picker"
                 onClick={(event) => {
                   if (!pickerOpen) burstConfetti(event.currentTarget);
+                  setMessagesOpen(false);
                   setPickerOpen((open) => !open);
                 }}
               >
                 <svg className="frame-picker-art" viewBox="300 190 1180 585" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><image href="/avatars/pick-a-movie-pixel-button.png" width="1773" height="887" /></svg><span>Pick a movie</span>
+              </button>
+              <button
+                ref={messagesTriggerRef}
+                type="button"
+                className="frame-messages-trigger"
+                data-closes-settings
+                aria-label="Messages"
+                aria-expanded={messagesOpen}
+                aria-controls="top-frame-messages"
+                onClick={() => {
+                  setPickerOpen(false);
+                  setMessagesOpen((open) => !open);
+                }}
+              >
+                <img
+                  className="frame-messages-art"
+                  src="/avatars/pixel-orbit-speech-bubble.png"
+                  alt=""
+                  aria-hidden="true"
+                  width={256}
+                  height={256}
+                  draggable={false}
+                  decoding="async"
+                />
+                <span>Messages</span>
               </button>
               {currentUser ? (
                 <button
@@ -975,7 +1049,7 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
             </div>
             <TopFrameViewport />
             {pickerOpen ? <TopFramePanel name="picker">
-              <section id="top-frame-movie-picker" className="frame-movie-picker" role="dialog" aria-label="Movie picker">
+              <section id="top-frame-movie-picker" className="frame-movie-picker" data-notch-panel="settings" role="dialog" aria-label="Movie picker">
                 <div className="frame-panel-heading">
                   <h2>Pick a movie</h2>
                   <div className="frame-panel-heading__actions">
@@ -998,6 +1072,32 @@ const LibrarySearch = React.forwardRef<LibrarySearchHandle, LibrarySearchProps>(
                   </div>
                 </div>
                 <React.Suspense fallback={<p role="status">Loading movie picker…</p>}><MoviePickerPanel /></React.Suspense>
+              </section>
+            </TopFramePanel> : null}
+            {messagesOpen ? <TopFramePanel name="messages">
+              <section id="top-frame-messages" className="frame-messages-panel" data-notch-panel="settings" role="dialog" aria-label="Messages">
+                <div className="frame-panel-heading">
+                  <h2>Messages</h2>
+                  <div className="frame-panel-heading__actions">
+                    <button
+                      type="button"
+                      className="frame-panel-heading__switch"
+                      onClick={() => {
+                        setMessagesOpen(false);
+                        window.setTimeout(() => {
+                          window.dispatchEvent(new CustomEvent("dynamic-notch:open-settings"));
+                        }, 0);
+                      }}
+                      aria-label="Switch to Settings"
+                      title="Switch back to Settings"
+                    >
+                      <SlidersHorizontal size={14} aria-hidden="true" />
+                      <span>Settings</span>
+                    </button>
+                    <button type="button" data-tv-close="" onClick={closeMessages} aria-label="Close messages"><X size={20} /></button>
+                  </div>
+                </div>
+                <React.Suspense fallback={<p role="status">Loading messages…</p>}><MessageBoardPanel /></React.Suspense>
               </section>
             </TopFramePanel> : null}
 

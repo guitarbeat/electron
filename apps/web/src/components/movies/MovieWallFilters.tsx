@@ -353,15 +353,22 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
           setIsOpen((open) => !open);
         }}
       >
-        <svg
-          className="movie-wall-filters__trigger-art"
-          viewBox="240 325 970 460"
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <image href="/avatars/aaron-electra-filter-sliders.png" width="1448" height="1086" />
-        </svg>
+        {activeWatchStatus ? (
+          <WatchStatusArtwork
+            status={activeWatchStatus.artwork}
+            className="movie-wall-filters__trigger-art"
+          />
+        ) : (
+          <svg
+            className="movie-wall-filters__trigger-art"
+            viewBox="240 325 970 460"
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <image href="/avatars/aaron-electra-filter-sliders.png" width="1448" height="1086" />
+          </svg>
+        )}
         <span className="movie-wall-filters__trigger-label">
           {activeWatchStatus ? activeWatchStatus.label : "Settings"}
           {activeWatchStatus ? (

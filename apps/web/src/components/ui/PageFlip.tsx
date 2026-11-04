@@ -20,7 +20,7 @@ export interface PageFlipLeaf {
   backAlt?: string;
 }
 
-export type PageFlipEase = "easeInOut" | "easeOut" | "circOut" | "backOut";
+export type PageFlipEase = "easeInOut" | "easeOut" | "circOut" | "backOut" | "easeOutBack";
 
 export interface PageFlipProps {
   /** Ordered list of pages/leaves */
@@ -37,6 +37,8 @@ export interface PageFlipProps {
   perspective?: number;
   /** Horizontal shift of stage when book is opened (default: 110) */
   spineShift?: number;
+  /** Horizontal shift of stage when book is closed (default: 0) */
+  closedShift?: number;
   /** Angle in degrees when fully turned (default: 180) */
   turnAngle?: number;
   /** Angle in degrees for hover-peek (default: 12) */
@@ -47,6 +49,8 @@ export interface PageFlipProps {
   stagger?: number;
   /** Easing curve type (default: "easeInOut") */
   ease?: PageFlipEase;
+  /** Optional easing curve specifically for closing/retracting leaves */
+  closeEase?: PageFlipEase;
   /** Drop shadow intensity (0 to 1, default: 0.3) */
   shadow?: number;
   /** Trigger mode for page turn (default: "click") */
@@ -82,6 +86,7 @@ const EASING_CURVES: Record<PageFlipEase, [number, number, number, number]> = {
   easeOut: [0.16, 1, 0.3, 1],
   circOut: [0, 0.55, 0.45, 1],
   backOut: [0.34, 1.56, 0.64, 1],
+  easeOutBack: [0.34, 1.38, 0.64, 1],
 };
 
 const INTERACTIVE_ELEMENTS_SELECTOR =
@@ -222,10 +227,15 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
   onHoverEnd,
 }: LeafProps) {
   const rotationY = useMotionValue(isTurned ? -turnAngle : 0);
+  // Clamp positive overshoot when closing with backOut/easeOutBack so the cover never clips behind the right page
+  const renderedRotateY = useTransform(rotationY, (angle) => Math.min(0, angle));
 
-  // Switch z-index at the 90-degree spine midpoint so turned leaves stack in reverse order
+  // Switch z-index and 3D Z-depth at the 90-degree spine midpoint so turned leaves stack cleanly without Z-fighting
   const zIndex = useTransform(rotationY, (angle) =>
     angle < -turnAngle / 2 ? total + index + 1 : total - index
+  );
+  const zDepth = useTransform(rotationY, (angle) =>
+    angle < -turnAngle / 2 ? (total + index + 1) * 0.5 : (total - index) * 0.5
   );
 
   useEffect(() => {
@@ -291,7 +301,8 @@ const PageFlipLeaf = memo(function PageFlipLeaf({
       style={{
         width,
         height,
-        rotateY: rotationY,
+        rotateY: renderedRotateY,
+        z: zDepth,
         zIndex,
         transformOrigin: "left center",
         transformStyle: "preserve-3d",
@@ -342,11 +353,13 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   pageColor = "rgba(15, 23, 42, 0.95)",
   perspective = 1200,
   spineShift = 110,
+  closedShift = 0,
   turnAngle = 180,
   peekAngle = 12,
   duration = 0.55,
   stagger = 0.08,
   ease = "easeInOut",
+  closeEase,
   shadow = 0.3,
   trigger = "click",
   closeOnLeave = false,
@@ -371,7 +384,29 @@ export const PageFlip: React.FC<PageFlipProps> = ({
   const [isCascadingClose, setIsCascadingClose] = useState(false);
 
   const activeCurve = useMemo(() => EASING_CURVES[ease] ?? EASING_CURVES.easeInOut, [ease]);
+  const activeCloseCurve = useMemo(
+    () => (closeEase ? EASING_CURVES[closeEase] ?? activeCurve : activeCurve),
+    [closeEase, activeCurve]
+  );
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+
+  const isBookOpen = turnedCount > 0;
+  const targetStageX = isBookOpen ? spineShift : closedShift;
+  const stageX = useMotionValue(targetStageX);
+  const prevIsBookOpenRef = useRef(isBookOpen);
+
+  useEffect(() => {
+    if (prevIsBookOpenRef.current !== isBookOpen) {
+      prevIsBookOpenRef.current = isBookOpen;
+      const animation = animate(stageX, targetStageX, {
+        duration,
+        ease: isBookOpen ? activeCurve : activeCloseCurve,
+      });
+      return () => animation.stop();
+    }
+    stageX.set(targetStageX);
+    return undefined;
+  }, [isBookOpen, targetStageX, duration, activeCurve, activeCloseCurve, stageX]);
 
   const updateTurnedCount = useCallback(
     (action: number | ((prev: number) => number)) => {
@@ -615,16 +650,12 @@ export const PageFlip: React.FC<PageFlipProps> = ({
         style={{
           width: pageWidth,
           height: pageHeight,
+          x: stageX,
           perspective: `${perspective}px`,
           WebkitPerspective: `${perspective}px`,
           transformStyle: "preserve-3d",
           WebkitTransformStyle: "preserve-3d",
           touchAction: "pan-y",
-        }}
-        animate={{ x: turnedCount > 0 ? spineShift : 0 }}
-        transition={{
-          duration: Math.max(0.8 * duration, 0.1),
-          ease: "easeOut",
         }}
         onPanEnd={handleStagePanEnd}
       >
@@ -651,7 +682,7 @@ export const PageFlip: React.FC<PageFlipProps> = ({
               turnAngle={turnAngle}
               peekAngle={peekAngle}
               duration={duration}
-              curve={activeCurve}
+              curve={isTurned ? activeCurve : activeCloseCurve}
               shadow={shadow}
               interactive={interactive}
               leafClickTurnsPage={leafClickTurnsPage}

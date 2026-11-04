@@ -134,6 +134,21 @@
   opacity: 1;
 }
 
+/* When watched dimming is disabled, keep watched posters full brightness and opacity */
+.movies-wall-container[data-dim-watched="false"] .movie-item-card[data-watch-state="watched-both"] .media-poster-wrap,
+.movie-item-container[data-dim-watched="false"] .movie-item-card[data-watch-state="watched-both"] .media-poster-wrap,
+.movie-item-card[data-dim-watched="false"][data-watch-state="watched-both"] .media-poster-wrap {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* When poster badges are disabled, hide watcher avatar badges on the posters */
+.movies-wall-container[data-show-badges="false"] .movie-item-watchers,
+.movie-item-container[data-show-badges="false"] .movie-item-watchers,
+.movie-item-card[data-show-badges="false"] .movie-item-watchers {
+  display: none !important;
+}
+
 .movie-item-card:active {
   transform: scale(0.97);
   transition-duration: 0.1s;

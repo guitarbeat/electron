@@ -5,7 +5,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { prefersReducedMotion } from "../utils";
 import { logger } from "../services/logger";
 import type { MainTab } from "../shared/types";
 import {
@@ -43,8 +42,6 @@ type AppWorkspaceShellProps = {
   onTogglePanel: (panel: TogglePanel) => void;
 };
 
-const CHAT_EXIT_MS = 160;
-
 const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
   activeTab,
   openPanels,
@@ -78,8 +75,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     <MessageBoard />
   );
   const isChatOpen = openPanels.has("messages");
-  const [chatRendered, setChatRendered] = useState(isChatOpen);
-  const [chatClosing, setChatClosing] = useState(false);
 
   // Performance timer observing tab transition and initial render responsiveness
   const prevTabRef = useRef<MainTab>(activeTab);
@@ -98,28 +93,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 
     return () => cancelAnimationFrame(rafId);
   }, [activeTab]);
-
-  useEffect(() => {
-    if (isChatOpen) {
-      setChatRendered(true);
-      setChatClosing(false);
-      return;
-    }
-    if (!chatRendered) {
-      return;
-    }
-    if (prefersReducedMotion()) {
-      setChatRendered(false);
-      setChatClosing(false);
-      return;
-    }
-    setChatClosing(true);
-    const timeoutId = window.setTimeout(() => {
-      setChatRendered(false);
-      setChatClosing(false);
-    }, CHAT_EXIT_MS);
-    return () => window.clearTimeout(timeoutId);
-  }, [chatRendered, isChatOpen]);
 
   // Capture unhandled window exceptions or promise rejections occurring within the workspace session
   useEffect(() => {
@@ -147,16 +120,11 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
     [openPanels, onTogglePanel, activeTab],
   );
 
-  // Handle Escape key to dismiss open chat panel
+  // If launched with ?messages=1, open the Messages panel inside the bottom-left dynamic notch
   useEffect(() => {
     if (!isChatOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleTogglePanel("messages");
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.dispatchEvent(new CustomEvent("open-messages-experience"));
+    handleTogglePanel("messages");
   }, [isChatOpen, handleTogglePanel]);
 
   return (
@@ -200,57 +168,6 @@ const AppWorkspaceShell: React.FC<AppWorkspaceShellProps> = ({
 
         {/* Search portal for workspace components */}
         <div ref={setSearchPortalEl} style={{ display: "none" }} />
-
-        {isLibraryWorkspaceTab(activeTab) ? (
-          <div className="chat-fab-anchor">
-            <button
-              type="button"
-              className={`chat-fab${isChatOpen ? " is-open" : ""}`}
-              aria-label="Messages"
-              aria-pressed={isChatOpen}
-              aria-controls={chatRendered ? "floating-chat-panel" : undefined}
-              onClick={() => handleTogglePanel("messages")}
-            >
-              <img
-                className="chat-fab__art"
-                src="/avatars/pixel-orbit-speech-bubble.png"
-                alt=""
-                aria-hidden="true"
-                width={256}
-                height={256}
-                draggable={false}
-                decoding="async"
-              />
-            </button>
-          </div>
-        ) : null}
-
-        {/* Floating Chat Panel Dock */}
-        {chatRendered ? (
-          <section
-            id="floating-chat-panel"
-            className={`chat-dock${chatClosing ? " is-closing" : ""}`}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Messages"
-            aria-hidden={chatClosing}
-          >
-            <button
-              type="button"
-              className="chat-dock__close"
-              data-tv-close=""
-              onClick={() => handleTogglePanel("messages")}
-              aria-label="Close chat"
-            >
-              ×
-            </button>
-            <GlobalErrorBoundary moduleName="ChatDock">
-              <React.Suspense fallback={null}>
-                <MessageBoard />
-              </React.Suspense>
-            </GlobalErrorBoundary>
-          </section>
-        ) : null}
 
         {/* Floating Quick Controls (Profile Logins & Build Info) */}
         {!isLibraryWorkspaceTab(activeTab) ? <div
