@@ -136,6 +136,7 @@ export const normalizeMovieRecord = (value: unknown): Movie | null => {
     watchingBy,
     createdAt,
     posterUrl: normalizePosterUrl(movie.posterUrl),
+    customPosterUrl: normalizePosterUrl(movie.customPosterUrl),
     year: normalizeOptionalString(movie.year),
     plot: normalizeOptionalString(movie.plot),
     imdbRating: normalizeOptionalString(movie.imdbRating),
@@ -146,6 +147,20 @@ export const normalizeMovieRecord = (value: unknown): Movie | null => {
     mediaType:
       movie.mediaType === "series" || movie.mediaType === "youtube"
         ? movie.mediaType
+        : (movie as { type?: string; Type?: string }).type?.toLowerCase() === "series" ||
+          (movie as { type?: string; Type?: string }).Type?.toLowerCase() === "series" ||
+          (typeof movie.category === "string" &&
+            (movie.category.toLowerCase().includes("series") ||
+              movie.category.toLowerCase().includes("tv") ||
+              movie.category.toLowerCase().includes("show") ||
+              movie.category.toLowerCase().includes("miniseries") ||
+              movie.category.toLowerCase().includes("anime"))) ||
+          (typeof movie.runtime === "string" &&
+            (movie.runtime.toLowerCase().includes("season") ||
+              movie.runtime.toLowerCase().includes("ep") ||
+              movie.runtime.toLowerCase().includes("min/ep"))) ||
+          (typeof movie.year === "string" && /\d{4}\s*[–-]\s*(\d{4})?/.test(movie.year))
+        ? "series"
         : "movie",
   };
 };

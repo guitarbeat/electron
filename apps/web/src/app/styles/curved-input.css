@@ -1,26 +1,37 @@
 /* ==========================================================================
-   Unified Retro Y2K Frosted Capsule Command Bar
+   Command Dock & Curved Input Architecture
+   --------------------------------------------------------------------------
+   Section 1: Base Command Dock Layout & Capsule Containers
+   Section 2: Search Input, Clear/Submit Buttons, & Keycaps
+   Section 3: Filters, Toast Viewport, & Interactive Triggers
+   Section 4: Top Frame Panels, Dialog Headings, & Animations
+   Section 5: Mobile & Responsive Layout Adjustments
+   ========================================================================== */
+
+/* ==========================================================================
+   Section 1: Base Command Dock Layout & Capsule Containers
    ========================================================================== */
 
 .y2k-command-dock {
   position: fixed;
   top: 0.65rem;
   left: 50%;
-  z-index: 1100;
+  z-index: auto;
   width: min(56rem, calc(100vw - 2rem));
-  transform: translate3d(-50%, 0, 0);
+  transform: none;
   pointer-events: auto;
-  animation: searchBarSlideIn 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  animation: none;
 }
 
 .y2k-command-dock:focus-within,
 .y2k-command-dock:has(.is-autocomplete-active),
 .y2k-command-dock:has(.movie-wall-filters__panel),
 .y2k-command-dock:has(.movie-wall-sort__dropdown) {
-  z-index: 1250;
+  z-index: auto;
 }
 
-.y2k-command-dock__boundary {
+.y2k-command-dock__boundary,
+.curved-library-search__boundary {
   position: relative;
   width: 100%;
 }
@@ -28,15 +39,22 @@
 .y2k-command-dock__bar {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 0.65rem;
   width: 100%;
-  min-height: 4.65rem;
-  padding: 0.2rem 0.75rem;
+  min-height: 0;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  pointer-events: none;
+}
+
+.y2k-command-dock__bar > * {
+  pointer-events: auto;
 }
 
 .y2k-search-form {
@@ -71,306 +89,6 @@
     0 0 0 1px rgba(56, 189, 248, 0.15);
 }
 
-.y2k-search-capsule__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.95rem;
-  height: 1.95rem;
-  flex-shrink: 0;
-  border-radius: 9999px;
-  background: linear-gradient(145deg, #7dd3fc 0%, #38bdf8 50%, #0284c7 100%);
-  color: #04101f;
-  box-shadow:
-    0 2px 8px rgba(56, 189, 248, 0.38),
-    inset 0 1px 1px rgba(255, 255, 255, 0.7);
-  pointer-events: none;
-  transition: transform 160ms ease, filter 160ms ease;
-}
-
-.y2k-search-capsule.is-loading .y2k-search-capsule__icon {
-  animation: curvedIconPulse 1s ease-in-out infinite alternate;
-}
-
-.y2k-search-capsule__input {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 2.15rem;
-  padding: 0 0.25rem;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #f8fafc;
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 0.9rem;
-  font-weight: 550;
-  letter-spacing: 0.01em;
-}
-
-.y2k-search-capsule__input::placeholder {
-  color: rgba(148, 163, 184, 0.78);
-  font-weight: 500;
-}
-
-.y2k-search-capsule__kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.45rem;
-  height: 1.45rem;
-  padding: 0 0.35rem;
-  border-radius: 0.4rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-bottom-width: 2px;
-  background: rgba(30, 41, 59, 0.65);
-  color: rgba(186, 230, 253, 0.75);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-.y2k-search-capsule__clear {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  flex-shrink: 0;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(30, 41, 59, 0.75);
-  color: rgba(226, 232, 240, 0.85);
-  cursor: pointer;
-  transition: all 140ms ease;
-}
-
-.y2k-search-capsule__clear:hover {
-  background: rgba(51, 65, 85, 0.95);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.28);
-}
-
-.y2k-search-capsule__submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2.05rem;
-  padding: 0 0.95rem;
-  flex-shrink: 0;
-  border-radius: 9999px;
-  border: 1px solid rgba(125, 211, 252, 0.55);
-  background: linear-gradient(180deg, #7dd3fc 0%, #38bdf8 48%, #0ea5e9 100%);
-  color: #04101f;
-  font-family: var(--font-body, system-ui, sans-serif);
-  font-size: 0.78rem;
-  font-weight: 780;
-  letter-spacing: 0.015em;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow:
-    0 2px 10px rgba(56, 189, 248, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  transition:
-    transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 140ms ease,
-    opacity 150ms ease,
-    background 150ms ease;
-}
-
-.y2k-search-capsule__submit:hover:not(:disabled) {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-
-.y2k-search-capsule__submit:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.y2k-search-capsule__submit.is-idle,
-.y2k-search-capsule__submit:disabled {
-  border-color: rgba(148, 163, 184, 0.2);
-  background: rgba(30, 41, 59, 0.65);
-  color: rgba(148, 163, 184, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  cursor: default;
-}
-
-.y2k-command-dock__divider {
-  width: 1px;
-  height: 1.75rem;
-  flex-shrink: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(186, 230, 253, 0.38) 50%,
-    transparent 100%
-  );
-}
-
-.y2k-command-dock__filters {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.y2k-command-dock__subbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-top: 0.4rem;
-  padding: 0 0.5rem;
-}
-
-/* Legacy curved-input classes retained for compatibility */
-.curved-library-search__boundary {
-  position: relative;
-}
-
-@keyframes curvedIconPulse {
-  0% {
-    filter: brightness(1) drop-shadow(0 0 2px var(--color-accent));
-  }
-  100% {
-    filter: brightness(1.3) drop-shadow(0 0 8px var(--color-accent));
-  }
-}
-
-.curved-library-search__secondary-actions {
-  position: relative;
-  margin: 0 0 0 auto;
-  justify-content: flex-end;
-  padding: 0.25rem 0.35rem;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 9999px;
-  background: rgba(10, 15, 29, 0.88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-}
-
-.curved-library-search__selection {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  background: rgba(10, 15, 29, 0.88);
-  backdrop-filter: blur(16px);
-  color: var(--color-text-secondary);
-  font-size: 0.76rem;
-  animation: searchOptionIn 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.curved-library-search__selection strong {
-  color: var(--color-text-primary);
-  font-weight: 650;
-}
-
-.curved-library-search__selection button {
-  border: 0;
-  padding: 0.15rem 0.25rem;
-  background: transparent;
-  color: var(--color-accent);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.curved-library-search__selection button:hover,
-.curved-library-search__selection button:focus-visible {
-  color: var(--color-text-primary);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-@media (max-width: 720px) {
-  .y2k-command-dock {
-    top: 0.65rem;
-    width: calc(100vw - 1.25rem);
-  }
-
-  .y2k-command-dock__bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.4rem;
-    padding: 0.45rem;
-  }
-
-  .y2k-command-dock__divider {
-    display: none;
-  }
-
-  .y2k-command-dock__filters {
-    width: 100%;
-  }
-
-  .y2k-search-capsule__kbd {
-    display: none;
-  }
-
-  .y2k-search-capsule__input {
-    font-size: 0.85rem;
-  }
-
-  .y2k-search-capsule__submit {
-    padding: 0 0.75rem;
-    font-size: 0.74rem;
-  }
-}
-
-
-
-
-.magic-toggle {
-  padding: 0.2rem;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 0.625rem;
-  background: var(--color-surface-1);
-  box-shadow: none;
-}
-
-.magic-toggle-indicator,
-.magic-toggle-indicator.is-logout {
-  top: 0.2rem;
-  bottom: 0.2rem;
-  left: 0;
-  right: 0;
-  width: auto;
-  border-radius: 0.45rem;
-  background: var(--color-surface-3);
-  border-color: var(--color-border);
-  box-shadow: none;
-}
-
-.magic-toggle-btn {
-  min-height: 2.15rem;
-  border-radius: 0.45rem;
-  font-weight: 500;
-}
-
-.magic-toggle-btn.is-active {
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
-.confirm-dialog-content {
-  border-radius: 0.75rem;
-  box-shadow: var(--shadow-floating);
-}
-
-/* Independent library search and catalog add controls share the recovered dock. */
-.y2k-command-dock__bar {
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
 .y2k-symbol-control {
   display: flex;
   align-items: center;
@@ -392,6 +110,10 @@
 .y2k-symbol-control:focus-within {
   box-shadow: inset 0 -2px 0 #0c4a6e;
 }
+
+/* ==========================================================================
+   Section 2: Search Input, Clear/Submit Buttons, & Keycaps
+   ========================================================================== */
 
 .y2k-symbol-control__trigger {
   display: inline-flex;
@@ -416,11 +138,38 @@
   mix-blend-mode: normal;
 }
 
-.y2k-symbol-control__trigger:focus-visible,
-.y2k-search-capsule__clear:focus-visible,
-.y2k-search-capsule__submit:focus-visible {
-  outline: 2px solid #bae6fd;
-  outline-offset: 2px;
+.y2k-symbol-control__trigger.y2k-symbol-control__trigger--artwork {
+  flex: 0 0 3.5rem;
+  width: 3.5rem;
+  height: 3.65rem;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.frame-command-art {
+  display: block;
+  width: 2.75rem;
+  height: 1.8rem;
+  pointer-events: none;
+}
+
+.frame-command-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.y2k-symbol-control.is-expanded .y2k-symbol-control__trigger--artwork {
+  flex-basis: 3.25rem;
+  width: 3.25rem;
+}
+
+.y2k-symbol-control.is-expanded .frame-command-art {
+  width: 3rem;
+}
+
+.y2k-symbol-control.is-expanded .frame-command-label {
+  display: none;
 }
 
 .y2k-symbol-control__field {
@@ -470,72 +219,185 @@
   height: 2.25rem;
 }
 
-.y2k-command-dock__profiles {
-  flex: 0 0 auto;
+.y2k-symbol-control__trigger:focus-visible,
+.y2k-search-capsule__clear:focus-visible,
+.y2k-search-capsule__submit:focus-visible {
+  outline: 2px solid #bae6fd;
+  outline-offset: 2px;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .y2k-symbol-control__trigger:hover {
-    transform: scale(1.05);
-  }
+.y2k-search-capsule__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.45rem;
+  height: 1.45rem;
+  padding: 0 0.35rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-bottom-width: 2px;
+  background: rgba(30, 41, 59, 0.65);
+  color: rgba(186, 230, 253, 0.75);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
 }
 
-@keyframes commandFieldReveal {
-  from { opacity: 0; transform: translateX(-4px); }
-  to { opacity: 1; transform: translateX(0); }
+/* Corner notch positioning overrides */
+.y2k-command-dock .y2k-library-search,
+.y2k-command-dock .y2k-add-form {
+  position: fixed;
+  top: var(--frame-top-edge);
+  height: var(--frame-corner-height);
+  padding: 0.5rem 0.75rem;
 }
 
-@media (max-width: 720px) {
-  .y2k-command-dock__bar {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .y2k-symbol-control.is-expanded {
-    flex-basis: calc(100% - 4rem);
-  }
-
-  .y2k-command-dock__filters {
-    width: auto;
-    flex: 1 1 auto;
-    min-width: 0;
-  }
+.y2k-command-dock .y2k-library-search {
+  left: var(--frame-border-width);
+  width: var(--frame-search-width);
+  justify-content: center;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .y2k-symbol-control,
-  .y2k-symbol-control__trigger {
-    transition: none;
-  }
-  .y2k-symbol-control__field {
-    animation: none;
-  }
+.y2k-command-dock .y2k-add-form {
+  right: var(--frame-border-width);
+  width: var(--frame-create-width);
+  justify-content: center;
 }
 
-@media (max-width: 720px) {
-  .y2k-command-dock__profiles {
-    order: 1;
-    margin-left: auto;
-  }
-  .y2k-command-dock__filters {
-    order: 2;
-    flex-basis: 100%;
-  }
+.y2k-command-dock .y2k-add-form.is-expanded {
+  justify-content: flex-start;
 }
 
-/* The paired artwork is a full set of dock filter buttons, not poster badges. */
+.y2k-command-dock .y2k-search-capsule {
+  width: 100%;
+}
+
+.y2k-command-dock .y2k-command-dock__divider {
+  display: none;
+}
+
+/* ==========================================================================
+   Section 3: Filters, Toast Viewport, & Interactive Triggers
+   ========================================================================== */
+
 .y2k-command-dock__filters {
+  position: fixed;
+  left: var(--frame-border-width);
+  bottom: var(--frame-border-width);
+  width: var(--frame-filter-width);
+  height: var(--frame-corner-height);
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .y2k-command-dock .movie-wall-filters {
-  flex-wrap: wrap;
+  width: 100%;
+  flex-wrap: nowrap;
   justify-content: center;
   min-width: 0;
 }
 
-/* Compact bottom-corner toast pills that never obstruct top Search/Add bars. */
+:root {
+  --frame-filter-width: 5.25rem;
+}
+
+:root:has(.movie-wall-filters__trigger[data-watch-status="queue"]),
+:root:has(.movie-wall-filters__trigger[data-watch-status="seen"]) {
+  --frame-filter-width: 5.5rem;
+}
+
+:root:has(.movie-wall-filters__trigger[data-watch-status="watching"]) {
+  --frame-filter-width: 6.25rem;
+}
+
+.y2k-command-dock .movie-wall-filters__trigger,
+.y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 3.65rem;
+  padding: 0.15rem 0.2rem !important;
+  gap: 0.12rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--notch-ink, #15140f) !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.y2k-command-dock .movie-wall-filters__trigger:hover,
+.y2k-command-dock .movie-wall-filters__trigger.is-open,
+.y2k-command-dock .movie-wall-filters__trigger.is-active {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--notch-ink, #15140f) !important;
+}
+
+.y2k-command-dock .y2k-command-dock__filters:has([data-watch-status]) {
+  padding-inline: 0.15rem;
+}
+
+.movie-wall-filters__trigger-art {
+  display: block;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 1.8rem;
+  pointer-events: none;
+}
+
+.movie-wall-filters__trigger-label {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.movie-wall-filters__chevron {
+  display: block;
+  flex: 0 0 auto;
+  margin-top: -0.05rem;
+  opacity: 0.75;
+}
+
+.movie-wall-filters__trigger-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.movie-wall-filters__trigger[data-watch-status] .movie-wall-filters__trigger-label {
+  box-shadow: inset 0 -2px 0 #f5c451;
+}
+
+.y2k-command-dock .movie-wall-filters__count-pill {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #344151;
+}
+
+/* Toast Notification Viewport */
 .navbar-toast-viewport {
   position: fixed;
   left: calc(var(--frame-border-width, 10px) + 0.75rem);
@@ -567,121 +429,41 @@
   border-radius: 999px !important;
 }
 
-.y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork {
-  flex-wrap: wrap;
-  align-content: center;
-  gap: 0.15rem 0.3rem;
-  min-width: 4rem;
-  min-height: 3.65rem;
-  padding: 0.15rem 0.3rem 0.3rem;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  color: #0b0f19;
-  font-size: 0.68rem;
-}
+/* ==========================================================================
+   Section 4: Top Frame Panels, Dialog Headings, & Animations
+   ========================================================================== */
 
-.movie-wall-filters__trigger-art {
-  display: block;
-  flex: 0 0 100%;
-  width: 2.75rem;
-  height: 1.8rem;
-  pointer-events: none;
-}
-
-.movie-wall-filters__trigger--artwork {
-  width: 100%;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.movie-wall-filters__trigger--artwork .movie-wall-filters__count-pill {
-  height: 1rem;
-  min-width: 1.5rem;
-  font-size: 0.6rem;
-}
-
-/* Flat controls sit directly on the thick top edge of the viewport frame. */
-.y2k-command-dock .movie-wall-filters__count-pill {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #344151;
-}
-
-.y2k-command-dock .y2k-command-dock__profiles {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-@media (max-width: 720px) {
-  .y2k-command-dock__bar { min-height: 4.25rem; }
-}
-
-.y2k-symbol-control__trigger.y2k-symbol-control__trigger--artwork {
-  flex: 0 0 3.5rem;
-  width: 3.5rem;
-  height: 3.65rem;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.frame-command-art {
-  display: block;
-  width: 2.75rem;
-  height: 1.8rem;
-  pointer-events: none;
-}
-
-.frame-command-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.y2k-symbol-control.is-expanded .y2k-symbol-control__trigger--artwork {
-  flex-basis: 3.25rem;
-  width: 3.25rem;
-}
-
-.y2k-symbol-control.is-expanded .frame-command-art {
-  width: 3rem;
-}
-
-.y2k-symbol-control.is-expanded .frame-command-label {
-  display: none;
-}
-
-.y2k-command-dock .y2k-command-dock__profiles {
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-/* All expanded controls participate in the height of the difference-blended frame. */
-.top-frame-panels {
-  position: relative;
-  width: 100%;
-  max-height: min(72dvh, calc(100dvh - var(--frame-toolbar-height, 4.65rem) - 0.75rem));
+.y2k-command-dock .top-frame-panels {
+  position: fixed;
+  top: calc(var(--frame-top-edge) + var(--frame-corner-height));
+  right: var(--frame-border-width);
+  z-index: 1100;
+  width: min(38rem, calc(100vw - 2 * var(--frame-border-width)));
+  max-height: calc(100dvh - 2 * var(--frame-corner-height) - 2rem);
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   border: 0;
-  border-radius: 1.75rem;
-  background: rgba(220, 214, 196, 0.28);
-  box-shadow: inset 0 0 0 1px rgba(40, 36, 28, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  border-radius: 1rem;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.y2k-command-dock .top-frame-panels[data-expanded="false"] {
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.y2k-command-dock[data-panel-origin="filters"] .top-frame-panels {
+  top: auto;
+  right: auto;
+  left: var(--frame-border-width);
+  bottom: calc(var(--frame-border-width) + var(--frame-corner-height));
 }
 
 .top-frame-panels__content {
   display: flow-root;
 }
-
-.top-frame-panels[data-expanded="false"] { pointer-events: none; box-shadow: none; }
 
 .top-frame-panel {
   padding: 0.75rem;
@@ -751,12 +533,18 @@
   margin-bottom: 0.35rem;
 }
 
-.frame-panel-heading h2 { font-size: 1.05rem; font-weight: 800; margin: 0; }
+.frame-panel-heading h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+}
+
 .frame-panel-heading__actions {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
 }
+
 .frame-panel-heading button {
   display: grid;
   place-items: center;
@@ -768,9 +556,11 @@
   color: inherit;
   cursor: pointer;
 }
+
 .frame-panel-heading button:hover {
   background: rgba(21, 20, 15, 0.08);
 }
+
 .frame-panel-heading button.frame-panel-heading__switch {
   display: inline-flex;
   align-items: center;
@@ -784,11 +574,30 @@
   font-size: 0.76rem;
   font-weight: 750;
 }
+
 .frame-panel-heading button.frame-panel-heading__switch:hover {
   background: rgba(255, 250, 236, 0.62);
 }
 
-.top-frame-panels[data-modal-open="true"] .top-frame-panel { display: none; }
+.top-frame-panels[data-modal-open="true"] .top-frame-panel {
+  display: none;
+}
+
+.y2k-command-dock__subbar {
+  position: fixed;
+  top: calc(var(--frame-top-edge) + var(--frame-corner-height));
+  right: var(--frame-border-width);
+  z-index: 1100;
+  max-width: calc(100vw - 2 * var(--frame-border-width));
+  padding: 0.5rem 1rem;
+  background: transparent;
+  pointer-events: auto;
+}
+
+@keyframes commandFieldReveal {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 
 @keyframes topFrameReveal {
   from { opacity: 0; transform: translateY(-6px) scale(0.985); }
@@ -800,122 +609,107 @@
   to { opacity: 1; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .top-frame-panel { animation: none; }
+/* ==========================================================================
+   Section 5: Mobile & Responsive Layout Adjustments
+   ========================================================================== */
+
+@media (hover: hover) and (pointer: fine) {
+  .y2k-symbol-control__trigger:hover {
+    transform: scale(1.05);
+  }
 }
 
-/* Corner controls follow the four sculpted pockets in the viewport frame. */
-.y2k-command-dock__bar { min-height: 0; padding: 0; pointer-events: none; }
-.y2k-command-dock__bar > * { pointer-events: auto; }
-.y2k-command-dock .y2k-library-search,
-.y2k-command-dock .y2k-add-form {
-  position: fixed;
-  top: var(--frame-top-edge);
-  height: var(--frame-corner-height);
-  padding: 0.5rem 0.75rem;
+@media (prefers-reduced-motion: reduce) {
+  .y2k-symbol-control,
+  .y2k-symbol-control__trigger {
+    transition: none;
+  }
+  .y2k-symbol-control__field,
+  .top-frame-panel {
+    animation: none;
+  }
 }
-.y2k-command-dock .y2k-library-search {
-  left: var(--frame-border-width);
-  width: var(--frame-search-width);
-  justify-content: center;
+
+@media (max-width: 720px) {
+  .y2k-command-dock {
+    top: 0.65rem;
+    width: calc(100vw - 1.25rem);
+  }
+
+  .y2k-command-dock__bar {
+    min-height: 4.25rem;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .y2k-symbol-control.is-expanded {
+    flex-basis: calc(100% - 4rem);
+  }
+
+  .y2k-command-dock__filters {
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .y2k-search-capsule__kbd {
+    display: none;
+  }
+
+  .y2k-search-capsule__input {
+    font-size: 0.85rem;
+  }
+
+  .y2k-search-capsule__submit {
+    padding: 0 0.75rem;
+    font-size: 0.74rem;
+  }
 }
-.y2k-command-dock .y2k-add-form {
-  right: var(--frame-border-width);
-  width: var(--frame-create-width);
-  justify-content: center;
-}
-.y2k-command-dock .y2k-add-form.is-expanded { justify-content: flex-start; }
-.y2k-command-dock .y2k-search-capsule { width: 100%; }
-.y2k-command-dock .y2k-command-dock__divider { display: none; }
-.y2k-command-dock .y2k-command-dock__filters {
-  position: fixed;
-  left: var(--frame-border-width);
-  bottom: var(--frame-border-width);
-  width: var(--frame-filter-width);
-  height: var(--frame-corner-height);
-  padding: 0.25rem 0.5rem;
-}
-.y2k-command-dock .movie-wall-filters { width: 100%; flex-wrap: nowrap; }
-:root:has(.movie-wall-filters__trigger[data-watch-status="queue"]),
-:root:has(.movie-wall-filters__trigger[data-watch-status="seen"]) {
-  --frame-filter-width: 5.75rem;
-}
-:root:has(.movie-wall-filters__trigger[data-watch-status="watching"]) {
-  --frame-filter-width: 7.25rem;
-}
-.y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork[data-watch-status] {
-  width: 100%;
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 100%;
-}
-.y2k-command-dock .y2k-command-dock__filters:has([data-watch-status]) {
-  padding-inline: 0.15rem;
-}
-.movie-wall-filters__trigger-label {
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.25rem;
-  max-width: 100%;
-}
-.movie-wall-filters__trigger-count {
-  font-variant-numeric: tabular-nums;
-}
-.movie-wall-filters__trigger[data-watch-status] .movie-wall-filters__trigger-label {
-  box-shadow: inset 0 -2px 0 #f5c451;
-}
-.y2k-command-dock .top-frame-panels {
-  position: fixed;
-  top: calc(var(--frame-top-edge) + var(--frame-corner-height));
-  right: var(--frame-border-width);
-  width: min(38rem, calc(100vw - 2 * var(--frame-border-width)));
-  max-height: calc(100dvh - 2 * var(--frame-corner-height) - 2rem);
-  border-radius: 1rem;
-  background: #dcd6c4;
-  pointer-events: auto;
-}
-.y2k-command-dock .top-frame-panels[data-expanded="false"] { pointer-events: none; }
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels {
-  top: auto;
-  right: auto;
-  left: var(--frame-border-width);
-  bottom: calc(var(--frame-border-width) + var(--frame-corner-height));
-}
-.y2k-command-dock__subbar {
-  position: fixed;
-  top: calc(var(--frame-top-edge) + var(--frame-corner-height));
-  right: var(--frame-border-width);
-  max-width: calc(100vw - 2 * var(--frame-border-width));
-  padding: 0.5rem 1rem;
-  background: #dcd6c4;
-  pointer-events: auto;
-}
+
 @media (max-width: 600px) {
   .y2k-command-dock .y2k-library-search,
-  .y2k-command-dock .y2k-add-form { padding-inline: 0.25rem; }
-  .y2k-command-dock .y2k-add-form { right: var(--frame-border-width); width: var(--frame-create-width); }
-  .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork:not([data-watch-status]) { min-width: 3rem; width: 3rem; flex: 0 0 3rem; padding-inline: 0; }
+  .y2k-command-dock .y2k-add-form {
+    padding-inline: 0.25rem;
+  }
+  .y2k-command-dock .y2k-add-form {
+    right: var(--frame-border-width);
+    width: var(--frame-create-width);
+  }
+  .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork:not([data-watch-status]) {
+    min-width: 3rem;
+    width: 3rem;
+    flex: 0 0 3rem;
+    padding-inline: 0;
+  }
   .y2k-command-dock .movie-wall-filters__trigger.movie-wall-filters__trigger--artwork[data-watch-status] {
     width: 100%;
     flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
   }
-  .y2k-command-dock .movie-wall-filters { gap: 0; }
-  :root:has(.y2k-library-search.is-expanded) .y2k-command-dock .y2k-add-form { visibility: hidden; }
-  :root:has(.y2k-add-form.is-expanded) .y2k-command-dock .y2k-library-search { visibility: hidden; }
+  .y2k-command-dock .movie-wall-filters {
+    gap: 0;
+  }
+  :root:has(.y2k-library-search.is-expanded) .y2k-command-dock :is(.y2k-add-form, .y2k-command-dock__activities) {
+    visibility: hidden;
+  }
+  :root:has(.y2k-add-form.is-expanded) .y2k-command-dock :is(.y2k-library-search, .y2k-command-dock__activities) {
+    visibility: hidden;
+  }
+  .frame-corner-profiles {
+    padding: 0;
+  }
+  .frame-corner-profiles [role="group"] {
+    gap: 0;
+  }
+  .frame-corner-profiles .profile-switcher-btn {
+    width: 2.75rem;
+    flex: 0 0 2.75rem;
+  }
 }
 
-/* Details take priority over the fixed frame controls, including the close target. */
+/* Modal details overlay takes precedence over dock */
 body:has(.movie-details-modal) .y2k-command-dock,
 body:has(.movie-details-modal) .frame-corner-profiles {
   visibility: hidden;
-}
-
-
-@media (max-width: 600px) {
-  .frame-corner-profiles { padding: 0; }
-  .frame-corner-profiles [role="group"] { gap: 0; }
-  .frame-corner-profiles .profile-switcher-btn { width: 2.75rem; flex: 0 0 2.75rem; }
 }

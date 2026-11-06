@@ -35,6 +35,8 @@ interface MovieCardProps {
   onEditMetadata?: (updates: {
     title: string;
     customPosterUrl?: string;
+    mediaType?: "movie" | "series";
+    category?: string;
   }) => Promise<void>;
   isHighlighted?: boolean;
   isCompact?: boolean;

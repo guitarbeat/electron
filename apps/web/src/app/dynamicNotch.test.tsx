@@ -22,13 +22,16 @@ function Notch({ name }: { name: NotchName }) {
 }
 
 it("keeps only one notch expanded: opening one collapses the others, and collapseAllNotches closes the active notch", () => {
-  render(<><Notch name="search" /><Notch name="settings" /><Notch name="profiles" /></>);
+  render(<><Notch name="search" /><Notch name="activities" /><Notch name="settings" /><Notch name="profiles" /></>);
   const button = (name: string) => screen.getByRole("button", { name });
   fireEvent.click(button("settings"));
   expect(button("settings")).toHaveAttribute("aria-expanded", "true");
+  fireEvent.click(button("activities"));
+  expect(button("activities")).toHaveAttribute("aria-expanded", "true");
+  expect(button("settings")).toHaveAttribute("aria-expanded", "false");
   fireEvent.click(button("profiles"));
   expect(button("profiles")).toHaveAttribute("aria-expanded", "true");
-  expect(button("settings")).toHaveAttribute("aria-expanded", "false");
+  expect(button("activities")).toHaveAttribute("aria-expanded", "false");
   fireEvent.click(button("search"));
   expect(button("search")).toHaveAttribute("aria-expanded", "true");
   expect(button("profiles")).toHaveAttribute("aria-expanded", "false");
@@ -36,7 +39,7 @@ it("keeps only one notch expanded: opening one collapses the others, and collaps
   expect(button("search")).toHaveAttribute("aria-expanded", "false");
 });
 
-it("toggles and drags notches open and closed via useNotchGripDrag", () => {
+it("toggles and drags notches open and closed via useNotchGripDrag and syncs drag state to .viewport-frame .dyn-notch", () => {
   function GripHost() {
     const [open, setOpen] = useState(false);
     const hostRef = useRef<HTMLDivElement | null>(null);
@@ -48,23 +51,35 @@ it("toggles and drags notches open and closed via useNotchGripDrag", () => {
       hostRef,
     });
     return (
-      <div ref={hostRef} data-testid="notch-host" data-open={open}>
-        <i data-testid="notch-grip" {...grip} />
-      </div>
+      <>
+        <div className="viewport-frame">
+          <span className="dyn-notch dyn-notch--frame" data-notch="search" data-testid="frame-notch" />
+        </div>
+        <div ref={hostRef} data-testid="notch-host" data-open={open}>
+          <span className="dyn-notch" data-notch="search">
+            <i data-testid="notch-grip" {...grip} />
+          </span>
+        </div>
+      </>
     );
   }
   render(<GripHost />);
   const host = screen.getByTestId("notch-host");
+  const frameNotch = screen.getByTestId("frame-notch");
   const grip = screen.getByTestId("notch-grip");
   expect(host).toHaveAttribute("data-open", "false");
 
-  // Dragging downward (> 24px) opens a top notch
+  // Dragging downward (> 24px) opens a top notch and syncs --dyn-drag-h to the .viewport-frame notch
   fireEvent.pointerDown(grip, { pointerId: 1, clientY: 10 });
   fireEvent.pointerMove(grip, { pointerId: 1, clientY: 45 });
   expect(host.style.getPropertyValue("--dyn-drag-h")).toBe("35px");
+  expect(frameNotch.style.getPropertyValue("--dyn-drag-h")).toBe("35px");
+  expect(frameNotch).toHaveAttribute("data-dragging", "true");
   fireEvent.pointerUp(grip, { pointerId: 1, clientY: 45 });
   expect(host).toHaveAttribute("data-open", "true");
   expect(host.style.getPropertyValue("--dyn-drag-h")).toBe("");
+  expect(frameNotch.style.getPropertyValue("--dyn-drag-h")).toBe("");
+  expect(frameNotch).not.toHaveAttribute("data-dragging");
 
   // Clicking the grip closes the open notch
   fireEvent.click(grip);

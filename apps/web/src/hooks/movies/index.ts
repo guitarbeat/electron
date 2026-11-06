@@ -229,7 +229,12 @@ export const useMovies = (
   const editMovie = useCallback(
     async (
       movieId: string,
-      updates: { title: string; customPosterUrl?: string },
+      updates: {
+        title: string;
+        customPosterUrl?: string;
+        mediaType?: "movie" | "series";
+        category?: string;
+      },
     ) => {
       if (!currentUser) {
         throw new Error("Profile required");
@@ -250,6 +255,12 @@ export const useMovies = (
               ...(updates.customPosterUrl !== undefined
                 ? { customPosterUrl: updates.customPosterUrl || undefined }
                 : {}),
+              ...(updates.mediaType !== undefined
+                ? { mediaType: updates.mediaType }
+                : {}),
+              ...(updates.category !== undefined
+                ? { category: updates.category || undefined }
+                : {}),
             }
           : movie,
       );
@@ -260,6 +271,8 @@ export const useMovies = (
           movieId,
           title: cleanTitle,
           customPosterUrl: updates.customPosterUrl,
+          mediaType: updates.mediaType,
+          category: updates.category,
         },
         optimisticMovies,
       );

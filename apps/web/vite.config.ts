@@ -205,7 +205,7 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       entries: ["index.html", "src/main.tsx"],
-      holdUntilCrawlEnd: true,
+      holdUntilCrawlEnd: false,
       ignoreOutdatedRequests: true,
       include: [
         "react",

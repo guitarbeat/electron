@@ -34,17 +34,73 @@ export const splitGenres = (genre?: string): string[] =>
     .map((value) => value.trim())
     .filter(Boolean);
 
-export const isTvSeriesItem = (movie: Partial<Movie>): boolean => {
-  if (movie.mediaType === "series") return true;
-  if (movie.mediaType === "movie") return false;
+export const SERIES_TYPE_STRINGS = new Set([
+  "series",
+  "tv",
+  "show",
+  "tvshow",
+  "tv show",
+  "tv series",
+  "tv-series",
+  "tvseries",
+  "episode",
+  "miniseries",
+  "mini-series",
+  "tv mini series",
+  "tv mini-series",
+]);
 
+export const isTvSeriesItem = (
+  movie: Partial<Movie> & { type?: string; Type?: string },
+): boolean => {
+  // 1. YouTube is distinct
+  if (movie.mediaType === "youtube" || movie.youtubeUrl) return false;
+
+  // 2. Explicit series typing on mediaType or legacy type / Type
+  const explicitType = (movie.mediaType || movie.type || movie.Type)?.trim().toLowerCase();
+  if (explicitType && SERIES_TYPE_STRINGS.has(explicitType)) return true;
+
+  // 3. Category inspection (TV Series, Miniseries, Anime, etc.)
   const cat = movie.category?.toLowerCase() ?? "";
-  if (cat.includes("series") || cat.includes("tv")) return true;
+  if (
+    cat.includes("series") ||
+    cat.includes("tv") ||
+    cat.includes("show") ||
+    cat.includes("miniseries") ||
+    cat.includes("mini-series") ||
+    cat.includes("anime") ||
+    cat.includes("k-drama") ||
+    cat.includes("kdrama")
+  ) {
+    return true;
+  }
 
+  // 4. Runtime patterns: e.g. "1 Season", "2 Seasons", "8 eps", "12 episodes", "min/ep"
   const runtime = movie.runtime?.toLowerCase() ?? "";
-  if (runtime.includes("season") || runtime.includes("ep")) return true;
+  if (
+    runtime.includes("season") ||
+    runtime.includes("ep") ||
+    runtime.includes("series") ||
+    runtime.includes("min/ep")
+  ) {
+    return true;
+  }
 
+  // 5. Year range: "2019–2023", "2020-", "2022–", etc.
   if (movie.year && /\d{4}\s*[–-]\s*(\d{4})?/.test(movie.year)) return true;
+
+  // 6. Genre indicators from OMDb / IMDb: "Reality-TV", "Game-Show", "Talk-Show", "Mini-Series"
+  const genre = movie.genre?.toLowerCase() ?? "";
+  if (
+    genre.includes("reality-tv") ||
+    genre.includes("game-show") ||
+    genre.includes("talk-show") ||
+    genre.includes("mini-series") ||
+    genre.includes("miniseries") ||
+    genre.includes("tv series")
+  ) {
+    return true;
+  }
 
   return false;
 };

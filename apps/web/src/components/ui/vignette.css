@@ -1,172 +1,151 @@
+/* ==========================================================================
+   Vignette Edge Blur & Glow Overlay
+   Applies a frosted gradient blur along viewport edges so scrolling
+   media posters fade smoothly into the surrounding frame.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Theme Tokens & Edge Parameters
+   -------------------------------------------------------------------------- */
 :root {
+  /* Blur Intensity & Glow Settings */
   --vignette-blur-strength: 70px;
   --vignette-blur-saturation: 2.2;
   --vignette-blur-fallback-opacity: 0.6;
   --vignette-blur-glow-color: rgba(255, 255, 255, 0.14);
+  --vignette-z-index: 15;
 
-  /* The top mirrors the bottom: the same blur reaches the same distance past the frame edge,
-     so the posters fade into a thin glowing line instead of a dark frosted band. */
+  /* Baseline edge parameters */
+  --vignette-edge-size-desktop: 5rem;
+  --vignette-edge-size-mobile: 5rem;
+  --vignette-edge-blur: 48px;
+  --vignette-edge-stop: 80%;
+
+  /* Directional token fallbacks (preserves backwards-compatibility for external overrides) */
+  --vignette-bottom-height-desktop: var(--vignette-edge-size-desktop);
+  --vignette-bottom-height-mobile: var(--vignette-edge-size-mobile);
+  --vignette-left-width-desktop: var(--vignette-edge-size-desktop);
+  --vignette-left-width-mobile: var(--vignette-edge-size-mobile);
+  --vignette-right-width-desktop: var(--vignette-edge-size-desktop);
+  --vignette-right-width-mobile: var(--vignette-edge-size-mobile);
+
+  /* Top Edge Dimensions (mirrors bottom edge relative to frame border) */
   --vignette-top-height-desktop: calc(var(--vignette-bottom-height-desktop) - var(--frame-border-width, 7px) + var(--frame-top-edge, 2px));
   --vignette-top-height-mobile: calc(var(--vignette-bottom-height-mobile) - var(--frame-border-width, 7px) + var(--frame-top-edge, 2px));
-  --vignette-top-blur-strength: var(--vignette-bottom-blur-strength);
-  --vignette-top-gradient-stop: var(--vignette-bottom-gradient-stop);
-  --vignette-top-opacity: 1;
+  --vignette-top-blur-strength: var(--vignette-edge-blur);
+  --vignette-top-gradient-stop: var(--vignette-edge-stop);
+  --vignette-bottom-blur-strength: var(--vignette-edge-blur);
+  --vignette-bottom-gradient-stop: var(--vignette-edge-stop);
+  --vignette-left-blur-strength: var(--vignette-edge-blur);
+  --vignette-left-gradient-stop: var(--vignette-edge-stop);
+  --vignette-right-blur-strength: var(--vignette-edge-blur);
+  --vignette-right-gradient-stop: var(--vignette-edge-stop);
 
-  --vignette-bottom-height-desktop: 3rem;
-  --vignette-bottom-height-mobile: 2rem;
-  --vignette-bottom-blur-strength: 48px;
-  --vignette-bottom-gradient-stop: 80%;
-  --vignette-bottom-opacity: 1;
-
-  --vignette-left-width-desktop: 2rem;
-  --vignette-left-width-mobile: 1rem;
-  --vignette-left-blur-strength: 48px;
-  --vignette-left-gradient-stop: 80%;
-  --vignette-left-opacity: 1;
-
-  --vignette-right-width-desktop: 2rem;
-  --vignette-right-width-mobile: 1rem;
-  --vignette-right-blur-strength: 48px;
-  --vignette-right-gradient-stop: 80%;
-  --vignette-right-opacity: 1;
-
+  /* Gradient Color Stops */
   --vignette-gradient-light-start: rgba(255, 255, 255, 0);
   --vignette-gradient-light-end: rgba(255, 255, 255, 1);
   --vignette-gradient-dark-start: rgba(0, 0, 0, 0);
   --vignette-gradient-dark-end: rgba(0, 0, 0, 1);
   --vignette-gradient-dark-middle: rgba(0, 0, 0, 0.92);
-
-  --vignette-z-index: 15;
 }
 
-.vignette-top,
-.vignette-bottom,
-.vignette-left,
-.vignette-right {
+/* --------------------------------------------------------------------------
+   2. Shared Base Edge Styles
+   -------------------------------------------------------------------------- */
+.vignette-edge,
+:is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right) {
   position: fixed;
   pointer-events: none;
   z-index: var(--vignette-z-index);
   transition: opacity 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
+/* --------------------------------------------------------------------------
+   3. Directional Configuration (DRY Parameter Mapping)
+   -------------------------------------------------------------------------- */
 .vignette-top {
   top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--vignette-top-height-desktop);
-}
-
-.vignette-top::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  -webkit-backdrop-filter: blur(var(--vignette-top-blur-strength)) saturate(var(--vignette-blur-saturation));
-  backdrop-filter: blur(var(--vignette-top-blur-strength)) saturate(var(--vignette-blur-saturation));
-  box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  -webkit-mask-image: linear-gradient(to top, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-top-gradient-stop), var(--vignette-gradient-dark-end));
-  mask-image: linear-gradient(to top, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-top-gradient-stop), var(--vignette-gradient-dark-end));
+  --edge-dir: to top;
+  --edge-size: var(--vignette-top-height-desktop);
+  --edge-blur: var(--vignette-top-blur-strength);
+  --edge-stop: var(--vignette-top-gradient-stop);
 }
 
 .vignette-bottom {
   bottom: 0;
-  left: 0;
-  width: 100%;
-  height: var(--vignette-bottom-height-desktop);
-}
-
-.vignette-bottom::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  -webkit-backdrop-filter: blur(var(--vignette-bottom-blur-strength)) saturate(var(--vignette-blur-saturation));
-  backdrop-filter: blur(var(--vignette-bottom-blur-strength)) saturate(var(--vignette-blur-saturation));
-  box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  -webkit-mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
-  mask-image: linear-gradient(to bottom, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-bottom-gradient-stop), var(--vignette-gradient-dark-end));
+  --edge-dir: to bottom;
+  --edge-size: var(--vignette-bottom-height-desktop);
+  --edge-blur: var(--vignette-bottom-blur-strength);
+  --edge-stop: var(--vignette-bottom-gradient-stop);
 }
 
 .vignette-left {
-  top: 0;
   left: 0;
-  height: 100%;
-  width: var(--vignette-left-width-desktop);
-}
-
-.vignette-left::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  -webkit-backdrop-filter: blur(var(--vignette-left-blur-strength)) saturate(var(--vignette-blur-saturation));
-  backdrop-filter: blur(var(--vignette-left-blur-strength)) saturate(var(--vignette-blur-saturation));
-  box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  -webkit-mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
-  mask-image: linear-gradient(to left, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-left-gradient-stop), var(--vignette-gradient-dark-end));
+  --edge-dir: to left;
+  --edge-size: var(--vignette-left-width-desktop);
+  --edge-blur: var(--vignette-left-blur-strength);
+  --edge-stop: var(--vignette-left-gradient-stop);
 }
 
 .vignette-right {
-  top: 0;
   right: 0;
-  height: 100%;
-  width: var(--vignette-right-width-desktop);
+  --edge-dir: to right;
+  --edge-size: var(--vignette-right-width-desktop);
+  --edge-blur: var(--vignette-right-blur-strength);
+  --edge-stop: var(--vignette-right-gradient-stop);
 }
 
-.vignette-right::before {
+/* Axis Geometry: Horizontal vs Vertical Bands */
+:is(.vignette-top, .vignette-bottom) {
+  left: 0;
+  width: 100%;
+  height: var(--edge-size);
+}
+
+:is(.vignette-left, .vignette-right) {
+  top: 0;
+  height: 100%;
+  width: var(--edge-size);
+}
+
+/* --------------------------------------------------------------------------
+   4. Unified Frosted Gradient Blur Mask (Single Reusable Pseudo-Element)
+   -------------------------------------------------------------------------- */
+:is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right)::before {
   content: "";
   position: absolute;
   inset: 0;
-  -webkit-backdrop-filter: blur(var(--vignette-right-blur-strength)) saturate(var(--vignette-blur-saturation));
-  backdrop-filter: blur(var(--vignette-right-blur-strength)) saturate(var(--vignette-blur-saturation));
   box-shadow: 0 0 60px var(--vignette-blur-glow-color), 0 0 30px var(--vignette-blur-glow-color);
-  -webkit-mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
-  mask-image: linear-gradient(to right, var(--vignette-gradient-dark-start), var(--vignette-gradient-dark-middle) var(--vignette-right-gradient-stop), var(--vignette-gradient-dark-end));
+  -webkit-backdrop-filter: blur(var(--edge-blur, var(--vignette-edge-blur))) saturate(var(--vignette-blur-saturation));
+  backdrop-filter: blur(var(--edge-blur, var(--vignette-edge-blur))) saturate(var(--vignette-blur-saturation));
+  -webkit-mask-image: linear-gradient(
+    var(--edge-dir, to bottom),
+    var(--vignette-gradient-dark-start),
+    var(--vignette-gradient-dark-middle) var(--edge-stop, var(--vignette-edge-stop)),
+    var(--vignette-gradient-dark-end)
+  );
+  mask-image: linear-gradient(
+    var(--edge-dir, to bottom),
+    var(--vignette-gradient-dark-start),
+    var(--vignette-gradient-dark-middle) var(--edge-stop, var(--vignette-edge-stop)),
+    var(--vignette-gradient-dark-end)
+  );
 }
 
-@keyframes vignette-slide-down {
-  from {
-    transform: translateY(-120%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* --------------------------------------------------------------------------
+   5. Responsive Mobile Adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .vignette-top { --edge-size: var(--vignette-top-height-mobile); }
+  .vignette-bottom { --edge-size: var(--vignette-bottom-height-mobile); }
+  .vignette-left { --edge-size: var(--vignette-left-width-mobile); }
+  .vignette-right { --edge-size: var(--vignette-right-width-mobile); }
 }
 
-@keyframes vignette-slide-up {
-  from {
-    transform: translateY(120%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes vignette-slide-right {
-  from {
-    transform: translateX(-120%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes vignette-slide-left {
-  from {
-    transform: translateX(120%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* TV: no backdrop blur (a stall on Fire TV, and `.is-tv-runtime *` misses pseudo-elements),
-   so every edge gets the same cheap tinted fade through the same mask instead. */
+/* --------------------------------------------------------------------------
+   6. Special Runtime & Theme Overrides
+   -------------------------------------------------------------------------- */
+/* TV Runtime: fallback to low-cost tinted fade without blur */
 :is(.is-tv-runtime, .is-silk-browser) :is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right)::before {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -174,57 +153,30 @@
   background: rgb(6 10 18 / 0.82);
 }
 
-/* Light theme adjustments */
-.light-theme .vignette-top::before,
-.light-theme .vignette-bottom::before,
-.light-theme .vignette-left::before,
-.light-theme .vignette-right::before {
+/* Light Theme Adjustments */
+.light-theme :is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right)::before {
   background-image: linear-gradient(
     var(--vignette-gradient-light-start) 0%,
     var(--vignette-gradient-light-end) 100%
   );
 }
 
-/* Reduced motion adjustments */
+/* Reduced Motion Compliance */
 @media (prefers-reduced-motion: reduce) {
-  .vignette-top::before,
-  .vignette-bottom::before,
-  .vignette-left::before,
-  .vignette-right::before {
+  :is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right)::before {
     animation: none;
     transition: none;
   }
 }
 
-/* Fallback for browsers that don't support backdrop-filter */
+/* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(1px)) {
-  .vignette-top,
-  .vignette-bottom,
-  .vignette-left,
-  .vignette-right {
+  :is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right) {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     opacity: var(--vignette-blur-fallback-opacity);
   }
-  .vignette-top::before,
-  .vignette-bottom::before,
-  .vignette-left::before,
-  .vignette-right::before {
+  :is(.vignette-top, .vignette-bottom, .vignette-left, .vignette-right)::before {
     background: rgba(0, 0, 0, var(--vignette-blur-fallback-opacity));
-  }
-}
-
-@media (max-width: 768px) {
-  .vignette-top {
-    height: var(--vignette-top-height-mobile);
-  }
-  .vignette-bottom {
-    height: var(--vignette-bottom-height-mobile);
-  }
-  .vignette-left {
-    width: var(--vignette-left-width-mobile);
-  }
-  .vignette-right {
-    width: var(--vignette-right-width-mobile);
   }
 }

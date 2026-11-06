@@ -9,19 +9,30 @@ import {
 } from "react";
 import { playXmbCue, playXmbOpen, playXmbSelect } from "@/services/xmbAudio";
 
-/** The four frame notches. Only one may be expanded at a time. */
-export type NotchName = "search" | "add" | "settings" | "profiles";
+/**
+ * The five interactive frame corner notches in the Y2K viewport border.
+ * Only one notch may be in an expanded state at a given time.
+ */
+export type NotchName = "search" | "add" | "settings" | "profiles" | "activities";
 
 const EXPAND_EVENT = "dynamic-notch:expand";
 const COLLAPSE_ALL_EVENT = "dynamic-notch:collapse-all";
 
-/** Tell the other notches that `name` is expanding, so they collapse. */
+/**
+ * Broadcasts an event notifying other notches that `name` is expanding,
+ * causing any currently expanded notch to automatically collapse.
+ *
+ * @param name The NotchName currently expanding
+ */
 export function announceNotchExpand(name: NotchName) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent<NotchName>(EXPAND_EVENT, { detail: name }));
 }
 
-/** Collapse whichever notch is currently open (e.g., when clicking the dimmed scrim). */
+/**
+ * Global trigger to collapse whichever notch is currently expanded
+ * (for example, when clicking the background scrim or pressing Escape).
+ */
 export function collapseAllNotches() {
   if (typeof window === "undefined") return;
   playXmbCue("cancel");
@@ -29,24 +40,34 @@ export function collapseAllNotches() {
 }
 
 /**
- * While `open`, announces this notch as the expanded one and collapses it when another
- * notch announces itself or when a global scrim collapse is triggered.
+ * React hook that enforces exclusive notch expansion. While `open` is true,
+ * it broadcasts this notch as active and registers listeners to collapse it
+ * when another notch expands or a global collapse is requested.
+ *
+ * @param name The notch identifier
+ * @param open Whether this notch is currently expanded
+ * @param collapse Callback function to collapse this notch
  */
 export function useExclusiveNotch(name: NotchName, open: boolean, collapse: () => void) {
   const collapseRef = useRef(collapse);
   collapseRef.current = collapse;
+
   useEffect(() => {
     if (!open) return;
     playXmbOpen();
     announceNotchExpand(name);
+
     const onExpand = (event: Event) => {
       if ((event as CustomEvent<NotchName>).detail !== name) collapseRef.current();
     };
+
     const onCollapseAll = () => {
       collapseRef.current();
     };
+
     window.addEventListener(EXPAND_EVENT, onExpand);
     window.addEventListener(COLLAPSE_ALL_EVENT, onCollapseAll);
+
     return () => {
       window.removeEventListener(EXPAND_EVENT, onExpand);
       window.removeEventListener(COLLAPSE_ALL_EVENT, onCollapseAll);
@@ -54,33 +75,65 @@ export function useExclusiveNotch(name: NotchName, open: boolean, collapse: () =
   }, [name, open]);
 }
 
-/** Publishes an element's rendered height as a root CSS length so a notch body can grow around it. */
+/**
+ * Measures the rendered height of a panel element and publishes it as a CSS
+ * custom property on document element so notch bodies can dynamically size around content.
+ *
+ * @param ref Ref to the panel HTML element
+ * @param variable The CSS variable name to update (e.g. "--dyn-panel-h")
+ * @param active Whether measurement is currently active
+ */
 export function useNotchContentHeight(ref: RefObject<HTMLElement | null>, variable: string, active: boolean) {
   useLayoutEffect(() => {
     const element = ref.current;
     const root = document.documentElement;
+
     if (!active || !element) {
       root.style.setProperty(variable, "0px");
       return;
     }
-    const publish = () => root.style.setProperty(variable, `${Math.ceil(element.getBoundingClientRect().height)}px`);
+
+    const publish = () => {
+      root.style.setProperty(variable, `${Math.ceil(element.getBoundingClientRect().height)}px`);
+    };
+
     publish();
+
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(publish);
     observer.observe(element);
+
     return () => observer.disconnect();
   }, [ref, variable, active]);
 }
 
 /**
- * Adds tactile magnetic pull (--dyn-pull-x, --dyn-pull-y) and press compression (--dyn-press)
- * to a corner notch host element.
+ * Helper to locate the corresponding difference-blended SVG frame notch for a host element.
+ */
+function resolveFrameNotch(host: HTMLElement | null): HTMLElement | null {
+  if (!host || typeof document === "undefined") return null;
+  const notchName =
+    host.dataset.notch ?? host.querySelector<HTMLElement>("[data-notch]")?.dataset.notch;
+  if (!notchName) return null;
+  return document.querySelector<HTMLElement>(`.viewport-frame .dyn-notch[data-notch="${notchName}"]`);
+}
+
+/**
+ * Adds tactile magnetic cursor physics (`--dyn-pull-x`, `--dyn-pull-y`) and press
+ * compression (`--dyn-press`) to a notch element and its frame notch counterpart.
+ *
+ * @param hostRef Ref to the notch container element
  */
 export function useNotchMagneticPhysics(hostRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = hostRef.current;
     if (!el || typeof window === "undefined") return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    const setVar = (name: string, value: string) => {
+      el.style.setProperty(name, value);
+      resolveFrameNotch(el)?.style.setProperty(name, value);
+    };
 
     const handlePointerMove = (event: PointerEvent) => {
       if (event.pointerType === "touch") return;
@@ -90,22 +143,22 @@ export function useNotchMagneticPhysics(hostRef: RefObject<HTMLElement | null>) 
       const cy = rect.top + rect.height / 2;
       const nx = Math.max(-1, Math.min(1, (event.clientX - cx) / (rect.width * 0.6)));
       const ny = Math.max(-1, Math.min(1, (event.clientY - cy) / (rect.height * 0.6)));
-      el.style.setProperty("--dyn-pull-x", `${(nx * 5).toFixed(2)}px`);
-      el.style.setProperty("--dyn-pull-y", `${(ny * 4).toFixed(2)}px`);
+      setVar("--dyn-pull-x", `${(nx * 5).toFixed(2)}px`);
+      setVar("--dyn-pull-y", `${(ny * 4).toFixed(2)}px`);
     };
 
     const handlePointerDown = () => {
-      el.style.setProperty("--dyn-press", "1");
+      setVar("--dyn-press", "1");
     };
 
     const resetPress = () => {
-      el.style.setProperty("--dyn-press", "0");
+      setVar("--dyn-press", "0");
     };
 
     const handlePointerLeave = () => {
-      el.style.setProperty("--dyn-pull-x", "0px");
-      el.style.setProperty("--dyn-pull-y", "0px");
-      el.style.setProperty("--dyn-press", "0");
+      setVar("--dyn-pull-x", "0px");
+      setVar("--dyn-pull-y", "0px");
+      setVar("--dyn-press", "0");
     };
 
     el.addEventListener("pointermove", handlePointerMove, { passive: true });
@@ -124,16 +177,25 @@ export function useNotchMagneticPhysics(hostRef: RefObject<HTMLElement | null>) 
   }, [hostRef]);
 }
 
+/**
+ * Options for configuring interactive drag and click handlers on a `.dyn-notch__grip` handle.
+ */
 export interface NotchGripOptions {
+  /** Edge orientation of the notch ("top" or "bottom") */
   edge: "top" | "bottom";
+  /** Current expansion state */
   isOpen: boolean;
+  /** Callback fired when drag or click triggers notch expansion */
   onOpen: () => void;
+  /** Callback fired when drag or click triggers notch collapse */
   onClose: () => void;
+  /** Ref to the host container element */
   hostRef?: RefObject<HTMLElement | null>;
 }
 
 /**
- * Provides click-to-toggle and pointer drag-to-expand/collapse behavior for a `.dyn-notch__grip` handle.
+ * Hook providing pointer event handlers (`onClick`, `onPointerDown`, etc.) for notch grip handles
+ * to enable both click-to-toggle and live drag-to-expand/collapse gestures.
  */
 export function useNotchGripDrag({
   edge,
@@ -150,8 +212,12 @@ export function useNotchGripDrag({
   } | null>(null);
 
   const clearDragStyle = useCallback(() => {
-    hostRef?.current?.style.removeProperty("--dyn-drag-h");
-    hostRef?.current?.removeAttribute("data-dragging");
+    const host = hostRef?.current ?? null;
+    host?.style.removeProperty("--dyn-drag-h");
+    host?.removeAttribute("data-dragging");
+    const frameNotch = resolveFrameNotch(host);
+    frameNotch?.style.removeProperty("--dyn-drag-h");
+    frameNotch?.removeAttribute("data-dragging");
   }, [hostRef]);
 
   const onPointerDown = useCallback(
@@ -166,7 +232,7 @@ export function useNotchGripDrag({
       try {
         event.currentTarget.setPointerCapture(event.pointerId);
       } catch {
-        // Synthetic events in tests may not implement setPointerCapture.
+        // Synthetic pointer events in tests may not implement setPointerCapture
       }
     },
     [],
@@ -177,16 +243,22 @@ export function useNotchGripDrag({
       const state = dragStateRef.current;
       if (!state || state.pointerId !== event.pointerId) return;
       const rawDy = event.clientY - state.startY;
-      // Positive delta means pulling outward into the screen; negative means pushing back toward the corner.
       const directionalDelta = edge === "top" ? rawDy : -rawDy;
+
       if (Math.abs(directionalDelta) > 5) {
         state.moved = true;
       }
       state.delta = directionalDelta;
+
       if (hostRef?.current && state.moved) {
         const clamped = Math.max(-72, Math.min(96, directionalDelta));
+        const px = `${Math.round(clamped)}px`;
         hostRef.current.setAttribute("data-dragging", "true");
-        hostRef.current.style.setProperty("--dyn-drag-h", `${Math.round(clamped)}px`);
+        hostRef.current.style.setProperty("--dyn-drag-h", px);
+
+        const frameNotch = resolveFrameNotch(hostRef.current);
+        frameNotch?.setAttribute("data-dragging", "true");
+        frameNotch?.style.setProperty("--dyn-drag-h", px);
       }
     },
     [edge, hostRef],
@@ -198,6 +270,7 @@ export function useNotchGripDrag({
       if (!state || state.pointerId !== event.pointerId) return;
       dragStateRef.current = null;
       clearDragStyle();
+
       try {
         if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId);
@@ -205,9 +278,11 @@ export function useNotchGripDrag({
       } catch {
         // Ignore capture release errors
       }
+
       if (!state.moved) return;
       event.preventDefault();
       event.stopPropagation();
+
       if (!isOpen && state.delta >= 24) {
         playXmbSelect();
         onOpen();
@@ -246,27 +321,40 @@ export function useNotchGripDrag({
 }
 
 const GHOST_MS = 220;
-const GHOST_STRIPPED_ATTRIBUTES = ["data-notch-panel", "role", "aria-modal", "aria-labelledby", "aria-describedby"] as const;
+const GHOST_STRIPPED_ATTRIBUTES = [
+  "data-notch-panel",
+  "role",
+  "aria-modal",
+  "aria-labelledby",
+  "aria-describedby",
+] as const;
 
 /**
- * Leaves a fading, inert copy of panel content behind when it unmounts, so the notch can
- * fade its content out while the shape collapses instead of emptying at once.
+ * Leaves a temporary inert clone of panel content behind when unmounting, allowing
+ * the notch to smoothly fade out its content during shape collapse.
+ *
+ * @param node The panel element being unmounted
+ * @param host The host container element to attach the ghost clone to
  */
 export function leaveNotchGhost(node: HTMLElement | null, host: HTMLElement | null) {
   if (!node || !host?.isConnected || typeof window === "undefined") return;
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
   const ghost = node.cloneNode(true) as HTMLElement;
   ghost.removeAttribute("id");
   ghost.querySelectorAll("[id]").forEach((element) => element.removeAttribute("id"));
-  // The copy must not read as a second open panel to queries, TV focus scoping or assistive tech.
+
   for (const element of [ghost, ...Array.from(ghost.querySelectorAll<HTMLElement>("*"))]) {
     for (const name of GHOST_STRIPPED_ATTRIBUTES) element.removeAttribute(name);
   }
+
   ghost.setAttribute("aria-hidden", "true");
   ghost.setAttribute("inert", "");
   ghost.classList.add("dyn-notch-ghost");
+
   const width = node.getBoundingClientRect().width;
   if (width) ghost.style.width = `${width}px`;
+
   host.appendChild(ghost);
   window.setTimeout(() => ghost.remove(), GHOST_MS);
 }

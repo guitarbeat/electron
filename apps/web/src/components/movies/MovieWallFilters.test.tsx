@@ -68,10 +68,37 @@ it("groups the compact menu into radio rows, an avatar cycle button and a header
   expect(screen.getByRole("radio", { name: /^Aaron: Queue/ })).toHaveAttribute("aria-checked", "true");
   fireEvent.click(screen.getByRole("button", { name: /^Cycle Aaron/ }));
   expect(screen.getByRole("radio", { name: /^Aaron: Watching/ })).toHaveAttribute("aria-checked", "true");
+  // Sort is grouped into the "Genres & Sort" tab
+  fireEvent.click(screen.getByRole("tab", { name: /Genres & Sort/i }));
   expect(screen.getByRole("radiogroup", { name: "Sort by" })).toBeInTheDocument();
   // Formats with nothing in them are hidden; this list only has films.
   expect(screen.queryByRole("radio", { name: /YouTube/ })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
+  // Switch back to Filters tab to verify reset
+  fireEvent.click(screen.getByRole("tab", { name: /^Filters/i }));
   expect(screen.getByRole("radio", { name: "Aaron: any status" })).toHaveAttribute("aria-checked", "true");
   expect(screen.queryByRole("button", { name: "Clear all" })).not.toBeInTheDocument();
+});
+
+it("supports tabbed notch navigation between Filters, Genres & Sort, and Preferences", () => {
+  render(<Filters />);
+  fireEvent.click(screen.getByRole("button", { name: "Settings", exact: true }));
+  const tabs = screen.getAllByRole("tab");
+  expect(tabs).toHaveLength(3);
+  expect(tabs[0]).toHaveTextContent("Filters");
+  expect(tabs[1]).toHaveTextContent("Genres & Sort");
+  expect(tabs[2]).toHaveTextContent("Preferences");
+
+  // Default tab is Filters
+  expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("group", { name: "Watch status filters" })).toBeInTheDocument();
+
+  // Switch to Genres & Sort
+  fireEvent.click(tabs[1]);
+  expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("radiogroup", { name: "Sort by" })).toBeInTheDocument();
+
+  // Switch to Preferences
+  fireEvent.click(tabs[2]);
+  expect(tabs[2]).toHaveAttribute("aria-selected", "true");
 });

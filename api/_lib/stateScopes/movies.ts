@@ -283,10 +283,14 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           movieId?: unknown;
           title?: unknown;
           customPosterUrl?: unknown;
+          mediaType?: unknown;
+          category?: unknown;
         };
         const movieId = extractString(nextPayload.movieId);
         const title = extractString(nextPayload.title);
         const customPosterUrl = extractString(nextPayload.customPosterUrl);
+        const mediaType = extractString(nextPayload.mediaType);
+        const category = extractString(nextPayload.category);
 
         if (!movieId || !title || title.length > MAX_MOVIE_TITLE_LENGTH) {
           return { ok: false, conflict: "Invalid movie title." };
@@ -304,6 +308,10 @@ export const movieScopeDefinition: ScopeDefinition<"movies", unknown> = {
           ...(customPosterUrl !== undefined
             ? { customPosterUrl: customPosterUrl || undefined }
             : {}),
+          ...(mediaType === "series" || mediaType === "movie" || mediaType === "youtube"
+            ? { mediaType }
+            : {}),
+          ...(category !== undefined ? { category: category || undefined } : {}),
         };
 
         return {

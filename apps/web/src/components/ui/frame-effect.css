@@ -1,9 +1,23 @@
+/* ==========================================================================
+   Viewport Frame & Arcade Loader CSS Architecture
+   --------------------------------------------------------------------------
+   Section 1: Frame Custom Properties & Responsive Variables
+   Section 2: Viewport Frame Border & Dynamic Compact State
+   Section 3: Y2K Arcade Loader Stage & Themes (Aaron & Electra)
+   Section 4: Loader Design Picker & Root Element Containers
+   Section 5: Dynamic Corner Notch SVG Masks & Platform Adaptations
+   ========================================================================== */
+
+/* ==========================================================================
+   Section 1: Frame Custom Properties & Responsive Variables
+   ========================================================================== */
+
 :root {
   --frame-border-width: 5px;
-  /* The top edge is thinner than the sides so the frosted band starts close to the screen edge. */
+  /* Top edge is thinner than sides so the frosted band starts close to screen edge. */
   --frame-top-edge: 2px;
   --frame-border-top-width: var(--frame-top-edge);
-  --frame-color: #999999;
+  --frame-color: #c8c8c8;
   --frame-border-radius: 20px;
   --frame-account-width: 8rem;
   --frame-account-height: 4rem;
@@ -26,6 +40,10 @@
   }
 }
 
+/* ==========================================================================
+   Section 2: Viewport Frame Border & Dynamic Compact State
+   ========================================================================== */
+
 .viewport-frame {
   --frame-border: var(--frame-border-width, 7px) solid var(--frame-color, #999999);
   position: fixed;
@@ -33,8 +51,8 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: 100vh; /* Fallback for browsers that do not support dvh */
-  height: 100dvh; /* Dynamic viewport height - accounts for mobile browser chrome */
+  height: 100vh; /* Fallback for browsers without dvh support */
+  height: 100dvh; /* Dynamic viewport height for mobile browser chrome */
   border: var(--frame-border);
   border-top-width: var(--frame-border-top-width, 4.65rem);
   border-radius: 0;
@@ -68,7 +86,7 @@
   transition: border-radius 720ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Initial compact state: wraps the center Aaron & Electra arcade loading badge */
+/* Initial compact state: wraps the center arcade loading badge */
 .viewport-frame.viewport-frame--compact {
   top: calc((100vh - var(--loader-badge-height)) / 2);
   top: calc((100dvh - var(--loader-badge-height)) / 2);
@@ -86,7 +104,7 @@
 }
 
 /* ==========================================================================
-   Center Retro Y2K Arcade Loading Stage (Aaron & Electra)
+   Section 3: Y2K Arcade Loader Stage & Themes (Aaron & Electra)
    ========================================================================== */
 
 .y2k-arcade-loader {
@@ -292,46 +310,16 @@
 }
 
 @keyframes arcadePlayerFloat {
-  from {
-    transform: translateY(1px);
-  }
-  to {
-    transform: translateY(-3px);
-  }
+  from { transform: translateY(1px); }
+  to { transform: translateY(-3px); }
 }
 
 @keyframes arcadeSegmentPulse {
-  0%,
-  100% {
-    opacity: 0.28;
-    transform: scaleY(0.88);
-  }
-  50% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
+  0%, 100% { opacity: 0.28; transform: scaleY(0.88); }
+  50% { opacity: 1; transform: scaleY(1); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .viewport-frame,
-  .viewport-frame::after {
-    transition: none;
-  }
-
-  .y2k-arcade-loader__avatar-ring,
-  .y2k-arcade-loader__segment {
-    animation: none;
-  }
-}
-
-.y2k-arcade-loader__container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* ── Marquee Theme ── */
+/* --- Marquee Theme --- */
 .y2k-arcade-loader__card.marquee-theme {
   background:
     radial-gradient(circle at 50% 30%, rgba(245, 158, 11, 0.15), transparent 70%),
@@ -421,7 +409,7 @@
   font-weight: 600;
 }
 
-/* ── Capsule Theme ── */
+/* --- Capsule Theme --- */
 .y2k-arcade-loader__card.capsule-theme {
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(56, 189, 248, 0.35);
@@ -513,7 +501,7 @@
   transition: width 240ms ease;
 }
 
-/* ── Reel Theme ── */
+/* --- Reel Theme --- */
 .y2k-arcade-loader__card.reel-theme {
   background: #0a0a0c;
   border: 1px dashed rgba(255, 255, 255, 0.25);
@@ -579,7 +567,10 @@
   border-radius: 1px;
 }
 
-/* ── Design Picker Drawer ── */
+/* ==========================================================================
+   Section 4: Loader Design Picker & Root Element Containers
+   ========================================================================== */
+
 .loader-design-picker-trigger-wrap {
   position: relative;
   display: flex;
@@ -684,17 +675,26 @@
   min-height: 100%;
 }
 
+.y2k-arcade-loader__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 :root:has(.account-pin-viewport:not(:empty)) {
   --frame-account-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20404%20628%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M0%20628C11.05%20628%2020%20619.05%2020%20608V52C20%2034.33%2034.33%2020%2052%2020H384C395.05%2020%20404%2011.05%20404%200V628Z%22%2F%3E%3C%2Fsvg%3E");
 }
 
-/* NotchNook-style pockets. Each one hangs from the frame edge, flares out of it
-   through concave fillets, and has rounded outer corners and a soft glow. The
-   shapes stay SVG masks so the poster wall can cut out the same outline. */
+/* ==========================================================================
+   Section 5: Dynamic Corner Notch SVG Shapes & Pockets
+   ========================================================================== */
+
 @property --frame-search-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --frame-create-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --frame-filter-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --frame-account-grow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+
 :root {
   --frame-notch-grow: 14px;
   --frame-search-grow: 0px;
@@ -707,27 +707,41 @@
     --frame-filter-grow 450ms cubic-bezier(0.32, 0.72, 0, 1),
     --frame-account-grow 450ms cubic-bezier(0.32, 0.72, 0, 1);
 }
+
 :root {
   --frame-search-width: 5.5rem;
   --frame-create-width: 5.5rem;
   --frame-filter-width: 5.25rem;
+  --frame-activities-width: 14rem;
   --frame-corner-height: 4.5rem;
   --frame-top-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%20120%29%20scale%28-1%20-1%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
   --frame-top-right-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%280%20120%29%20scale%281%20-1%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
   --frame-bottom-left-shape: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20120%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22black%22%20transform%3D%22translate%28200%200%29%20scale%28-1%201%29%22%20d%3D%22M0%20120C11.05%20120%2020%20111.05%2020%20100V52C20%2034.33%2034.33%2020%2052%2020H180C191.05%2020%20200%2011.05%20200%200V120Z%22%2F%3E%3C%2Fsvg%3E");
 }
-:root:has(.y2k-library-search.is-expanded) { --frame-search-width: min(28rem, calc(100vw - 18rem)); }
-:root:has(.y2k-add-form.is-expanded) { --frame-create-width: min(34rem, calc(100vw - 18rem)); }
-.viewport-frame__corner { display: none; }
+
+:root:has(.y2k-command-dock__activities:not(:has(.frame-quiz-trigger))) {
+  --frame-activities-width: 9.75rem;
+}
+
+:root:has(.y2k-library-search.is-expanded) {
+  --frame-search-width: min(28rem, calc(100vw - 18rem));
+}
+
+:root:has(.y2k-add-form.is-expanded) {
+  --frame-create-width: min(34rem, calc(100vw - 18rem));
+}
+
+.viewport-frame__corner {
+  display: none;
+}
+
 body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner {
   display: block;
   position: absolute;
   height: calc(var(--frame-corner-height) + var(--frame-account-taper));
-}
-/* The glow sits on the wrapper because a mask would clip a shadow on the shape itself. */
-.viewport-frame__corner {
   filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--frame-color) 45%, transparent));
 }
+
 .viewport-frame__notch {
   position: absolute;
   inset: 0;
@@ -735,44 +749,79 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
   -webkit-mask: var(--frame-notch-shape) 0 0 / 100% 100% no-repeat;
   mask: var(--frame-notch-shape) 0 0 / 100% 100% no-repeat;
 }
+
 .viewport-frame__corner--top-left {
   --frame-notch-shape: var(--frame-top-left-shape);
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: calc(var(--frame-search-width) + var(--frame-account-taper) + var(--frame-search-grow));
 }
+
 .viewport-frame__corner--top-right {
   --frame-notch-shape: var(--frame-top-right-shape);
-  top: 0; right: 0;
+  top: 0;
+  right: 0;
   width: calc(var(--frame-create-width) + var(--frame-account-taper) + var(--frame-create-grow));
 }
+
 .viewport-frame__corner--bottom-left {
   --frame-notch-shape: var(--frame-bottom-left-shape);
-  bottom: 0; left: 0;
+  bottom: 0;
+  left: 0;
   width: calc(var(--frame-filter-width) + var(--frame-account-taper) + var(--frame-filter-grow));
 }
+
 body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-right {
   --frame-notch-shape: var(--frame-account-shape);
-  right: 0; bottom: 0;
+  right: 0;
+  bottom: 0;
   width: calc(var(--frame-account-width) + var(--frame-account-taper) + var(--frame-account-grow));
   height: calc(var(--frame-account-height) + var(--frame-account-taper));
   transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), height 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* --- Focus & Hover Grow Physics --- */
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-library-search:not(.is-expanded) :focus-visible) { --frame-search-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-add-form:not(.is-expanded) :focus-visible) { --frame-create-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters :focus-visible) { --frame-filter-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles :focus-visible) { --frame-account-grow: var(--frame-notch-grow); }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):hover) { --frame-search-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):hover) { --frame-create-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters:hover) { --frame-filter-grow: var(--frame-notch-grow); }
+  :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles:hover) { --frame-account-grow: var(--frame-notch-grow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport-frame,
+  .viewport-frame::after {
+    transition: none;
+  }
+  .y2k-arcade-loader__avatar-ring,
+  .y2k-arcade-loader__segment {
+    animation: none;
+  }
+  :root {
+    transition: none;
+  }
+  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-right {
+    transition: none;
+  }
+}
+
+/* --- Mobile & TV Overrides --- */
+
 @media (max-width: 600px) {
   :root {
     --frame-search-width: 4.5rem;
     --frame-create-width: 4.5rem;
     --frame-filter-width: 4rem;
+    --frame-activities-width: min(11.75rem, calc(100vw - 10rem));
     --frame-account-width: 5.5rem;
-  }
-  :root:has(.y2k-library-search.is-expanded) { --frame-search-width: calc(100vw - 2 * var(--frame-border-width)); }
-  :root:has(.y2k-add-form.is-expanded) { --frame-create-width: calc(100vw - 2 * var(--frame-border-width)); }
-}
-
-/* Phones keep the four corner notches and a thin top edge, like desktop. The top notches drop
-   below the iPhone status bar and the bottom ones clear the home indicator, while the frame
-   band itself stays thin so the screen edge is not a filled bar. */
-@media (max-width: 600px) {
-  :root {
     --frame-safe-top: env(safe-area-inset-top, 0px);
     --frame-safe-bottom: env(safe-area-inset-bottom, 0px);
     --frame-corner-height: 4.5rem;
@@ -780,25 +829,13 @@ body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .
     --frame-top-edge: calc(var(--frame-border-width) + var(--frame-safe-top));
     --frame-bottom-edge: calc(var(--frame-border-width) + var(--frame-safe-bottom));
   }
+  :root:has(.y2k-command-dock__activities:not(:has(.frame-quiz-trigger))) {
+    --frame-activities-width: min(8.25rem, calc(100vw - 10rem));
+  }
+  :root:has(.y2k-library-search.is-expanded) { --frame-search-width: calc(100vw - 2 * var(--frame-border-width)); }
+  :root:has(.y2k-add-form.is-expanded) { --frame-create-width: calc(100vw - 2 * var(--frame-border-width)); }
 }
 
-/* Pockets grow a little toward the control under the pointer or keyboard / D-pad focus.
-   Skipped for reduced motion and on TV, where the light-motion mode keeps the frame still. */
-@media (prefers-reduced-motion: no-preference) {
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-library-search:not(.is-expanded) :focus-visible) { --frame-search-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):focus-visible, .y2k-command-dock .y2k-add-form:not(.is-expanded) :focus-visible) { --frame-create-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters :focus-visible) { --frame-filter-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles :focus-visible) { --frame-account-grow: var(--frame-notch-grow); }
+:is(.is-tv-runtime, .is-silk-browser) .viewport-frame__corner {
+  filter: none;
 }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-library-search:not(.is-expanded):hover) { --frame-search-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-add-form:not(.is-expanded):hover) { --frame-create-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.y2k-command-dock .y2k-command-dock__filters:hover) { --frame-filter-grow: var(--frame-notch-grow); }
-  :root:not(.is-tv-runtime, .is-silk-browser):has(.frame-corner-profiles:hover) { --frame-account-grow: var(--frame-notch-grow); }
-}
-@media (prefers-reduced-motion: reduce) {
-  :root { transition: none; }
-  body:has(.frame-corner-profiles) .viewport-frame:not(.viewport-frame--compact) .viewport-frame__corner--bottom-right { transition: none; }
-}
-/* Fire TV composites the frame over a moving wall; a filtered layer there costs frames. */
-:is(.is-tv-runtime, .is-silk-browser) .viewport-frame__corner { filter: none; }

@@ -190,30 +190,200 @@
   border: 1px solid var(--settings-line);
   font-size: 0.72rem;
 }
+
+/* Tabbed Notch Navigation */
+.settings-menu__tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--settings-line, rgba(23, 23, 23, 0.15));
+  border-radius: 999px;
+}
+.settings-menu__tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 1.85rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--settings-ink, #26231d);
+  opacity: 0.75;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 180ms ease;
+  position: relative;
+}
+.settings-menu__tab-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+.settings-menu__tab-btn.is-active {
+  opacity: 1;
+  background: var(--settings-on, #171717);
+  color: var(--settings-surface, #ffffff);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.settings-menu__tab-pip {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+.settings-menu__tab-btn.is-active .settings-menu__tab-pip {
+  background: #facc15;
+  box-shadow: 0 0 6px #facc15;
+}
+
+/* Collapsible Genre Drawer */
+.settings-menu__genres-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px dashed var(--settings-line, rgba(23, 23, 23, 0.25));
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--settings-ink, #26231d);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.settings-menu__genres-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: var(--settings-ink, #26231d);
+}
+
 /* The switches stack on the left; Pick a movie, Messages, and Movie quiz sit beside them. */
 .top-frame-panels .settings-menu .settings-menu__view {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  grid-auto-flow: column;
-  grid-auto-columns: auto;
-  align-items: center;
-  gap: 0.35rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
-.top-frame-panels .settings-menu .settings-menu__view > :not(.frame-picker-trigger, .frame-messages-trigger, .frame-quiz-trigger) { grid-column: 1; }
 .top-frame-panels .settings-menu .settings-menu__switches {
-  grid-column: 1;
-  grid-row: 1 / span 2;
   display: grid;
-  grid-template-columns: repeat(2, max-content);
-  grid-template-rows: auto auto;
-  grid-auto-flow: column;
-  gap: 0.35rem 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
   align-items: center;
 }
 .top-frame-panels .movie-wall-filters__panel.settings-menu .settings-menu__switches .settings-switch {
   width: 100%;
 }
-/* Pick a movie is the sheet's main action: a wide gold button with big pixel art. */
+
+/* Top-Center Dynamic Notch: Activities & Messages (matches Search, Add, Settings & Profiles) */
+.y2k-command-dock .y2k-command-dock__activities {
+  position: fixed;
+  top: var(--frame-top-edge);
+  left: calc(50% - var(--frame-activities-width, 14rem) / 2);
+  width: var(--frame-activities-width, 14rem);
+  height: var(--frame-corner-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.45rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.y2k-command-dock__activities :is(.frame-picker-trigger, .frame-messages-trigger, .frame-quiz-trigger) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3.65rem;
+  min-height: 3.65rem;
+  padding: 0.15rem 0.3rem 0.25rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  box-shadow: none;
+  color: #0b0f19;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 160ms ease-out, background-color 160ms ease-out;
+}
+.y2k-command-dock__activities :is(.frame-picker-trigger, .frame-messages-trigger, .frame-quiz-trigger):hover {
+  background: rgb(21 20 15 / 0.07);
+  transform: none;
+  box-shadow: none;
+}
+.y2k-command-dock__activities :is(.frame-picker-trigger, .frame-messages-trigger, .frame-quiz-trigger):focus-visible {
+  outline: 2px solid #0c4a6e;
+  outline-offset: 2px;
+}
+.y2k-command-dock__activities :is(.frame-picker-trigger, .frame-messages-trigger)[aria-expanded="true"] > span {
+  box-shadow: inset 0 -2px 0 #f5c451;
+}
+.y2k-command-dock__activities .frame-picker-art {
+  display: block;
+  width: 3.35rem;
+  height: 1.8rem;
+  margin: 0;
+  pointer-events: none;
+}
+.y2k-command-dock__activities .frame-messages-art {
+  display: block;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  object-fit: cover;
+  pointer-events: none;
+}
+.y2k-command-dock__activities .frame-quiz-art {
+  display: block;
+  width: 1.35rem;
+  height: 1.8rem;
+  border-radius: 0.2rem;
+  object-fit: cover;
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  .y2k-command-dock .y2k-command-dock__activities {
+    gap: 0.1rem;
+    padding-inline: 0.25rem;
+  }
+  .y2k-command-dock__activities :is(.frame-picker-trigger, .frame-messages-trigger, .frame-quiz-trigger) {
+    padding-inline: 0.15rem;
+    font-size: 0.6rem;
+  }
+  .y2k-command-dock__activities .frame-picker-art {
+    width: 2.75rem;
+    height: 1.55rem;
+  }
+  .y2k-command-dock__activities .frame-messages-art {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+  .y2k-command-dock__activities .frame-quiz-art {
+    width: 1.15rem;
+    height: 1.55rem;
+  }
+}
 .y2k-command-dock .top-frame-panels .settings-menu .settings-menu__view > .frame-picker-trigger {
   position: static; inset: auto; transform: none;
   grid-column: 2; grid-row: 1 / span 2;

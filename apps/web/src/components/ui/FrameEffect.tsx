@@ -6,6 +6,7 @@ if (typeof document !== "undefined") {
 
 /** Pockets that hang from the frame edge around the corner and center controls. */
 const FRAME_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
+const DYNAMIC_NOTCHES = ["search", "activities", "add", "settings", "profiles"] as const;
 
 export interface FrameEffectProps {
   children?: React.ReactNode;
@@ -54,6 +55,14 @@ export const FrameEffect: React.FC<FrameEffectProps> = ({
         <span key={corner} className={`viewport-frame__corner viewport-frame__corner--${corner}`}>
           <span className="viewport-frame__notch" />
         </span>
+      ))}
+      {DYNAMIC_NOTCHES.map((notch) => (
+        <span
+          key={notch}
+          className="dyn-notch dyn-notch--frame"
+          data-notch={notch}
+          aria-hidden="true"
+        />
       ))}
     </div>
   );

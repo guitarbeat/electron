@@ -6,11 +6,14 @@ import {
   Calendar,
   Check,
   ChevronDown,
+  ChevronUp,
   Clock,
   Eye,
   Film,
   Layers,
   RotateCcw,
+  Settings,
+  SlidersHorizontal,
   Star,
   Tag,
   Tv,
@@ -179,6 +182,36 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
     filters.Aaron !== "all" || filters.addedBy === "Aaron";
   const isElectraFiltered =
     filters.Electra !== "all" || filters.addedBy === "Electra";
+
+  const [activeTab, setActiveTab] = React.useState<"filters" | "genres" | "settings">("filters");
+  const [isGenresExpanded, setIsGenresExpanded] = React.useState(false);
+
+  const hasFiltersActive = Boolean(
+    activeWatchStatus ||
+    filters.Aaron !== "all" ||
+    filters.Electra !== "all" ||
+    filters.addedBy !== "all" ||
+    filters.format !== "all"
+  );
+  const hasGenresActive = Boolean(
+    filters.genre !== "all" ||
+    (filters.sortBy && filters.sortBy !== "recent")
+  );
+
+  const visibleGenreCounts = React.useMemo(() => {
+    if (isGenresExpanded || genreCounts.length <= 7) return genreCounts;
+    const top = genreCounts.slice(0, 7);
+    if (
+      filters.genre !== "all" &&
+      !top.some((item) => item.genre.toLowerCase() === filters.genre.toLowerCase())
+    ) {
+      const selectedItem = genreCounts.find(
+        (item) => item.genre.toLowerCase() === filters.genre.toLowerCase(),
+      );
+      if (selectedItem) return [...top, selectedItem];
+    }
+    return top;
+  }, [genreCounts, isGenresExpanded, filters.genre]);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -487,99 +520,151 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
             </button>
           </header>
 
-          <section className="settings-menu__section" data-tone="status" aria-labelledby="settings-menu-status">
-            <h3 id="settings-menu-status" className="settings-menu__label">Status</h3>
-            <SlidingSegments
-              label="Watch status filters"
-              mode="toggle"
-              className="settings-menu__seg--status"
-              value={activeWatchStatus?.value ?? null}
-              onSelect={handleSelectCouplePreset}
-              options={WATCH_STATUS_OPTIONS.map((status) => ({
-                value: status.value,
-                tone: status.artwork,
-                ariaLabel: `${status.label}: ${optionCounts.presets[status.value]} titles`,
-                title: status.description,
-                empty: optionCounts.presets[status.value] === 0,
-                autofocus: status.value === focusWatchStatus,
-                content: (
-                  <>
-                    <WatchStatusArtwork status={status.artwork} className="settings-menu__status-art" />
-                    <span>{status.label}</span>
-                    <span key={optionCounts.presets[status.value]} className="settings-menu__count">{optionCounts.presets[status.value]}</span>
-                    <span className="settings-menu__reaction" data-kind={status.artwork} aria-hidden="true"><i /><i /><i /></span>
-                  </>
-                ),
-              }))}
-            />
-          </section>
+          {/* Tab Navigation */}
+          <div
+            className="settings-menu__tabs"
+            role="tablist"
+            aria-label="Settings and filter sections"
+          >
+            <button
+              type="button"
+              role="tab"
+              id="tab-filters"
+              aria-selected={activeTab === "filters"}
+              aria-controls="panel-filters"
+              className={`settings-menu__tab-btn${activeTab === "filters" ? " is-active" : ""}`}
+              onClick={() => setActiveTab("filters")}
+            >
+              <SlidersHorizontal size={12} aria-hidden="true" />
+              <span>Filters</span>
+              {hasFiltersActive ? <span className="settings-menu__tab-pip" aria-hidden="true" /> : null}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-genres"
+              aria-selected={activeTab === "genres"}
+              aria-controls="panel-genres"
+              className={`settings-menu__tab-btn${activeTab === "genres" ? " is-active" : ""}`}
+              onClick={() => setActiveTab("genres")}
+            >
+              <Tag size={12} aria-hidden="true" />
+              <span>Genres &amp; Sort</span>
+              {hasGenresActive ? <span className="settings-menu__tab-pip" aria-hidden="true" /> : null}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-settings"
+              aria-selected={activeTab === "settings"}
+              aria-controls="panel-settings"
+              className={`settings-menu__tab-btn${activeTab === "settings" ? " is-active" : ""}`}
+              onClick={() => setActiveTab("settings")}
+            >
+              <Settings size={12} aria-hidden="true" />
+              <span>Preferences</span>
+            </button>
+          </div>
 
-          <section className="settings-menu__section" data-tone="people" aria-labelledby="settings-menu-people">
-            <h3 id="settings-menu-people" className="settings-menu__label">Who&rsquo;s watching?</h3>
-            <div className="settings-menu__people">
-              {(["Aaron", "Electra"] as const).map((user) => {
-                const cfg = PARTNER_CONFIG[user];
-                const isPickedByUser = filters.addedBy === user;
-                return (
-                  <div key={user} className={`settings-menu__person ${cfg.toneClass}`}>
-                    <button
-                      type="button"
-                      className="settings-menu__person-name"
-                      onClick={() => handleCycleViewerProgress(user)}
-                      aria-label={`Cycle ${user} watch status filter. Currently ${progressLabels[filters[user]]}`}
-                      title={`Cycle ${user}'s watch status`}
-                    >
-                      <span key={`${filters[user]}-${isPickedByUser}`} className="settings-menu__avatar-wrap" data-status={filters[user]}>
-                        <img src={cfg.avatarSrc} alt="" className="settings-menu__avatar" />
-                        {filters[user] === "watching" || filters[user] === "watched" || isPickedByUser ? (
-                          <span className="settings-menu__avatar-fx" data-kind={filters[user] === "watching" ? "watching" : filters[user] === "watched" ? "seen" : "picked"} aria-hidden="true"><i /><i /><i /></span>
-                        ) : null}
-                        {filters[user] !== "all" ? (
-                          <span className="settings-menu__avatar-badge" aria-hidden="true">
-                            {STATUS_GLYPHS[filters[user]]}
-                          </span>
-                        ) : null}
-                      </span>
-                      {user}
-                    </button>
-                    <SlidingSegments
-                      label={`${user} watch status`}
-                      value={filters[user]}
-                      onSelect={(status) => handleSelectViewerProgress(user, status)}
-                      options={PERSON_STATUSES.map(({ status, label }) => {
-                        const count = optionCounts.viewers[user][status];
-                        return {
-                          value: status,
-                          tone: user.toLowerCase(),
-                          ariaLabel: status === "all" ? `${user}: any status` : `${user}: ${label}, ${count} titles`,
-                          empty: status !== "all" && count === 0,
-                          content: (
-                            <>
-                              <span>{label}</span>
-                              {status !== "all" ? <span key={count} className="settings-menu__count">{count}</span> : null}
-                            </>
-                          ),
-                        };
-                      })}
-                    />
-                    <button
-                      type="button"
-                      className={`settings-menu__opt settings-menu__picked${isPickedByUser ? " is-active" : ""}`}
-                      onClick={() => handleToggleAddedBy(user)}
-                      aria-pressed={isPickedByUser}
-                      aria-label={`Picked by ${user}: ${optionCounts.addedBy[user]} titles`}
-                    >
-                      <Star size={12} aria-hidden="true" />
-                      <span>Picked</span>
-                      <span key={optionCounts.addedBy[user]} className="settings-menu__count">{optionCounts.addedBy[user]}</span>
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          {/* Tab 1: Filters */}
+          <div
+            role="tabpanel"
+            id="panel-filters"
+            aria-labelledby="tab-filters"
+            style={{ display: activeTab === "filters" ? "flex" : "none", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <section className="settings-menu__section" data-tone="status" aria-labelledby="settings-menu-status">
+              <h3 id="settings-menu-status" className="settings-menu__label">Status</h3>
+              <SlidingSegments
+                label="Watch status filters"
+                mode="toggle"
+                className="settings-menu__seg--status"
+                value={activeWatchStatus?.value ?? null}
+                onSelect={handleSelectCouplePreset}
+                options={WATCH_STATUS_OPTIONS.map((status) => ({
+                  value: status.value,
+                  tone: status.artwork,
+                  ariaLabel: `${status.label}: ${optionCounts.presets[status.value]} titles`,
+                  title: status.description,
+                  empty: optionCounts.presets[status.value] === 0,
+                  autofocus: status.value === focusWatchStatus,
+                  content: (
+                    <>
+                      <WatchStatusArtwork status={status.artwork} className="settings-menu__status-art" />
+                      <span>{status.label}</span>
+                      <span key={optionCounts.presets[status.value]} className="settings-menu__count">{optionCounts.presets[status.value]}</span>
+                      <span className="settings-menu__reaction" data-kind={status.artwork} aria-hidden="true"><i /><i /><i /></span>
+                    </>
+                  ),
+                }))}
+              />
+            </section>
 
-          <div className="settings-menu__columns">
+            <section className="settings-menu__section" data-tone="people" aria-labelledby="settings-menu-people">
+              <h3 id="settings-menu-people" className="settings-menu__label">Who&rsquo;s watching?</h3>
+              <div className="settings-menu__people">
+                {(["Aaron", "Electra"] as const).map((user) => {
+                  const cfg = PARTNER_CONFIG[user];
+                  const isPickedByUser = filters.addedBy === user;
+                  return (
+                    <div key={user} className={`settings-menu__person ${cfg.toneClass}`}>
+                      <button
+                        type="button"
+                        className="settings-menu__person-name"
+                        onClick={() => handleCycleViewerProgress(user)}
+                        aria-label={`Cycle ${user} watch status filter. Currently ${progressLabels[filters[user]]}`}
+                        title={`Cycle ${user}'s watch status`}
+                      >
+                        <span key={`${filters[user]}-${isPickedByUser}`} className="settings-menu__avatar-wrap" data-status={filters[user]}>
+                          <img src={cfg.avatarSrc} alt="" className="settings-menu__avatar" />
+                          {filters[user] === "watching" || filters[user] === "watched" || isPickedByUser ? (
+                            <span className="settings-menu__avatar-fx" data-kind={filters[user] === "watching" ? "watching" : filters[user] === "watched" ? "seen" : "picked"} aria-hidden="true"><i /><i /><i /></span>
+                          ) : null}
+                          {filters[user] !== "all" ? (
+                            <span className="settings-menu__avatar-badge" aria-hidden="true">
+                              {STATUS_GLYPHS[filters[user]]}
+                            </span>
+                          ) : null}
+                        </span>
+                        {user}
+                      </button>
+                      <SlidingSegments
+                        label={`${user} watch status`}
+                        value={filters[user]}
+                        onSelect={(status) => handleSelectViewerProgress(user, status)}
+                        options={PERSON_STATUSES.map(({ status, label }) => {
+                          const count = optionCounts.viewers[user][status];
+                          return {
+                            value: status,
+                            tone: user.toLowerCase(),
+                            ariaLabel: status === "all" ? `${user}: any status` : `${user}: ${label}, ${count} titles`,
+                            empty: status !== "all" && count === 0,
+                            content: (
+                              <>
+                                <span>{label}</span>
+                                {status !== "all" ? <span key={count} className="settings-menu__count">{count}</span> : null}
+                              </>
+                            ),
+                          };
+                        })}
+                      />
+                      <button
+                        type="button"
+                        className={`settings-menu__opt settings-menu__picked${isPickedByUser ? " is-active" : ""}`}
+                        onClick={() => handleToggleAddedBy(user)}
+                        aria-pressed={isPickedByUser}
+                        aria-label={`Picked by ${user}: ${optionCounts.addedBy[user]} titles`}
+                      >
+                        <Star size={12} aria-hidden="true" />
+                        <span>Picked</span>
+                        <span key={optionCounts.addedBy[user]} className="settings-menu__count">{optionCounts.addedBy[user]}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             <section className="settings-menu__section" data-tone="format" aria-labelledby="settings-menu-format">
               <h3 id="settings-menu-format" className="settings-menu__label">What kind</h3>
               <SlidingSegments
@@ -600,7 +685,15 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                 }))}
               />
             </section>
+          </div>
 
+          {/* Tab 2: Genres & Sort */}
+          <div
+            role="tabpanel"
+            id="panel-genres"
+            aria-labelledby="tab-genres"
+            style={{ display: activeTab === "genres" ? "flex" : "none", flexDirection: "column", gap: "0.5rem" }}
+          >
             <section className="settings-menu__section" data-tone="sort" aria-labelledby="settings-menu-sort">
               <h3 id="settings-menu-sort" className="settings-menu__label">Line &rsquo;em up</h3>
               <SlidingSegments
@@ -619,53 +712,74 @@ export const MovieWallFilters: React.FC<MovieWallFiltersProps> = ({
                 }))}
               />
             </section>
+
+            {genres.length > 0 ? (
+              <section className="settings-menu__section" data-tone="genre" aria-labelledby="settings-menu-genre">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <h3 id="settings-menu-genre" className="settings-menu__label">Genre vibes</h3>
+                  {genreCounts.length > 7 ? (
+                    <button
+                      type="button"
+                      className="settings-menu__genres-toggle"
+                      onClick={() => setIsGenresExpanded((prev) => !prev)}
+                      aria-expanded={isGenresExpanded}
+                    >
+                      <span>{isGenresExpanded ? "Show fewer" : `All ${genreCounts.length} genres`}</span>
+                      {isGenresExpanded ? <ChevronUp size={11} aria-hidden="true" /> : <ChevronDown size={11} aria-hidden="true" />}
+                    </button>
+                  ) : null}
+                </div>
+                <div className="settings-menu__chips" role="radiogroup" aria-label="Genre">
+                  <button
+                    type="button"
+                    role="radio"
+                    className={`settings-menu__chip${filters.genre === "all" ? " is-active" : ""}`}
+                    style={{ "--chip-hue": 42 } as React.CSSProperties}
+                    onClick={() => update("genre", "all")}
+                    aria-checked={filters.genre === "all"}
+                  >
+                    <span className="settings-menu__chip-icon" aria-hidden="true">🍿</span>
+                    <span>All</span>
+                    <span className="settings-menu__count">{movies.length}</span>
+                  </button>
+                  {visibleGenreCounts.map(({ genre, count }) => {
+                    const isSelected = filters.genre.toLowerCase() === genre.toLowerCase();
+                    const look = getGenreLook(genre);
+                    return (
+                      <button
+                        key={genre}
+                        type="button"
+                        role="radio"
+                        className={`settings-menu__chip${isSelected ? " is-active" : ""}`}
+                        style={{ "--chip-hue": look.hue } as React.CSSProperties}
+                        onClick={() => update("genre", genre)}
+                        aria-checked={isSelected}
+                      >
+                        <span className="settings-menu__chip-icon" aria-hidden="true">{look.emoji}</span>
+                        <span>{genre}</span>
+                        <span key={count} className="settings-menu__count">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
           </div>
 
-          {genres.length > 0 ? (
-            <section className="settings-menu__section" data-tone="genre" aria-labelledby="settings-menu-genre">
-              <h3 id="settings-menu-genre" className="settings-menu__label">Genre vibes</h3>
-              <div className="settings-menu__chips" role="radiogroup" aria-label="Genre">
-                <button
-                  type="button"
-                  role="radio"
-                  className={`settings-menu__chip${filters.genre === "all" ? " is-active" : ""}`}
-                  style={{ "--chip-hue": 42 } as React.CSSProperties}
-                  onClick={() => update("genre", "all")}
-                  aria-checked={filters.genre === "all"}
-                >
-                  <span className="settings-menu__chip-icon" aria-hidden="true">🍿</span>
-                  <span>All</span>
-                  <span className="settings-menu__count">{movies.length}</span>
-                </button>
-                {genreCounts.map(({ genre, count }) => {
-                  const isSelected = filters.genre.toLowerCase() === genre.toLowerCase();
-                  const look = getGenreLook(genre);
-                  return (
-                    <button
-                      key={genre}
-                      type="button"
-                      role="radio"
-                      className={`settings-menu__chip${isSelected ? " is-active" : ""}`}
-                      style={{ "--chip-hue": look.hue } as React.CSSProperties}
-                      onClick={() => update("genre", genre)}
-                      aria-checked={isSelected}
-                    >
-                      <span className="settings-menu__chip-icon" aria-hidden="true">{look.emoji}</span>
-                      <span>{genre}</span>
-                      <span key={count} className="settings-menu__count">{count}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
-
-          {settingsSlot ? (
-            <section className="settings-menu__section" aria-labelledby="settings-menu-view">
-              <h3 id="settings-menu-view" className="settings-menu__label">View &amp; sounds</h3>
-              <div className="settings-menu__view">{settingsSlot}</div>
-            </section>
-          ) : null}
+          {/* Tab 3: App Settings */}
+          <div
+            role="tabpanel"
+            id="panel-settings"
+            aria-labelledby="tab-settings"
+            style={{ display: activeTab === "settings" ? "flex" : "none", flexDirection: "column", gap: "0.5rem" }}
+          >
+            {settingsSlot ? (
+              <section className="settings-menu__section" aria-labelledby="settings-menu-view">
+                <h3 id="settings-menu-view" className="settings-menu__label">Preferences &amp; Display</h3>
+                <div className="settings-menu__view">{settingsSlot}</div>
+              </section>
+            ) : null}
+          </div>
         </div>
         </TopFramePanel>
       ) : null}

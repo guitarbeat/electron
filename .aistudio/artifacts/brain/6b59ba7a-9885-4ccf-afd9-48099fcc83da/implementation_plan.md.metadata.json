@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan for adding user toggles in Settings for turning off poster badges and dimming for watched movies.",
-  "updatedAt": "2026-11-04T20:01:58.346251723Z",
+  "summary": "Implementation plan for resolving low contrast on the dynamic corner and center notches by pairing a frosted backdrop-blur surface backing with high-contrast difference-blended notch tokens and readable foreground label treatments.",
+  "updatedAt": "2026-11-06T16:54:24.944805849Z",
   "requestFeedback": true,
   "userFacing": true
 }

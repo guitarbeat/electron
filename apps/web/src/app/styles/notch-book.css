@@ -21,8 +21,9 @@
 }
 
 /* ---- The notch grows out of its corner on the snappy spring curve ---- */
-.y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]):has(.top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
-.frame-corner-profiles:has(.profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
+:root:has(.y2k-command-dock[data-panel-origin="filters"] .top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="settings"],
+:root:has(.y2k-command-dock:is([data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels[data-expanded="true"]) .dyn-notch[data-notch="activities"],
+:root:has(.frame-corner-profiles .profile-settings-menu:not(.dyn-notch-ghost)) .dyn-notch[data-notch="profiles"] {
   transition: width var(--book-lift), height var(--book-lift), border-radius var(--book-lift), transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .y2k-command-dock:is([data-panel-origin="filters"], [data-panel-origin="picker"], [data-panel-origin="messages"]) .top-frame-panels[data-expanded="true"] {
@@ -62,6 +63,9 @@
   transform-origin: left center;
   pointer-events: none;
   visibility: hidden;
+}
+.y2k-command-dock .top-frame-panel:is([data-frame-panel="picker"], [data-frame-panel="messages"])::before {
+  border-radius: 0 0 var(--notch-radius-open) var(--notch-radius-open);
 }
 .y2k-command-dock .top-frame-panel[data-frame-panel="filters"] { --book-cover-art: url("/avatars/aaron-electra-filter-sliders.png"); --book-cover-title: "Settings"; }
 .y2k-command-dock .top-frame-panel[data-frame-panel="picker"] {

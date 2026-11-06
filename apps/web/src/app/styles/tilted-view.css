@@ -1553,7 +1553,7 @@
 .workspace-search__stage.y2k-command-dock {
   position: fixed;
   inset: 0;
-  z-index: 1100;
+  z-index: auto;
   width: auto;
   padding: 0;
   transform: none;
@@ -1567,7 +1567,7 @@
 .library-workspace > .workspace-search__stage:has(.is-autocomplete-active),
 .workspace-search__stage.y2k-command-dock:focus-within,
 .workspace-search__stage.y2k-command-dock:has(.is-autocomplete-active) {
-  z-index: 1250;
+  z-index: auto;
 }
 
 @keyframes searchBarSlideIn {
@@ -1675,17 +1675,10 @@
   }
 }
 
-/* The wall opens between the corner pockets, rather than beneath a full toolbar. */
+/* Posters flow edge-to-edge behind the difference-blended frame and dynamic notches. */
 body:has(.frame-corner-profiles) .movies-wall-container {
-  mask-image: linear-gradient(#000, #000), var(--frame-top-left-shape), var(--frame-top-right-shape), var(--frame-bottom-left-shape), var(--frame-account-shape);
-  mask-size: 100% 100%,
-    calc(var(--frame-search-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-search-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-top-edge) + var(--frame-account-taper)),
-    calc(var(--frame-create-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-create-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-top-edge) + var(--frame-account-taper)),
-    calc(var(--frame-filter-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-filter-grow, 0px)) calc(var(--frame-corner-height) + var(--frame-border-width) + var(--frame-account-taper)),
-    calc(var(--frame-account-width) + var(--frame-border-width) + var(--frame-account-taper) + var(--frame-account-grow, 0px)) calc(var(--frame-account-height) + var(--frame-border-width) + var(--frame-account-taper));
-  mask-position: center, left top, right top, left bottom, right bottom;
-  mask-repeat: no-repeat;
-  mask-composite: subtract, add, add, add, add;
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 /* Filters share the frame surface, with quiet rules and a single selection cue. */

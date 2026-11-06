@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "preinstall": "echo skip",
-    "dev": "npm --prefix apps/web run dev",
+    "dev": "./apps/web/node_modules/.bin/vite --config apps/web/vite.config.ts --port 3000 --host 0.0.0.0",
     "preview": "npm --prefix apps/web run serve",
     "verify": "npm run check-artifacts && npm run check-hygiene && npm run check-types && npm run lint && npm run test && npm run build",
     "check-artifacts": "node scripts/check-artifacts.js",

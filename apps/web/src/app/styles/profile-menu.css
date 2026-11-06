@@ -880,7 +880,7 @@
   position: fixed;
   right: var(--frame-border-width, 7px);
   bottom: var(--frame-border-width, 7px);
-  z-index: 1100;
+  z-index: auto;
   width: var(--frame-account-width, 9rem);
   height: var(--frame-account-height, 4.5rem);
   display: flex;
@@ -895,10 +895,16 @@
   -webkit-backdrop-filter: none;
 }
 
+.frame-corner-profiles .inline-profiles-container {
+  position: relative;
+  z-index: 1100;
+}
+
 .frame-corner-profiles .profile-settings-menu {
   top: auto;
   bottom: calc(100% + 12px);
   right: 0;
+  z-index: 1100;
   max-width: calc(100vw - 2rem);
   transform-origin: bottom right;
 }
